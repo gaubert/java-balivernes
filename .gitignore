@@ -1,3 +1,5 @@
 *.o
 *.class
 bin-groovy
+build
+tools
