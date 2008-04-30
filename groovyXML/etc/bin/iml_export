@@ -30,20 +30,13 @@ JAVA_OPTS="-Xms64m -Xmx512m"
 java=$JAVA_HOME/bin/java
 
 #################################
-## function for getting the absolute 
-## path
+## get absolute path
 #################################
-get_abs_path()
-{
-  D=`dirname "$1"`
-  B=`basename "$1"`
-  result="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
-  #echo $result
-  return $result
-}
-
-# get absolute path for IML_HOME
-$IML_HOME=get_abs_path($IML_HOME)
+D=`dirname "$IML_HOME"`
+B=`basename "$IML_HOME"`
+result="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+#echo "get_abs_path $result"
+IML_HOME=$result
 
 ###################
 ## Set  Directories
@@ -78,7 +71,7 @@ print_usage_help()
 {
    echo "Usage: iml_export [-s sampleID_list]"
    echo "      -s <list of sampleIDs>, list of sampleIDs from which the information will be extracted"
-   echo "                              for example iml_export -s 130646, 130660
+   echo "                              for example iml_export -s 130646, 130660"
 }
 
 #
@@ -87,7 +80,7 @@ print_usage_help()
 run_command()
 {
    # call the groovy main file
-   $java $JAVA_OPTS -cp "$STARTERPATH" main "$@"
+   $java $JAVA_OPTS -cp "$STARTERPATH" org.idc.xml.main "$@"
   
   RESULT=$?
 }
@@ -118,7 +111,7 @@ done
 
 # check if JAVA_HOME is properly set
 if [ ! -f "$JAVA_HOME/bin/java" ]; then
-   $echo "Please update $JAVA_HOME into iml_export.sh. JAVA_HOME needs to point a JAVA 1.5.x or more JDK (ex: /usr/local/apps/jdk1.5.0_10)"
+   echo "Please update $JAVA_HOME into iml_export.sh. JAVA_HOME needs to point a JAVA 1.5.x or more JDK (ex: /usr/local/apps/jdk1.5.0_10)"
    exit 1
 fi
 

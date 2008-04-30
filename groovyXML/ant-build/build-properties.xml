@@ -1,10 +1,10 @@
-<!-- =====================================================================   -->
-<!-- File build.xml                                                          -->
-<!--                                                                         -->
-<!-- Purpose: build file for the SIMDAT projects                             -->
-<!--                                                                         -->
-<!-- (c) Copyright ECMWF 2005 - Guillaume Aubert (guillaume.aubert@ecmwf.int) -->
-<!-- =====================================================================   -->
+<!-- =====================================================================    -->
+<!-- File build.xml                                                           -->
+<!--                                                                          -->
+<!-- Purpose: build file for the XML IDC projects                             -->
+<!--                                                                          -->
+<!-- (c) Copyright CTBTO 2008 - Guillaume Aubert (guillaume.aubert@ctbto.org) -->
+<!-- =====================================================================    -->
 
 <project name="vmc-properties" default="" basedir="..">
 
@@ -29,34 +29,19 @@
   <property name="javac.fail.onerror" value="on"/>
   
   <!-- global file system -->
-  <property name="iml.bin"   value="bin"/>
-  <property name="iml.doc"   value="doc"/>
-  <property name="iml.build" value="build"/>
-  <property name="iml.etc"   value="etc"/>
-  <property name="iml.libs"   value="libs"/>
-  <property name="iml.test"   value="test"/>
-  <property name="iml.src"   value="src"/>
-  <property name="iml.conf"  value="conf"/>
-  <property name="iml.sql"   value="sql"/>
-  <property name="iml.suite" value="iml-suite"/>
+  <property name="iml.build"       value="build"/>
+  <property name="iml.etc"         value="etc"/>
+  <property name="iml.libs"        value="libs"/>
+  <property name="iml.src"         value="src"/>
 	
 	
   <!-- build file system -->
   <property name="iml.classes"      value="${iml.build}/classes"/>
-  <property name="iml.api"          value="${iml.build}/api"/>
   <property name="iml.dist"         value="${iml.build}/dist"/>
   <property name="iml.run"          value="${iml.build}/run"/>
   <property name="iml.log"          value="${iml.build}/log"/>
   <property name="iml.lib"          value="${iml.build}/lib"/>
-  <property name="iml.war"          value="${iml.build}/war"/>
   <property name="iml.tar"          value="${iml.build}/tar"/>
-  <property name="iml.sar"          value="${iml.build}/sar"/>
-  <property name="iml.ear"          value="${iml.build}/ear"/>
-  <property name="iml.audit"        value="${iml.build}/audit"/>
-  <property name="iml.data"         value="${iml.build}/data"/>
-  <property name="iml.resources"    value="${iml.etc}/resources"/>
-  <property name="iml.jsp"    	    value="${iml.build}/jsp"/>	
-  <property name="iml.javadocs"    value="${iml.build}/docs/api"/>
 	
   <!-- set external classpath -->
   <path id="iml.classpath">

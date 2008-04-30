@@ -1,10 +1,10 @@
-<!-- =====================================================================   -->
-<!-- File build.xml                                                          -->
-<!--                                                                         -->
-<!-- Purpose: build file for the XML Project                                 -->
-<!--                                                                         -->
-<!-- (c) Copyright ECMWF 2008 - Guillaume Aubert (guillaume.aubert@ctbto.org)-->
-<!-- =====================================================================   -->
+<!-- =====================================================================    -->
+<!-- File build.xml                                                           -->
+<!--                                                                          -->
+<!-- Purpose: build file for the XML IDC projects                             -->
+<!--                                                                          -->
+<!-- (c) Copyright CTBTO 2008 - Guillaume Aubert (guillaume.aubert@ctbto.org) -->
+<!-- =====================================================================    -->
 
 <project name="IML" default="usage" basedir="..">
 
@@ -29,6 +29,8 @@
 	
 	   init                                --> create build directories
 	   build                               --> compile the source code
+	   dist                                --> create a distribution tar.gz
+	   install                             --> install into /tmp/iml-export
 	   clean                               --> clean up the build directory
 	   clean-all                           --> clean up build and tarball directories
 	   usage                               --> this help page ...
@@ -40,13 +42,26 @@
 
   <target name="build" depends="_compile-classes"/>
 	
- 
+  <!-- ================================================================== -->
+  <!-- install                                                          -->
+  <!-- ================================================================== -->
+  <target name="install">
+    
+	<!-- create the root directory for this release -->
+	<property name="root" value="/tmp/exporter"/>
+	  
+	<antcall target="_build-distrib">
+       <param name="dir" value="${root}"/>
+	</antcall>
+  	
+  </target>
+	
   <!-- ================================================================== -->
   <!-- Cleaning                                                           -->
   <!-- ================================================================== -->
   <target name="clean-all">
   	<antcall target="clean"></antcall>
-    	<delete dir="${iml.tar}"/> 
+    <delete dir="${iml.tar}"/> 
   </target>
   
   <target name="clean">

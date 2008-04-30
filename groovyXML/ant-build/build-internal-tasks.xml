@@ -1,10 +1,10 @@
-<!-- =====================================================================   -->
-<!-- File build.xml                                                          -->
-<!--                                                                         -->
-<!-- Purpose: build file for the SIMDAT projects                             -->
-<!--                                                                         -->
-<!-- (c) Copyright ECMWF 2005 - Guillaume Aubert (guillaume.aubert@ecmwf.int) -->
-<!-- =====================================================================   -->
+<!-- =====================================================================    -->
+<!-- File build.xml                                                           -->
+<!--                                                                          -->
+<!-- Purpose: build file for the XML IDC projects                             -->
+<!--                                                                          -->
+<!-- (c) Copyright CTBTO 2008 - Guillaume Aubert (guillaume.aubert@ctbto.org) -->
+<!-- =====================================================================    -->
 
 <project name="iml-internal-tasks" default="" basedir="..">
 
@@ -16,6 +16,8 @@
 	<!-- =================================================================== -->
 	<target name="_init">
 	  <mkdir dir="${iml.classes}"/>
+	  <mkdir dir="${iml.lib}"/>
+	  <mkdir dir="${iml.dist}"/>
 	</target>
   
   <!-- =================================================================== -->
@@ -36,4 +38,55 @@
      	   </javac>
      	</groovyc>
 	  </target>
+	
+	<!-- =================================================================== -->
+    <!-- Build iml-export.jar                                     -->
+    <!-- =================================================================== -->	
+	<target name="_iml-export-jar" depends="_compile-classes">
+	     <jar destfile="${iml.lib}/iml-export.jar">
+			<fileset dir="${iml.classes}">
+				<include name="org/**" />
+			    <exclude name="org/vmc/node/connection/services/oai/*"/>
+			</fileset>
+		  </jar>
+	</target>
+	
+	<!-- =================================================================== -->
+	<!-- Build dist                                     -->
+	<!-- =================================================================== -->	
+	<target name="_build-distrib" depends="_iml-export-jar">
+		
+		<!-- root dir where the dist is going to be built -->
+		<property name="root" value="${dir}"/>
+		 	
+		<!-- config info -->
+		<copy todir="${dir}/conf">
+		   <fileset dir="${iml.etc}/conf">
+		 	 	<include name="*.config"/>
+		   </fileset>
+		 </copy>
+			
+		<!-- config info -->
+		<copy todir="${dir}/bin">
+			<fileset dir="${iml.etc}/bin">
+				<include name="iml_export"/>
+			</fileset>
+		</copy>
+			
+		<!-- lib info -->
+		<copy todir="${dir}/lib">
+		    <!-- ext jars -->
+			<fileset dir="${iml.libs}">
+				<include name="*.jar"/>
+			</fileset>
+		    <!-- produced jars -->
+		    <fileset dir="${iml.build}/lib">
+			   <include name="iml-export.jar"/>
+			</fileset>
+		</copy>
+		
+		<chmod file="${dir}/bin/iml_export" perm="ugo+wrx"/>
+		
+	</target>
+	
 </project>
