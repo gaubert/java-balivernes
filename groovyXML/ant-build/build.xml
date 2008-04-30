@@ -1,0 +1,67 @@
+<!-- =====================================================================   -->
+<!-- File build.xml                                                          -->
+<!--                                                                         -->
+<!-- Purpose: build file for the XML Project                                 -->
+<!--                                                                         -->
+<!-- (c) Copyright ECMWF 2008 - Guillaume Aubert (guillaume.aubert@ctbto.org)-->
+<!-- =====================================================================   -->
+
+<project name="IML" default="usage" basedir="..">
+
+  <import description="build-internal-tasks" file="./build-internal-tasks.xml"/>
+ 	
+  <!-- =================================================================== -->
+  <!-- No operation                                                        -->
+  <!-- =================================================================== -->
+<target name="noop" description="do nothing">
+  <echo message="iml.bin = ${iml.bin}"/>
+  <echo message="iml.doc = ${iml.doc}"/>
+</target>
+	
+
+  <!-- =================================================================== -->
+  <!-- Help on usage                                                       -->
+  <!-- =================================================================== -->
+<target name="usage">
+	<echo >	--------------- ${Name} ${version} (${build}) ---------------
+	
+	 available targets are:"
+	
+	   init                                --> create build directories
+	   build                               --> compile the source code
+	   clean                               --> clean up the build directory
+	   clean-all                           --> clean up build and tarball directories
+	   usage                               --> this help page ...
+	
+	 See the comments inside the build.xml file for more details.
+    </echo>
+  </target>
+
+
+  <target name="build" depends="_compile-classes"/>
+	
+ 
+  <!-- ================================================================== -->
+  <!-- Cleaning                                                           -->
+  <!-- ================================================================== -->
+  <target name="clean-all">
+  	<antcall target="clean"></antcall>
+    	<delete dir="${iml.tar}"/> 
+  </target>
+  
+  <target name="clean">
+    <delete dir="${iml.classes}"/>
+    <delete dir="${iml.api}"/>
+    <delete dir="${iml.dist}"/>
+    <delete dir="${iml.lib}"/>
+    <delete dir="${iml.run}"/>
+    <delete dir="${iml.log}"/>
+    <delete dir="${iml.audit}"/>
+  	<delete dir="${iml.war}"/>
+  	<delete dir="${iml.sar}"/>
+  	<delete dir="${iml.ear}"/>
+  	<delete dir="${iml.jsp}"/>
+	<delete dir="${iml.javadocs}"/>
+  </target>
+
+</project>

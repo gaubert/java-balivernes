@@ -1,0 +1,39 @@
+<!-- =====================================================================   -->
+<!-- File build.xml                                                          -->
+<!--                                                                         -->
+<!-- Purpose: build file for the SIMDAT projects                             -->
+<!--                                                                         -->
+<!-- (c) Copyright ECMWF 2005 - Guillaume Aubert (guillaume.aubert@ecmwf.int) -->
+<!-- =====================================================================   -->
+
+<project name="iml-internal-tasks" default="" basedir="..">
+
+	<import description="build-properties" file="./build-properties.xml"/>
+		
+        
+	<!-- =================================================================== -->
+	<!-- The initalization for all                                           -->
+	<!-- =================================================================== -->
+	<target name="_init">
+	  <mkdir dir="${iml.classes}"/>
+	</target>
+  
+  <!-- =================================================================== -->
+  <!-- Compile all class files                                             -->
+  <!-- =================================================================== -->
+     <target name="_compile-classes" depends="_init">
+     	<groovyc srcdir="${iml.src}" destdir="${iml.classes}">
+     	  <classpath refid="iml.classpath"/>
+     	  <javac destdir="${iml.classes}"
+     		     optimize="${javac.optimize}"
+     		     debug="${javac.debug}"
+     		     verbose="${javac.verbose}"
+     		     deprecation="${javac.deprecation}"
+     		     includeJavaRuntime="${javac.include.java.runtime}"
+     		     failonerror="${javac.fail.onerror}">
+     		  <src path="${iml.src}"/>
+     		  <classpath refid="iml.classpath"/>
+     	   </javac>
+     	</groovyc>
+	  </target>
+</project>
