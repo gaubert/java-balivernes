@@ -1,0 +1,138 @@
+#!/bin/sh
+#set -x
+
+#######################################################
+## description: script running the iml exporter 
+## date: 30.04.08
+## author: guillaume.aubert@ctbto.org
+## version: 0.5
+#######################################################
+
+########################
+## JAVA_HOME if necessary
+########################
+#export JAVA_HOME="update JAVA_HOME. JAVA_HOME needs to point a JAVA 1.5 JDK (ex: /usr/local/apps/jdk1.5.0_10)"
+
+########################
+## VMC HOME
+########################
+IML_HOME=..
+
+########################
+## Java optional options
+########################
+JAVA_OPTS="-Xms64m -Xmx512m"
+#JAVA_OPTS="-Xms64m -Xmx256m -Xdebug -Xrunjdwp:transport=dt_socket,address=7000,server=y,suspend=n"
+
+#################################
+## Commands used from this script
+#################################
+java=$JAVA_HOME/bin/java
+
+#################################
+## function for getting the absolute 
+## path
+#################################
+get_abs_path()
+{
+  D=`dirname "$1"`
+  B=`basename "$1"`
+  result="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+  #echo $result
+  return $result
+}
+
+# get absolute path for IML_HOME
+$IML_HOME=get_abs_path($IML_HOME)
+
+###################
+## Set  Directories
+###################
+bin=$IML_HOME/bin
+log=$IML_HOME/log
+conf=$IML_HOME/conf
+lib=$IML_HOME/lib
+
+###################
+## Add java options
+###################
+JAVA_OPTS=$JAVA_OPTS" -Dconfig.path=$conf/xmlsucker.config"
+
+## Set the starter classpath
+for n in `find $lib/*.jar`; do
+  STARTERPATH=$STARTERPATH":"$n
+done
+
+
+
+####################
+## Script variables
+####################
+SAMPLEIDS=
+RESULT=1
+
+#
+#  Function to print usage help
+#
+print_usage_help()
+{
+   echo "Usage: iml_export [-s sampleID_list]"
+   echo "      -s <list of sampleIDs>, list of sampleIDs from which the information will be extracted"
+   echo "                              for example iml_export -s 130646, 130660
+}
+
+#
+# Function running the final command with the right options
+#
+run_command()
+{
+   # call the groovy main file
+   $java $JAVA_OPTS -cp "$STARTERPATH" main "$@"
+  
+  RESULT=$?
+}
+
+##########################
+######### MAIN ###########
+##########################
+# Handle options
+#
+while getopts s:hd MYOPTION
+do
+    echo "Option = $MYOPTION"
+    case $MYOPTION in
+    s)  SAMPLEIDS=$OPTARG
+        ;;
+	h)  print_usage_help
+	    exit 0
+		;;
+	d)  echo "run in debugging mode. Listening on port 7000"
+	    JAVA_OPTS=$JAVA_OPTS" -Xdebug -Xrunjdwp:transport=dt_socket,address=7000,server=y,suspend=n"
+	    ;;
+    \?) echo "Error: $MYOPTION is not a supported option"
+        print_usage_help 
+        exit 1
+        ;;
+    esac
+done
+
+# check if JAVA_HOME is properly set
+if [ ! -f "$JAVA_HOME/bin/java" ]; then
+   $echo "Please update $JAVA_HOME into iml_export.sh. JAVA_HOME needs to point a JAVA 1.5.x or more JDK (ex: /usr/local/apps/jdk1.5.0_10)"
+   exit 1
+fi
+
+# check if $IML_HOME is properly set
+if [ ! -f "$IML_HOME/conf/xmlsucker.config" ]; then
+   echo "Error: IML_HOME doesn't seem to be properly set. Please update the env variable IML_HOME to point to your distribution"
+   exit 1
+fi
+
+# check if some sampleIDs have been passed
+if [ ! $SAMPLEIDS ]; then
+   echo "Error: you need to provide some sampleIDs with -s"
+fi
+
+echo "Start iml_export"
+run_command
+exit $RESULT
