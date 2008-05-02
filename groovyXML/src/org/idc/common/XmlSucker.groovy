@@ -4,14 +4,19 @@ import groovy.sql.Sql
 import java.sql.ResultSetMetaData
 import groovy.xml.MarkupBuilder
 
+
+/**
+   Read information in the DB and produce an XML files
+
+   @author Guillaume Aubert (guillaume.aubert@ctbto.org)
+   @since 0.5
+*/
 public class XmlSucker
 {
 	private _dbUrl;
 	private _dbPassword;
 	private _dbLogin;
 	
-	
-	//orac1.ctbto.org:1521/IDCDEV.CTBTO.ORG
 	private _dbDrivertype = "thin";
 	private _dbDriver     = "oracle.jdbc.driver.OracleDriver";
 	
@@ -62,6 +67,12 @@ public class XmlSucker
 		}
 	}
 	
+	/**
+    * Dump the content of specified table in an XML file following the specified xml dialect
+    * @param tablename name of the table to dump
+    * @param filename filename where to write the xmlized DB dump
+    * 
+    */
 	public def saveTableContentIn(tablename, filename,limit = 0)
 	{
 		if (! _connected)
@@ -89,8 +100,7 @@ public class XmlSucker
 		def hasMetadata = false
 		
 		def dataSql     = "SELECT * FROM " + tablename + sqlLimit
-		def metadataSql = "SELECT * FROM " + tablename + " where rownum=1"
-
+		
 		 xml.table(name:"${tablename}")
 		 {
 			try
@@ -127,6 +137,142 @@ public class XmlSucker
 		   }
 		
 		  println " Retrieved ${cpt} rows for ${tablename}"
+		  println "End of saveTableContentIn for ${tablename}. Data stored in in ${filename}."
+	}
+	
+	/**
+	 * Execute a request and store its result as xml default
+	 * @param tablename name of the table to dump
+	 * @param filename filename where to write the xmlized DB dump
+	 * @param sampleIDs list of sampleIDs 
+	 * 
+	*/
+	public def storeRequestResultInXml(tablename,filename,sqlRequest,addMetadata)
+	{
+		if (! _connected)
+			throw CTBTOException("Error: Please connect first to the database")
+		
+		def out    = new File(filename)
+		def writer = new FileWriter( out )
+		def xml    = new MarkupBuilder( writer )
+		
+		def cpt         = 1
+		def key         = null
+		def map         = null
+		def val         = null
+		def hasMetadata = false
+		
+		 xml.table(name:"${tablename}")
+		 {
+			try
+			{
+		      _sqlConn.eachRow(sqlRequest) 
+		      {
+			      row -> 
+			      
+			      if ( (!hasMetadata) && addMetadata) 
+			      {
+			    	  hasMetadata = storeMetadata(xml,row)
+			      }
+			      
+			      map = getColumnAsMap(row)
+			
+			      xml.row
+			      {
+		            map.entrySet().each()
+		            {
+		               entry ->
+		                 key = entry.getKey();
+		                 val = entry.getValue();
+		                 addNode(xml,key,val)
+		            }
+			      }
+		    
+		          cpt++
+		        } 
+		     }
+		     catch (Exception e)
+		     {
+			   println e.getMessage() 
+		     }
+		   }
+		
+		  println " Retrieved ${cpt} rows for ${tablename} when request ${sqlRequest} has been executed"
+		  println "End of saveTableContentIn for ${tablename}. Data stored in in ${filename}."
+	}
+	
+	/**
+	 * Dump the content of specified table restricted to the passed sampleIDs in an XML file following the specified xml dialect
+	 * @param tablename name of the table to dump
+	 * @param filename filename where to write the xmlized DB dump
+	 * @param sampleIDs list of sampleIDs 
+	 * 
+	*/
+	public def saveTableContentForSampleIDs(tablename, filename,sampleIDs)
+	{
+		if (! _connected)
+			throw CTBTOException("Error: Please connect first to the database")
+		
+	
+		// create a string of sampleIds
+		def strSampleIDs = sampleIDs.join(", ")
+		def sqlWhere = ""
+		
+		if ( strSampleIDs.size() > 0)
+		{
+			sqlWhere = " where SAMPLE_ID in ( $strSampleIDs )"
+		}
+		
+		println "saveTableContentIn: Saving data for table ${tablename} in ${filename} for sampleIDs: ${strSampleIDs}"
+		
+		def out    = new File(filename)
+		def writer = new FileWriter( out )
+		def xml    = new MarkupBuilder( writer )
+		
+		def cpt         = 1
+		def key         = null
+		def map         = null
+		def val         = null
+		def hasMetadata = false
+		
+		def dataSql     = "SELECT * FROM " + tablename + sqlWhere
+		
+		 xml.table(name:"${tablename}")
+		 {
+			try
+			{
+		      _sqlConn.eachRow(dataSql) 
+		      {
+			      row -> 
+			      
+			      if (! hasMetadata) 
+			      {
+			    	  hasMetadata = storeMetadata(xml,row)
+			      }
+			      
+			      map = getColumnAsMap(row)
+			
+			      xml.row
+			      {
+		            map.entrySet().each()
+		            {
+		               entry ->
+		                 key = entry.getKey();
+		                 val = entry.getValue();
+		                 addNode(xml,key,val)
+		            }
+			      }
+		    
+		          cpt++
+		        } 
+		     }
+		     catch (Exception e)
+		     {
+			   println e.getMessage() 
+		     }
+		   }
+		
+		  println " Retrieved ${cpt} rows for ${tablename} for sampleIDs = ${strSampleIDs}"
 		  println "End of saveTableContentIn for ${tablename}. Data stored in in ${filename}."
 	}
 	

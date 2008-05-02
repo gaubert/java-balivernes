@@ -71,7 +71,7 @@ print_usage_help()
 {
    echo "Usage: iml_export [-s sampleID_list]"
    echo "      -s <list of sampleIDs>, list of sampleIDs from which the information will be extracted"
-   echo "                              for example iml_export -s 130646, 130660"
+   echo "                              for example iml_export -s 130646 130660"
 }
 
 #
@@ -80,7 +80,7 @@ print_usage_help()
 run_command()
 {
    # call the groovy main file
-   $java $JAVA_OPTS -cp "$STARTERPATH" org.idc.xml.main "$@"
+   $java $JAVA_OPTS -cp "$STARTERPATH" org.idc.xml.IMLExporter "$@"
   
   RESULT=$?
 }
