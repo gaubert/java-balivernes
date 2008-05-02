@@ -61,7 +61,7 @@ done
 ####################
 ## Script variables
 ####################
-SAMPLEIDS=
+#SAMPLEIDS=
 RESULT=1
 
 #
@@ -124,6 +124,10 @@ fi
 # check if some sampleIDs have been passed
 if [ ! $SAMPLEIDS ]; then
    echo "Error: you need to provide some sampleIDs with -s"
+   print_usage_help
+   exit 1
+else
+   echo "SAMPLEIDS $SAMPLEIDS"
 fi
 
 echo "Start iml_export"
