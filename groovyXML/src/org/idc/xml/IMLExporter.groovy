@@ -1,6 +1,6 @@
 package org.idc.xml;
 
-
+import org.idc.xml.renderers.DBRenderer
 /**
  * Main class used for extraction
  * @author guillaume.aubert@ctbto.org
@@ -47,14 +47,19 @@ class IMLExporter
 
 	    println "sampleIDS = ${validSampleIDs}"
 	  
-	    def dbDumper = new DatabaseDumper()
-
-	    dbDumper.getTailoredDatabaseDump(validSampleIDs)
-
+	    execute(validSampleIDs)
+	    
 	    println "Job Done. BYYE"
 
 	    System.exit(0)
 
+    }
+    
+    protected static execute(aSampleIDs,aRendererType = "RawDBRenderer")
+    {
+    	def renderer = DBRenderer.createRenderer(aRendererType)
+    	
+    	renderer.render(aSampleIDs)
     }
 }
 
