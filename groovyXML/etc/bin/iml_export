@@ -80,7 +80,7 @@ print_usage_help()
 run_command()
 {
    # call the groovy main file
-   $java $JAVA_OPTS -cp "$STARTERPATH" org.idc.xml.IMLExporter "$@"
+   $java $JAVA_OPTS -cp "$STARTERPATH" org.idc.xml.IMLExporter "$ARGS"
   
   RESULT=$?
 }
@@ -88,26 +88,16 @@ run_command()
 ##########################
 ######### MAIN ###########
 ##########################
-# Handle options
-#
-while getopts s:hd MYOPTION
-do
-    echo "Option = $MYOPTION"
-    case $MYOPTION in
-    s)  SAMPLEIDS=$OPTARG
-        ;;
-	h)  print_usage_help
-	    exit 0
-		;;
-	d)  echo "run in debugging mode. Listening on port 7000"
-	    JAVA_OPTS=$JAVA_OPTS" -Xdebug -Xrunjdwp:transport=dt_socket,address=7000,server=y,suspend=n"
-	    ;;
-    \?) echo "Error: $MYOPTION is not a supported option"
-        print_usage_help 
-        exit 1
-        ;;
-    esac
-done
+
+# keep args in variables
+ARGS="$@"
+
+# check if there is a debugging env var called IML_DEBUG
+if [ $IML_DEBUG ]; then
+  echo "run in debugging mode. Listening on port 7000"
+  JAVA_OPTS=$JAVA_OPTS" -Xdebug -Xrunjdwp:transport=dt_socket,address=7000,server=y,suspend=n"
+fi
+
 
 # check if JAVA_HOME is properly set
 if [ ! -f "$JAVA_HOME/bin/java" ]; then
@@ -121,15 +111,5 @@ if [ ! -f "$IML_HOME/conf/imlexport.config" ]; then
    exit 1
 fi
 
-# check if some sampleIDs have been passed
-if [ ! $SAMPLEIDS ]; then
-   echo "Error: you need to provide some sampleIDs with -s"
-   print_usage_help
-   exit 1
-else
-   echo "SAMPLEIDS $SAMPLEIDS"
-fi
-
-echo "Start iml_export"
 run_command
 exit $RESULT

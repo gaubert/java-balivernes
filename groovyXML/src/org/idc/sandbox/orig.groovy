@@ -1,9 +1,12 @@
+package org.idc.sandbox;
+
+
 class IMLExporterMain {
  
 static void main(args) 
 {
  
-def cli = new CliBuilder(usage: 'iml_exporter -s sampleIDs. For example -s 123456,456789', parser: new org.apache.commons.cli.GnuParser ())
+/*def cli = new CliBuilder(usage: 'iml_exporter -s sampleIDs. For example -s 123456,456789', parser: new org.apache.commons.cli.GnuParser ())
 cli.h(longOpt: 'help', 'usage information')
 cli.s(longOpt: 'sampleids', 'list of sampleids', args: 1, required:false, type:GString)
 def opt = cli.parse(args)
@@ -42,7 +45,7 @@ else
   }
 
   println "sampleIDS = ${validSampleIDs}"
-}
+}*/
  
 }
 }
