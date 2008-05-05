@@ -49,7 +49,7 @@ lib=$IML_HOME/lib
 ###################
 ## Add java options
 ###################
-JAVA_OPTS=$JAVA_OPTS" -Dconfig.path=$conf/xmlsucker.config"
+JAVA_OPTS=$JAVA_OPTS" -Dconfig.path=$conf/imlexport.config"
 
 ## Set the starter classpath
 for n in `find $lib/*.jar`; do
@@ -116,7 +116,7 @@ if [ ! -f "$JAVA_HOME/bin/java" ]; then
 fi
 
 # check if $IML_HOME is properly set
-if [ ! -f "$IML_HOME/conf/xmlsucker.config" ]; then
+if [ ! -f "$IML_HOME/conf/imlexport.config" ]; then
    echo "Error: IML_HOME doesn't seem to be properly set. Please update the env variable IML_HOME to point to your distribution"
    exit 1
 fi
