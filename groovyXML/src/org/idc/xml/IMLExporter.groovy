@@ -36,8 +36,6 @@ class IMLExporter
     	
     	try
     	{
-    	
-    	  println "leftArgs = ${leftArgs}. size= ${leftArgs.size()}"
     		
     	  // no arguments 
     	  if (leftArgs.size() == 0)
@@ -60,8 +58,6 @@ class IMLExporter
 	      {
 	        def stripped = it.trim()
 	        
-	        println "Stripped =${stripped}. size=${stripped.size()}"
-	    
 	        if (stripped.size() > 0)
 	        {
 	    	  //check that it is a number
