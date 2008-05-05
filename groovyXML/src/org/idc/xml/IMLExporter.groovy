@@ -36,6 +36,9 @@ class IMLExporter
     	
     	try
     	{
+    	
+    	  println "leftArgs = ${leftArgs}. size= ${leftArgs.size()}"
+    		
     	  // no arguments 
     	  if (leftArgs.size() == 0)
     	  {
@@ -56,6 +59,8 @@ class IMLExporter
 	      sampleIDs.each
 	      {
 	        def stripped = it.trim()
+	        
+	        println "Stripped =${stripped}. size=${stripped.size()}"
 	    
 	        if (stripped.size() > 0)
 	        {
@@ -66,8 +71,12 @@ class IMLExporter
 	    	  }
 	    	  else
 	    	  {
-	    		  throw new IllegalArgumentException("Error: the passed arguments ${stripped} aren't valid sampleID")
+	    		  throw new IllegalArgumentException("Error: the passed arguments ${stripped} are unvalid sampleID")
 	    	  }
+	        }
+	        else
+	        {
+	           throw new IllegalArgumentException("Error: the passed arguments ${stripped} unvalid sampleID")
 	        }
 	        
 	      }
