@@ -1,5 +1,6 @@
 *.o
 *.class
+*.pyc
 bin-groovy
 build
 tools
