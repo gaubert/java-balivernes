@@ -71,8 +71,10 @@ class DatabaseConnector:
 
         for c in tableMetadata.columns:
             desc = {}
-            desc['name'] = c.name
-            desc['type'] = c.type
+            #print "C = %s"%dir(c)
+            desc['name']     = c.name
+            desc['type']     = c.type
+            desc['nullable'] = c.nullable
             cols.append(desc)
 
         # a dictionary of dict, one dict for each row
@@ -80,7 +82,7 @@ class DatabaseConnector:
  
 
     def executeOnEachRow(self,aSql,aTreatment):
-        """ run the sql request and execute a treatment on each row """
+        """ run the sql request and execute a treatment on each retrieved row """
        
         sql = text(aSql)
         

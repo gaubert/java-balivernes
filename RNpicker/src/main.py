@@ -1,10 +1,11 @@
 import logging
 import logging.handlers
 
+import common.utils
 from db.connections import DatabaseConnector
 from renderers.rawrenderer import DBRawRenderer
 
-def myBasicConfig():
+def myBasicLoggingConfig():
     """
     Do basic configuration for the logging system by creating a
     StreamHandler with a default Formatter and adding it to the
@@ -20,11 +21,18 @@ def myBasicConfig():
  
 if __name__ == '__main__':
 
-   myBasicConfig()  
+   myBasicLoggingConfig()  
    print "Hello"
    log = logging.getLogger("ROOT")
    log.setLevel(logging.DEBUG)
    log.info("Start")
+   
+   conf = common.utils.Conf.get_conf()
+   url = conf.get("DatabaseAccess","url")
+   
+   print "URL=%s"%(url)
+   
+   
    
    # create DB connector
    conn = DatabaseConnector('oracle://aubert:ernest25@idcdev')
