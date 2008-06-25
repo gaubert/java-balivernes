@@ -9,6 +9,7 @@ from  common.exceptions import CTBTOError
 from  db.connections    import DatabaseConnector
 import common.utils as utils
 
+""" Module used to dump the database table content in an xml relational context """
 
 class DBRawRenderer:
     """ Class used to get table content and renderer it in a crude xml format """
@@ -117,6 +118,8 @@ class DBRawRenderer:
     def _render_static_table(self,aTableName):
         """ Retrieve the full content of these tables which are read from the configuration file"""
         
+        DBRawRenderer.c_log.info("Generate XML for static table %s"%aTableName)
+        
         filename = self._generateTableFilename(aTableName) 
         
         # preconditions
@@ -148,6 +151,7 @@ class DBRawRenderer:
         
         self._save_content_in_file("/tmp",filename, xmlRoot)
         
+        
     def executeOnRow(self,row = None):  
         """ callback method used by the DB connection object. """
          
@@ -164,53 +168,10 @@ class DBRawRenderer:
             r = SubElement(xmlRow,"%s"%key)
             r.text = "%s"%row[key] 
         
-        #print "keys = %s"%(row.keys())
-        #for col in row:
-           # add a new elem with the name of the col
-         #  print "keys = %s "%dir(col)
-           #elem = SubElement(row,elem["name"]
-        
         
     def render(self,aTableName, aSampleIDs = []):
         """ Render a table in xml """
         
         self._render_static_table(aTableName)
             
-    def old_render(self,aTableName, aSampleIDs = []):
-        """ Render a table in xml """
-        
-        # preconditions
-        if self._dbConnector is None: raise CTBTOError(-1,"Need a database connector")
-   
-        DBRawRenderer.c_log.info("start rendering for table %s"%(aTableName))
-        
-        # get table metadata
-        metadata = self._dbConnector.getTableMetadata(aTableName)
-        
-        # create xml tree
-        xmlRoot = Element("table")
-    
-        xmlRoot.set("name",aTableName)
-        
-        # get table metadata
-        self._render_metadata(aTableName,xmlRoot,metadata)
-        
-        sqls = self._create_filterable_sql(["tableA","tableB","tableC"],[1234567,3435343])
-        
-        print "sqls %s"%(sqls)
-        
-        # write xml tree in file
-        f = open('/tmp/output.xml', 'w')
-        
-        utils.prettyFormatElem(xmlRoot)
-         
-        tree = ElementTree(xmlRoot)
-        
-        # write in file
-        tree.write(f, 'utf-8')
-        
-        # write in stdout
-        #tree.write(sys.stdout, "utf-8")
-       
-        f.close()
             
