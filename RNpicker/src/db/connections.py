@@ -84,7 +84,7 @@ class DatabaseConnector:
     def executeOnEachRow(self,aSql,aTreatment):
         """ run the sql request and execute a treatment on each retrieved row """
        
-        sql = text(aSql)
+        sql = sqlalchemy.text(aSql)
         
         result = self._conn.execute(sql)
         
@@ -92,7 +92,7 @@ class DatabaseConnector:
         
         while row:
             aTreatment.executeOnRow(row)
-            result.fetchone()
+            row = result.fetchone()
             
         result.close()
         
