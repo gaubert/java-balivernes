@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SampleML UUID="554321-433234-545443">
+    <Description>
+       This is a sample for this station and has been done blah balh blah
+    </Description>
+    
+    <!-- Location of measure -->
+    <!-- note: it can be a station name of a location in coordinates -->
+    <Location>
+      <Name>My Station</Name> <!-- or maybe location ID -->
+      <Coordinates>-90.86948943473118 48.25450093195546</Coordinates> <!-- with longitude ≥ −180 and <= 180
+      																			latitude ≥ −90 and ≤ 90
+																				altitude values (optional) are 
+																				in meters above sea level
+																			RQ: sep is space because of xsd lists
+																	  --> 
+    </Location>
+    
+    <ReferenceDate>2004-11-03T14:36:04.2-03.00</ReferenceDate> <!-- The date to which activities will be decay corrected -->
+    
+    <Spectrum CalibrationIDs="">                           <!-- The spectrum and available calibrations for it -->
+      <StartTime>2004-11-03T14:36:04.3-05:00</StartTime>   <!-- StartTime is when the acquisition started --> 
+      <RealTime>PT1013.4S</RealTime>                       <!-- The real (duration, clock time) time that the spectrum was acquired -->
+      <LiveTime>PT1000.46S</LiveTime>                      <!-- The live time (duration of true time) that the spectrum was acquired for -->
+      <SourceType>Background</SourceType>                  <!-- Source Type enum => Sample,Background, Calibration, Other Question: What about Beta Gamma-->
+      <Data>                                               <!-- maybe needs number of counts 256, 760 for checking purposes -->
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   <!-- formatted for readability purposes -->
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      </Data>
+    </Spectrum>
+    
+    <Spectrum CalibrationIDs="">                           <!-- Another Spectrum Block for another kind of info: Sample -->
+      <StartTime>2004-11-03T14:36:04.3-05:00</StartTime>   
+      <RealTime>PT1013.4S</RealTime>                      
+      <LiveTime>PT1000.46S</LiveTime>                      
+      <SourceType>Sample</SourceType>                  
+      <Data>                                               
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0   
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+         0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 5 3 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 2 0 5 7 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      </Data>
+    </Spectrum>
+    
+    <Calibration Type="Energy" ID="en" EnergyUnits="KeV">          <!-- different type of calibration for the spectrums -->
+       <Equation Model="Polynomial" Form="E - Term0 + Term1*Ch">   <!-- "Model" defines the type of equation and "Form" is for the documentation (human) -->
+         <Coefficients>0 0.5 </Coefficients>
+         <CovarianceMatrix>0 0.05 0.01
+       </Equation>
+    </Calibration>
+    
+</SampleML>

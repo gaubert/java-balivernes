@@ -1,0 +1,1270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://physics.nist.gov/Divisions/Div846/Gp4/ANSIN4242/2005/ANSIN4242" xmlns:n42ns="http://physics.nist.gov/Divisions/Div846/Gp4/ANSIN4242/2005/ANSIN4242" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://physics.nist.gov/Divisions/Div846/Gp4/ANSIN4242/2005/ANSIN4242" elementFormDefault="qualified" id="n42">
+	<xs:element name="N42InstrumentData" type="N42InstrumentData">
+		<xs:annotation>
+			<xs:documentation>root element</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="Remark" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Remark (i.e., comment)</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="N42InstrumentData">
+		<xs:annotation>
+			<xs:documentation>Contains instrument data in the form of Measurement elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="Measurement" type="Measurement" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A "measurement" from an instrument</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Calibration" type="Calibration" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Calibration data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Measurement">
+		<xs:annotation>
+			<xs:documentation>A "measurement" from an instrument</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="InstrumentInformation" type="InstrumentInformation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of the instrument</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MeasuredItemInformation" type="MeasuredItemInformation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of measured item: what it is and where the measurement was done</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Spectrum" type="Spectrum" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A single spectrum collected by a spectroscopic instrument</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DetectorData" type="DetectorData" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Data measured by a gross count or spectroscopic portal monitor</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CountDoseData" type="CountDoseData" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Data measured by a survey meter or personal radiation detector</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AnalysisResults" type="AnalysisResults" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Results of the analysis of the measurement</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="UUID" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Unique identifier for this measurement</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="CountDoseData">
+		<xs:annotation>
+			<xs:documentation>Data measured by a survey meter or personal radiation detector</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="StartTime" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Measurement start date/time</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SampleRealTime" type="xs:duration">
+				<xs:annotation>
+					<xs:documentation>Duration of each sample measurement/interval at which samples are taken</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SampleLiveTime" type="xs:duration" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Effective duration (i.e., live time) of each sample measurement</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Alarmed" type="booleanList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Did the instrument alarm (one boolean per sample)?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AlarmSummary" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Did instrument alarm during this measurement?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AlarmDescription" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Description of the alarm, if any</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Calibration" type="Calibration" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Calibration data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CountRate" type="Count" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Count rate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Counts" type="nonNegativeIntegerList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Counts</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DoseRate" type="Dose" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Dose rate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TotalDose" type="Dose" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Total accumulated dose</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AbsorbedDoseRate" type="AbsorbedDose" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Absorbed dose rate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TotalAbsorbedDose" type="AbsorbedDose" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Total accumulated absorbed dose</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ExposureRate" type="Exposure" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Exposure rate</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TotalExposure" type="Exposure" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Total accumulated exposure</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="CalibrationIDs" type="xs:IDREFS">
+			<xs:annotation>
+				<xs:documentation>Identifies the calibrations that apply to this data</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Detector" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Detector identification/description</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="DetectorType" type="enumGrossCountDetectorType">
+			<xs:annotation>
+				<xs:documentation>detector type</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Quality" type="enumQualityStatus">
+			<xs:annotation>
+				<xs:documentation>Quality of data</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Count">
+		<xs:annotation>
+			<xs:documentation>Count rate</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Units" type="enumCountRateUnits" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of count rate</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="Dose">
+		<xs:annotation>
+			<xs:documentation>dose rate</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Units" type="enumDoseUnits" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of dose</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="AbsorbedDose">
+		<xs:annotation>
+			<xs:documentation>Absorbed dose rate</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Units" type="enumAbsorbedDoseUnits" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of absorbed dose</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="Exposure">
+		<xs:annotation>
+			<xs:documentation>Exposure rate</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Units" type="enumExposureUnits" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of exposure</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="InstrumentInformation">
+		<xs:annotation>
+			<xs:documentation>Description of the instrument</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="InstrumentType" type="enumInstrumentType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument type (e.g., spectrometer, personal radiation detector, ...)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Manufacturer" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument manufacturer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InstrumentModel" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument model</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InstrumentVersion" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument version</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InstrumentID" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument identification (e.g., serial number)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProbeType" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of intrument's probe (i.e., detector)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InstrumentMode" type="enumInstrumentMode" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument mode (measure, calibrate, test, ...)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QualityControl" type="QualityControl" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Instrument quality control information</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="QualityControl">
+		<xs:annotation>
+			<xs:documentation>Quality control information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="InspectionDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Date of most recent instrument inspection</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="InService" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Is the instrument in service?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="MeasuredItemInformation">
+		<xs:annotation>
+			<xs:documentation>Description of measured item and where the measurement was done</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="ItemDescription" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of measured item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ItemQuantity" type="ItemQuantity" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Quantity or size of item and the uncertainty in that value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MeasurementLocation" type="MeasurementLocation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Location of the measurement</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ItemReferenceDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Reference date for activity calculations (i.e., activities decay-corrected to this date)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MultimediaData" type="MultimediaData" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>An image or other visual/audio information relating to the item or measurement</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MeasurementGeometryDescription" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of the measurement geometry</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ItemToDetectorDistance" type="ItemToDetectorDistance" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Effective item-to-detector distance</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="MeasurementOperator" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Identifies the instrument's operator</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="ItemToDetectorDistance">
+		<xs:annotation>
+			<xs:documentation>Effective item-to-detector distance</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="xs:double">
+				<xs:attribute name="Units" type="enumDistanceUnits" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of the item-to-detector distance</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="ItemQuantity">
+		<xs:annotation>
+			<xs:documentation>Quantity or size of item and the uncertainty in that value</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleUnc">
+				<xs:attribute name="Units" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of "quantity"</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="MeasurementLocation">
+		<xs:annotation>
+			<xs:documentation>The physical location where the measurement was performed</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="MeasurementLocationName" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Name or description(e.g., address) of the measurement location</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Coordinates" type="Coordinates" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Geographical coordinates (latitude, longitude, optional elevation)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Coordinates">
+		<xs:annotation>
+			<xs:documentation>Geographical coordinates (latitude, longitude, optional elevation)</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="coordinateList">
+				<xs:attribute name="Datum" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>EPSG map datum reference identification number (see www.epsg.org)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Time" type="xs:dateTime">
+					<xs:annotation>
+						<xs:documentation>Date/time of coordinates measurement</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="MultimediaData">
+		<xs:annotation>
+			<xs:documentation>Multimedia (image, sound, etc.) data</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="DataMIMEType" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>Format of multimedia data</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="EncodingMIMEType" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>Multimedia data encoding type</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Remark" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>Remarks describing the multimedia data</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="SequenceNumber" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>Multimedia data sequence number</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Time" type="xs:dateTime">
+					<xs:annotation>
+						<xs:documentation>Date/time of multimedia data collection</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="URI" type="xs:anyURI">
+					<xs:annotation>
+						<xs:documentation>URI of multimedia data if not present as element contents</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="NuclideAnalysis">
+		<xs:annotation>
+			<xs:documentation>Results of nuclide analysis</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="Nuclide" type="Nuclide" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Individual nuclide results</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="ActivityUnits" type="enumActivityUnits" use="required">
+			<xs:annotation>
+				<xs:documentation>Activity units used</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="AlgorithmDescription" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Name/description of nuclide analysis algorithm</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="AlgorithmVersion" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Name/version of nuclide analysis algorithm</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Nuclide">
+		<xs:annotation>
+			<xs:documentation>individual nuclide</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="NuclideName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Nuclide name (e.g., Co-60)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NuclideType" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Description of the type of the nuclide (e.g., Industrial, Medical, SNM, ...)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NuclideActivity" type="doubleUnc" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Nuclide activity and its uncertainty</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NuclideIDConfidenceIndication" type="xs:double" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Confidence in nuclide identification/presence</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NuclideIDConfidenceDescription" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of confidence in nuclide identification/presence</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="DetectorData">
+		<xs:annotation>
+			<xs:documentation>Data measured by gross count or spectroscopic portal monitor</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="StartTime" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Date/time of first sample measurement</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SampleRealTime" type="xs:duration">
+				<xs:annotation>
+					<xs:documentation>Duration of each sample measurement (i.e., interval at which samples are taken)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Occupied" type="booleanList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Was the RPM occupied?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Speed" type="Speed" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Speed of RPM occupant (vehicle, train, etc.)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AlarmSummary" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Did the instrument alarm (summary)?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AlarmDescription" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Description of the alarm, if any</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DetectorMeasurement" type="DetectorMeasurement" minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>RPM measurements from one detector</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Speed">
+		<xs:annotation>
+			<xs:documentation>Speed of vehicle (can be the average, an entrance/exit speed pair, or per sample)</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Units" type="enumSpeedUnits" use="required">
+					<xs:annotation>
+						<xs:documentation>Units of speed</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="DetectorMeasurement">
+		<xs:annotation>
+			<xs:documentation>RPM measurements from one detector</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="GrossCountMeasurement" type="GrossCountMeasurement" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Gross count portal monitor measurements</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SpectrumMeasurement" type="SpectrumMeasurement" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Spectroscopic portal monitor measurements</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="Detector" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation>Detector identification/description</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="DetectorType" type="enumGrossCountDetectorType" use="required">
+			<xs:annotation>
+				<xs:documentation>detector type</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="GrossCountMeasurement">
+		<xs:annotation>
+			<xs:documentation>Gross count portal monitor measurements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="SampleLiveTime" type="xs:duration" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Effective duration (i.e., live time) of each sample measurement</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Alarmed" type="booleanList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Did the detector alarm (one value per sample)?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GrossCounts" type="nonNegativeIntegerList">
+				<xs:annotation>
+					<xs:documentation>Gross count data, one value per sample</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="BackgroundCounts" type="doubleList">
+				<xs:annotation>
+					<xs:documentation>Background count data; can be one value for all samples, or a unique value for each sample</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="WindowStart" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Gamma detector window start energy</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="WindowEnd" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Gamma detector window end energy</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="EnergyUnits" type="enumEnergyUnits">
+			<xs:annotation>
+				<xs:documentation>Energy units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Quality" type="enumQualityStatus">
+			<xs:annotation>
+				<xs:documentation>Data quality status</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="SpectrumMeasurement">
+		<xs:annotation>
+			<xs:documentation>Spectroscopic portal monitor measurements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="SpectrumAvailable" type="booleanList">
+				<xs:annotation>
+					<xs:documentation>Indicates which samples have spectra available</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Alarmed" type="booleanList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Did the RPM alarm (one value for each sample)?</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Spectrum" type="Spectrum" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Spectral data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Spectrum">
+		<xs:annotation>
+			<xs:documentation>Spectral data</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="StartTime" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Date/time spectrum data collection was initiated</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="RealTime" type="xs:duration" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Spectrum measurement real (clock) time</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LiveTime" type="xs:duration" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Spectrum measurement live (true) time</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DwellDuration" type="xs:duration" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Dwell time per sweep (used only for an MCS spectrum)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ElapsedSweeps" type="xs:nonNegativeInteger" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Number of sweeps (used only for an MCS spectrum)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SourceType" type="enumSourceType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Type of spectrum measurement (item measurement, background, calibration...)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DetectorType" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Description of the type of detector</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Calibration" type="Calibration" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Calibration data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ChannelData" type="ChannelData" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The spectrum: counts vs. channel for the entire spectrum or a region of interest</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="Type" type="enumSpectrumType">
+			<xs:annotation>
+				<xs:documentation>Spectrum type: PHA or MCS</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Detector" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Identification/description of the detector that collected the spectrum</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Quality" type="enumQualityStatus">
+			<xs:annotation>
+				<xs:documentation>Quality of data</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="ID" type="xs:ID">
+			<xs:annotation>
+				<xs:documentation>Spectrum element identifier</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="CalibrationIDs" type="xs:IDREFS">
+			<xs:annotation>
+				<xs:documentation>Identifies calibrations that apply to this spectrum</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="BackgroundSpectrumID" type="xs:IDREF">
+			<xs:annotation>
+				<xs:documentation>Identifies the background spectrum that applies to this spectrum</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="CalibrationSpectrumID" type="xs:IDREF">
+			<xs:annotation>
+				<xs:documentation>Identifies the calibration spectrum that applies (or is to be applied) to this spectrum</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="SampleNumber" type="xs:positiveInteger">
+			<xs:annotation>
+				<xs:documentation>The sample number (starting from 1) of this spectrum (used only when the spectrum is contained within a SpectrumMeasurement element)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="ChannelData">
+		<xs:annotation>
+			<xs:documentation>The spectrum: counts vs. channel for the entire spectrum or a region of interest</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Start" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>The channel number (one-based) of the first value in this element</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Compression" type="enumSpectrumCompressionType">
+					<xs:annotation>
+						<xs:documentation>The algorithm used to compress the channel data</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="Calibration">
+		<xs:annotation>
+			<xs:documentation>Calibration data</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="CalibrationCreationDate" type="xs:dateTime" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Date/time of calibration's creation</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CalibrationMeasurementUUID" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Unique identifier of the measurement(s) used to develop this calibration</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Equation" type="Equation" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The equation governing this calibration</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ArrayXY" type="ArrayXY" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Calibration data as ordinal pairs</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="Type" type="enumCalibrationType" use="required">
+			<xs:annotation>
+				<xs:documentation>Calibration type (e.g., Energy, FWHM, ...)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="EnergyUnits" type="enumEnergyUnits">
+			<xs:annotation>
+				<xs:documentation>Energy units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="FWHMUnits" type="enumFWHMUnits">
+			<xs:annotation>
+				<xs:documentation>Detector resolution units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="CountRateUnits" type="enumCountRateUnits">
+			<xs:annotation>
+				<xs:documentation>Count rate units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="DoseUnits" type="enumDoseUnits">
+			<xs:annotation>
+				<xs:documentation>Dose units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="AbsorbedDoseUnits" type="enumAbsorbedDoseUnits">
+			<xs:annotation>
+				<xs:documentation>Absorbed dose units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="ExposureUnits" type="enumExposureUnits">
+			<xs:annotation>
+				<xs:documentation>Exposure units</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="ID" type="xs:ID"/>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Equation">
+		<xs:annotation>
+			<xs:documentation>Encapsulates an equation and its coefficients</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="Coefficients" type="Coefficients" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>The coefficients of the equation</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CovarianceMatrix" type="doubleList" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The covariance matrix for the equation coefficients</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="Model" type="enumEquationType" use="required">
+			<xs:annotation>
+				<xs:documentation>Type of equation (polynomial, etc.)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Form" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Description of the form of the equation</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="LowerLimit" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Lower bound of validity of the abscissa</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="UpperLimit" type="xs:double">
+			<xs:annotation>
+				<xs:documentation>Upper bound of validity of the abscissa</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="Coefficients">
+		<xs:annotation>
+			<xs:documentation>Equation coefficients</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="doubleList">
+				<xs:attribute name="Subequation" type="xs:positiveInteger">
+					<xs:annotation>
+						<xs:documentation>Index of the subequation to which this set of coefficients applies</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:anyAttribute namespace="##other" processContents="lax"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="ArrayXY">
+		<xs:annotation>
+			<xs:documentation>Array of ordinal pairs</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="PointXY" type="PointXY" minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>An (abcsissa, ordinate) pair</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:attribute name="X" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Abscissa data description</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Y" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>Ordinate data description</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="PointXY">
+		<xs:annotation>
+			<xs:documentation>An (abscissa, ordinate) pair</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="X" type="doubleUnc">
+				<xs:annotation>
+					<xs:documentation>Abscissa value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Y" type="doubleUnc">
+				<xs:annotation>
+					<xs:documentation>Ordinate value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:complexType name="AnalysisResults">
+		<xs:annotation>
+			<xs:documentation>Results of data analysis of a measurement</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="Remark" minOccurs="0"/>
+			<xs:element name="ThreatDescription" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Overall conclusion of the data analysis</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NuclideAnalysis" type="NuclideAnalysis" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Results of nuclide analysis</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+		</xs:sequence>
+		<xs:anyAttribute namespace="##other" processContents="lax"/>
+	</xs:complexType>
+	<xs:simpleType name="doubleUnc">
+		<xs:annotation>
+			<xs:documentation>Double value with uncertainty: first entry is value, second entry is uncertainty (absolute error, one standard deviation)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="doubleList">
+			<xs:length value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="durationUnc">
+		<xs:annotation>
+			<xs:documentation>Duration (time) value with uncertainty: first entry is value, second entry is uncertainty (absolute error, one standard deviation)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="durationList">
+			<xs:length value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="coordinateList">
+		<xs:annotation>
+			<xs:documentation>Geographic coordinates: first two entries are latitude and longitude; third entry (optional) is elevation in meters relative to ellipsoid</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="decimalList">
+			<xs:minLength value="2"/>
+			<xs:maxLength value="3"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="booleanList">
+		<xs:annotation>
+			<xs:documentation>List of booleans</xs:documentation>
+		</xs:annotation>
+		<xs:list itemType="xs:boolean"/>
+	</xs:simpleType>
+	<xs:simpleType name="decimalList">
+		<xs:annotation>
+			<xs:documentation>List of decimals</xs:documentation>
+		</xs:annotation>
+		<xs:list itemType="xs:decimal"/>
+	</xs:simpleType>
+	<xs:simpleType name="doubleList">
+		<xs:annotation>
+			<xs:documentation>List of doubles</xs:documentation>
+		</xs:annotation>
+		<xs:list itemType="xs:double"/>
+	</xs:simpleType>
+	<xs:simpleType name="durationList">
+		<xs:annotation>
+			<xs:documentation>List of durations</xs:documentation>
+		</xs:annotation>
+		<xs:list itemType="xs:duration"/>
+	</xs:simpleType>
+	<xs:simpleType name="nonNegativeIntegerList">
+		<xs:annotation>
+			<xs:documentation>List of nonNegativeIntegers</xs:documentation>
+		</xs:annotation>
+		<xs:list itemType="xs:nonNegativeInteger"/>
+	</xs:simpleType>
+	<xs:simpleType name="enumEnergyUnits">
+		<xs:annotation>
+			<xs:documentation>Energy units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="eV"/>
+			<xs:enumeration value="keV"/>
+			<xs:enumeration value="MeV"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumActivityUnits">
+		<xs:annotation>
+			<xs:documentation>Activity units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="mBq"/>
+			<xs:enumeration value="Bq"/>
+			<xs:enumeration value="kBq"/>
+			<xs:enumeration value="MBq"/>
+			<xs:enumeration value="nCi"/>
+			<xs:enumeration value="uCi"/>
+			<xs:enumeration value="mCi"/>
+			<xs:enumeration value="Ci"/>
+			<xs:enumeration value="kCi"/>
+			<xs:enumeration value="MCi"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumFWHMUnits">
+		<xs:annotation>
+			<xs:documentation>FWHM (Full Width at Half-Maximum) (i.e., resolution) units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Energy"/>
+			<xs:enumeration value="Channels"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumCountRateUnits">
+		<xs:annotation>
+			<xs:documentation>Count rate units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CPS"/>
+			<xs:enumeration value="CPM"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumDoseUnits">
+		<xs:annotation>
+			<xs:documentation>Dose units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="urem"/>
+			<xs:enumeration value="mrem"/>
+			<xs:enumeration value="rem"/>
+			<xs:enumeration value="uSv"/>
+			<xs:enumeration value="mSv"/>
+			<xs:enumeration value="Sv"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumAbsorbedDoseUnits">
+		<xs:annotation>
+			<xs:documentation>Absorbed dose units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="uGy"/>
+			<xs:enumeration value="mGy"/>
+			<xs:enumeration value="Gy"/>
+			<xs:enumeration value="rad"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumExposureUnits">
+		<xs:annotation>
+			<xs:documentation>Exposure units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="C/kg"/>
+			<xs:enumeration value="uR"/>
+			<xs:enumeration value="mR"/>
+			<xs:enumeration value="R"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumSpeedUnits">
+		<xs:annotation>
+			<xs:documentation>Speed units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="kph"/>
+			<xs:enumeration value="m/s"/>
+			<xs:enumeration value="mph"/>
+			<xs:enumeration value="fps"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumDistanceUnits">
+		<xs:annotation>
+			<xs:documentation>Distance units</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="mm"/>
+			<xs:enumeration value="cm"/>
+			<xs:enumeration value="m"/>
+			<xs:enumeration value="km"/>
+			<xs:enumeration value="in"/>
+			<xs:enumeration value="ft"/>
+			<xs:enumeration value="mi"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumGrossCountDetectorType">
+		<xs:annotation>
+			<xs:documentation>Gross counting detector type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Alpha"/>
+			<xs:enumeration value="Beta"/>
+			<xs:enumeration value="Gamma"/>
+			<xs:enumeration value="Neutron"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumEquationType">
+		<xs:annotation>
+			<xs:documentation>Equation type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Polynomial"/>
+			<xs:enumeration value="Pade"/>
+			<xs:enumeration value="Exponential"/>
+			<xs:enumeration value="PolyLogarithmic"/>
+			<xs:enumeration value="FullRangeFraction"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumCalibrationType">
+		<xs:annotation>
+			<xs:documentation>Calibration type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Energy"/>
+			<xs:enumeration value="AbsoluteEfficiency"/>
+			<xs:enumeration value="IntrinsicFullEnergyPeakEfficiency"/>
+			<xs:enumeration value="IntrinsicTotalEfficiency"/>
+			<xs:enumeration value="FWHM"/>
+			<xs:enumeration value="CountsToDose"/>
+			<xs:enumeration value="CountsToAbsorbedDose"/>
+			<xs:enumeration value="CountsToExposure"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumInstrumentType">
+		<xs:annotation>
+			<xs:documentation>Instrument type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PortalMonitor"/>
+			<xs:enumeration value="SpecPortal"/>
+			<xs:enumeration value="RadionuclideIdentifier"/>
+			<xs:enumeration value="PersonalRadiationDetector"/>
+			<xs:enumeration value="SurveyMeter"/>
+			<xs:enumeration value="Spectrometer"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumInstrumentMode">
+		<xs:annotation>
+			<xs:documentation>Instrument mode</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Measure"/>
+			<xs:enumeration value="Calibrate"/>
+			<xs:enumeration value="Test"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumQualityStatus">
+		<xs:annotation>
+			<xs:documentation>Data quality</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Good"/>
+			<xs:enumeration value="Bad"/>
+			<xs:enumeration value="Suspect"/>
+			<xs:enumeration value="Missing"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumSourceType">
+		<xs:annotation>
+			<xs:documentation>Measurement type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Item"/>
+			<xs:enumeration value="Background"/>
+			<xs:enumeration value="Calibration"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumSpectrumType">
+		<xs:annotation>
+			<xs:documentation>Spectrum type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PHA"/>
+			<xs:enumeration value="MCS"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="enumSpectrumCompressionType">
+		<xs:annotation>
+			<xs:documentation>The algorithm (if any) by which the spectrum has been compressed</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="None"/>
+			<xs:enumeration value="CountedZeroes"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
