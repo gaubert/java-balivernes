@@ -1,0 +1,455 @@
+<schema targetNamespace="http://www.vgisc.org/VGISC/0.8/"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:vgisc="http://www.vgisc.org/VGISC/0.8/"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified">
+
+  <annotation>
+    <documentation>
+       Metadata and Synchronization Protocol
+    </documentation>
+  </annotation>
+
+  <element name="VGISCMessage"  type="vgisc:Message" />
+
+
+  <complexType name="Message">
+    <sequence>
+       <element name="header"     type="vgisc:HeaderType"/>
+       <choice maxOccurs="1" minOccurs="0">
+         <element name="info"                 type="vgisc:infoType"/>
+         <element name="infoAns"              type="vgisc:infoAnsType"/>
+         <element name="getMetadataRecord"    type="vgisc:getMetadataRecordType"/>
+         <element name="metadataRecordAns"    type="vgisc:metadataRecordAnsType"/>
+         <element name="updateRecord"         type="vgisc:updateRecordType"/>
+         <element name="submitRequest"        type="vgisc:submitRequestType"/>
+         <element name="deleteRequest"        type="vgisc:deleteRequestType"/>
+         <element name="getCredential"        type="vgisc:getCredentialType"/>
+         <element name="deleteRequestAns"     type="vgisc:submitStatusAnsType"/>
+         <element name="getSubmitStatus"      type="vgisc:submitStatusType"/>
+         <element name="submitStatusAns"      type="vgisc:submitStatusAnsType"/>
+         <element name="credentialAns"        type="vgisc:credentialAnsType"/>
+         <element name="error"                type="vgisc:errorType"/>
+         <element name="aodvRoutingRequest"   type="vgisc:aodvRoutingType"/>
+         <element name="aodvRoutingReply"     type="vgisc:aodvRoutingType"/>
+         <element name="aodvRoutingError"     type="vgisc:aodvRoutingType"/>
+       </choice>
+    </sequence>
+  </complexType>
+  
+  <!-- define HeaderType              -->
+  <!-- ============================== -->
+  
+  <complexType name="HeaderType">
+  <sequence>
+      <element name="net"          type="vgisc:netType"/>
+      <element name="sec"          type="vgisc:secType" minOccurs="0" maxOccurs="1"/>
+      <element name="request"      type="vgisc:requestType"/>
+      <element name="messageDate"  type="dateTime"/>
+      <element name="answerType" type="vgisc:answerType"/>
+   </sequence>
+   </complexType>
+   
+  <!-- define callback Information (callbackMode and callbackType) -->
+  <!-- =========================================================== -->
+   
+    <complexType name="answerType">
+      <sequence>
+        <element name="mode" type="vgisc:answerMode"/>
+        <choice maxOccurs="1" minOccurs="0">
+          <element name="method" type="string"/>
+        </choice>
+      </sequence>
+   </complexType>
+   
+   <simpleType name="answerMode">
+     <restriction base="string">
+       <enumeration value="push"/>
+       <enumeration value="direct"/>
+     </restriction>
+   </simpleType>
+
+  <!-- define header Information  -->
+  <!-- ========================== -->
+
+  <complexType name="requestType">
+    <annotation>
+      <documentation>define what kind of message is sent plus extra info about the message</documentation>
+    </annotation>
+    <attribute name="type"   type="vgisc:msgType" use="required"/>
+    <attribute name="action" type="vgisc:actionType" use="required"/>
+    <attribute name="id"     type="anyURI" use="required"/>
+  </complexType>
+
+  <simpleType name="msgType">
+    <restriction base="string">
+      <enumeration value="harvesting"/>
+      <enumeration value="requesting"/>
+      <enumeration value="routing"/>
+    </restriction>
+  </simpleType>
+  
+   <complexType name="netType">
+    <sequence>
+     <element name="ttl"          type="int"/>
+     <element name="priority"     type="int"/>
+    </sequence>
+    <attribute name="dest"   type="string" use="required"/>
+    <attribute name="src"    type="string" use="required"/>
+    <attribute name="origin" type="string" use="required"/>
+  </complexType>
+  
+  <complexType name="secType">
+    <sequence>
+     <element name="signature"   type="vgisc:signatureType" minOccurs="0" maxOccurs="1"/>
+     <element name="assertion"   type="vgisc:assertionType" minOccurs="0" maxOccurs="1"/>
+    </sequence>
+  </complexType>
+  
+  <complexType name="signatureType">
+    <sequence>
+      <any namespace="##any" processContents="lax"/>
+    </sequence>
+    <attribute name="issuer"   type="string" use="required"/>
+  </complexType>
+  
+  <complexType name="assertionType">
+    <sequence>
+      <any namespace="##any" processContents="lax"/>
+    </sequence>
+    <!--<attribute name="issuer"   type="string" use="required"/>-->
+  </complexType>
+  
+   <simpleType name="actionType">
+    <restriction base="string">
+      <enumeration value="info"/>
+      <enumeration value="infoAns"/>
+      <enumeration value="getMetadataRecord"/>
+      <enumeration value="metadataRecordAns"/> 
+      <enumeration value="submitRequest"/>
+      <enumeration value="deleteRequest"/>
+      <enumeration value="deleteRequestAns"/>
+      <enumeration value="getCredential"/> 
+      <enumeration value="credentialAns"/> 
+      <enumeration value="getSubmitStatus"/> 
+      <enumeration value="submitStatusAns"/>
+      <enumeration value="updateRecord"/>
+      <enumeration value="error"/>
+      <enumeration value="aodvRoutingRequest"/>
+      <enumeration value="aodvRoutingReply"/>
+      <enumeration value="aodvRoutingError"/>
+    </restriction>
+  </simpleType>
+  
+  <complexType name="versionType">
+    <attribute name="id" type="long" use="required"/>
+    <attribute name="timestamp" type="long" use="required"/>
+  </complexType>
+  
+   <complexType name="initType">
+    <attribute name="ownerId" type="string" use="required"/>
+  </complexType>
+  
+  <complexType name="updateType">
+    <annotation>
+      <documentation>update used in infoAns</documentation>
+    </annotation>
+    <sequence>
+      <element name="version"    type="vgisc:versionType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="ownerId"           type="string" use="required"/>
+    <attribute name="archiveTS"         type="long"   use="required"/>
+    <attribute name="archiveElems"      type="long"   use="required"/>
+    <attribute name="from"              type="long"   use="required"/>
+    <attribute name="fromTS"            type="long"   use="required"/>
+    <attribute name="until"             type="long"   use="required"/>
+    <attribute name="untilTS"           type="long"   use="required"/>
+  </complexType>
+  
+  <complexType name="updateElementType">
+    <annotation>
+      <documentation>update used in infoAns</documentation>
+    </annotation>
+    <sequence>
+       <element name="record" type="vgisc:metadataRecordType" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="ownerId"          type="string"  use="required"/>
+    <attribute name="complete"         type="boolean" use="required"/>
+    <attribute name="version"          type="long"    use="required"/>
+    <attribute name="timestamp"        type="long"    use="required"/>
+    <attribute name="listSize"         type="int"     use="required"/>
+  </complexType>
+  
+  <!-- define common types        -->
+  <!-- ========================== -->
+  
+  <simpleType name="UTCdatetimeType">
+    <annotation>
+      <documentation>Datestamps are to either day (type date)
+      or to milliseconds granularity (type UTCdateTimeZType)</documentation>
+    </annotation>
+    <union memberTypes="date vgisc:UTCdateTimeZType"/>
+  </simpleType>
+
+  <simpleType name="UTCdateTimeZType">
+    <restriction base="dateTime">
+      <pattern value=".*Z"/>
+    </restriction>
+  </simpleType>
+  
+  <complexType name="resumptionTokenType">
+    <annotation>
+      <documentation>A resumptionToken may have 3 optional attributes
+       and can be used in ListSets, ListIdentifiers, ListRecords
+       responses.</documentation>
+    </annotation>
+    <simpleContent>
+      <extension base="string">
+        <attribute name="expirationDate" type="dateTime" use="required"/>
+        <attribute name="listSize" type="positiveInteger" use="required"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  
+  
+  
+  
+  <!-- message contents when necessary  -->
+  
+  <!-- ================================ -->
+  <!-- define AODV routing              -->
+  <!-- ===============================  -->
+  
+  <!-- define AODVRoutingRequestMessage content  -->
+   <complexType name="aodvRoutingType">
+     <annotation>
+      <documentation>
+        Routing Request message used by the AODV algorithm
+      </documentation>
+     </annotation>
+    <sequence>
+      <element name="origin"        type="vgisc:routingElementType" minOccurs="0" maxOccurs="1"/>
+      <element name="dest"   type="vgisc:routingElementType" />
+      <element name="from"          type="vgisc:routingElementType" />
+    </sequence>
+    <attribute name="routingId" type="string" use="required"/>
+    <attribute name="hopCount"  type="integer" use="required"/>
+    <attribute name="ttlValue"  type="integer" use="required"/>
+   </complexType>
+   
+   <complexType name="routingElementType">
+      <attribute name="id" type="string" use="required"/>
+      <attribute name="seqNum" type="integer" />
+   </complexType>
+   
+  
+  
+  <!-- ================================ -->
+  <!-- define Info content  -->
+  <!-- =============================== -->
+  
+  <complexType name="infoType">
+    <attribute name="detailed" type="boolean" use="required"/>
+  </complexType>
+
+  
+  <!-- define InfoAns content  -->
+   <complexType name="infoAnsType">
+     <annotation>
+      <documentation>
+        use a long for the retryAfter (expressed in seconds)
+      </documentation>
+     </annotation>
+    <sequence>
+      <element name="retryAfter"      type="long"/>
+      <element name="listSize"        type="positiveInteger" />
+      <element name="update"          type="vgisc:updateType" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="detailed" type="boolean" use="required"/>
+   </complexType>
+   
+  <!-- define GetMetadataRecordType content  -->
+  
+    <group name="updatesGroup">
+           <sequence>
+             <element name="listSize"        type="positiveInteger" />
+             <choice minOccurs="1" maxOccurs="unbounded">
+               <element name="init"            type="vgisc:initType"/>
+               <element name="update"          type="vgisc:updateType"/>
+             </choice>   
+           </sequence>
+     </group>
+    
+  
+    <complexType name="getMetadataRecordType">
+      <sequence>
+       <choice maxOccurs="1" minOccurs="1">
+         <element name="resumptionToken" type="vgisc:resumptionTokenType" minOccurs="0" maxOccurs="1"/>
+         <group ref="vgisc:updatesGroup"/>
+       </choice>  
+      </sequence>
+   </complexType>
+  
+  <!-- define GetMetadataRecordAnsType content  -->
+   <complexType name="metadataRecordAnsType">  
+      <sequence>
+         <element name="listSize" type="positiveInteger" />
+         <choice maxOccurs="1" minOccurs="0">
+            <element name="resumptionToken" type="vgisc:resumptionTokenType"/>
+         </choice>
+         <element name="update" type="vgisc:updateElementType" maxOccurs="unbounded"/>
+      </sequence> 
+   </complexType>
+   
+   <complexType name="metadataRecordType">
+    <annotation>
+      <documentation>Can be anything for the moment. To be defined by the metadta group</documentation>
+    </annotation>
+    <sequence>
+         <any namespace="##any" processContents="lax"/>
+    </sequence>
+    <attribute name="type"   type="vgisc:recordType" />
+    <!-- <sequence>
+      <any namespace="##other" processContents="strict"/>
+    </sequence>
+    -->
+  </complexType>
+  
+  <!-- define recordType content          -->
+  <!-- ================================== -->
+  <simpleType name="recordType">
+     <restriction base="string">
+       <enumeration value="delete"/>
+       <enumeration value="update"/>
+       <enumeration value="create"/>
+       <enumeration value="reset"/>
+       <enumeration value="clean"/>
+     </restriction>
+  </simpleType>
+  
+  <!-- define sumbitStatusType content          -->
+  <!-- ================================== -->
+  <complexType name="submitStatusType">
+     <simpleContent>
+      <extension base="string">
+        <attribute name="reqId" type="string"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  
+   <simpleType name="credentialType">
+     <restriction base="string">
+       <enumeration value="downloading"/>
+     </restriction>
+  </simpleType>
+  
+  <!-- define getCredentialType content          -->
+  <!-- ================================== -->
+  <complexType name="getCredentialType">
+     <simpleContent>
+      <extension base="string">
+        <attribute name="type" type="vgisc:credentialType"/>
+        <attribute name="usrId" type="string"/>
+        <attribute name="reqId" type="string" use="required"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  
+  <!-- define getCredentialAnsType content -->
+  <!-- ================================== -->
+  <complexType name="credentialAnsType">
+    <sequence>
+       <element name="dataURL" type="vgisc:dataURLType"  maxOccurs="1" minOccurs="0"/>
+    </sequence>
+    <attribute name="reqId"  type="string" use="required"/>
+  </complexType>
+  
+  
+  <!-- define UpdateRecordType content          -->
+  <!-- =======================================  -->
+  <complexType name="updateRecordType">
+      <sequence>
+         <element name="listSize"   type="positiveInteger" />
+         <element name="record" type="vgisc:metadataRecordType" maxOccurs="unbounded"/>
+      </sequence> 
+  </complexType>
+   
+  <!-- define submitRequestType content         -->
+  <!-- =======================================  -->
+  <complexType name="submitRequestType">
+    <sequence>
+      <any namespace="##any" processContents="lax"/>
+    </sequence>
+    <attribute name="reqId"   type="string" use="required" />
+    <!-- optional upto now -->
+    <attribute name="usrId"  type="string" use="optional" />
+  </complexType>
+  
+  <!-- define deleteRequestType content         -->
+  <!-- =======================================  -->
+  <complexType name="deleteRequestType">
+    <attribute name="reqId"   type="string" use="required" />
+    <!-- optional upto now -->
+    <attribute name="usrId"   type="string" use="optional" />
+  </complexType>
+  
+   
+  <!-- define submitStatusAnsType content         -->
+  <!-- =======================================  -->
+  <complexType name="submitStatusAnsType">
+    <sequence>
+       <element name="error"   type="vgisc:errorType" maxOccurs="1" minOccurs="0"/>
+       <element name="dataURL" type="vgisc:dataURLType"  maxOccurs="1" minOccurs="0"/>
+       <element name="logging" type="string"  maxOccurs="1" minOccurs="0"/>
+    </sequence>
+    <attribute name="reqId"  type="string" use="required"/>
+    <attribute name="status" type="vgisc:statusType" use="required"/>
+    <attribute name="requiresCredential" type="boolean" />
+  </complexType>
+  
+  <complexType name="dataURLType">
+     <simpleContent>
+      <extension base="anyURI">
+        <attribute name="size" type="long"/>
+        <attribute name="mime-type" type="string"/>
+        <attribute name="filename" type="string"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  
+   <simpleType name="statusType">
+    <restriction base="string">
+      <enumeration value="complete"/>
+      <enumeration value="aborted"/>
+      <enumeration value="queued"/>
+      <enumeration value="active"/> 
+    </restriction>
+  </simpleType>
+  
+  
+  
+  <!-- define error conditions         -->
+  <!-- =============================== -->
+  <complexType name="errorType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="code" type="vgisc:errorcodeType" use="required"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+
+  <!-- error code list (these are just examples & will change in the future)    -->
+  <!-- ======================================================================== -->
+  <simpleType name="errorcodeType">
+    <restriction base="string">
+      <enumeration value="idDoesNotExist"/>
+      <enumeration value="badArgument"/>
+      <enumeration value="unknownAction"/>
+      <enumeration value="noRecordsMatch"/>
+      <enumeration value="badResumptionToken"/>
+      <enumeration value="executionError"/>
+    </restriction>
+  </simpleType>
+  
+  
+</schema>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SampML UUID="554321-433234-545443">
+
+   <Description>
+       This is a sample for this station and has been done blah balh blah
+       Holder for several samples
+   </Description>
+   
+   <SampleInformation UUID="140240">  <!--  it can contain several samples. UUID sample id as it comes from the database. it is unique-->
+      
+   		
+		<StationInformation>             								    
+           <Name>My Station</Name>           
+           <StationCode>DEP33</StationCode>                                  <!-- Station ICode referencing a Gazeteer or directly there -->
+           <CountryCode>Fr</CountryCode>                                     <!-- Iso country code -->
+           <Coordinates>-90.86948943473118 48.25450093195546  125.45</Coordinates>   <!-- with longitude ≥ −180 and <= 180
+      																			          latitude ≥ −90 and ≤ 90
+																				           altitude values (optional) are 
+																				           in meters above sea level
+																			                RQ: sep is space because of xsd lists
+																			          -->
+           <Status>Active</Status>                                                   <!--  Not sure this is interesting -->
+           <StartTime>2000-11-03T14:36:04.2-03.00</StartTime>	                     <!--  functionning from -->
+           <EndTime>2004-12-22-00T00:00</EndTime>									 <!-- decommissioned in --> 				     
+        </StationInformation>														       
+        
+        <DetectorInformation>                                                          <!-- like Instrument information  -->   
+           <DetectorCode>DEP33_001</DetectorCode>                                      <!-- type, model,version manufacturer, ... -->
+           <Description>Detector in Schauinsland/Freiburg, Germany</Description>       <!-- Description -->
+           <Type>HPGe</Type>                                                           <!-- Detector Type  -->
+           <Channels>8192</Channels>
+           <RatedEfficiency>100</RatedEfficiency>
+           <RatedResolution>2.02</RatedResolution>                                          
+           <ECALRangeMax>2800</ECALRangeMax>                                           <!-- Maximum Detector Calibration Energy -->
+        </DetectorInformation>
+        
+        <SampleType>particule</SampleType>                                             <!-- Particule, Gaz (BG, B) -->
+        
+        <ReferenceDate>2004-11-03T14:36:04.2-03.00</ReferenceDate>                     <!-- Collection start date. The date to which activities will be decay corrected -->
+    
+    
+   	   <MeasuredInformation>
+    	<Spectrum CalibrationIDs="en ef">                      <!-- The spectrum and available calibrations for it -->
+          <StartTime>2004-11-03T14:36:04.3-05:00</StartTime>   <!-- StartTime is when the acquisition started --> 
+          <RealTime>PT1013.4S</RealTime>                       <!-- The real (duration, clock time) time that the spectrum was acquired -->
+          <LiveTime>PT1000.46S</LiveTime>                      <!-- The live time (duration of true time) that the spectrum was acquired for -->
+          <SourceType>Background</SourceType>                  <!-- Source Type enum => Sample,Background, Calibration, Other Question: What about Beta Gamma-->
+          <Quantity>22053.25</Quantity>                        <!-- Quantity of air sample in m3 -->
+          <Data counts="256">                                  <!-- maybe needs number of counts 256, 760 for checking purposes -->
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0    <!-- formatted for readability purposes -->
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+            0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+          </Data>
+       </Spectrum>
+     </MeasuredInformation>
+    </SampleInformation>
+    
+    <AnalysisResults>                                                       <!-- Results of the analysis performed by IDC -->
+       <SampleCategorization>                                               <!-- Sample Categorization 1,2,3,4 or 5 -->
+          <Description> 
+                        Level 1  =  Typical Background Rad. Meas. 
+                        Level 2  =  Anomalous Background Rad. Meas. 
+                        Level 3  =  Typical Anthropogenic Rad. Meas. 
+                        Level 4  =  Anomalous Anthropogenic Rad. Meas. 
+                        Level 5  =  Mult. Anomalous Anthropogenic Rad. Meas.
+          </Description>
+          <SampleUUID>140240</SampleUUID>
+          <Category>1</Category>
+       </SampleCategorization>
+         
+       
+       <ActivitySummary> 
+          <!--  Nuclides Identified not quantified -->
+          <!--  Nuclides quantified  -->
+          
+          <!--  MDA for Key nuclides -->
+          <KeyNuclides>
+             <KeyNuclide>
+               <Name>BA-140</Name>                                         <!-- Nuclide Name -->
+               <Type>Particule</Type>                                     <!-- Gaz or Particule -->
+               <HalfLife>12.752 D</HalfLife>                              <!-- Duration  -->
+               <MinMDA></MinMDA>                                          <!-- Double value -->
+               <MDA></MDA>                                                <!-- Double value -->
+               <MaxMDA></MaxMDA>                                          <!-- Double value -->
+             </KeyNuclide>
+             <KeyNuclide>
+               <Name>CS-134</Name>                                        <!-- Nuclide Name -->
+               <Type>Particule</Type>                                     <!-- Gaz or Particule -->
+               <HalfLife>2.062 Y</HalfLife>                               <!-- Duration  -->
+               <MinMDA></MinMDA>                                          <!-- Double value -->
+               <MDA></MDA>                                                <!-- Double value -->
+               <MaxMDA></MaxMDA>                                          <!-- Double value -->
+               <AnalystNote></AnalystNote>                                <!-- Analyst Note: optional -->
+             </KeyNuclide>
+          </KeyNuclides>
+       </ActivitySummary>                                                 <!-- To be Defined but add activity concentrations -->
+    </AnalysisResults>
+    
+    <PeakResults>
+      <PeakResult>
+        <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
+        <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
+        <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
+        <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
+        <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
+        <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
+        <LC></LC>                                                          <!-- Criticial Level  -->
+        <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
+        <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
+        <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, None otherwise -->                                                  
+        <!--  missing risk level, K Value -->  
+        <!--  What is SROI Editing ? -->                                                  
+      </PeakResult>
+      
+      <PeakResult>
+        <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
+        <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
+        <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
+        <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
+        <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
+        <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
+        <LC></LC>                                                          <!-- Criticial Level  -->
+        <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
+        <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
+        <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one -->                                                  
+        <!--  missing risk level, K Value -->  
+        <!--  What is SROI Editing ? -->                                                  
+      </PeakResult>
+    </PeakResults>
+    
+    <CalibrationInformation>
+       <Calibration Type="Energy" EnergyUnits="keV" ID="en">                <!--  Energy Calibration for this spectrum -->
+          <CreationDate>2004-08-15T14:36</CreationDate>                     <!--  When the calibration was performed -->
+          <Equation Model="Polynomial" Form="E = Term0 + Term1*Ch">          <!-- Model is the type of equation for the machines, Form is for documentation -->
+              <Coefficients>0 0.5</Coefficients>
+              <CovariantMatrix>0 0.05 0.01</CovariantMatrix>
+          </Equation>
+       </Calibration>
+       
+       <Calibration Type="AbsoluteEfficiency" EnergyUnits="keV" ID="ef">    <!--  Efficiency Calibration for this spectrum -->
+          <ArrayXY X="Energy" Y="Efficiency">
+            <PointXY>
+               <X>88.01  0</X>
+               <Y>1.23E-02 1.23E-03</Y>
+            </PointXY>
+            <PointXY>
+               <X>661.65 0</X>
+               <Y>1.23E-02 1.23E-03</Y>
+            </PointXY>
+          </ArrayXY>
+      </Calibration>
+    </CalibrationInformation>
+    
+    </SampleInformation>
+
+</SampML>
