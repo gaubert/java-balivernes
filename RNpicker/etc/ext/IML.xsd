@@ -228,6 +228,11 @@
 			    <xs:documentation>Pair of Area and Area uncertainty (00 uncertainty means not known)</xs:documentation>
 	          </xs:annotation>
 	       </xs:element>
+	       <xs:element name="Width"  type="xs:integer" minOccurs="1" maxOccurs="1">
+              <xs:annotation>
+			    <xs:documentation>Width</xs:documentation>
+	          </xs:annotation>
+	       </xs:element>
 	        <xs:element name="FWHM"  type="doubleUnc" minOccurs="1" maxOccurs="1">
               <xs:annotation>
 			    <xs:documentation>Pair of FWHM and FWHM uncertainty (00 uncertainty means not known)</xs:documentation>
