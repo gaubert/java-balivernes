@@ -8,6 +8,10 @@
    
    <SampleInformation UUID="140240">  <!--  it can contain several samples. UUID sample id as it comes from the database. it is unique-->
       
+        <SampleType>particule</SampleType>                                             <!-- Particule, Gaz (BG, B) -->
+        
+        <ReferenceDate>2004-11-03T14:36:04.2-03.00</ReferenceDate>                     <!-- Collection start date. The date to which activities will be decay corrected -->
+      
    		
 		<StationInformation>             								    
            <Name>My Station</Name>           
@@ -34,11 +38,6 @@
            <ECALRangeMax>2800</ECALRangeMax>                                           <!-- Maximum Detector Calibration Energy -->
         </DetectorInformation>
         
-        <SampleType>particule</SampleType>                                             <!-- Particule, Gaz (BG, B) -->
-        
-        <ReferenceDate>2004-11-03T14:36:04.2-03.00</ReferenceDate>                     <!-- Collection start date. The date to which activities will be decay corrected -->
-    
-    
    	   <MeasuredInformation>
     	<Spectrum CalibrationIDs="en ef">                      <!-- The spectrum and available calibrations for it -->
           <StartTime>2004-11-03T14:36:04.3-05:00</StartTime>   <!-- StartTime is when the acquisition started --> 
@@ -136,8 +135,9 @@
       </PeakResult>
     </PeakResults>
     
-    <ProcessingParameters type="Particule" method="Genie" version="1.0">    <!-- type= Particule or Gaz; method= Genie or Autosaint or something else, version=1.0 -->                                             <!-- different parameters used for processing -->
-      <GenieProcessingParameters>                                           <!-- they should be specialized by software and version -->
+    
+    <Parameters>
+      <ProcessingParameters software="Genie" method="None" version="1.0">    <!-- type= Particule or Gaz; method= Genie or Autosaint or something else, version=1.0 -->   
         <Threshold>3</Threshold>
         <PeakStart>42</PeakStart>
         <PeakEnd>3000</PeakEnd>
@@ -152,8 +152,11 @@
         <PerformSubstraction>Off</PerformSubstraction>
         <EnergyTolerance>0.4</EnergyTolerance>
         <ConfidenceThreshold>0.25</ConfidenceThreshold>
-      </GenieProcessingParameters>
-    </ProcessingParameters>
+      </ProcessingParameters>
+      <UpdateParameters>
+         .......
+      </UpdateParameters>
+    </Parameters>
     
     <CalibrationInformation>
        <Calibration Type="Energy" units="keV" ID="en">                      <!--  Energy Calibration for this spectrum -->
