@@ -29,7 +29,7 @@
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="SampleType" type="enumSampleType">
         <xs:annotation>
-          <xs:documentation>particule or gz</xs:documentation>
+          <xs:documentation>particule or gaz</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="ReferenceDate" type="xs:dateTime">
@@ -157,11 +157,7 @@
           <xs:documentation>Categorisation of the sample</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="particulateActivityConcentrationSummaryType">
-        <xs:annotation>
-          <xs:documentation>Summary of the sample activity</xs:documentation>
-        </xs:annotation>
-      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="activityConcentrationSummaryType"/>
       <xs:element minOccurs="1" maxOccurs="1" name="PeakResults" type="peakResultsType">
         <xs:annotation>
           <xs:documentation>peaks information</xs:documentation>
@@ -169,6 +165,9 @@
       </xs:element>
     </xs:sequence>
   </xs:group>
+  
+  
+  
   <xs:complexType name="analysisResultsType">
     <xs:annotation>
       <xs:documentation>Categorisation, Activity Summary, ... </xs:documentation>
@@ -181,6 +180,7 @@
   </xs:complexType>
   
   
+  
   <xs:group name="nobleGazAnalysisResultsType">
     <xs:sequence>
       <xs:annotation>
@@ -188,49 +188,140 @@
       </xs:annotation>
       <xs:element minOccurs="1" maxOccurs="1" name="SampleCategorization" type="sampleCategorizationType">
         <xs:annotation>
-          <xs:documentation>Categorisation of the sample</xs:documentation>
+          <xs:documentation>Categorisation of the sample. No  categorization defined in gaz for the moment</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="activityConcentrationSummaryType"/>
+      <xs:element minOccurs="1" maxOccurs="1" name="ActivitySummary">
+         <xs:annotation>sample activity decay corrected</xs:annotation>
+          <xs:sequence>
+             <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
+          </xs:sequence>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="ROINetCountResults"      type="ROINetCountResultsType">
+      <xs:element minOccurs="1" maxOccurs="1" name="XeCovarianceMatrix"      type="ROIBoundariesType">  
+      <xs:element minOccurs="1" maxOccurs="1" name="GoodnessOfFit"           type="xs:double">  
+   
+      <xs:element minOccurs="1" maxOccurs="1" name="ROIBoundaries"           type="ROIBoundariesType">   <!-- to be moved in params-->
     </xs:sequence>
   </xs:group>
-  <xs:complexType name="particulateActivityConcentrationSummaryType">
+ 
+   <xs:complexType name="XeCovarianceMatrix">
+    <xs:annotation>
+      <xs:documentation>Intermediate results, ROI Net Count Results </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:annotation>
-        <xs:documentation> Activity Concentration Results for Particulates </xs:documentation>
-      </xs:annotation>
-      <xs:element minOccurs="1" maxOccurs="1" name="NonQuantifiedNuclides">
-        <xs:annotation>
-          <xs:documentation>Non Quantified Identified Nuclides</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="QuantifiedNuclides">
-        <xs:annotation>
-          <xs:documentation>Quantified Identified Nuclides</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="MDA">
-        <xs:annotation>
-          <xs:documentation>Categorisation of the sample</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
+        <xs:element minOccurs="1" maxOccurs="1"         name="Rows"            type="stringListType"/>
+        <xs:element minOccurs="1" maxOccurs="1"         name="Cols"            type="stringListType"/>
+        <xs:element minOccurs="1" maxOccurs="unbounded" name="Values"          type="doubleListType"/>
     </xs:sequence>
+    <xs:attribute name="method" type="xs:string"/>                        <!-- always for SSM -->
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
+  
+  <xs:complexType name="ROIBoundariesType">
+    <xs:annotation>
+      <xs:documentation>Intermediate results, ROI Net Count Results </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="unbounded" name="ROIBoundary">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element minOccurs="1" maxOccurs="1" name="Nb"              type="xs:positiveInteger" />
+                <xs:element minOccurs="1" maxOccurs="1" name="GammaLow"        type="physicalValueType" />             <!-- unit = kEV -->
+                <xs:element minOccurs="1" maxOccurs="1" name="GammaHigh"       type="physicalValueType" />             <!-- unit = kEV -->
+                <xs:element minOccurs="1" maxOccurs="1" name="BetaLow"         type="physicalValueType" />             <!-- unit = kEV -->
+                <xs:element minOccurs="1" maxOccurs="1" name="BetaHigh"        type="physicalValueType" />             <!-- unit = kEV -->
+              </xs:sequence>
+            </xs:complexType>
+            <xs:anyAttribute namespace="##other" processContents="lax" />
+        </xs:element>
+    </xs:sequence>
+    <xs:attribute name="method" type="xs:string"/>                        <!-- always for NCC -->
+    <xs:anyAttribute namespace="##other" processContents="lax" />
+  </xs:complexType>
+  
+  <xs:complexType name="ROINetCountResultsType">
+    <xs:annotation>
+      <xs:documentation>Intermediate results, ROI Net Count Results </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+        <xs:element minOccurs="1" maxOccurs="1" name="ROI">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element minOccurs="1" maxOccurs="1" name="Nb"              type="xs:positiveInteger" />
+                <xs:element minOccurs="1" maxOccurs="1" name="Nuclide"         type="xs:string" />
+                <xs:element minOccurs="1" maxOccurs="1" name="NetCounts"       type="xs:integer" />
+                <xs:element minOccurs="1" maxOccurs="1" name="NetCountsError"  type="physicalValueType" />     <!-- percentage -->
+                <xs:element minOccurs="1" maxOccurs="1" name="LC"              type="physicalValueType" />     <!-- unit in counts -->
+                <xs:element minOccurs="1" maxOccurs="1" name="Efficiency"      type="physicalValueType" />     <!-- percentage -->
+              </xs:sequence>
+            </xs:complexType>
+            <xs:anyAttribute namespace="##other" processContents="lax" />
+        </xs:element>
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="ROIUsedFor">
+              <xs:annotation>
+                <xs:documentation>Describe which ROI have been used for spotting a nuclide</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                  <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nonNegativeIntegerList" />
+                  </xs:sequence>
+                  <xs:simpleContent>
+                     <xs:extension base="nonNegativeIntegerList">
+                        <xs:attribute name="nuclide" type="xs:string"/>
+                        <xs:anyAttribute namespace="##other" processContents="lax" />
+                     </xs:extension>
+                  </xs:simpleContent>
+               </xs:complexType>
+        </xs:element> 
+    </xs:sequence>
+    <xs:attribute name="method" type="xs:string"/>                        <!-- always for NCC -->
+    <xs:anyAttribute namespace="##other" processContents="lax" />
+  </xs:complexType>
+  
+  <xs:complexType name="activityConcentrationSummaryType">
+        <xs:annotation>
+          <xs:documentation>Summary of the sample activity</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:annotation>
+              <xs:documentation> Activity Concentration Results for Particulates </xs:documentation>
+            </xs:annotation>
+            <xs:element minOccurs="1" maxOccurs="1" name="NonQuantifiedNuclides">
+              <xs:annotation>
+                <xs:documentation>Non Quantified Identified Nuclides</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="QuantifiedNuclides">
+              <xs:annotation>
+                <xs:documentation>Quantified Identified Nuclides</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="MDA">
+              <xs:annotation>
+                <xs:documentation>Categorisation of the sample</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nuclideType" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+  </xs:complexType>
+     
+  
   <xs:complexType name="nuclideType">
     <xs:sequence>
       <xs:annotation>
@@ -276,9 +367,31 @@
           <xs:documentation>Max MDA</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Activity" type="physicalValueType">
+        <xs:annotation>
+          <xs:documentation>Activity in Bq</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ActivityError" type="physicalValueType">
+        <xs:annotation>
+          <xs:documentation>Activity Error in Bq</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ActivityCriticalLimit" type="physicalValueType">
+        <xs:annotation>
+          <xs:documentation>Activity Error in Bq</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="NIDFlag" type="xs:positiveInteger">
+        <xs:annotation>
+          <xs:documentation>NID-Flag</xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
+  
+  
   <xs:group name="procParam_Genie_RRR_v1.0">
     <xs:annotation>
       <xs:documentation> Different Groups qualifiying the Processing Parameters  Group Names are Software_Method_Version   Particulate Old </xs:documentation>
@@ -483,62 +596,67 @@
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
+  
+  
   <xs:complexType name="peakResultsType">
     <xs:annotation>
       <xs:documentation>List of Peaks Results</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="unbounded" name="PeakResult" type="peakResultType" />
+      <xs:element minOccurs="1" maxOccurs="unbounded" name="PeakResult">
+            <xs:complexType name="peakResultType">
+    			<xs:annotation>
+      				<xs:documentation>Peak detail</xs:documentation>
+    			</xs:annotation>
+    			<xs:sequence>
+      				<xs:element minOccurs="1" maxOccurs="1" name="Energy" type="doubleUnc">
+        				<xs:annotation>
+         				 <xs:documentation>Pair of Energy and Energy uncertainty (00 uncertainty means not known)</xs:documentation>
+        				</xs:annotation>
+      				</xs:element>
+      				<xs:element minOccurs="1" maxOccurs="1" name="Centroid" type="doubleUnc">
+       					 <xs:annotation>
+          					<xs:documentation>Pair of Centroid and Centroid uncertainty (00 uncertainty means not known)</xs:documentation>
+       					 </xs:annotation>
+      				</xs:element>
+      				<xs:element minOccurs="1" maxOccurs="1" name="Area" type="doubleUnc">
+       					 <xs:annotation>
+         					 <xs:documentation>Pair of Area and Area uncertainty (00 uncertainty means not known)</xs:documentation>
+        				 </xs:annotation>
+      				</xs:element>
+      				<xs:element minOccurs="1" maxOccurs="1" name="Width" type="xs:integer">
+        				<xs:annotation>
+          					<xs:documentation>Width</xs:documentation>
+        				</xs:annotation>
+      				</xs:element>
+      				<xs:element minOccurs="1" maxOccurs="1" name="FWHM" type="doubleUnc">
+        				<xs:annotation>
+          					<xs:documentation>Pair of FWHM and FWHM uncertainty (00 uncertainty means not known)</xs:documentation>
+        				</xs:annotation>
+      				</xs:element>
+      				<xs:element minOccurs="1" maxOccurs="1" name="BackgroundCounts" type="doubleUnc">
+        				<xs:annotation>
+          					<xs:documentation>Pair of BackCounts and BackCounts uncertainty (00 uncertainty means not known)</xs:documentation>
+        				</xs:annotation>
+      				</xs:element>
+      				<xs:element minOccurs="1" maxOccurs="1" name="Efficiency" type="doubleUnc">
+        				<xs:annotation>
+         				 <xs:documentation>Pair of Efficiency and Efficiency uncertainty (00 uncertainty means not known)</xs:documentation>
+        				</xs:annotation>
+     			   </xs:element>
+      			  <xs:element minOccurs="1" maxOccurs="1" name="LC" type="xs:double">
+        			<xs:annotation>
+          				<xs:documentation>Critical Level</xs:documentation>
+        			</xs:annotation>
+      			  </xs:element>
+   			    </xs:sequence>
+                <xs:anyAttribute namespace="##other" processContents="lax" />
+           </xs:complexType>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="peakResultType">
-    <xs:annotation>
-      <xs:documentation>Peak detail</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="Energy" type="doubleUnc">
-        <xs:annotation>
-          <xs:documentation>Pair of Energy and Energy uncertainty (00 uncertainty means not known)</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="Centroid" type="doubleUnc">
-        <xs:annotation>
-          <xs:documentation>Pair of Centroid and Centroid uncertainty (00 uncertainty means not known)</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="Area" type="doubleUnc">
-        <xs:annotation>
-          <xs:documentation>Pair of Area and Area uncertainty (00 uncertainty means not known)</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="Width" type="xs:integer">
-        <xs:annotation>
-          <xs:documentation>Width</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="FWHM" type="doubleUnc">
-        <xs:annotation>
-          <xs:documentation>Pair of FWHM and FWHM uncertainty (00 uncertainty means not known)</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="BackgroundCounts" type="doubleUnc">
-        <xs:annotation>
-          <xs:documentation>Pair of BackCounts and BackCounts uncertainty (00 uncertainty means not known)</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="Efficiency" type="doubleUnc">
-        <xs:annotation>
-          <xs:documentation>Pair of Efficiency and Efficiency uncertainty (00 uncertainty means not known)</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="LC" type="xs:double">
-        <xs:annotation>
-          <xs:documentation>Critical Level</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-    <xs:anyAttribute namespace="##other" processContents="lax" />
-  </xs:complexType>
+  
+  
   <xs:complexType name="calibrationInformationType">
     <xs:annotation>
       <xs:documentation>Calibration Equations</xs:documentation>
@@ -604,7 +722,7 @@
           <xs:documentation>The coefficients of the equation</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="CovarianceMatrix" type="doubleList">
+      <xs:element minOccurs="0" name="CovarianceMatrix" type="doubleListType">
         <xs:annotation>
           <xs:documentation>The covariance matrix for the equation coefficients</xs:documentation>
         </xs:annotation>
@@ -638,7 +756,7 @@
       <xs:documentation>Equation coefficients</xs:documentation>
     </xs:annotation>
     <xs:simpleContent>
-      <xs:extension base="doubleList">
+      <xs:extension base="doubleListType">
         <xs:attribute name="Subequation" type="xs:positiveInteger">
           <xs:annotation>
             <xs:documentation>Index of the subequation to which this set of coefficients applies</xs:documentation>
@@ -698,7 +816,7 @@
       <xs:documentation>The spectrum: counts vs. channel for the entire spectrum or a region of interest</xs:documentation>
     </xs:annotation>
     <xs:simpleContent>
-      <xs:extension base="doubleList">
+      <xs:extension base="doubleListType">
         <xs:attribute name="NbCounts" type="xs:positiveInteger" use="optional">
           <xs:annotation>
             <xs:documentation>The algorithm used to compress the channel data</xs:documentation>
@@ -747,7 +865,7 @@
     <xs:annotation>
       <xs:documentation>Double value with uncertainty: first entry is value, second entry is uncertainty (absolute error, one standard deviation)</xs:documentation>
     </xs:annotation>
-    <xs:restriction base="doubleList">
+    <xs:restriction base="doubleListType">
       <xs:length value="2" />
     </xs:restriction>
   </xs:simpleType>
@@ -804,7 +922,7 @@
     </xs:annotation>
     <xs:list itemType="xs:decimal" />
   </xs:simpleType>
-  <xs:simpleType name="doubleList">
+  <xs:simpleType name="doubleListType">
     <xs:annotation>
       <xs:documentation>List of doubles</xs:documentation>
     </xs:annotation>
