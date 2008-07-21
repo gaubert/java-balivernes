@@ -100,41 +100,41 @@
              </KeyNuclide>
           </KeyNuclides>
        </ActivitySummary>                                                 <!-- To be Defined but add activity concentrations -->
-    </AnalysisResults>
     
-    <PeakResults>
-      <PeakResult>
-        <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
-        <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
-        <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
-        <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
-        <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
-        <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
-        <LC></LC>                                                          <!-- Criticial Level  -->
-        <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
-        <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
-        <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, None otherwise -->                                                  
-        <!--  missing risk level, K Value -->  
-        <!--  What is SROI Editing ? -->                                                  
-      </PeakResult>
+    
+       <PeakResults>
+         <PeakResult>
+           <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
+           <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
+           <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
+           <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
+           <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
+           <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
+           <LC></LC>                                                          <!-- Criticial Level  -->
+           <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
+           <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
+           <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, None otherwise -->                                                  
+           <!--  missing risk level, K Value -->  
+           <!--  What is SROI Editing ? -->                                                  
+         </PeakResult>
       
-      <PeakResult>
-        <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
-        <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
-        <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
-        <Width>28</Width>                                                  <!-- Width -->
-        <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
-        <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
-        <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
-        <LC></LC>                                                          <!-- Criticial Level  -->
-        <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
-        <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
-        <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, pair containing the percentage of this nuclide in the peak -->                                                  
-        <!--  missing risk level, K Value -->  
-        <!--  What is SROI Editing ? -->                                                  
-      </PeakResult>
-    </PeakResults>
-    
+         <PeakResult>
+           <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
+           <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
+           <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
+           <Width>28</Width>                                                  <!-- Width -->
+           <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
+           <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
+           <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
+           <LC></LC>                                                          <!-- Criticial Level  -->
+           <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
+           <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
+           <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, pair containing the percentage of this nuclide in the peak -->                                                  
+           <!--  missing risk level, K Value -->  
+           <!--  What is SROI Editing ? -->                                                  
+         </PeakResult>
+       </PeakResults>
+   </AnalysisResults> 
     
     <Parameters>
       <ProcessingParameters software="Genie" method="None" version="1.0">    <!-- type= Particule or Gaz; method= Genie or Autosaint or something else, version=1.0 -->   

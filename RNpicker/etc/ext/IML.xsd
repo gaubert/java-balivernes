@@ -79,7 +79,7 @@
           <xs:documentation>It should be part of an enumerate containing all country codes (gazeteer)</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="Coordinates" type="Coordinates">
+      <xs:element minOccurs="0" maxOccurs="1" name="Coordinates" type="CoordinatesType">
         <xs:annotation>
           <xs:documentation>Geographical coordinates (latitude, longitude, optional elevation)</xs:documentation>
         </xs:annotation>
@@ -145,17 +145,17 @@
     </xs:attribute>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  <xs:complexType name="AnalysisResultsType">
-    <xs:annotation>
-      <xs:documentation>Categorisation, Activity Summary, ... </xs:documentation>
-    </xs:annotation>
+  <xs:group name="ParticulateAnalysisResultsType">
     <xs:sequence>
+      <xs:annotation>
+        <xs:documentation> Analysis Results for particulates </xs:documentation>
+      </xs:annotation>
       <xs:element minOccurs="1" maxOccurs="1" name="SampleCategorization" type="SampleCategorizationType">
         <xs:annotation>
           <xs:documentation>Categorisation of the sample</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="ActivitySummary" type="ActivitySummaryType">
+      <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="ParticulateActivityConcentrationSummaryType">
         <xs:annotation>
           <xs:documentation>Summary of the sample activity</xs:documentation>
         </xs:annotation>
@@ -163,6 +163,113 @@
       <xs:element minOccurs="1" maxOccurs="1" name="PeakResults" type="PeakResultsType">
         <xs:annotation>
           <xs:documentation>peaks information</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:complexType name="AnalysisResultsType">
+    <xs:annotation>
+      <xs:documentation>Categorisation, Activity Summary, ... </xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="ParticulateAnalysisResultsType" />
+      <xs:group ref="NobleGazAnalysisResultsType" />
+    </xs:choice>
+    <xs:anyAttribute namespace="##other" processContents="lax" />
+  </xs:complexType>
+  <xs:group name="NobleGazAnalysisResultsType">
+    <xs:sequence>
+      <xs:annotation>
+        <xs:documentation> Analysis Results for noble gaz </xs:documentation>
+      </xs:annotation>
+      <xs:element minOccurs="1" maxOccurs="1" name="SampleCategorization" type="SampleCategorizationType">
+        <xs:annotation>
+          <xs:documentation>Categorisation of the sample</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:complexType name="ParticulateActivityConcentrationSummaryType">
+    <xs:sequence>
+      <xs:annotation>
+        <xs:documentation> Activity Concentration Results for Particulates </xs:documentation>
+      </xs:annotation>
+      <xs:element minOccurs="1" maxOccurs="1" name="NonQuantifiedNuclides">
+        <xs:annotation>
+          <xs:documentation>Non Quantified Identified Nuclides</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="NuclideType" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="QuantifiedNuclides">
+        <xs:annotation>
+          <xs:documentation>Quantified Identified Nuclides</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="NuclideType" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="MDA">
+        <xs:annotation>
+          <xs:documentation>Categorisation of the sample</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="NuclideType" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax" />
+  </xs:complexType>
+  <xs:complexType name="NuclideType">
+    <xs:sequence>
+      <xs:annotation>
+        <xs:documentation> Nuclide Type. Contains all the activity information regarding a nuclides </xs:documentation>
+      </xs:annotation>
+      <xs:element minOccurs="1" maxOccurs="1" name="Name" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Nuclide Name</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Type" type="enumNuclideType">
+        <xs:annotation>
+          <xs:documentation>Natural, Activation, Fission</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="HalfLife" type="PhysicalValueType">
+        <xs:annotation>
+          <xs:documentation>HalfLife as a string</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="Concentration" type="PhysicalValueType">
+        <xs:annotation>
+          <xs:documentation>Concentration</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="ConcentrationError" type="PhysicalValueType">
+        <xs:annotation>
+          <xs:documentation>Concentration Error</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="MinMDA" type="PhysicalValueType">
+        <xs:annotation>
+          <xs:documentation>Min MDA</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="MDA" type="PhysicalValueType">
+        <xs:annotation>
+          <xs:documentation>MDA</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" maxOccurs="1" name="MaxMDA" type="PhysicalValueType">
+        <xs:annotation>
+          <xs:documentation>Max MDA</xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:sequence>
@@ -270,7 +377,7 @@
   </xs:group>
   <xs:group name="UpdateParam_Autosaint_RRR_v1.0">
     <xs:annotation>
-      <xs:documentation> For old software and spalax, extracted from GARDS_SAMPLE_PROC_PARAMS </xs:documentation>
+      <xs:documentation> To be changed for the moment it is the same </xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:element name="UseMRP" type="xs:boolean" />
@@ -315,6 +422,7 @@
     </xs:annotation>
     <xs:choice>
       <xs:group ref="UpdateParam_Genie_RRR_v1.0" />
+      <xs:group ref="UpdateParam_Autosaint_RRR_v1.0" />
     </xs:choice>
     <xs:attribute name="software" type="xs:string" use="required">
       <xs:annotation>
@@ -371,13 +479,6 @@
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  <xs:complexType name="ActivitySummaryType">
-    <xs:annotation>
-      <xs:documentation>To Be Defined</xs:documentation>
-    </xs:annotation>
-    <xs:sequence />
-    <xs:anyAttribute namespace="##other" processContents="lax" />
-  </xs:complexType>
   <xs:complexType name="PeakResultsType">
     <xs:annotation>
       <xs:documentation>List of Peaks Results</xs:documentation>
@@ -418,7 +519,7 @@
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="BackgroundCounts" type="doubleUnc">
         <xs:annotation>
-          <xs:documentation>Pair of BckCounts and BckCounts uncertainty (00 uncertainty means not known)</xs:documentation>
+          <xs:documentation>Pair of BackCounts and BackCounts uncertainty (00 uncertainty means not known)</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="Efficiency" type="doubleUnc">
@@ -608,7 +709,17 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-  <xs:complexType name="Coordinates">
+  <xs:complexType name="PhysicalValueType">
+    <xs:annotation>
+      <xs:documentation> describe a physical quantity with a unit (any type for the moment) </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="unit" type="xs:anySimpleType" use="optional" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="CoordinatesType">
     <xs:annotation>
       <xs:documentation>Geographical coordinates (latitude, longitude, optional elevation)</xs:documentation>
     </xs:annotation>
@@ -787,6 +898,17 @@
       <xs:enumeration value="Exponential" />
       <xs:enumeration value="PolyLogarithmic" />
       <xs:enumeration value="FullRangeFraction" />
+      <xs:enumeration value="Other" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="enumNuclideType">
+    <xs:annotation>
+      <xs:documentation>Nuclide type</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Natural" />
+      <xs:enumeration value="Activation" />
+      <xs:enumeration value="Fission" />
       <xs:enumeration value="Other" />
     </xs:restriction>
   </xs:simpleType>
