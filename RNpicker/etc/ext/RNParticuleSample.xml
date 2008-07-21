@@ -73,23 +73,49 @@
           </Description>
           <Category>1</Category>
        </SampleCategorization>
-         
        
        <ActivitySummary> 
           <!--  Nuclides Identified not quantified -->
-          <!--  Nuclides quantified  -->
-          
-          <!--  MDA for Key nuclides -->
-          <KeyNuclides>
-             <KeyNuclide>
-               <Name>BA-140</Name>                                         <!-- Nuclide Name -->
+          <NonQuantifiedNuclides>
+            <Nuclide>
+              <Name>K-40</Name>
+              <Type>Natural</Type>                                      <!-- Type = Natural, Activation, Fission -->
+            </Nuclide>
+            <Nuclide>
+              <Name>PB-210</Name>
+              <Type>Natural</Type>
+            </Nuclide>
+            <Nuclide>
+              <Name>PB-214</Name>
+              <Type>Natural</Type>
+            </Nuclide>
+          </NonQuantifiedNuclides>
+          <QuantifiedNuclides>
+            <Nuclide>
+              <Name>BE-7</Name>
+              <Type>Natural</Type>
+              <HalfLife>12.752 D</HalfLife>
+              <Concentration unit="uBq/m3">1924</Concentration>
+              <ConcError unit="percentage">2.08</ConcError>
+            </Nuclide>
+            <Nuclide>
+              <Name>NA-24</Name>
+              <Type>Activation</Type>
+              <HalfLife>14.959 H</HalfLife>
+              <Concentration unit="uBq/m3">17</Concentration>
+              <ConcError unit="percentage">24.4</ConcError>
+            </Nuclide>
+          </QuantifiedNuclides>
+          <MDA>                                                           <!--  MDA for Key nuclides -->
+             <Nuclide>
+               <Name>BA-140</Name>                                        <!-- Nuclide Name -->
                <Type>Particule</Type>                                     <!-- Gaz or Particule -->
                <HalfLife>12.752 D</HalfLife>                              <!-- Duration  -->
-               <MinMDA></MinMDA>                                          <!-- Double value -->
-               <MDA></MDA>                                                <!-- Double value -->
-               <MaxMDA></MaxMDA>                                          <!-- Double value -->
-             </KeyNuclide>
-             <KeyNuclide>
+               <MinMDA unit="uBq/m3"></MinMDA>                            <!-- Double value -->
+               <MDA unit="uBq"></MDA>                                                <!-- Double value -->
+               <MaxMDA unit=""></MaxMDA>                                          <!-- Double value -->
+             </Nuclide>
+             <Nuclide>
                <Name>CS-134</Name>                                        <!-- Nuclide Name -->
                <Type>Particule</Type>                                     <!-- Gaz or Particule -->
                <HalfLife>2.062 Y</HalfLife>                               <!-- Duration  -->
@@ -97,44 +123,44 @@
                <MDA></MDA>                                                <!-- Double value -->
                <MaxMDA></MaxMDA>                                          <!-- Double value -->
                <AnalystNote></AnalystNote>                                <!-- Analyst Note: optional -->
-             </KeyNuclide>
-          </KeyNuclides>
+             </Nuclide>
+          </MDA>  
        </ActivitySummary>                                                 <!-- To be Defined but add activity concentrations -->
     
-    
-       <PeakResults>
-         <PeakResult>
-           <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
-           <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
-           <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
-           <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
-           <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
-           <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
-           <LC></LC>                                                          <!-- Criticial Level  -->
-           <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
-           <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
-           <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, None otherwise -->                                                  
-           <!--  missing risk level, K Value -->  
-           <!--  What is SROI Editing ? -->                                                  
-         </PeakResult>
+      <PeakResults>                                                         <!-- This is valid only for Particulates for Gaz we will have ROI -->
+       <PeakResult>
+        <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
+        <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
+        <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
+        <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
+        <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
+        <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
+        <LC></LC>                                                          <!-- Criticial Level  -->
+        <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
+        <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
+        <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, None otherwise -->                                                  
+        <!--  missing risk level, K Value -->  
+        <!--  What is SROI Editing ? -->                                                  
+       </PeakResult>
       
-         <PeakResult>
-           <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
-           <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
-           <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
-           <Width>28</Width>                                                  <!-- Width -->
-           <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
-           <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
-           <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
-           <LC></LC>                                                          <!-- Criticial Level  -->
-           <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
-           <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
-           <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, pair containing the percentage of this nuclide in the peak -->                                                  
-           <!--  missing risk level, K Value -->  
-           <!--  What is SROI Editing ? -->                                                  
-         </PeakResult>
-       </PeakResults>
-   </AnalysisResults> 
+       <PeakResult>
+        <Energy>53.56 00</Energy>                                          <!-- En + En Err -->
+        <Centroid>53.56 00</Centroid>                                      <!-- Centroid + Centroid Err -->
+        <Area>232.90 24.26</Area>                                          <!-- Area + Area Err -->
+        <Width>28</Width>                                                  <!-- Width -->
+        <FWHM>0.99 00</FWHM>                                               <!-- FWHM + Err -->
+        <BackgroundCounts> </BackgroundCounts>                             <!-- Background counts per second + err -->
+        <Efficiency></Efficiency>                                          <!-- Efficiency and its error -->
+        <LC></LC>                                                          <!-- Criticial Level  -->
+        <LD></LD>                                                          <!-- Detectable Level (100% sure of detection) -->
+        <Detectability></Detectability>                                    <!-- Number between 0 and 1 -->
+        <IdentifiedNuclide> </IdentifiedNuclide>                           <!-- associated Identified Nucl if there is one, pair containing the percentage of this nuclide in the peak -->                                                  
+        <!--  missing risk level, K Value -->  
+        <!--  What is SROI Editing ? -->                                                  
+      </PeakResult>
+    </PeakResults>
+    
+    </AnalysisResults>
     
     <Parameters>
       <ProcessingParameters software="Genie" method="None" version="1.0">    <!-- type= Particule or Gaz; method= Genie or Autosaint or something else, version=1.0 -->   
