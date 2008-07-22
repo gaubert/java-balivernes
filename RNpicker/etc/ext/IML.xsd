@@ -98,8 +98,6 @@
     </xs:attribute>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  
-  
   <xs:complexType name="stationInformationType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
@@ -139,15 +137,11 @@
       <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </xs:sequence>
   </xs:complexType>
-  
-  
   <xs:complexType name="detectorInformationType">
     <xs:annotation>
       <xs:documentation>To Be Defined</xs:documentation>
     </xs:annotation>
   </xs:complexType>
-  
-  
   <xs:complexType name="measuredInformationType">
     <xs:annotation>
       <xs:documentation>
@@ -158,8 +152,6 @@
       <xs:element minOccurs="1" maxOccurs="unbounded" name="Spectrum" type="spectrumType" />
     </xs:sequence>
   </xs:complexType>
-  
-  
   <xs:complexType name="spectrumType">
     <xs:annotation>
       <xs:documentation>
@@ -214,6 +206,7 @@
     </xs:attribute>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
+  
   <xs:group name="particulateAnalysisResultsType">
     <xs:sequence>
       <xs:annotation>
@@ -487,7 +480,9 @@
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  <xs:group name="procParam_Genie_RRR_v1.0">
+  
+  
+  <xs:group name="procParam_Genie_RRR_v1.0Type">
     <xs:annotation>
       <xs:documentation>
 				Different Groups qualifiying the Processing Parameters
@@ -511,7 +506,7 @@
       <xs:element name="ConfidenceThreshold" type="xs:double" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_Genie_None_v1.0">
+  <xs:group name="procParam_Genie_None_v1.0Type">
     <xs:annotation>
       <xs:documentation>
 				For old software and spalax, extracted from
@@ -541,12 +536,12 @@
       <xs:element name="DoCascadeSumming" type="xs:boolean" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_Autosaint_None_v1.0">
+  <xs:group name="procParam_Autosaint_None_v1.0Type">
     <xs:sequence>
       <xs:element name="toBeCompleted" type="xs:string" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_BGAnalyse_SSM_v1.0">
+  <xs:group name="procParam_BGAnalyse_SSM_v1.0Type">
     <xs:sequence>
       <xs:element name="UseDetectorBackground" type="xs:boolean" />
       <xs:element name="UseGasBackground" type="xs:boolean" />
@@ -558,12 +553,12 @@
       <xs:element name="BinningVectorSize" type="xs:positiveInteger" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_BGAnalyse_NCC_v1.0">
+  <xs:group name="procParam_BGAnalyse_NCC_v1.0Type">
     <xs:sequence>
       <xs:element minOccurs="1" maxOccurs="1" name="ROIBoundaries" type="ROIBoundariesType" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="updateParam_Genie_RRR_v1.0">
+  <xs:group name="updateParam_Genie_RRR_v1.0Type">
     <xs:annotation>
       <xs:documentation>
 				For old software and spalax, extracted from
@@ -589,7 +584,7 @@
       <xs:element name="RERMRPUsed" type="xs:positiveInteger" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="updateParam_Autosaint_RRR_v1.0">
+  <xs:group name="updateParam_Autosaint_RRR_v1.0Type">
     <xs:annotation>
       <xs:documentation>
 				To be changed for the moment it is the same
@@ -622,14 +617,12 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:choice>
-      <xs:group ref="flags_Genie_RRR_v1.0" />
-      <xs:group ref="flags_BGAnalyse_RRR_v1.0" />
+      <xs:group ref="flags_Genie_RRR_v1.0Type" />
+      <xs:group ref="flags_BGAnalyse_RRR_v1.0Type" />
     </xs:choice>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-
-  
-  <xs:group name="flags_BGAnalyse_RRR_v1.0">
+  <xs:group name="flags_BGAnalyse_RRR_v1.0Type">
     <xs:sequence>
       <xs:annotation>
         <xs:documentation>
@@ -639,18 +632,17 @@
       <xs:element minOccurs="1" maxOccurs="1" name="DataQualityFlags">
         <xs:complexType>
           <xs:sequence>
-            <xs:element minOccurs="1" maxOccurs="1" name="SamplingTime"      type="dataQualityType" />
-            <xs:element minOccurs="1" maxOccurs="1" name="ProcessingTime"    type="dataQualityType" />
-            <xs:element minOccurs="1" maxOccurs="1" name="AcquisitionTime"   type="dataQualityType" />
+            <xs:element minOccurs="1" maxOccurs="1" name="SamplingTime" type="dataQualityType" />
+            <xs:element minOccurs="1" maxOccurs="1" name="ProcessingTime" type="dataQualityType" />
+            <xs:element minOccurs="1" maxOccurs="1" name="AcquisitionTime" type="dataQualityType" />
             <xs:element minOccurs="1" maxOccurs="1" name="StableXenonVolume" type="dataQualityType" />
-            <xs:element minOccurs="1" maxOccurs="1" name="MDCXE-133"         type="dataQualityType" />
+            <xs:element minOccurs="1" maxOccurs="1" name="MDCXE-133" type="dataQualityType" />
           </xs:sequence>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
   </xs:group>
-  
-  <xs:group name="flags_Genie_RRR_v1.0">
+  <xs:group name="flags_Genie_RRR_v1.0Type">
     <xs:sequence>
       <xs:annotation>
         <xs:documentation>
@@ -697,8 +689,6 @@
       </xs:element>
     </xs:sequence>
   </xs:group>
-  
-  
   <xs:complexType name="dataQualityType">
     <xs:sequence>
       <xs:element minOccurs="1" maxOccurs="1" name="Value" type="physicalValueType" />
@@ -745,8 +735,8 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:choice>
-      <xs:group ref="updateParam_Genie_RRR_v1.0" />
-      <xs:group ref="updateParam_Autosaint_RRR_v1.0" />
+      <xs:group ref="updateParam_Genie_RRR_v1.0Type" />
+      <xs:group ref="updateParam_Autosaint_RRR_v1.0Type" />
     </xs:choice>
     <xs:attribute name="software" type="xs:string" use="required">
       <xs:annotation>
@@ -773,11 +763,11 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:choice>
-      <xs:group ref="procParam_Genie_RRR_v1.0" />
-      <xs:group ref="procParam_Genie_None_v1.0" />
-      <xs:group ref="procParam_Autosaint_None_v1.0" />
-      <xs:group ref="procParam_BGAnalyse_SSM_v1.0" />
-      <xs:group ref="procParam_BGAnalyse_NCC_v1.0" />
+      <xs:group ref="procParam_Genie_RRR_v1.0Type" />
+      <xs:group ref="procParam_Genie_None_v1.0Type" />
+      <xs:group ref="procParam_Autosaint_None_v1.0Type" />
+      <xs:group ref="procParam_BGAnalyse_SSM_v1.0Type" />
+      <xs:group ref="procParam_BGAnalyse_NCC_v1.0Type" />
     </xs:choice>
     <xs:attribute name="software" type="xs:string" use="required">
       <xs:annotation>
