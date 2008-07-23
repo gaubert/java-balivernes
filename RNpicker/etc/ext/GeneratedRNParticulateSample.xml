@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<SampML xmlns="http://www.ctbto.org/SAMPML/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0 file:///C:/Documents%20and%20Settings/aubert/Desktop/IML.xsd">
+  
+  <Remark>Example Nb 1</Remark>
+  
+  <SampleInformation UUID="0867819">
+    
+    <StationInformation>
+      <StationLocation>Oahu, Hawaii, USA</StationLocation>
+      <StationCode>USP79</StationCode>
+      <CountryCode>USA</CountryCode>
+      <Coordinates>-5162.985094196054907 -626.585094196054907</Coordinates>
+      <Status>Active</Status>
+    </StationInformation>
+    
+    <DetectorInformation>
+      <DetectorCode>USP79_001</DetectorCode>
+      <DetectorDescription>Detector 1 in Oahu, Hawaii, USA</DetectorDescription>
+    </DetectorInformation>
+    
+    <SampleType>particulate</SampleType>
+    
+    <SampleGeometry>M4</SampleGeometry>
+    
+    <SampleQuantity unit="m3">23346.11</SampleQuantity>
+    
+    <ReferenceDate>1971-06-22T23:08:07.89</ReferenceDate>
+    
+    <MeasuredInformation>
+      <Spectrum>
+        <CollectionStart>2008-07-17T22:25:00</CollectionStart>
+        <CollectionStop>2008-07-18T22:25:00</CollectionStop>
+        <AcquisitionStart>2008-07-19T22:25:00</AcquisitionStart>
+        <AcquisitionStop>2008-07-20T22:25:00</AcquisitionStop>
+        <AcquisitionTime>P23H41M</AcquisitionTime>
+        <SamplingTime>P24H</SamplingTime>
+        <SourceType>Sample</SourceType>
+        <DataType>
+           0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 
+           0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+           0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 1 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+           0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        </DataType>
+      </Spectrum>
+    </MeasuredInformation>
+    <AnalysisResults >
+      <SampleCategorization>
+        <Category>4</Category>
+        <Comment>CO-60 not regularly measured</Comment>
+      </SampleCategorization>
+      <ActivityConcentrationSummary>
+        <NonQuantifiedNuclides>
+          <Nuclide>
+            <Name>AC-228</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>BI-214</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>GE-75M</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>K-40</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>PA-234M</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>PB-214</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>TH-234</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+          <Nuclide>
+            <Name>U-235</Name>
+            <Type>Natural</Type>
+          </Nuclide>
+        </NonQuantifiedNuclides>
+        <QuantifiedNuclides>
+          <Nuclide>
+            <Name>BE-7</Name>
+            <Type>Natural</Type>
+            <HalfLife>P53D06H57M36S</HalfLife>    <!-- period following ISO format -->
+            <Concentration unit="uBq/m3">6200</Concentration>
+            <ConcentrationError unit="percentage">2.2</ConcentrationError>
+          </Nuclide>
+          <Nuclide>
+            <Name>PB-212F</Name>
+            <Type>Natural</Type>
+            <HalfLife>P10H38M24S</HalfLife>    <!-- period following ISO format -->
+            <Concentration unit="uBq/m3">5400</Concentration>
+            <ConcentrationError unit="percentage">1.83</ConcentrationError>
+          </Nuclide>
+           <Nuclide>
+            <Name>CO-60</Name>
+            <Type>Activation</Type>
+            <HalfLife>P166348548S</HalfLife>    <!-- period following ISO format -->
+            <Concentration unit="uBq/m3">1.3</Concentration>
+            <ConcentrationError unit="percentage">88.43</ConcentrationError>
+          </Nuclide>
+        </QuantifiedNuclides>
+        <MinimumDetectableConcentration>                                    
+          <Nuclide>
+            <Name>BA-140</Name>
+            <HalfLife>P12.752D</HalfLife>
+            <Concentration unit="uBq/m3">7.76</Concentration>
+          </Nuclide>
+          <Nuclide>
+            <Name>CE-143</Name>
+            <HalfLife>P1.37662D</HalfLife>
+            <Concentration unit="uBq/m3">16.69</Concentration>
+          </Nuclide>
+          <Nuclide>
+            <Name>CS-134</Name>
+            <HalfLife>P2.062Y</HalfLife>
+            <Concentration unit="uBq/m3">1.85</Concentration>
+          </Nuclide>
+          <Nuclide>
+            <Name>CS-136</Name>
+            <HalfLife>P13.16D</HalfLife>
+            <Concentration unit="uBq/m3">1.82</Concentration>
+          </Nuclide>
+          <!-- ... There are more than these 4 nuclides -->
+        </MinimumDetectableConcentration>
+      </ActivityConcentrationSummary>
+      <PeakResults>                                                         <!-- This is valid only for Particulates for Gaz we will have ROI -->
+       <PeakResult>
+        <Energy>239.027374267578 0.258760273456573</Energy>                                          <!-- En + En Err -->
+        <Centroid>700.034912109375 0.460972547531128</Centroid>                                      <!-- Centroid + Centroid Err -->
+        <Area>94.4806365966797 21.6091804504395</Area>                                               <!-- Area + Area Err -->
+        <Width>13</Width>                                                                            <!-- Width -->
+        <FWHM>1.24280428886414 0.357939600944519</FWHM>                                              <!-- FWHM + Err -->
+        <BackgroundCounts>413.558532714844 20.3361377716064</BackgroundCounts>                       <!-- Background counts per second + err -->
+        <Efficiency>0.111674666404724 00</Efficiency>                                                <!-- Efficiency and its error -->
+        <LC>76.933479309082</LC>                                                                     <!-- Criticial Level  -->
+        <LD>85.234567890901</LD>                                                                     <!-- Detectable Level (100% sure of detection) -->
+        <Detectability>1.22808218002319</Detectability>                                              <!-- Number between 0 and 1 -->
+        <IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>                              <!-- Associated Identified Nucl if there is one, None otherwise -->                                                                                                 
+       </PeakResult>
+    </PeakResults>
+    </AnalysisResults>
+    <Parameters>
+      <ProcessingParameters software="genie" method="none" version="1.0" >
+        <Threshold>3</Threshold>
+        <PeakStart unit="keV">42</PeakStart>
+        <PeakEnd   unit="keV">2750</PeakEnd>
+        <LeftFWHMLimit>2</LeftFWHMLimit>
+        <RightFWHMLimit>2</RightFWHMLimit>
+        <FitSinglet>true</FitSinglet>
+        <CriticalLevelTest>true</CriticalLevelTest>
+        <EstimatePeakWidths>true</EstimatePeakWidths>
+        <BaselineType>STEP</BaselineType>
+        <BaselineChannels>3</BaselineChannels>
+        <PerformSubstraction>false</PerformSubstraction>
+        <EnergyTolerance>0.4</EnergyTolerance>
+        <ConfidenceThreshold>0.25</ConfidenceThreshold>
+      </ProcessingParameters>
+      <UpdateParameters software="genie" method="none" version="1.0">
+        <UseMRP>true</UseMRP>
+        <MRPSampleID>0867749</MRPSampleID>
+        <GainShift unit="percentage">0.1</GainShift>
+        <ZeroShift>0.75</ZeroShift>
+        <AreaLimit>100</AreaLimit>
+        <UseWeight>true</UseWeight>
+        <UseMultiplet>true</UseMultiplet>
+        <ForceLinear>false</ForceLinear>
+        <IgnorePreviousECR>1</IgnorePreviousECR>
+        <MinimumLibLookupTolerance>0.200000002980232</MinimumLibLookupTolerance>
+        <RERIntercept>1.5</RERIntercept>
+        <RERSlope>0.2999999999999</RERSlope>
+        <ECRSlope>0</ECRSlope>
+        <DoResolutionUpdate>true</DoResolutionUpdate>
+      </UpdateParameters>
+    </Parameters>
+    <Flags>
+      <TimelinessAndAvailabilityFlags>
+        <PreviousSamplePresent>ture</PreviousSamplePresent>
+        <CollectionTimeWithin24Hrs>true</CollectionTimeWithin24Hrs>
+        <AcquisitionTimeGTE20Hrs>true</AcquisitionTimeGTE20Hrs>
+        <DecayTimeLTE24Hrs>true</DecayTimeLTE24Hrs>
+        <SampleReceived72HrsFromCollectStart>true</SampleReceived72HrsFromCollectStart>
+      </TimelinessAndAvailabilityFlags>
+      <DataQualityFlags>
+        <Ba140MDC>
+          <Value>7.76414</Value>
+          <Pass>true</Pass>
+          <Test>lower than 30</Test>
+        </Ba140MDC>
+        <K40LocationDifference>
+          <Value>0.205566</Value>
+          <Pass>true</Pass>
+          <Test>lower than 3 * std deviation</Test>
+        </K40LocationDifference>
+        <NormalizedGainDifference>
+          <Value>0.0000222921</Value>
+          <Pass>true</Pass>
+          <Test>lower than 0.0001</Test>
+        </NormalizedGainDifference>
+        <Be7FWHM>
+          <Value>1.42555</Value>
+          <Pass>true</Pass>
+          <Test>lower than 1.7</Test>
+        </Be7FWHM>
+        <FlowRate>
+          <Value>972.755</Value>
+          <Pass>true</Pass>
+          <Test>greater than 500</Test>
+        </FlowRate>
+      </DataQualityFlags>
+      <EventScreeningFlags>
+        <ActivationProductsPresent>true</ActivationProductsPresent>
+        <NbOfDaysSinceLastActivationProduct>48.9999</NbOfDaysSinceLastActivationProduct>
+        <OnlyOneFissionProductPresent>false</OnlyOneFissionProductPresent>
+        <TwoOrMoreFissionProductsPresent>false</TwoOrMoreFissionProductsPresent>
+        <CS-137Present>false</CS-137Present>
+      </EventScreeningFlags>
+    </Flags>
+    <CalibrationInformation>
+      <Calibration Type="EnergyToChannels" Form="E(c)= Term0 + Term1 * c" EnergyUnits="keV" ID="en2ch">
+        <Remark>Energy to Channel Calibration equation</Remark>
+        <CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
+        <CalibrationMeasurementUUID>Put sample ID</CalibrationMeasurementUUID>
+        <Equation Model="Polynomial">
+          <Remark>The coefficients taken from the datbase will have more decimals (higher precision) </Remark>
+          <Coefficients>-0.350223245 0.32992958743</Coefficients>
+        </Equation>
+      </Calibration>
+       <Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="keV" ID="re2en">
+        <Remark>Resolution to Energy Calibration equation</Remark>
+        <CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
+        <CalibrationMeasurementUUID>Put sample ID</CalibrationMeasurementUUID>
+        <Equation Model="Polynomial" Form="FWHM(E)= Term0 + Term1 * SQRT(E)">
+          <Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
+          <Coefficients>0.632123456 0.0370345432</Coefficients>
+        </Equation>
+      </Calibration>
+      <Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="keV" ID="re2en">
+        <Remark>Resolution to Energy Calibration equation</Remark>
+        <CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
+        <CalibrationMeasurementUUID>Put sample ID</CalibrationMeasurementUUID>
+        <Equation Model="PolyLogarithmic" Form="L(E)=ln(948.0/E)">
+          <Remark></Remark>
+          <Coefficients>948.0</Coefficients>
+        </Equation>
+        <Equation Model="Exponential" Form="e(E)= exp( Term0 + Term1*L + Term2 * L^2 + Term3* L^3 + Term4 * L^4 + Term5 * L^5)">
+          <Remark></Remark>
+          <Coefficients>-3.423 0.8294 -0.2627 -0.2763 0.3371 -0.0953</Coefficients>
+        </Equation>
+      </Calibration>
+    </CalibrationInformation>
+  </SampleInformation>
+</SampML>
