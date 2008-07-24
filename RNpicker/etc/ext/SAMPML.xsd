@@ -288,14 +288,6 @@
 					Analysis Results for noble gaz
 				</xs:documentation>
       </xs:annotation>
-      <xs:element minOccurs="1" maxOccurs="1" name="SampleCategorization" type="sampleCategorizationType">
-        <xs:annotation>
-          <xs:documentation>
-						Categorisation of the sample. No categorisation
-						defined in gaz for the moment
-					</xs:documentation>
-        </xs:annotation>
-      </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="activityConcentrationSummaryType" />
       <xs:element minOccurs="1" maxOccurs="1" name="ActivitySummary">
         <xs:annotation>
@@ -542,36 +534,6 @@
       <xs:element name="ConfidenceThreshold" type="xs:double" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_Genie_None_v1.0Type">
-    <xs:annotation>
-      <xs:documentation>
-				For old software and spalax, extracted from
-				GARDS_SAMPLE_PROC_PARAMS
-			</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="BackgroundDataType" type="xs:string" />
-      <xs:element name="EnergyTolerance" type="xs:double" />
-      <xs:element name="MDAConfidence" type="xs:double" />
-      <xs:element name="NIDConfidence" type="xs:double" />
-      <xs:element name="SampleQuantityUncertainty" type="xs:double" />
-      <xs:element name="PeakSearchSensitivty" type="xs:positiveInteger" />
-      <xs:element name="PeakSearchStart" type="xs:positiveInteger" />
-      <xs:element name="PeakSearchEnd" type="xs:positiveInteger" />
-      <xs:element name="LeftFWHMLimit" type="xs:positiveInteger" />
-      <xs:element name="RightFWHMLimit" type="xs:positiveInteger" />
-      <xs:element name="MutlipletFWHMLimit" type="xs:positiveInteger" />
-      <xs:element name="BaselineChannels" type="xs:positiveInteger" />
-      <xs:element name="BaselineType" type="xs:string" />
-      <xs:element name="FitSinglet" type="xs:boolean" />
-      <xs:element name="CriticalLevelTest" type="xs:boolean" />
-      <xs:element name="AreaReject" type="xs:boolean" />
-      <xs:element name="MDCWidth" type="xs:double" />
-      <xs:element name="LCAbissa" type="xs:double" />
-      <xs:element name="DoParentDaughterCalc" type="xs:boolean" />
-      <xs:element name="DoCascadeSumming" type="xs:boolean" />
-    </xs:sequence>
-  </xs:group>
   <xs:group name="procParam_Autosaint_None_v1.0Type">
     <xs:sequence>
       <xs:element name="toBeCompleted" type="xs:string" />
@@ -627,22 +589,7 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="UseMRP" type="xs:boolean" />
-      <xs:element minOccurs="0" name="MRPSampleID" type="xs:positiveInteger" />
-      <xs:element name="MDAConfidence" type="xs:double" />
-      <xs:element name="GainShift" type="xs:double" />
-      <xs:element name="ZeroShift" type="xs:double" />
-      <xs:element name="AreaLimit" type="xs:positiveInteger" />
-      <xs:element name="UseWeight" type="xs:boolean" />
-      <xs:element name="UseMultiplet" type="xs:boolean" />
-      <xs:element name="ForceLinear" type="xs:boolean" />
-      <xs:element name="IgnorePreviousECR" type="xs:boolean" />
-      <xs:element name="MinimumLibLookupTolerance" type="xs:double" />
-      <xs:element name="RERIntercept" type="xs:double" />
-      <xs:element name="RERSlope" type="xs:double" />
-      <xs:element name="ECRSlope" type="xs:double" />
-      <xs:element name="DoResolutionUpdate" type="xs:boolean" />
-      <xs:element name="RERMRPUsed" type="xs:positiveInteger" />
+      <xs:element name="ToBeDefined" type="xs:boolean" />
     </xs:sequence>
   </xs:group>
   <xs:complexType name="flagsType">
@@ -800,7 +747,6 @@
     </xs:annotation>
     <xs:choice>
       <xs:group ref="procParam_Genie_RRR_v1.0Type" />
-      <xs:group ref="procParam_Genie_None_v1.0Type" />
       <xs:group ref="procParam_Autosaint_None_v1.0Type" />
       <xs:group ref="procParam_BGAnalyse_SSM_v1.0Type" />
       <xs:group ref="procParam_BGAnalyse_NCC_v1.0Type" />

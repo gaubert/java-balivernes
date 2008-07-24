@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<SampML xmlns="http://www.ctbto.org/SAMPML/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0">
+	<Remark>Particulate Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
+	<SampleInformation UUID="0675232">
+		<StationInformation>
+			<StationLocation>Rarotonga, Cook Islands</StationLocation>
+			<StationCode>CKX23</StationCode>
+			<CountryCode>COK</CountryCode>
+			<Coordinates>XX  XX</Coordinates>           <!-- To be defined, third value defines altitude -->
+			<Status>Active</Status>
+		</StationInformation>
+		<DetectorInformation>
+			<DetectorCode>NZP46_002</DetectorCode>
+			<DetectorDescription>Detector ARSA Cell #2</DetectorDescription>
+		</DetectorInformation>
+		<SampleType>nobleGaz</SampleType>
+		<SampleGeometry>DISC50MMX5</SampleGeometry>
+		<SampleQuantity unit="m3">17.79</SampleQuantity>
+		<ReferenceDate>1971-06-22T23:08:07.89</ReferenceDate>
+		<MeasuredInformation>
+			<Spectrum>
+				<!-- Gasmma Spectrum -->
+				<CollectionStart>2007-08-25T08:20:00</CollectionStart>
+				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
+				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
+				<AcquisitionStop>2008-08-28T22:00:00</AcquisitionStop>
+				<AcquisitionTime>P10H44M24S</AcquisitionTime>
+				<SamplingTime>P11H18M36S</SamplingTime>
+				<DecayTime>P24M24S</DecayTime>
+				<SourceType>GammaSpectrum</SourceType>
+				<Data>  <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
+                    256   760
+                    0     112271     0          9          18         153
+					5     279        1105       14928      26849      26043
+					10    25947      26670      27122      24693      23273
+					15    24674      28139      31310      30394      28033
+					20    29332      35197      41717      44866      42272
+					25    37429      34182      33463      33995      34234
+					30    35160      37171      39697      43283      44304
+					35    42335      38449      34970      32815      32041
+					40    32240      32785      33246      33210      33796
+					45    33697      34008      34209      34942      34974
+					50    35896      35910      36545      36384      36269
+					55    36209      35964      36279      36388      36376
+					60    36663      37165      37859      38456      39670
+					65    39720      39751      39856      39391      38918
+					70    38824      38054      37374      36717      35890
+					75    35496      34746      34131      34460      34002
+					80    34447      34401      34564      34037      33676
+					85    33221      32272      31552      30974      30250
+					90    29768      28774      28142      27991      27235
+					95    26568      26112      25900      25453      25096
+					100   25460      24792      24391      24223      23625
+					105   23381      22978      22796      22416      22130
+					110   21832      21335      21161      21007      20364
+					115   20669      20135      20394      20179      19914
+					120   19831      19617      19386      19010      18977
+					125   18742      18221      18179      17977      17596
+					130   17309      17034      16836      16705      16312
+					135   16263      15889      15740      15566      15432
+					140   15154      15275      15072      14887      14866
+					145   14840      14596      14603      14316      14236
+					150   13965      13969      13961      13950      13865
+					155   13383      13699      13369      13473      13332
+					160   13197      13255      13350      13325      13210
+					165   13302      13489      13561      13784      13630
+					170   13779      13811      13966      13955      14082
+					175   14080      14102      13836      13130      12945
+					180   12641      12505      12074      11734      11424
+					185   11241      10768      10764      10394      10373
+					190   10233      10159      9977       9840       9648
+					195   9693       9476       9619       9543       9484
+					200   9577       9381       9441       9340       9301
+					205   9449       9384       9322       9160       9211
+					210   9183       9192       9017       8990       8792
+					215   8732       8894       8854       8659       8781
+					220   8567       8330       8491       8387       8193
+					225   8258       8167       7969       7912       7918
+					230   7888       7621       7774       7582       7416
+					235   7463       7350       7371       7269       7358
+					240   7268       7099       7167       6984       7038
+					245   7044       6944       10440      9383       8726
+					250   7612       6840       5906       4825       3893
+					255   3006
+                 </Data>
+			</Spectrum>
+			<Spectrum>
+				<!-- Beta Spectrum -->
+				<CollectionStart>2007-08-25T08:20:00</CollectionStart>
+				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
+				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
+				<AcquisitionStop>2008-08-28T22:00:00</AcquisitionStop>
+				<AcquisitionTime>P10H44M24S</AcquisitionTime>
+				<SamplingTime>P11H18M36S</SamplingTime>
+				<DecayTime>P24M24S</DecayTime>
+				<SourceType>BetaSpectrum</SourceType>
+				<Data>       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
+                    256   1062
+					0     5134939    261        342        427        1056
+					5     1603       1449       1156       965        813
+					10    727        681        644        620        562
+					15    580        512        551        548        524
+					20    476        472        441        424        380
+					25    356        357        339        303        335
+					30    334        307        276        284        290
+					35    300        302        268        292        244
+					40    246        259        271        238        240
+					45    252        241        260        232        237
+					50    214        208        228        223        207
+					55    203        201        213        208        193
+					60    188        222        224        246        221
+					65    228        215        224        233        243
+					70    227        234        227        264        278
+					75    253        297        260        273        308
+					80    304        283        334        307        311
+					85    298        327        305        239        287
+					90    298        326        298        283        344
+					95    333        299        351        321        360
+					100   354        400        394        380        448
+					105   508        550        546        621        613
+					110   645        702        754        747        806
+					115   809        853        852        846        865
+					120   885        869        987        930        903
+					125   969        917        896        939        913
+					130   886        837        901        942        876
+					135   879        855        844        841        816
+					140   862        842        829        833        778
+					145   725        780        785        768        684
+					150   763        682        746        685        670
+					155   663        690        679        632        606
+					160   654        641        598        614        568
+					165   611        617        546        548        576
+					170   543        511        554        530        514
+					175   508        533        488        491        474
+					180   491        491        504        498        493
+					185   456        448        461        442        425
+					190   500        449        386        426        451
+					195   428        400        425        406        410
+					200   396        398        403        382        413
+					205   394        396        384        397        362
+					210   376        361        377        413        402
+					215   418        402        379        429        418
+					220   415        407        394        389        404
+					225   400        399        401        408        401
+					230   392        350        353        376        354
+					235   376        351        369        341        343
+					240   380        395        347        402        330
+					245   380        377        339        345        341
+					250   321        320        332        301        301
+					255   328
+                 </Data>
+			</Spectrum>
+			<Spectrum>
+				<!-- Histogram -->
+				<CollectionStart>2007-08-25T08:20:00</CollectionStart>
+				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
+				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
+				<AcquisitionStop>2008-08-28T22:00:00</AcquisitionStop>
+				<AcquisitionTime>P10H44M24S</AcquisitionTime>
+				<SamplingTime>P11H18M36S</SamplingTime>
+				<DecayTime>P24M24S</DecayTime>
+				<SourceType>Sample</SourceType>
+				<Data>       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
+                    256   256   760  1062
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 0 0 0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 0 1 0 0 4 0 1 0 2 0 0 2 0 1 3 0 1 1 2 0 2 1 2 0 2 2 1 0 1 0 1 3 0 0 1 0 2 0 0 0 1 0 0 0 0 1 0 0 0 0 0 
+					0 0 1 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 2 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 1 0 0 1 0 0 1 
+					0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 0 0 5 1 1 0 1 3 1 0 0 1 2 0 3 2 2 4 1 2 1 1 0 3 2 1 0 0 0 0 0 0 1 2 0 0 1 0 2 1 0 0 2 1 0 0 2 0 0 0 1 
+					0 1 0 0 0 0 0 1 0 1 0 0 0 0 0 1 1 1 1 1 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0 0 0 0 1 0 0 
+					0 1 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0 0 1 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+					0 0 1 1 5 0 8 2 1 1 2 1 1 2 0 1 2 5 0 3 0 1 1 0 0 2 1 1 1 1 1 1 3 1 0 0 0 0 1 0 3 0 0 0 1 0 0 1 0 2 0 1 
+					0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 2 0 1 0 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 1 0 0 0 1 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 2 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0 0 
+					0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 1 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 0 0 0 0 8 1 0 4 1 3 2 4 1 0 2 1 0 1 2 0 1 0 1 1 2 1 2 0 0 0 2 2 2 2 2 0 0 0 2 1 1 1 0 1 2 0 0 1 1 0 0 
+					0 1 2 1 0 0 1 0 0 0 0 0 0 1 1 0 0 2 0 0 0 0 0 0 0 0 0 1 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0 0 1 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 
+					1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0
+					0 2 1 1 6 9 7 5 4 3 2 2 1 3 2 2 2 5 1 0 1 4 3 1 4 2 2 2 4 6 1 0 3 2 0 2 0 1 1 5 1 2 2 2 0 8 1 3 1 2 2 1 
+					1 3 3 1 2 1 2 0 0 0 2 3 1 2 1 1 4 0 1 3 0 0 1 1 0 1 0 2 1 1 1 2 0 2 1 0 1 1 1 0 0 1 1 2 2 2 0 4 0 1 1 1 
+					0 0 1 1 0 0 0 3 0 1 1 0 0 0 1 0 1 1 2 2 3 0 0 0 3 0 0 2 1 0 0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 0 1 1 2 1 0 1 
+					1 1 1 2 1 0 1 1 0 0 0 0 0 2 0 0 1 1 1 0 0 0 0 0 0 1 1 0 0 0 0 1 2 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 2 2 1 
+					0 1 1 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 2 0 0 0 0 0 0 0 0 0 0 2 0 0 1 0 1 0 0 1 0 0 0
+					0 0 1 0 2 5 2 4 2 1 1 2 3 4 1 1 1 2 2 2 0 0 1 2 0 2 2 1 0 1 1 2 0 1 1 0 0 2 0 1 1 1 1 0 0 1 0 0 0 1 0 0 
+					1 0 0 1 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+					0 0 1 0 3 2 2 2 2 5 2 2 1 1 1 3 1 0 2 1 1 0 2 0 1 0 2 0 0 1 1 1 0 1 0 0 1 0 0 2 0 1 1 1 0 3 0 1 1 0 0 0 
+					0 1 0 0 1 1 1 0 0 0 0 1 0 1 0 0 2 0 0 0 0 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 2 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 
+					0 3 0 1 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+					0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+					0 1 2 1 0 2 3 4 2 2 0 0 1 0 0 1 0 0 1 0 0 0 1 1 0 0 0 0 1 0 0 0 2 1 2 0 0 5 0 1 1 1 0 0 0 1 1 0 1 0 0 0 
+					0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 2 1 1 0 0 0 0 0 0 0 3 1 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 
+					0 1 0 0 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 
+					0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 
+					0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                 </Data>
+			</Spectrum>
+		</MeasuredInformation>
+		<AnalysisResults>
+			<ActivityConcentrationSummary>
+				<QuantifiedNuclides>
+					<Nuclide>
+						<Name>Xe-133</Name>
+						<HalfLife>P5.245D</HalfLife>
+						<!-- period following ISO format -->
+						<Concentration unit="uBq/m3">2400</Concentration>
+						<ConcentrationError unit="percentage">5.80</ConcentrationError>
+					</Nuclide>
+				</QuantifiedNuclides>
+				<MinimumDetectableConcentration>
+					<Nuclide>
+						<Name>Xe-135</Name>
+						<Concentration unit="uBq/m3">530</Concentration>
+						<NIDFlag>0</NIDFlag>
+					</Nuclide>
+					<Nuclide>
+						<Name>Xe-133m</Name>
+						<Concentration unit="uBq/m3">2400</Concentration>
+						<NIDFlag>2</NIDFlag>
+					</Nuclide>
+					<Nuclide>
+						<Name>Xe-131m</Name>
+						<Concentration unit="uBq/m3">5400</Concentration>
+						<NIDFlag>2</NIDFlag>
+					</Nuclide>
+				</MinimumDetectableConcentration>
+			</ActivityConcentrationSummary>
+			<ActivitySummary>
+			  <Nuclide>
+				<Name>Xe-131m</Name>
+				<Activity unit="Bq">-0.000013</Activity>
+				<ActivityError unit="Bq">-0.00016</ActivityError>
+				<LC unit="Bq">0.00081</LC>
+			  </Nuclide>
+			  <Nuclide>
+				<Name>Xe-133m</Name>
+				<Activity unit="Bq">0.000001</Activity>
+				<ActivityError unit="Bq">0.00013</ActivityError>
+				<LC unit="Bq">0.00063</LC>
+			  </Nuclide>
+			  <Nuclide>
+				<Name>Xe-133</Name>
+				<Activity unit="Bq">0.062</Activity>
+				<ActivityError unit="Bq">0.0034</ActivityError>
+				<LC unit="Bq">0.00013</LC>
+			  </Nuclide>
+			  <Nuclide>
+				<Name>Xe-135</Name>
+				<Activity unit="Bq">-0.000013</Activity>
+				<ActivityError unit="Bq">-0.000016</ActivityError>
+				<LC unit="Bq">0.000063</LC>
+			  </Nuclide>
+			  <Nuclide>
+				<Name>Rn-222F</Name>
+				<Activity unit="Bq">0.13</Activity>
+				<ActivityError unit="Bq">0.016</ActivityError>
+			  </Nuclide>
+			</ActivitySummary>
+			<ROINetCountsResults method="NCC">
+			 <ROI>
+			   <Nb>1</Nb>
+			   <Nuclide>Pb214F</Nuclide>
+			   <NetCounts>-31</NetCounts>
+			   <NetcountsError>33</NetcountsError>
+			   <LC>100</LC>
+			   <Efficiency>0.29</Efficiency>
+			 </ROI>
+			 <ROI>
+			   <Nb>2</Nb>
+			   <Nuclide>Xe135</Nuclide>
+			   <NetCounts>45</NetCounts>
+			   <NetcountsError>41</NetcountsError>
+			   <LC>120</LC>
+			   <Efficiency>0.35</Efficiency>
+			 </ROI>
+			 <!-- there are more regions than that -->
+			 <ROIUsedFor nucl="Xe-133">
+			   <ROIs>3 7 8</ROIs>
+			 </ROIUsedFor>
+			</ROINetCountsResults>
+			<XeCovarianceMatrix>
+			   <Rows>Rn-222 Xe-135 Xe-133 Xe-133m</Rows>
+			   <Cols>Xe-131m Xe-133m Xe-133 Xe-135</Cols>
+			   <Values>0.00000011 0.000000063 0.0000019 0.000045</Values>
+			   <Values>-0.0000342 -0.0000000023 -0.0000000023 </Values>
+			   <Values>0.00000000455 0.00000000011</Values>
+			   <Values>0.00000000145</Values>
+			</XeCovarianceMatrix>
+			<GoodnessOfFit>1.2345</GoodnessOfFit>
+		</AnalysisResults>
+		<Parameters>
+		  <ProcessingParameters software="bgAnalayse" method="NCC" version="1.0">
+            <ROIBoundaries method="NCC">
+              <ROIBoundary>
+                <Nb>1</Nb>
+                <GammaLow unit="keV">323.9</GammaLow>
+                <GammaHigh unit="keV">381.9</GammaHigh>
+                <BetaLow unit="keV">0</BetaLow>
+                <BetaHigh unit="keV">639</BetaHigh>
+              </ROIBoundary>
+              <ROIBoundary>
+                <Nb>2</Nb>
+                <GammaLow unit="keV">229.5</GammaLow>
+                <GammaHigh unit="keV">272.2</GammaHigh>
+                <BetaLow unit="keV">0</BetaLow>
+                <BetaHigh unit="keV">909</BetaHigh>
+              </ROIBoundary>
+              <ROIBoundary>
+                <Nb>3</Nb>
+                <GammaLow unit="keV">70</GammaLow>
+                <GammaHigh unit="keV">94.9</GammaHigh>
+                <BetaLow unit="keV">0</BetaLow>
+                <BetaHigh unit="keV">352</BetaHigh>
+              </ROIBoundary>
+              <!-- there are more regoins than these 3 -->
+           </ROIBoundaries>
+         </ProcessingParameters>
+			<UpdateParameters software="genie" method="none" version="1.0">
+				<UseMRP>true</UseMRP>
+				<MRPSampleID>0867749</MRPSampleID>
+				<GainShift unit="percentage">0.1</GainShift>
+				<ZeroShift>0.75</ZeroShift>
+				<AreaLimit>100</AreaLimit>
+				<UseWeight>true</UseWeight>
+				<UseMultiplet>true</UseMultiplet>
+				<ForceLinear>false</ForceLinear>
+				<IgnorePreviousECR>true</IgnorePreviousECR>
+				<MinimumLibLookupTolerance>0.200000002980232</MinimumLibLookupTolerance>
+				<RERIntercept>1.5</RERIntercept>
+				<RERSlope>0.2999999999999</RERSlope>
+				<ECRSlope>0</ECRSlope>
+				<DoResolutionUpdate>true</DoResolutionUpdate>
+			</UpdateParameters>
+		</Parameters>
+		<Flags>
+			<DataQualityFlags>
+				<SamplingTime>
+					<Value unit="hours">11.3</Value>
+					<Pass>true</Pass>
+					<Test>between 11 hours and 13 hours</Test>
+				</SamplingTime>
+				<ProcessingTime>
+					<Value unit="hours">0.3</Value>
+					<Pass>true</Pass>
+					<Test>between 0 hours and 1 hours</Test>
+				</ProcessingTime>
+				<AcquisitionTime>
+					<Value unit="hours">11.3</Value>
+					<Pass>true</Pass>
+					<Test>between 11 hours and 13 hours</Test>
+				</AcquisitionTime>
+				<StableXenonVolume>
+					<Value unit="ml">1.32</Value>
+					<Pass>true</Pass>
+					<Test>more than 0.87ml</Test>
+				</StableXenonVolume>
+				<MDCXE-133>
+					<Value unit="mBq/m3">0.23</Value>
+					<Pass>true</Pass>
+					<Test>less than 1 mBq/m3</Test>
+				</MDCXE-133>
+			</DataQualityFlags>
+		</Flags>
+		<CalibrationInformation>
+			<Calibration Type="BetaEnergyToChannels" EnergyUnits="keV" ID="beta2ch">
+				<Remark> Beta Energy to Channel Calibration equation</Remark>
+				<CalibrationCreationDate>2008-01-24T12:09:53.89</CalibrationCreationDate>
+				<Equation Model="Polynomial" Form="E(c)= Term0 + Term1 * c + Term2" >
+					<Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
+					<Coefficients>0.234 0.4234 0.00239</Coefficients>
+				</Equation>
+			</Calibration>
+			<Calibration Type="GammaEnergyToChannels" EnergyUnits="keV" ID="gamma2ch">
+				<Remark> Gamma Energy to Channel Calibration equation</Remark>
+				<CalibrationCreationDate>2008-01-24T12:09:53.89</CalibrationCreationDate>
+				<Equation Model="Polynomial" Form="E(c)= Term0 + Term1 * c + Term2" >
+					<Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
+					<Coefficients>0.234 0.4234 0.00239</Coefficients>
+				</Equation>
+			</Calibration>
+		</CalibrationInformation>
+	</SampleInformation>
+</SampML>
