@@ -259,15 +259,32 @@
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="activityConcentrationSummaryType" />
-      <xs:element minOccurs="1" maxOccurs="1" name="PeakResults" type="peakResultsType">
-        <xs:annotation>
+      <xs:element minOccurs="1" maxOccurs="1" name="PeakResults" type="peakResultsType" >
+       <xs:annotation>
           <xs:documentation>
 						peaks information
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="0" maxOccurs="0" name="SCACLines"   type="scacLinesType">
+       <xs:annotation>
+          <xs:documentation>
+			SCAC lines information, only for autosaint results.
+		  </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+       
     </xs:sequence>
   </xs:group>
+  
+  <xs:complexType name="scacLinesType">                                            <!-- added for autoSaint -->
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="0" name="Data"   type="channelDataType"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax" />
+  </xs:complexType>
+  
+  
   <xs:complexType name="analysisResultsType">
     <xs:annotation>
       <xs:documentation>
@@ -284,7 +301,7 @@
     <xs:sequence>
       <xs:annotation>
         <xs:documentation>
-					Analysis Results for noble gaz
+					Analysis Results for noble gas
 				</xs:documentation>
       </xs:annotation>
       <xs:element minOccurs="1" maxOccurs="1" name="ActivityConcentrationSummary" type="activityConcentrationSummaryType" />

@@ -27,7 +27,7 @@
 				<SamplingTime>P11H18M36S</SamplingTime>
 				<DecayTime>P24M24S</DecayTime>
 				<SourceType>GammaSpectrum</SourceType>
-				<Data gammaChannelSpan="256" gammaEnergySpan="760" format="IMSFormat">  <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
+				<Data gammaChannelSpan="256" gammaEnergySpan="760" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
 					0     112271     0          9          18         153
 					5     279        1105       14928      26849      26043
 					10    25947      26670      27122      24693      23273
