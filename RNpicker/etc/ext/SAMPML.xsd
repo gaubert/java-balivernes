@@ -3,7 +3,7 @@
 <xs:schema xmlns="http://www.ctbto.org/SAMPML/1.0" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/1.0" id="sampml" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:annotation>
     <xs:documentation>
-			IDC Format for describing RN Sample information
+			SAMPML IDC Format for describing RN Sample information
 		</xs:documentation>
   </xs:annotation>
   <xs:element name="SampML">
@@ -19,7 +19,7 @@
         <xs:element minOccurs="1" maxOccurs="unbounded" name="SampleInformation" type="sampleInformationType" />
       </xs:sequence>
     </xs:complexType>
-  </xs:element>
+  </xs:element> 
   <xs:complexType name="sampleInformationType">
     <xs:annotation>
       <xs:documentation>
