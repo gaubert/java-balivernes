@@ -45,14 +45,13 @@
       <xs:element minOccurs="1" maxOccurs="1" name="SampleType" type="enumSampleType">
         <xs:annotation>
           <xs:documentation>
-						particule or gaz
 					 </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="SampleGeometry" type="xs:string">
+      <xs:element minOccurs="0" maxOccurs="1" name="SampleGeometry" type="xs:string">
         <xs:annotation>
           <xs:documentation>
-						particule or gaz
+						Only for particulate
 					 </xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -277,11 +276,11 @@
     </xs:annotation>
     <xs:choice>
       <xs:group ref="particulateAnalysisResultsType" />
-      <xs:group ref="nobleGazAnalysisResultsType" />
+      <xs:group ref="nobleGasAnalysisResultsType" />
     </xs:choice>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  <xs:group name="nobleGazAnalysisResultsType">
+  <xs:group name="nobleGasAnalysisResultsType">
     <xs:sequence>
       <xs:annotation>
         <xs:documentation>
@@ -300,6 +299,7 @@
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="ROINetCountResults" type="ROINetCountResultsType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="ROINetCountResults" type="ROIBoundariesType" />
       <xs:element minOccurs="1" maxOccurs="1" name="XeCovarianceMatrix" type="XeCovarianceMatrixType" />
       <xs:element minOccurs="1" maxOccurs="1" name="GoodnessOfFit" type="xs:double" />
     </xs:sequence>
@@ -551,10 +551,8 @@
       <xs:element name="BinningVectorSize" type="xs:positiveInteger" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_BGAnalyse_NCC_v1.0Type">
-    <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="ROIBoundaries" type="ROIBoundariesType" />
-    </xs:sequence>
+  <xs:group name="procParam_BGAnalyse_NCC_v1.0Type">             <!--  Empty for the moment -->
+    <xs:sequence/>
   </xs:group>
   <xs:group name="updateParam_Genie_RRR_v1.0Type">
     <xs:annotation>
@@ -1093,12 +1091,39 @@
     </xs:annotation>
     <xs:simpleContent>
       <xs:extension base="doubleListType">
-        <xs:attribute name="NbCounts" type="xs:positiveInteger" use="optional">
+        <xs:attribute name="gammaChannelSpan" type="xs:positiveInteger" use="optional">
           <xs:annotation>
             <xs:documentation>
-							The algorithm used to compress the channel
-							data
+						Numbers of channels
 						</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="betaChannelSpan" type="xs:positiveInteger" use="optional">
+          <xs:annotation>
+            <xs:documentation>
+						Numbers of channels
+						</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="betaEnergySpan" type="xs:positiveInteger" use="optional">
+          <xs:annotation>
+            <xs:documentation>
+						Energy Span for Beta rays
+						</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="gammaEnergySpan" type="xs:positiveInteger" use="optional">
+          <xs:annotation>
+            <xs:documentation>
+						Energy Span for Gamma rays
+						</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+         <xs:attribute name="format" type="xs:string" use="optional">
+          <xs:annotation>
+            <xs:documentation>
+				In case a particular format is used to encode the data
+			</xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="Compression" type="enumSpectrumCompressionType" use="optional">
@@ -1306,7 +1331,7 @@
     </xs:annotation>
     <xs:restriction base="xs:string">
       <xs:enumeration value="particulate" />
-      <xs:enumeration value="nobleGaz" />
+      <xs:enumeration value="nobleGas" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="enumDistanceUnits">

@@ -11,16 +11,14 @@
 			<Status>Active</Status>
 		</StationInformation>
 		<DetectorInformation>
-			<DetectorCode>NZP46_002</DetectorCode>
+			<DetectorCode>CKX23_002</DetectorCode>
 			<DetectorDescription>Detector ARSA Cell #2</DetectorDescription>
 		</DetectorInformation>
-		<SampleType>nobleGaz</SampleType>
-		<SampleGeometry>DISC50MMX5</SampleGeometry>
+		<SampleType>nobleGas</SampleType>
 		<SampleQuantity unit="m3">17.79</SampleQuantity>
-		<ReferenceDate>1971-06-22T23:08:07.89</ReferenceDate>
 		<MeasuredInformation>
 			<Spectrum>
-				<!-- Gasmma Spectrum -->
+				<!-- Gamma Spectrum -->
 				<CollectionStart>2007-08-25T08:20:00</CollectionStart>
 				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
 				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
@@ -29,9 +27,8 @@
 				<SamplingTime>P11H18M36S</SamplingTime>
 				<DecayTime>P24M24S</DecayTime>
 				<SourceType>GammaSpectrum</SourceType>
-				<Data>  <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
-                    256   760
-                    0     112271     0          9          18         153
+				<Data gammaChannelSpan="256" gammaEnergySpan="760" format="IMSFormat">  <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
+					0     112271     0          9          18         153
 					5     279        1105       14928      26849      26043
 					10    25947      26670      27122      24693      23273
 					15    24674      28139      31310      30394      28033
@@ -95,8 +92,7 @@
 				<SamplingTime>P11H18M36S</SamplingTime>
 				<DecayTime>P24M24S</DecayTime>
 				<SourceType>BetaSpectrum</SourceType>
-				<Data>       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
-                    256   1062
+				<Data gammaChannelSpan="256" gammanEnergySpan="1062" format="IMSFormat">       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
 					0     5134939    261        342        427        1056
 					5     1603       1449       1156       965        813
 					10    727        681        644        620        562
@@ -161,8 +157,7 @@
 				<SamplingTime>P11H18M36S</SamplingTime>
 				<DecayTime>P24M24S</DecayTime>
 				<SourceType>Sample</SourceType>
-				<Data>       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
-                    256   256   760  1062
+				<Data gammaChannelSpan="256" gammaEnergySpan="760" betaChannelSpan="256" betaEnergySpan="760">       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
 					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
 					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
@@ -233,24 +228,24 @@
 						<Name>Xe-133</Name>
 						<HalfLife>P5.245D</HalfLife>
 						<!-- period following ISO format -->
-						<Concentration unit="uBq/m3">2400</Concentration>
+						<Concentration unit="mBq/m3">2.4</Concentration>
 						<ConcentrationError unit="percentage">5.80</ConcentrationError>
 					</Nuclide>
 				</QuantifiedNuclides>
 				<MinimumDetectableConcentration>
 					<Nuclide>
 						<Name>Xe-135</Name>
-						<Concentration unit="uBq/m3">530</Concentration>
+						<Concentration unit="mBq/m3">0.53</Concentration>
 						<NIDFlag>0</NIDFlag>
 					</Nuclide>
 					<Nuclide>
 						<Name>Xe-133m</Name>
-						<Concentration unit="uBq/m3">2400</Concentration>
+						<Concentration unit="mBq/m3">2.4</Concentration>
 						<NIDFlag>2</NIDFlag>
 					</Nuclide>
 					<Nuclide>
 						<Name>Xe-131m</Name>
-						<Concentration unit="uBq/m3">5400</Concentration>
+						<Concentration unit="mBq/m3">5.4</Concentration>
 						<NIDFlag>2</NIDFlag>
 					</Nuclide>
 				</MinimumDetectableConcentration>
@@ -308,19 +303,7 @@
 			   <ROIs>3 7 8</ROIs>
 			 </ROIUsedFor>
 			</ROINetCountsResults>
-			<XeCovarianceMatrix>
-			   <Rows>Rn-222 Xe-135 Xe-133 Xe-133m</Rows>
-			   <Cols>Xe-131m Xe-133m Xe-133 Xe-135</Cols>
-			   <Values>0.00000011 0.000000063 0.0000019 0.000045</Values>
-			   <Values>-0.0000342 -0.0000000023 -0.0000000023 </Values>
-			   <Values>0.00000000455 0.00000000011</Values>
-			   <Values>0.00000000145</Values>
-			</XeCovarianceMatrix>
-			<GoodnessOfFit>1.2345</GoodnessOfFit>
-		</AnalysisResults>
-		<Parameters>
-		  <ProcessingParameters software="bgAnalayse" method="NCC" version="1.0">
-            <ROIBoundaries method="NCC">
+			<ROIBoundaries method="NCC">
               <ROIBoundary>
                 <Nb>1</Nb>
                 <GammaLow unit="keV">323.9</GammaLow>
@@ -344,24 +327,16 @@
               </ROIBoundary>
               <!-- there are more regoins than these 3 -->
            </ROIBoundaries>
-         </ProcessingParameters>
-			<UpdateParameters software="genie" method="none" version="1.0">
-				<UseMRP>true</UseMRP>
-				<MRPSampleID>0867749</MRPSampleID>
-				<GainShift unit="percentage">0.1</GainShift>
-				<ZeroShift>0.75</ZeroShift>
-				<AreaLimit>100</AreaLimit>
-				<UseWeight>true</UseWeight>
-				<UseMultiplet>true</UseMultiplet>
-				<ForceLinear>false</ForceLinear>
-				<IgnorePreviousECR>true</IgnorePreviousECR>
-				<MinimumLibLookupTolerance>0.200000002980232</MinimumLibLookupTolerance>
-				<RERIntercept>1.5</RERIntercept>
-				<RERSlope>0.2999999999999</RERSlope>
-				<ECRSlope>0</ECRSlope>
-				<DoResolutionUpdate>true</DoResolutionUpdate>
-			</UpdateParameters>
-		</Parameters>
+		   <XeCovarianceMatrix>
+			   <Rows>Rn-222 Xe-135 Xe-133 Xe-133m</Rows>
+			   <Cols>Xe-131m Xe-133m Xe-133 Xe-135</Cols>
+			   <Values>0.00000011 0.000000063 0.0000019 0.000045</Values>
+			   <Values>-0.0000342 -0.0000000023 -0.0000000023 </Values>
+			   <Values>0.00000000455 0.00000000011</Values>
+			   <Values>0.00000000145</Values>
+			</XeCovarianceMatrix>
+			<GoodnessOfFit>1.2345</GoodnessOfFit>
+		</AnalysisResults>
 		<Flags>
 			<DataQualityFlags>
 				<SamplingTime>
