@@ -6,26 +6,32 @@
 			IDC Format for describing RN Sample information
 		</xs:documentation>
   </xs:annotation>
-  <xs:element name="Remark" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>
+  <xs:element name="SampML">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="1" name="Remark" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
 				Description (i.e comments) related to this sample
-			</xs:documentation>
-    </xs:annotation>
+		    </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element minOccurs="1" maxOccurs="unbounded" name="SampleInformation" type="sampleInformationType" />
+      </xs:sequence>
+    </xs:complexType>
   </xs:element>
-  <xs:element name="SampleInformation" type="sampleInformationType" />
   <xs:complexType name="sampleInformationType">
     <xs:annotation>
       <xs:documentation>
-				All informations related to one sample
-			</xs:documentation>
+				   All informations related to one sample
+			     </xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:element minOccurs="1" maxOccurs="1" name="StationInformation" type="stationInformationType">
         <xs:annotation>
           <xs:documentation>
 						Time, location information for the sample
-					</xs:documentation>
+					   </xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" maxOccurs="1" name="DetectorInformation" type="detectorInformationType">
@@ -33,16 +39,24 @@
           <xs:documentation>
 						Information related to the detector used in the
 						station (geometry, ?)
-					</xs:documentation>
+					   </xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="SampleType" type="enumSampleType">
         <xs:annotation>
           <xs:documentation>
 						particule or gaz
-					</xs:documentation>
+					 </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="SampleGeometry" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+						particule or gaz
+					 </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="SampleQuantity" type="physicalValueType" />
       <xs:element minOccurs="1" maxOccurs="1" name="ReferenceDate" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>
@@ -100,7 +114,7 @@
   </xs:complexType>
   <xs:complexType name="stationInformationType">
     <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="1" name="Name" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" name="StationLocation" type="xs:string" />
       <xs:element minOccurs="0" maxOccurs="1" name="StationCode" type="xs:string">
         <xs:annotation>
           <xs:documentation>
@@ -141,6 +155,10 @@
     <xs:annotation>
       <xs:documentation>To Be Defined</xs:documentation>
     </xs:annotation>
+    <xs:sequence>
+      <xs:element name="DetectorCode" type="xs:string" />
+      <xs:element name="DetectorDescription" type="xs:string" />
+    </xs:sequence>
   </xs:complexType>
   <xs:complexType name="measuredInformationType">
     <xs:annotation>
@@ -159,14 +177,35 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="StartTime" type="xs:dateTime">
+      <xs:element minOccurs="1" maxOccurs="1" name="CollectionStart" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>
 						Measurement start date/time
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="RealTime" type="xs:duration">
+      <xs:element minOccurs="1" maxOccurs="1" name="CollectionStop" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>
+						Measurement start date/time
+					</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="AcquisitionStart" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>
+						Measurement start date/time
+					</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="AcquisitionStop" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>
+						Measurement start date/time
+					</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="AcquisitionTime" type="xs:duration">
         <xs:annotation>
           <xs:documentation>
 						Duration of each sample measurement/interval at
@@ -174,7 +213,7 @@
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="LiveTime" type="xs:duration">
+      <xs:element minOccurs="1" maxOccurs="1" name="SamplingTime" type="xs:duration">
         <xs:annotation>
           <xs:documentation>
 						Effective duration (i.e., live time) of each
@@ -189,7 +228,7 @@
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="DataType" type="channelDataType">
+      <xs:element minOccurs="1" maxOccurs="1" name="Data" type="channelDataType">
         <xs:annotation>
           <xs:documentation>
 						the data, spectrum
@@ -206,7 +245,6 @@
     </xs:attribute>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  
   <xs:group name="particulateAnalysisResultsType">
     <xs:sequence>
       <xs:annotation>
@@ -385,7 +423,7 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="MDA">
+      <xs:element minOccurs="1" maxOccurs="1" name="MinimumDetectableConcentration">
         <xs:annotation>
           <xs:documentation>
 						Categorisation of the sample
@@ -419,7 +457,7 @@
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="HalfLife" type="physicalValueType">
+      <xs:element minOccurs="0" maxOccurs="1" name="HalfLife" type="xs:duration">
         <xs:annotation>
           <xs:documentation>
 						HalfLife as a string
@@ -480,8 +518,6 @@
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
-  
-  
   <xs:group name="procParam_Genie_RRR_v1.0Type">
     <xs:annotation>
       <xs:documentation>
@@ -491,8 +527,8 @@
     </xs:annotation>
     <xs:sequence>
       <xs:element name="Threshold" type="xs:positiveInteger" />
-      <xs:element name="PeakStart" type="xs:positiveInteger" />
-      <xs:element name="PeakEnd" type="xs:positiveInteger" />
+      <xs:element name="PeakStart" type="physicalValueType" />
+      <xs:element name="PeakEnd" type="physicalValueType" />
       <xs:element name="LeftFWHMLimit" type="xs:positiveInteger" />
       <xs:element name="RightFWHMLimit" type="xs:positiveInteger" />
       <xs:element name="MutlipletFWHMLimit" type="xs:positiveInteger" />
@@ -581,7 +617,7 @@
       <xs:element name="RERSlope" type="xs:double" />
       <xs:element name="ECRSlope" type="xs:double" />
       <xs:element name="DoResolutionUpdate" type="xs:boolean" />
-      <xs:element name="RERMRPUsed" type="xs:positiveInteger" />
+      <xs:element minOccurs="0" maxOccurs="1" name="RERMRPUsed" type="xs:positiveInteger" />
     </xs:sequence>
   </xs:group>
   <xs:group name="updateParam_Autosaint_RRR_v1.0Type">
@@ -793,8 +829,8 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="SampleUUID" type="xs:string" />
       <xs:element minOccurs="1" maxOccurs="1" name="Category" type="enumCategoryType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="CategoryComment" type="xs:string" />
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
@@ -875,6 +911,34 @@
 								</xs:documentation>
               </xs:annotation>
             </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="LD" type="xs:double">
+              <xs:annotation>
+                <xs:documentation>
+									Detectable Level
+			     </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="Detectability" type="xs:double">
+              <xs:annotation>
+                <xs:documentation>
+						same as significance
+			     </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="Detectability" type="xs:double">
+              <xs:annotation>
+                <xs:documentation>
+						same as significance
+			     </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="IdentifiedNuclide" type="identifiedNuclideType">
+              <xs:annotation>
+                <xs:documentation>
+						The identified Nuclides
+			     </xs:documentation>
+              </xs:annotation>
+            </xs:element>
           </xs:sequence>
           <xs:anyAttribute namespace="##other" processContents="lax" />
         </xs:complexType>
@@ -894,7 +958,7 @@
       <xs:documentation>Calibration data</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="0" ref="Remark" />
+      <xs:element minOccurs="0" name="Remark" type="xs:string" />
       <xs:element minOccurs="0" name="CalibrationCreationDate" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>
@@ -955,7 +1019,7 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="0" ref="Remark" />
+      <xs:element minOccurs="0" name="Remark" type="xs:string" />
       <xs:element maxOccurs="unbounded" name="Coefficients" type="coefficientsType">
         <xs:annotation>
           <xs:documentation>
@@ -1026,7 +1090,7 @@
       <xs:documentation>Array of ordinal pairs</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="0" ref="Remark" />
+      <xs:element minOccurs="0" name="Remark" type="xs:string" />
       <xs:element minOccurs="1" maxOccurs="unbounded" name="PointXY" type="pointXYType">
         <xs:annotation>
           <xs:documentation>
@@ -1059,7 +1123,7 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="0" ref="Remark" />
+      <xs:element minOccurs="0" name="Remark" type="xs:string" />
       <xs:element name="X" type="doubleUnc">
         <xs:annotation>
           <xs:documentation>Abscissa value</xs:documentation>
@@ -1295,8 +1359,8 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
-      <xs:enumeration value="particule" />
-      <xs:enumeration value="gaz" />
+      <xs:enumeration value="particulate" />
+      <xs:enumeration value="nobleGaz" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="enumDistanceUnits">
@@ -1365,4 +1429,21 @@
       <xs:enumeration value="CountedZeroes" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="identifiedNuclideType">
+    <xs:annotation>
+      <xs:documentation>Nuclide Identified for a particular peak</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="percentage" type="xs:double">
+          <xs:annotation>
+            <xs:documentation>
+							Identified Nuclide for a particular peak with the percentage of presence
+			</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:anyAttribute namespace="##other" processContents="lax" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:schema>

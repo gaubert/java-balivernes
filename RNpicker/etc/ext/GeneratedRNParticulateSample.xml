@@ -2,7 +2,7 @@
 
 <SampML xmlns="http://www.ctbto.org/SAMPML/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0 file:///C:/Documents%20and%20Settings/aubert/Desktop/IML.xsd">
   
-  <Remark>Example Nb 1</Remark>
+  <Remark>Particulate Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
   
   <SampleInformation UUID="0867819">
     
@@ -10,7 +10,7 @@
       <StationLocation>Oahu, Hawaii, USA</StationLocation>
       <StationCode>USP79</StationCode>
       <CountryCode>USA</CountryCode>
-      <Coordinates>-5162.985094196054907 -626.585094196054907</Coordinates>
+      <Coordinates>-5162.985094196054907 -626.585094196054907</Coordinates>                       <!-- third value defines altitude -->
       <Status>Active</Status>
     </StationInformation>
     
@@ -223,7 +223,7 @@
           <!-- ... There are more than these 4 nuclides -->
         </MinimumDetectableConcentration>
       </ActivityConcentrationSummary>
-      <PeakResults>                                                         <!-- This is valid only for Particulates for Gaz we will have ROI -->
+      <PeakResults>                                                        
        <PeakResult>
         <Energy>239.027374267578 0.258760273456573</Energy>                                          <!-- En + En Err -->
         <Centroid>700.034912109375 0.460972547531128</Centroid>                                      <!-- Centroid + Centroid Err -->
@@ -235,7 +235,7 @@
         <LC>76.933479309082</LC>                                                                     <!-- Criticial Level  -->
         <LD>85.234567890901</LD>                                                                     <!-- Detectable Level (100% sure of detection) -->
         <Detectability>1.22808218002319</Detectability>                                              <!-- Number between 0 and 1 -->
-        <IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>                              <!-- Associated Identified Nucl if there is one, None otherwise -->                                                                                                 
+        <IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>                               <!-- Associated Identified Nucl if there is one, None otherwise -->                                                                                                 
        </PeakResult>
     </PeakResults>
     </AnalysisResults>
