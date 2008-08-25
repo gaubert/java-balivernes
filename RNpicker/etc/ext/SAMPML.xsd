@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
-<xs:schema xmlns="http://www.ctbto.org/SAMPML/0.5" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/1.0" id="sampml" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:schema xmlns="http://www.ctbto.org/SAMPML/0.5" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.5" id="sampml" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:annotation>
     <xs:documentation>
 			SAMPML IDC Format for describing RN Sample information
@@ -57,14 +57,6 @@
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="SampleQuantity" type="physicalValueType" />
-      <xs:element minOccurs="1" maxOccurs="1" name="ReferenceDate" type="xs:dateTime">
-        <xs:annotation>
-          <xs:documentation>
-						The date to which activities will be decay
-						corrected
-					</xs:documentation>
-        </xs:annotation>
-      </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="MeasuredInformation" type="measuredInformationType">
         <xs:annotation>
           <xs:documentation>
