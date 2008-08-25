@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<SampML xmlns="http://www.ctbto.org/SAMPML/0.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0">
+<SampML xmlns="http://www.ctbto.org/SAMPML/0.5">
 	<Remark>Particulate Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
 	<SampleInformation UUID="0867819">
 		<StationInformation>
@@ -23,9 +23,9 @@
 				<CollectionStop>2008-07-18T22:25:00</CollectionStop>
 				<AcquisitionStart>2008-07-19T22:25:00</AcquisitionStart>
 				<AcquisitionStop>2008-07-20T22:25:00</AcquisitionStop>
-				<AcquisitionTime>P23H41M</AcquisitionTime>
-				<SamplingTime>P24H</SamplingTime>
-				<DecayTime>P24.90H</DecayTime>
+				<AcquisitionTime>PT23H41M</AcquisitionTime>
+				<SamplingTime>PT24H</SamplingTime>
+				<DecayTime>PT24H54M</DecayTime>
 				<SourceType>Sample</SourceType>
 				<Data gammaChannelSpan="8192" gammaEnergySpan="3100" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum (like counted zero method for example -->
 					1     0          0          0          0          0
@@ -178,7 +178,7 @@
 					<Nuclide>
 						<Name>BE-7</Name>
 						<Type>Natural</Type>
-						<HalfLife>P53D06H57M36S</HalfLife>
+						<HalfLife>P53DT06H57M36S</HalfLife>
 						<!-- period following ISO format -->
 						<Concentration unit="uBq/m3">6200</Concentration>
 						<ConcentrationError unit="percentage">2.2</ConcentrationError>
@@ -186,7 +186,7 @@
 					<Nuclide>
 						<Name>PB-212F</Name>
 						<Type>Natural</Type>
-						<HalfLife>P10H38M24S</HalfLife>
+						<HalfLife>PT10H38M24S</HalfLife>
 						<!-- period following ISO format -->
 						<Concentration unit="uBq/m3">5400</Concentration>
 						<ConcentrationError unit="percentage">1.83</ConcentrationError>
@@ -194,7 +194,7 @@
 					<Nuclide>
 						<Name>CO-60</Name>
 						<Type>Activation</Type>
-						<HalfLife>P166348548S</HalfLife>
+						<HalfLife>PT166348548S</HalfLife>
 						<!-- period following ISO format -->
 						<Concentration unit="uBq/m3">1.3</Concentration>
 						<ConcentrationError unit="percentage">88.43</ConcentrationError>
@@ -203,22 +203,23 @@
 				<MinimumDetectableConcentration>
 					<Nuclide>
 						<Name>BA-140</Name>
-						<HalfLife>P12.752D</HalfLife>
+						<HalfLife>PT1101772.8S</HalfLife>
 						<Concentration unit="uBq/m3">7.76</Concentration>
 					</Nuclide>
 					<Nuclide>
 						<Name>CE-143</Name>
-						<HalfLife>P1.37662D</HalfLife>
+						<HalfLife>PT118939.968S</HalfLife>
 						<Concentration unit="uBq/m3">16.69</Concentration>
 					</Nuclide>
 					<Nuclide>
 						<Name>CS-134</Name>
-						<HalfLife>P2.062Y</HalfLife>
+						<HalfLife>PT65070381.4S</HalfLife>
 						<Concentration unit="uBq/m3">1.85</Concentration>
 					</Nuclide>
 					<Nuclide>
 						<Name>CS-136</Name>
-						<HalfLife>P13.16D</HalfLife>
+						<!-- 13.16D -->
+						<HalfLife>P13DT3H7M12S</HalfLife>
 						<Concentration unit="uBq/m3">1.82</Concentration>
 					</Nuclide>
 					<!-- ... There are more than these 4 nuclides -->
@@ -258,6 +259,7 @@
 				<PeakEnd unit="keV">2750</PeakEnd>
 				<LeftFWHMLimit>2</LeftFWHMLimit>
 				<RightFWHMLimit>2</RightFWHMLimit>
+				<MutlipletFWHMLimit>4</MutlipletFWHMLimit>
 				<FitSinglet>true</FitSinglet>
 				<CriticalLevelTest>true</CriticalLevelTest>
 				<EstimatePeakWidths>true</EstimatePeakWidths>
@@ -266,6 +268,7 @@
 				<PerformSubstraction>false</PerformSubstraction>
 				<EnergyTolerance>0.4</EnergyTolerance>
 				<ConfidenceThreshold>0.25</ConfidenceThreshold>
+				<RiskLevel unit="percentage">0.01</RiskLevel>
 			</ProcessingParameters>
 			<UpdateParameters software="genie" method="none" version="1.0">
 				<UseMRP>true</UseMRP>
@@ -286,7 +289,7 @@
 		</Parameters>
 		<Flags>
 			<TimelinessAndAvailabilityFlags>
-				<PreviousSamplePresent>ture</PreviousSamplePresent>
+				<PreviousSamplePresent>true</PreviousSamplePresent>
 				<CollectionTimeWithin24Hrs>true</CollectionTimeWithin24Hrs>
 				<AcquisitionTimeGTE20Hrs>true</AcquisitionTimeGTE20Hrs>
 				<DecayTimeLTE24Hrs>true</DecayTimeLTE24Hrs>
@@ -336,7 +339,7 @@
 					<Coefficients>-0.350223245 0.32992958743</Coefficients>
 				</Equation>
 			</Calibration>
-			<Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="keV" ID="re2en">
+			<Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="Energy" ID="re2en">
 				<Remark>Resolution to Energy Calibration equation</Remark>
 				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
 				<Equation Model="Polynomial" Form="FWHM(E)= Term0 + Term1 * SQRT(E)">
@@ -344,17 +347,15 @@
 					<Coefficients>0.632123456 0.0370345432</Coefficients>
 				</Equation>
 			</Calibration>
-			<Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="keV" ID="re2en">
+			<Calibration Type="EfficiencyToEnergy" EnergyUnits="keV" FWHMUnits="Energy" ID="ef2en">
 				<Remark>Resolution to Energy Calibration equation</Remark>
 				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
 				<Equation Model="PolyLogarithmic" Form="L(E)=ln(948.0/E)">
-					<Remark>
-					</Remark>
+					<Remark>None</Remark>
 					<Coefficients>948.0</Coefficients>
 				</Equation>
 				<Equation Model="Exponential" Form="e(E)= exp( Term0 + Term1*L + Term2 * L^2 + Term3* L^3 + Term4 * L^4 + Term5 * L^5)">
-					<Remark>
-					</Remark>
+					<Remark>None</Remark>
 					<Coefficients>-3.423 0.8294 -0.2627 -0.2763 0.3371 -0.0953</Coefficients>
 				</Equation>
 			</Calibration>
