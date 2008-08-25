@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<SampML xmlns="http://www.ctbto.org/SAMPML/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0">
+<SampML xmlns="http://www.ctbto.org/SAMPML/0.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0">
 	<Remark>Particulate Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
 	<SampleInformation UUID="0867819">
 		<StationInformation>
@@ -8,7 +8,6 @@
 			<StationCode>USP79</StationCode>
 			<CountryCode>USA</CountryCode>
 			<Coordinates>-5162.985094196054907 -626.585094196054907</Coordinates>     <!-- third value defines altitude -->
-			<Status>Active</Status>
 		</StationInformation>
 		<DetectorInformation>
 			<DetectorCode>USP79_001</DetectorCode>
@@ -136,6 +135,10 @@
 			</Spectrum>
 		</MeasuredInformation>
 		<AnalysisResults>
+		    <SampleCategorization>
+		        <Category>1</Category>
+		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
+		    </SampleCategorization>
 			<ActivityConcentrationSummary>
 				<NonQuantifiedNuclides>
 					<Nuclide>
@@ -241,7 +244,7 @@
 					<!-- Criticial Level  -->
 					<LD>85.234567890901</LD>
 					<!-- Detectable Level (100% sure of detection) -->
-					<Detectability>1.22808218002319</Detectability>
+					<Detectibility>1.22808218002319</Detectibility>
 					<!-- Number between 0 and 1 -->
 					<IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>
 					<!-- Associated Identified Nucl if there is one, None otherwise -->

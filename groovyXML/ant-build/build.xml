@@ -27,9 +27,7 @@
 	
 	 available targets are:"
 	
-	   init                                --> create build directories
 	   build                               --> compile the source code
-	   dist                                --> create a distribution tar.gz
 	   install                             --> install into /tmp/iml-export
 	   clean                               --> clean up the build directory
 	   clean-all                           --> clean up build and tarball directories

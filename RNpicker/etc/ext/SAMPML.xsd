@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
-<xs:schema xmlns="http://www.ctbto.org/SAMPML/1.0" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/1.0" id="sampml" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema xmlns="http://www.ctbto.org/SAMPML/0.5" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/1.0" id="sampml" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:annotation>
     <xs:documentation>
 			SAMPML IDC Format for describing RN Sample information
+			Version: 0.5
 		</xs:documentation>
   </xs:annotation>
   <xs:element name="SampML">
@@ -135,13 +136,6 @@
           <xs:documentation>
 						Geographical coordinates (latitude, longitude,
 						elevation)
-					</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="Status" type="enumStationStatusType">
-        <xs:annotation>
-          <xs:documentation>
-						Active or NonActive
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -532,7 +526,6 @@
       <xs:documentation>
 				Different groups qualifiying the processing parameters
 				Group Names are Software_Method_Version Particulate Old
-                                { This does not make any sense to me }
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
@@ -550,6 +543,7 @@
       <xs:element name="PerformSubstraction" type="xs:boolean" />
       <xs:element name="EnergyTolerance" type="xs:double" />
       <xs:element name="ConfidenceThreshold" type="xs:double" />
+      <xs:element name="RiskLevel" type="xs:double" />
     </xs:sequence>
   </xs:group>
   <xs:group name="procParam_Autosaint_None_v1.0Type">
@@ -876,10 +870,10 @@
 			     </xs:documentation>
               </xs:annotation>
             </xs:element>
-            <xs:element minOccurs="1" maxOccurs="1" name="Detectability" type="xs:double">
+            <xs:element minOccurs="1" maxOccurs="1" name="Detectibility" type="xs:double">
               <xs:annotation>
                 <xs:documentation>
-						Detectability is the same as significance
+						Detectibility is the same as peak significance but with the a new method
 			     </xs:documentation>
               </xs:annotation>
             </xs:element>

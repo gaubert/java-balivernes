@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<SampML xmlns="http://www.ctbto.org/SAMPML/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0">
-	<Remark>Particulate Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
+<SampML xmlns="http://www.ctbto.org/SAMPML/0.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ctbto.org/SAMPML/1.0">
+	<Remark>Sauna Noble Gaz Sample Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
 	<SampleInformation UUID="0675232">
 		<StationInformation>
 			<StationLocation>Rarotonga, Cook Islands</StationLocation>
 			<StationCode>CKX23</StationCode>
 			<CountryCode>COK</CountryCode>
 			<Coordinates>XX  XX</Coordinates>           <!-- To be defined, third value defines altitude -->
-			<Status>Active</Status>
 		</StationInformation>
 		<DetectorInformation>
 			<DetectorCode>CKX23_002</DetectorCode>
