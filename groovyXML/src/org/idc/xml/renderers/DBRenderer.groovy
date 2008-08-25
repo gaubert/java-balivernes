@@ -8,7 +8,6 @@ public abstract class DBRenderer
 {
 	public static DBRenderer createRenderer(aType) throws CTBTOException
 	{
-		
 		// check that the TypeName is a renderer
 		try
 		{
