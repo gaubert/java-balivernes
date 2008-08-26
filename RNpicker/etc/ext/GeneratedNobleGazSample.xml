@@ -5,9 +5,9 @@
 	<SampleInformation UUID="0675232">
 		<StationInformation>
 			<StationLocation>Rarotonga, Cook Islands</StationLocation>
-			<StationCode>CKX23</StationCode>
+			<StationCode>CKP23</StationCode>
 			<CountryCode>COK</CountryCode>
-			<Coordinates>XX  XX</Coordinates>           <!-- To be defined, third value defines altitude -->
+			<Coordinates>-21.2 159.81</Coordinates>           <!-- To be defined, third value defines altitude -->
 		</StationInformation>
 		<DetectorInformation>
 			<DetectorCode>CKX23_002</DetectorCode>
@@ -22,9 +22,9 @@
 				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
 				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
 				<AcquisitionStop>2008-08-28T22:00:00</AcquisitionStop>
-				<AcquisitionTime>P10H44M24S</AcquisitionTime>
-				<SamplingTime>P11H18M36S</SamplingTime>
-				<DecayTime>P24M24S</DecayTime>
+				<AcquisitionTime>PT10H44M24S</AcquisitionTime>
+				<SamplingTime>PT11H18M36S</SamplingTime>
+				<DecayTime>PT24M24S</DecayTime>
 				<SourceType>GammaSpectrum</SourceType>
 				<Data gammaChannelSpan="256" gammaEnergySpan="760" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
 					0     112271     0          9          18         153
@@ -87,11 +87,11 @@
 				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
 				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
 				<AcquisitionStop>2008-08-28T22:00:00</AcquisitionStop>
-				<AcquisitionTime>P10H44M24S</AcquisitionTime>
-				<SamplingTime>P11H18M36S</SamplingTime>
-				<DecayTime>P24M24S</DecayTime>
+				<AcquisitionTime>PT10H44M24S</AcquisitionTime>
+				<SamplingTime>PT11H18M36S</SamplingTime>
+				<DecayTime>PT24M24S</DecayTime>
 				<SourceType>BetaSpectrum</SourceType>
-				<Data gammaChannelSpan="256" gammanEnergySpan="1062" format="IMSFormat">       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
+				<Data gammaChannelSpan="256" gammaEnergySpan="1062" format="IMSFormat">       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
 					0     5134939    261        342        427        1056
 					5     1603       1449       1156       965        813
 					10    727        681        644        620        562
@@ -152,9 +152,9 @@
 				<CollectionStop>2008-08-25T15:31:00</CollectionStop>
 				<AcquisitionStart>2008-08-27T22:16:00</AcquisitionStart>
 				<AcquisitionStop>2008-08-28T22:00:00</AcquisitionStop>
-				<AcquisitionTime>P10H44M24S</AcquisitionTime>
-				<SamplingTime>P11H18M36S</SamplingTime>
-				<DecayTime>P24M24S</DecayTime>
+				<AcquisitionTime>PT10H44M24S</AcquisitionTime>
+				<SamplingTime>PT11H18M36S</SamplingTime>
+				<DecayTime>PT24M24S</DecayTime>
 				<SourceType>Sample</SourceType>
 				<Data gammaChannelSpan="256" gammaEnergySpan="760" betaChannelSpan="256" betaEnergySpan="760">       <!-- Compression Algorithm could be used to reduce the size of the spectrum -->
 					0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
@@ -225,7 +225,7 @@
 				<QuantifiedNuclides>
 					<Nuclide>
 						<Name>Xe-133</Name>
-						<HalfLife>P5.245D</HalfLife>
+						<HalfLife>PT125H52M48S</HalfLife>
 						<!-- period following ISO format -->
 						<Concentration unit="mBq/m3">2.4</Concentration>
 						<ConcentrationError unit="percentage">5.80</ConcentrationError>
@@ -254,25 +254,25 @@
 				<Name>Xe-131m</Name>
 				<Activity unit="Bq">-0.000013</Activity>
 				<ActivityError unit="Bq">-0.00016</ActivityError>
-				<LC unit="Bq">0.00081</LC>
+				<ActivityCriticalLimit unit="Bq">0.00081</ActivityCriticalLimit>
 			  </Nuclide>
 			  <Nuclide>
 				<Name>Xe-133m</Name>
 				<Activity unit="Bq">0.000001</Activity>
 				<ActivityError unit="Bq">0.00013</ActivityError>
-				<LC unit="Bq">0.00063</LC>
+				<ActivityCriticalLimit unit="Bq">0.00063</ActivityCriticalLimit>
 			  </Nuclide>
 			  <Nuclide>
 				<Name>Xe-133</Name>
 				<Activity unit="Bq">0.062</Activity>
 				<ActivityError unit="Bq">0.0034</ActivityError>
-				<LC unit="Bq">0.00013</LC>
+				<ActivityCriticalLimit unit="Bq">0.00013</ActivityCriticalLimit>
 			  </Nuclide>
 			  <Nuclide>
 				<Name>Xe-135</Name>
 				<Activity unit="Bq">-0.000013</Activity>
 				<ActivityError unit="Bq">-0.000016</ActivityError>
-				<LC unit="Bq">0.000063</LC>
+				<ActivityCriticalLimit unit="Bq">0.000063</ActivityCriticalLimit>
 			  </Nuclide>
 			  <Nuclide>
 				<Name>Rn-222F</Name>
@@ -280,12 +280,12 @@
 				<ActivityError unit="Bq">0.016</ActivityError>
 			  </Nuclide>
 			</ActivitySummary>
-			<ROINetCountsResults method="NCC">
+			<ROINetCountResults method="NCC">
 			 <ROI>
 			   <Nb>1</Nb>
 			   <Nuclide>Pb214F</Nuclide>
 			   <NetCounts>-31</NetCounts>
-			   <NetcountsError>33</NetcountsError>
+			   <NetCountsError>33</NetCountsError>
 			   <LC>100</LC>
 			   <Efficiency>0.29</Efficiency>
 			 </ROI>
@@ -293,40 +293,17 @@
 			   <Nb>2</Nb>
 			   <Nuclide>Xe135</Nuclide>
 			   <NetCounts>45</NetCounts>
-			   <NetcountsError>41</NetcountsError>
+			   <NetCountsError>41</NetCountsError>
 			   <LC>120</LC>
 			   <Efficiency>0.35</Efficiency>
 			 </ROI>
 			 <!-- there are more regions than that -->
-			 <ROIUsedFor nucl="Xe-133">
+			 <ROIUsedFor nuclide="Xe-133">
 			   <ROIs>3 7 8</ROIs>
 			 </ROIUsedFor>
-			</ROINetCountsResults>
-			<ROIBoundaries method="NCC">
-              <ROIBoundary>
-                <Nb>1</Nb>
-                <GammaLow unit="keV">323.9</GammaLow>
-                <GammaHigh unit="keV">381.9</GammaHigh>
-                <BetaLow unit="keV">0</BetaLow>
-                <BetaHigh unit="keV">639</BetaHigh>
-              </ROIBoundary>
-              <ROIBoundary>
-                <Nb>2</Nb>
-                <GammaLow unit="keV">229.5</GammaLow>
-                <GammaHigh unit="keV">272.2</GammaHigh>
-                <BetaLow unit="keV">0</BetaLow>
-                <BetaHigh unit="keV">909</BetaHigh>
-              </ROIBoundary>
-              <ROIBoundary>
-                <Nb>3</Nb>
-                <GammaLow unit="keV">70</GammaLow>
-                <GammaHigh unit="keV">94.9</GammaHigh>
-                <BetaLow unit="keV">0</BetaLow>
-                <BetaHigh unit="keV">352</BetaHigh>
-              </ROIBoundary>
-              <!-- there are more regoins than these 3 -->
-           </ROIBoundaries>
+			</ROINetCountResults>
 		   <XeCovarianceMatrix>
+		       <GoodnessOfFit>1.2345</GoodnessOfFit>
 			   <Rows>Rn-222 Xe-135 Xe-133 Xe-133m</Rows>
 			   <Cols>Xe-131m Xe-133m Xe-133 Xe-135</Cols>
 			   <Values>0.00000011 0.000000063 0.0000019 0.000045</Values>
@@ -334,8 +311,35 @@
 			   <Values>0.00000000455 0.00000000011</Values>
 			   <Values>0.00000000145</Values>
 			</XeCovarianceMatrix>
-			<GoodnessOfFit>1.2345</GoodnessOfFit>
 		</AnalysisResults>
+		<Parameters>
+			<ProcessingParameters software="BGAnalyze" method="NCC" version="1.0">
+			  <ROIBoundaries method="NCC">
+                <ROIBoundary>
+                  <Nb>1</Nb>
+                  <GammaLow unit="keV">323.9</GammaLow>
+                  <GammaHigh unit="keV">381.9</GammaHigh>
+                  <BetaLow unit="keV">0</BetaLow>
+                  <BetaHigh unit="keV">639</BetaHigh>
+                </ROIBoundary>
+                <ROIBoundary>
+                  <Nb>2</Nb>
+                  <GammaLow unit="keV">229.5</GammaLow>
+                  <GammaHigh unit="keV">272.2</GammaHigh>
+                  <BetaLow unit="keV">0</BetaLow>
+                  <BetaHigh unit="keV">909</BetaHigh>
+                </ROIBoundary>
+                <ROIBoundary>
+                  <Nb>3</Nb>
+                  <GammaLow unit="keV">70</GammaLow>
+                  <GammaHigh unit="keV">94.9</GammaHigh>
+                  <BetaLow unit="keV">0</BetaLow>
+                  <BetaHigh unit="keV">352</BetaHigh>
+                </ROIBoundary>
+                <!-- there are more regoins than these 3 -->
+              </ROIBoundaries>
+			</ProcessingParameters>
+		</Parameters>
 		<Flags>
 			<DataQualityFlags>
 				<SamplingTime>

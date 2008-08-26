@@ -1,5 +1,10 @@
+
+import os
+
 from lxml import etree
 from StringIO import StringIO
+
+from  common.exceptions import CTBTOError
 
 
 def valid_schema():
@@ -37,7 +42,16 @@ def valid_schema():
     print " End Tests \n"
 
 
-def read_sampml_file():
+def read_sampml_file(filePath = None):
+    """ validate an XML sample file against a the XSD schema file SAMPML.xsd """
+    
+    # asserting input parameters
+    if filePath == None:
+        raise CTBTOError(-1,"passed argument filePath is null")
+    else:
+        # check if file exits
+        if not os.path.exists(filePath):
+            raise CTBTOError(-1,"the file %s does not exits"%(filePath))
     
     schema_file = "SAMPML.xsd"
     
@@ -54,7 +68,7 @@ def read_sampml_file():
     
     print "2:schematize XML schema file Done"
     
-    valid = open("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/GeneratedRNParticulateSample.xml","r")
+    valid = open(filePath,"r")
     
     data_xml = etree.parse(valid)
     
@@ -91,7 +105,7 @@ def read_sampml_file():
 
 
 def main():
-    read_sampml_file()
+    read_sampml_file("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/GeneratedNobleGazSample.xml")
     
 
 

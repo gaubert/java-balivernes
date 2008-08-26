@@ -310,9 +310,7 @@
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="ROINetCountResults" type="ROINetCountResultsType" />
-      <xs:element minOccurs="1" maxOccurs="1" name="ROINetCountResults" type="ROIBoundariesType" />
       <xs:element minOccurs="1" maxOccurs="1" name="XeCovarianceMatrix" type="XeCovarianceMatrixType" />
-      <xs:element minOccurs="1" maxOccurs="1" name="GoodnessOfFit" type="xs:double" />
     </xs:sequence>
   </xs:group>
   <xs:complexType name="XeCovarianceMatrixType">
@@ -322,8 +320,9 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="Rows" type="stringListType" />
-      <xs:element minOccurs="1" maxOccurs="1" name="Cols" type="stringListType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="GoodnessOfFit"  type="xs:double" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Rows"           type="stringListType" />
+      <xs:element minOccurs="1" maxOccurs="1" name="Cols"           type="stringListType" />
       <xs:element minOccurs="1" maxOccurs="unbounded" name="Values" type="doubleListType" />
     </xs:sequence>
     <xs:attribute name="method" type="xs:string" />
@@ -359,7 +358,7 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="ROI">
+      <xs:element minOccurs="1" maxOccurs="unbounded" name="ROI">
         <xs:complexType>
           <xs:sequence>
             <xs:element minOccurs="1" maxOccurs="1" name="Nb" type="xs:positiveInteger" />
@@ -381,8 +380,9 @@
         </xs:annotation>
         <xs:complexType>
           <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="nonNegativeIntegerList" />
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="ROIs" type="nonNegativeIntegerList" />
           </xs:sequence>
+          <xs:attribute name="nuclide" type="xs:string" />
           <xs:anyAttribute namespace="##other" processContents="lax" />
         </xs:complexType>
       </xs:element>
@@ -399,10 +399,10 @@
     <xs:sequence>
       <xs:annotation>
         <xs:documentation>
-					Activity Concentration results for particulates
+					Activity Concentration results for particulates and noble gas
 				</xs:documentation>
       </xs:annotation>
-      <xs:element minOccurs="1" maxOccurs="1" name="NonQuantifiedNuclides">
+      <xs:element minOccurs="0" maxOccurs="1" name="NonQuantifiedNuclides">
         <xs:annotation>
           <xs:documentation>
 						Non quantified identified nuclides
@@ -513,7 +513,7 @@
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" maxOccurs="1" name="NIDFlag" type="xs:positiveInteger">
+      <xs:element minOccurs="0" maxOccurs="1" name="NIDFlag" type="xs:integer">
         <xs:annotation>
           <xs:documentation>NID-Flag</xs:documentation>
         </xs:annotation>
@@ -563,8 +563,10 @@
       <xs:element name="BinningVectorSize" type="xs:positiveInteger" />
     </xs:sequence>
   </xs:group>
-  <xs:group name="procParam_BGAnalyze_NCC_v1.0Type">             <!--  (bg_analyze?) Empty for the moment -->
-    <xs:sequence/>
+  <xs:group name="procParam_BGAnalyze_NCC_v1.0Type">             <!--  (bg_analyze?)-->
+    <xs:sequence>
+       <xs:element minOccurs="1" maxOccurs="1" name="ROIBoundaries"      type="ROIBoundariesType" />
+    </xs:sequence>
   </xs:group>
   <xs:group name="updateParam_Genie_RRR_v1.0Type">
     <xs:annotation>
@@ -709,10 +711,10 @@
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="UpdateParameters" type="updateParametersType">
+      <xs:element minOccurs="0" maxOccurs="1" name="UpdateParameters" type="updateParametersType">
         <xs:annotation>
           <xs:documentation>
-						The update parameters
+						The update parameters non existent for noble gaz
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -1213,6 +1215,8 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="Sample" />
       <xs:enumeration value="Background" />
+      <xs:enumeration value="GammaSpectrum" />
+      <xs:enumeration value="BetaSpectrum" />
       <xs:enumeration value="Calibration" />
       <xs:enumeration value="Other" />
     </xs:restriction>
@@ -1381,6 +1385,8 @@
       <xs:enumeration value="Energy" />
       <xs:enumeration value="AbsoluteEfficiency" />
       <xs:enumeration value="EnergyToChannels" />
+      <xs:enumeration value="BetaEnergyToChannels" />
+      <xs:enumeration value="GammaEnergyToChannels" />
       <xs:enumeration value="ResolutionToEnergy" />
       <xs:enumeration value="EfficiencyToEnergy" />
       <xs:enumeration value="Other" />
