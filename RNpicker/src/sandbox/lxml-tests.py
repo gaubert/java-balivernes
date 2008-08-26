@@ -66,7 +66,11 @@ def read_sampml_file():
         log = xmlschema.error_log
         
         #print "dir(log)=%s"%(dir(log))
-        error = log.last_error
+        
+        # get iterator to get the first error in file
+        iter = log.__iter__()
+        error      = iter.next()
+        
         print "line %d, error %s"%(error.line,error.message)
 
     
