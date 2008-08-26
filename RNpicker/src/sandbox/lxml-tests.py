@@ -105,7 +105,9 @@ def read_sampml_file(filePath = None):
 
 
 def main():
-    read_sampml_file("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/GeneratedNobleGazSample.xml")
+    read_sampml_file("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/GeneratedNobleGasSample.xml")\
+    
+    read_sampml_file("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/TestGeneratedRNParticulateSample.xml")
     
 
 
