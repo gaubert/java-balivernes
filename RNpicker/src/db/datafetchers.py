@@ -265,8 +265,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         result.close()
         
         print "dataBag = %s"%(self._dataBag)
-            
-            
+                
     def fetch(self):
         
         # get station info
