@@ -21,7 +21,10 @@ SQL_GETSAMPLEINFO     = "select sample_id as data_sample_id, input_file_name as 
 SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 """ Get information regarding all identified nuclides """
-SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from GARDS_BG_ISOTOPE_CONCS conc, GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
+SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
+
+""" Get information regarding all nuclides """
+SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
 class DBDataFetcher(object):
     """ Base Class used to get data from the IDC Database """
@@ -211,10 +214,57 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         for row in rows:
             self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'])
+        
+        result.close()
     
     def _fetchAnalysisResults(self):
         """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
         
+        # get identified Nuclides
+        result = self._connector.execute(SQL_SAUNA_GETIDENTIFIEDNUCLIDES%(self._sampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is 0:
+            raise CTBTOError(-1,"Expecting to have n identified nuclides but got 0")
+        
+        # add results in a list which will become a list of dicts
+        res = {}
+        
+        for row in rows:
+            res.update(row.items())
+            
+        # add in dataBag
+        self._dataBag['AR_identifiedNuclides'] = res
+        
+        result.close()
+        
+        # get information regarding all Nuclides
+        result = self._connector.execute(SQL_SAUNA_GETALLNUCLIDES%(self._sampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is 0:
+            raise CTBTOError(-1,"Expecting to have n nuclides but got 0")
+        
+        # add results in a list which will become a list of dicts
+        res = {}
+        
+        for row in rows:
+            res.update(row.items())
+            
+        # add in dataBag
+        self._dataBag['AR_AllNuclides'] = res
+        
+        result.close()
+        
+        print "dataBag = %s"%(self._dataBag)
             
             
     def fetch(self):
@@ -228,8 +278,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # get sample info
         self._fetchSampleInfo()
         
+        # get Data Files
         self._fetchData()
-        
+
+        # get analysis results
+        self._fetchAnalysisResults()
 
 class SpalaxNobleGasDataFetcher:
     """ Class for fetching SPALAX related data """
