@@ -2,6 +2,7 @@ import logging
 import logging.handlers
 
 import common.utils
+from db.datafetchers import DBDataFetcher
 from db.connections import DatabaseConnector
 from renderers.rawrenderer import DBRawRenderer
 
@@ -39,9 +40,13 @@ if __name__ == '__main__':
    
    conn.connect()
    
-   # create raw Renderer
-   renderer = DBRawRenderer(conn)
+   fetcher = DBDataFetcher.getDataFetcher(conn,"130761")
    
-   renderer.render('GARDS_SAMPLE_DATA')
+   fetcher.fetch()
+   
+   # create raw Renderer
+   #renderer = DBRawRenderer(conn)
+   
+   #renderer.render('GARDS_SAMPLE_DATA')
    
    print "Bye"

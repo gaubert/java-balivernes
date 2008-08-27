@@ -80,6 +80,15 @@ class DatabaseConnector:
         # a dictionary of dict, one dict for each row
         return cols
  
+    def execute(self,aSql):
+        """execute a sql request on the database"""
+        
+        sql = sqlalchemy.text(aSql)
+        
+        result = self._conn.execute(sql)
+        
+        return result
+        
 
     def executeOnEachRow(self,aSql,aTreatment):
         """ run the sql request and execute a treatment on each retrieved row """
