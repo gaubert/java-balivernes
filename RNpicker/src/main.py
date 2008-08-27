@@ -40,7 +40,7 @@ if __name__ == '__main__':
    
    conn.connect()
    
-   fetcher = DBDataFetcher.getDataFetcher(conn,"130761")
+   fetcher = DBDataFetcher.getDataFetcher(conn,"216061")
    
    fetcher.fetch()
    

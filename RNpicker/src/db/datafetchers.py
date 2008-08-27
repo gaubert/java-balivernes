@@ -1,6 +1,8 @@
 import logging
 import sqlalchemy
 import new
+import os
+from StringIO import StringIO
 
 from common.exceptions import CTBTOError
 
@@ -14,6 +16,12 @@ SQL_GETSAMPLEINFO     = "select sample_id as data_sample_id, input_file_name as 
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
+                                
+""" get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
+SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
+""" Get information regarding all identified nuclides """
+SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from GARDS_BG_ISOTOPE_CONCS conc, GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
 
 class DBDataFetcher(object):
     """ Base Class used to get data from the IDC Database """
@@ -73,7 +81,15 @@ class DBDataFetcher(object):
     
     def fetch(self):
         """ abstract global data fetching method """
-        raise CTBTOError(-1,"Base Class method. Cannot be called. Please redefine in children")
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+    
+    def _fetchData(self):
+        """ abstract global data fetching method """
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+    
+    def _fetchAnalysisResults(self):
+        """ abstract global data fetching method """
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
     def _fetchStationInfo(self):
        """ get station info. same treatment for all sample types """ 
@@ -134,9 +150,36 @@ class DBDataFetcher(object):
        print "dataBag= %s"%(self._dataBag)
        
        result.close()
+
+    def _readDataFile(self,aDir,aFilename,aType):
+        """ read a file in a string buffer. This is used for the data files """
+        
+        # check that the file exists
+        path = "%s/%s"%(aDir,aFilename)
+        
+        if not os.path.exists(path):
+            raise CTBTOError(-1,"the file %s does not exits"%(filePath))
+        
+        # store in a StringIO object
+        input = open(path,"r")
+        
+        data = StringIO()
+        
+        for line in input:
+            data.write(line)
+            
+        input.close()
+        
+        self._dataBag["rawdata_%s"%(aType)] = data
+        
+    
         
 
-        
+##############################################
+### class: SaunaNobleGasDataFetcher
+###
+###
+##############################################        
 class SaunaNobleGasDataFetcher(DBDataFetcher):
     """ Class for fetching SAUNA-ARIX related data """
     
@@ -148,9 +191,32 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
     def __init__(self,aDbConnector=None,aSampleID=None):
         super(SaunaNobleGasDataFetcher,self).__init__(aDbConnector,aSampleID)
         
-      
+    def _fetchData(self):
+        """ get the different raw data info """
         
-         
+        # there are 3 components: histogram, beta and gamma spectrum
+        
+        # first path information from database
+        result = self._connector.execute(SQL_GETSAUNA_FILES%(self._sampleID,self._dataBag['STATION_CODE']))
+       
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is not 3:
+            raise CTBTOError(-1,"Expecting to have 3 products but got %d either None or more than one. %s"%(nbResults,rows))
+        
+        print "data Rows = %s"%(rows)
+        
+        for row in rows:
+            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'])
+    
+    def _fetchAnalysisResults(self):
+        """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
+        
+            
+            
     def fetch(self):
         
         # get station info
@@ -161,6 +227,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         # get sample info
         self._fetchSampleInfo()
+        
+        self._fetchData()
         
 
 class SpalaxNobleGasDataFetcher:
@@ -173,6 +241,7 @@ class SpalaxNobleGasDataFetcher:
 
     def __init__(self):
         print "create SpalaxNobleGasDataFetcher"
+        
 
 class ParticulateDataFetcher:
     """ Class for fetching particualte related data """
