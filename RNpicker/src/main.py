@@ -4,7 +4,7 @@ import logging.handlers
 import common.utils
 from db.datafetchers import DBDataFetcher
 from db.connections import DatabaseConnector
-from renderers.SAMPMLrendererv1 import BaseRenderer
+from renderers.SAMPMLrendererv1 import ParticulateRenderer
 
 def myBasicLoggingConfig():
     """
@@ -48,7 +48,7 @@ if __name__ == '__main__':
    
    fetcher.fetch()
    
-   renderer = BaseRenderer(fetcher)
+   renderer = ParticulateRenderer(fetcher)
    
    renderer.asXmlStr()
    

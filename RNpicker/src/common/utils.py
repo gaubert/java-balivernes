@@ -43,11 +43,36 @@ class Conf:
     get_conf    = classmethod(get_conf)
 
 
+#####################################
+#
+#  print crudely a dict
+#
+################################### 
 def printDict(di, format="%-25s %s"):
     """ pretty print a dictionary """
     for (key, val) in di.items():
         print format % (str(key)+':', val)
         
+
+#####################################
+#
+#  dump data structure in a stream
+#
+################################### 
+def dump(aData,aIostream=None):
+    pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
+    pp.pprint(self._dataBag)
+
+def printInFile(aStr,aPath):
+    f = open(aPath,"w")
+    f.write(aStr)
+    f.close()
+    
+#####################################
+#
+#  pretty Format an Xml Tree
+#
+###################################  
 def prettyFormatElem(elem,level=0):
     """ indent an xml tree """
     i = "\n" + level*"  "

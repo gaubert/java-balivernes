@@ -32,9 +32,7 @@ class BaseRenderer(object):
                                     "DET_DESCRIPTION"    :   "DETECTOR_DESCRIPTION",
                                     "SAMPLE_TYPE"        :   "SAMPLE_TYPE",
                                     "SAMPLE_GEOMETRY"    :   "SAMPLE_GEOMETRY",
-                                    "SAMPLE_QUANTITY"    :   "SAMPLE_QUANTITY",
-                                    
-                                    
+                                    "SAMPLE_QUANTITY"    :   "SAMPLE_QUANTITY", 
                                  }
                                   
         self._createTemplate()
@@ -55,23 +53,20 @@ class BaseRenderer(object):
         
         self._template = f.read()
         
+        self._populatedTemplate = self._template
+        
     
     def _substituteValues(self):
         """ substitue values """
         
-        self._populatedTemplate = self._template
-        
+        # for debug purpose
         self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
         
-        print "Hello"
-        
-        
         for (key,val) in self._substitutionDict.items():
-            print "key = %s, val = %s, bag content = %s"%(key,val,self._fetcher.get(val,"NotFound"))
             pattern = "\${%s}"%(key)
             self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val,"None")), self._populatedTemplate)
             
-       # print "RESULT = %s"%(self._populatedTemplate[1:500])
+        common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
              
         
     def asXml(self):
@@ -83,3 +78,32 @@ class BaseRenderer(object):
         print "into asXMLStr"
         
         self._substituteValues()
+        
+class ParticulateRenderer(BaseRenderer):
+    
+     # Class members
+    c_log = logging.getLogger("SAMPMLrendererv1.ParticulateRenderer")
+    c_log.setLevel(logging.DEBUG)
+    
+    
+    def __init__(self,aDataFetcher):
+        
+        super(ParticulateRenderer,self).__init__(aDataFetcher)
+        
+    
+    def _fillRawData(self):
+        
+        
+        
+    def asXmlStr(self):
+       """ Return an xml tree as a string """
+        
+       # father method first
+       BaseRenderer.asXmlStr(self)
+       
+       self._fillRawData()
+       
+       
+       
+       
+       
