@@ -86,12 +86,43 @@ class ParticulateRenderer(BaseRenderer):
     c_log.setLevel(logging.DEBUG)
     
     
+    
     def __init__(self,aDataFetcher):
         
         super(ParticulateRenderer,self).__init__(aDataFetcher)
+        self._spectrumTemplate = None
+        
+        self._readSpectrumTemplate()
+        
+        # add values specific to Particulate
+        self._substitutionDict = {  "COL_START"          :   "DATA_COLLECT_START",
+                                    "COL_STOP"           :   "DATA_COLLECT_STOP",
+                                    "ACQ_START"          :   "DATA_ACQ_START",
+                                    "ACQ_STOP"           :   "DATA_ACQ_STOP",
+                                    "ACQ_TIME"           :   "ACQ_REAL_SEC",
+                                    "SAMPLING_TIME"      :   "DATA_ACQ_LIVE_SEC",
+                                    "DECAY_TIME"         :   "ToBeFound",
+                                     
+                                 }
+        
+    def _readSpectrumTemplate(self):
+        """ Read XML template from a file and store it in a String """
+        
+        # get template path from conf
+        path = self._conf.get("TemplatingSystem","spectrumTemplate")
+        
+        # assert that the file exists
+        common.utils.file_exits(path)
+        
+        # read the full template in a string buffer
+        f = open(path,"r") 
+        
+        self._spectrumTemplate = f.read()
         
     
     def _fillRawData(self):
+        """ populate raw data part """
+        
         
         
         
