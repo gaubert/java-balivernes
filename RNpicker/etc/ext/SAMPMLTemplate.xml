@@ -15,7 +15,7 @@
 		</DetectorInformation>
 		<SampleType>${SAMPLE_TYPE}</SampleType>
 		<SampleGeometry>${SAMPLE_GEOMETRY}</SampleGeometry>
-		<SampleQuantity unit="m3">23346.11</SampleQuantity>
+		<SampleQuantity unit="m3">${SAMPLE_QUANTITY}</SampleQuantity>
 		<MeasuredInformation>
 			<Spectrum>
 				<!-- More than one spectrum can be entered -->

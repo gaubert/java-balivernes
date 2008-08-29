@@ -1,4 +1,7 @@
 import logging
+import re
+
+
 import common.utils
 
 
@@ -16,11 +19,22 @@ class BaseRenderer(object):
         self._conf     = common.utils.Conf.get_conf()
         self._fetcher  = aDataFetcher
         self._template = None
+        self._populatedTemplate = None
         
         # dict used to substitute values in fetcher with template values
-        self._substitutionDict = {  "\${SAMPLEID}":"data_sample_id",
-                                    "\${STATION_CODE}":"station_code",
-                                    "\${COUNTY_CODE}":"country_code"
+        self._substitutionDict = {  "SAMPLEID"           :   "SAMPLE_ID",
+                                    "STATION_LOCATION"   :   "STATION_LOCATION",
+                                    "STATION_CODE"       :   "STATION_CODE",
+                                    "COUNTRY_CODE"       :   "STATION_COUNTRY_CODE",
+                                    "COORDINATES"        :   "STATION_COORDINATES",
+                                    "DET_CODE"           :   "DETECTOR_CODE",
+                                    "DET_TYPE"           :   "DETECTOR_TYPE",
+                                    "DET_DESCRIPTION"    :   "DETECTOR_DESCRIPTION",
+                                    "SAMPLE_TYPE"        :   "SAMPLE_TYPE",
+                                    "SAMPLE_GEOMETRY"    :   "SAMPLE_GEOMETRY",
+                                    "SAMPLE_QUANTITY"    :   "SAMPLE_QUANTITY",
+                                    
+                                    
                                  }
                                   
         self._createTemplate()
@@ -45,10 +59,19 @@ class BaseRenderer(object):
     def _substituteValues(self):
         """ substitue values """
         
-        for (key,val) in self._substitutionDict.items():
-            print "key = %s, val = %s"%(key,val)
-            
+        self._populatedTemplate = self._template
         
+        self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
+        
+        print "Hello"
+        
+        
+        for (key,val) in self._substitutionDict.items():
+            print "key = %s, val = %s, bag content = %s"%(key,val,self._fetcher.get(val,"NotFound"))
+            pattern = "\${%s}"%(key)
+            self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val,"None")), self._populatedTemplate)
+            
+       # print "RESULT = %s"%(self._populatedTemplate[1:500])
              
         
     def asXml(self):

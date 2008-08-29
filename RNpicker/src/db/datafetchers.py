@@ -2,6 +2,7 @@ import logging
 import sqlalchemy
 import new
 import os
+import pprint
 from StringIO import StringIO
 
 from common.exceptions import CTBTOError
@@ -9,10 +10,12 @@ from common.exceptions import CTBTOError
 
 """ sql requests """
 SQL_GETDETECTORINFO   = "select det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
-SQL_GETSTATIONINFO    = "select sta.station_code as station_code, sta.country_code as station_country_code, sta.type as station_type, sta.description as station_description,sta.lat as station_lat, sta.lon as station_lon, sta.elevation as station_elevation from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
-SQL_GETSAMPLETYPE     = "select sta.type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
-SQL_GETSAMPLEINFO     = "select sample_id as data_sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as data_geometry, \
-                                spectral_qualifier as data_spectral_qualifier, quantity as data_quantity, transmit_dtg as data_transmit_dtg , \
+SQL_GETSTATIONINFO    = "select sta.station_code as station_code, sta.country_code as station_country_code, sta.type as station_type, sta.description as station_location,to_char(sta.lat)||' '||to_char(sta.lon)||' '||to_char(sta.elevation) as station_coordinates from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
+SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
+
+
+SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as sample_geometry, \
+                                spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
@@ -68,15 +71,20 @@ class DBDataFetcher(object):
        if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
         
-       print "Type = %s"%(rows[0]['TYPE'])
+       print "Type = %s"%(rows[0]['SAMPLE_TYPE'])
        
-       print "Klass = %s"%(SAMPLE_TYPE[rows[0]['TYPE']])
+       print "Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']])
        
        
        # create object and update its internal dictionary
-       inst = object.__new__(SAMPLE_TYPE[rows[0]['TYPE']])
-       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{}}) 
+       inst = object.__new__(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']])
        
+       type = rows[0]['SAMPLE_TYPE']
+       if type is None: 
+           type = "Particulate"
+       
+       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type}}) 
+    
        result.close()
        
        return inst
@@ -211,7 +219,19 @@ class DBDataFetcher(object):
         
         self._dataBag["rawdata_%s"%(aType)] = data
         
+    def get(self,aKey,aDefault=None):
+        """ return one of the fetched elements """
+        
+        #print "data Bag %s"%(self._dataBag)
+        
+        return self._dataBag.get(aKey,aDefault)
     
+    def printContent(self,aIostream = None):
+       pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
+       pp.pprint(self._dataBag)
+       
+    
+
         
 
 ##############################################
@@ -228,7 +248,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 
 
     def __init__(self,aDbConnector=None,aSampleID=None):
+        
         super(SaunaNobleGasDataFetcher,self).__init__(aDbConnector,aSampleID)
+        
+        self._dataBag['SAMPLE_TYPE']="SAUNA"
         
     def _fetchData(self):
         """ get the different raw data info """
@@ -309,7 +332,12 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
 
 
     def __init__(self):
+        
         print "create SpalaxNobleGasDataFetcher"
+        
+        super(SpalaxNobleGasDataFetcher,self).__init__(aDbConnector,aSampleID)
+       
+        self._dataBag['SAMPLE_TYPE']="SPALAX"
         
 
 class ParticulateDataFetcher(DBDataFetcher):
@@ -322,6 +350,10 @@ class ParticulateDataFetcher(DBDataFetcher):
 
     def __init__(self):
         print "create ParticulateDataFetcher"
+        
+        super(ParticulateDataFetcher,self).__init__(aDbConnector,aSampleID)
+       
+        self._dataBag['SAMPLE_TYPE']="PARTICULATE"
     
     def _fetchData(self):
         """ get the different raw data info """
