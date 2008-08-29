@@ -40,7 +40,11 @@ if __name__ == '__main__':
    
    conn.connect()
    
-   fetcher = DBDataFetcher.getDataFetcher(conn,"216061")
+   # fetchnoble gas data
+   #fetcher = DBDataFetcher.getDataFetcher(conn,"216061")
+   
+    # fetchnoble particulate
+   fetcher = DBDataFetcher.getDataFetcher(conn,"153961")
    
    fetcher.fetch()
    

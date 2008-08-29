@@ -20,11 +20,26 @@ SQL_GETSAMPLEINFO     = "select sample_id as data_sample_id, input_file_name as 
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
 SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
+SQL_GETPARTICULATE_SPECTRUM    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
 """ Get information regarding all identified nuclides """
 SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
 
 """ Get information regarding all nuclides """
 SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
+
+""" get particulate category """
+SQL_PARTICULATE_CATEGORY ="select entry_date as cat_entry_date, cnf_begin_date as cat_cnf_begin_date,cnf_end_date as cat_cnf_end_date, review_date as cat_review_date, review_time as cat_review_time, analyst as cat_analyst, status as cat_status, category as cat_category, auto_category as cat_auto_category, release_date as cat_release_date from RMSMAN.GARDS_SAMPLE_STATUS where sample_id=%s"
+
+""" returned all ided nuclides for a particular sample """
+SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name not in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
+
+SQL_PARTICULATE_GET_QUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
+
+SQL_PARTICULATE_GET_MDA_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and report_mda=1"
+
+SQL_PARTICULATE_GET_PEAKS = "select * from RMSMAN.GARDS_PEAKS where sample_id=%s"
+
 
 class DBDataFetcher(object):
     """ Base Class used to get data from the IDC Database """
@@ -94,6 +109,10 @@ class DBDataFetcher(object):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
+    def asXML(self):
+        """ abstract global xmlizer method """
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+    
     def _fetchStationInfo(self):
        """ get station info. same treatment for all sample types """ 
        print "In fetch Station Info "
@@ -130,8 +149,6 @@ class DBDataFetcher(object):
        # update data bag
        self._dataBag.update(rows[0].items())
        
-       print "dataBag= %s"%(self._dataBag)
-       
        result.close()
        
     def _fetchSampleInfo(self):
@@ -149,10 +166,28 @@ class DBDataFetcher(object):
          
        # update data bag
        self._dataBag.update(rows[0].items())
-       
-       print "dataBag= %s"%(self._dataBag)
-       
+          
        result.close()
+       
+    def fetch(self):
+        
+        # get station info
+        self._fetchStationInfo()
+        
+        # get station info
+        self._fetchDetectorInfo()
+        
+        # get sample info
+        self._fetchSampleInfo()
+        
+        # get Data Files
+        self._fetchData()
+
+        # get analysis results
+        self._fetchAnalysisResults()
+        
+        print "dataBag = %s"%(self._dataBag)
+       
 
     def _readDataFile(self,aDir,aFilename,aType):
         """ read a file in a string buffer. This is used for the data files """
@@ -262,28 +297,9 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # add in dataBag
         self._dataBag['AR_AllNuclides'] = res
         
-        result.close()
-        
-        print "dataBag = %s"%(self._dataBag)
-                
-    def fetch(self):
-        
-        # get station info
-        self._fetchStationInfo()
-        
-        # get station info
-        self._fetchDetectorInfo()
-        
-        # get sample info
-        self._fetchSampleInfo()
-        
-        # get Data Files
-        self._fetchData()
+        result.close()         
 
-        # get analysis results
-        self._fetchAnalysisResults()
-
-class SpalaxNobleGasDataFetcher:
+class SpalaxNobleGasDataFetcher(DBDataFetcher):
     """ Class for fetching SPALAX related data """
     
       # Class members
@@ -295,7 +311,7 @@ class SpalaxNobleGasDataFetcher:
         print "create SpalaxNobleGasDataFetcher"
         
 
-class ParticulateDataFetcher:
+class ParticulateDataFetcher(DBDataFetcher):
     """ Class for fetching particualte related data """
     
       # Class members
@@ -305,6 +321,145 @@ class ParticulateDataFetcher:
 
     def __init__(self):
         print "create ParticulateDataFetcher"
+    
+    def _fetchData(self):
+        """ get the different raw data info """
+        
+        # need to get the gamma spectrum
+        
+        # first path information from database
+        result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
+       
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 product for particulate but got %d either None or more than one. %s"%(nbResults,rows))
+         
+        for row in rows:
+            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'])
+        
+        result.close()
+        
+    def _fetchCategoryResults(self):
+        """ sub method of _fetchAnalysisResults. Get the Category info from the database """
+        
+        
+        result = self._connector.execute(SQL_PARTICULATE_CATEGORY%(self._sampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 category for a particulate sample but got %d either None or more than one. %s"%(nbResults,rows))
+        
+        self._dataBag.update(rows[0].items())
+        
+        result.close()
+        
+    def _fetchPeaksResults(self):
+        """ Get info regarding the found peaks """
+        
+        # get peaks
+        result = self._connector.execute(SQL_PARTICULATE_GET_PEAKS%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # first row is metadata
+        res.append(rows[0].keys())
+        
+        for row in rows:
+            res.append(row.values())
+               
+        # add in dataBag
+        self._dataBag['peaks'] = res
+        
+        result.close()
+        
+        
+    def _fetchNuclidesResults(self):
+        """ Get info regarding the ided, non ided, MDAed nuclides """
+         # get non quantified nuclides
+        
+        # to distinguish quantified and non quantified nuclide there is a table called GARDS_NUCL2QUANTIFY => static table of the nucl to treat
+        result = self._connector.execute(SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # first row is metadata
+        res.append(rows[0].keys())
+        
+        for row in rows:
+            res.append(row.values())
+                
+        # add in dataBag
+        self._dataBag['non_quantified_nuclides'] = res
+        
+        result.close()  
+      
+        # get quantified nuclides
+      
+        result = self._connector.execute(SQL_PARTICULATE_GET_QUANTIFIED_NUCLIDES%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # first row is metadata
+        res.append(rows[0].keys())
+        
+        for row in rows:
+            res.append(row.values())
+                
+        # add in dataBag
+        self._dataBag['quantified_nuclides'] = res
+        
+        result.close()  
+        
+        # get MDA nuclides
+        result = self._connector.execute(SQL_PARTICULATE_GET_MDA_NUCLIDES%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # first row is metadata
+        res.append(rows[0].keys())
+        
+        for row in rows:
+            res.append(row.values())
+               
+        # add in dataBag
+        self._dataBag['quantified_nuclides'] = res
+        
+        result.close()  
+        
+    
+    def _fetchAnalysisResults(self):
+        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+        
+        print "into Fetch Analysis Results"
+        self._fetchCategoryResults()
+        
+        self._fetchNuclidesResults()
+        
+        self._fetchPeaksResults()
+        
+            
+        
+                   
 
 
 """ Dictionary used to map DB Sample type with the right fetcher """
