@@ -1,4 +1,20 @@
 import ConfigParser
+import os
+
+#####################################
+#
+#  check if a file exist and otherwise raise an exception
+#
+################################### 
+def file_exits(aFilePath):
+    
+    # asserting input parameters
+    if aFilePath == None:
+        raise Exception(-1,"passed argument aFilePath is null")
+    else:
+        # check if file exits
+        if not os.path.exists(aFilePath):
+            raise Exception(-1,"the file %s does not exits"%(aFilePath))
 
 ###################################  
 #

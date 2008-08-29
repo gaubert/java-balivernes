@@ -84,6 +84,7 @@ class DBDataFetcher(object):
     #class method binding
     getDataFetcher = classmethod(getDataFetcher)
     
+     
     def __init__(self,aDbConnector=None,aSampleID=None):
         
         self._connector = aDbConnector

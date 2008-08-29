@@ -4,7 +4,7 @@ import logging.handlers
 import common.utils
 from db.datafetchers import DBDataFetcher
 from db.connections import DatabaseConnector
-from renderers.rawrenderer import DBRawRenderer
+from renderers.SAMPMLrendererv1 import BaseRenderer
 
 def myBasicLoggingConfig():
     """
@@ -47,6 +47,10 @@ if __name__ == '__main__':
    fetcher = DBDataFetcher.getDataFetcher(conn,"153961")
    
    fetcher.fetch()
+   
+   renderer = BaseRenderer(fetcher)
+   
+   renderer.asXmlStr()
    
    # create raw Renderer
    #renderer = DBRawRenderer(conn)
