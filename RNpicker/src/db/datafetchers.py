@@ -3,6 +3,7 @@ import sqlalchemy
 import new
 import os
 import pprint
+import string
 from StringIO import StringIO
 
 from common.exceptions import CTBTOError
@@ -237,13 +238,38 @@ class DBDataFetcher(object):
         # store in a StringIO object
         input = open(path,"r")
         
+        tok_list = []
+        
+        energy_span  = 0
+        channel_span = 0
+        e_max        = 0
+        
         data = StringIO()
-        
-        for line in input:
-            data.write(line)
-            
-        input.close()
-        
+        try:
+           for line in input:
+              # we might also have to add more splitting character
+              # get of first column which should always be the last columns (channel span)
+              # get also max of value of other columns (energy span)
+              l = map(string.atoi,line.split())
+              
+              if l[0] > channel_span:
+                 channel_span = l[0]
+                 
+              e_max = max(l[1:]) 
+              
+              if energy_span < e_max:
+                  energy_span = e_max
+              
+              # add 16 spaces char for formatting purposes
+              data.write("                %s"%(line))
+        finally:    
+           input.close()
+           
+        print "channel_span %s"%(channel_span)
+        print "energy_span %s"%(energy_span)
+         
+        self._dataBag["rawdata_%s_channel_span"%(aType)] = channel_span
+        self._dataBag["rawdata_%s_energy_span"%(aType)]  = energy_span
         self._dataBag["rawdata_%s"%(aType)] = data.getvalue()
         
     def get(self,aKey,aDefault=None):

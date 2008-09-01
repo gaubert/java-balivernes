@@ -17,7 +17,7 @@
 		<SampleGeometry>${SAMPLE_GEOMETRY}</SampleGeometry>
 		<SampleQuantity unit="m3">${SAMPLE_QUANTITY}</SampleQuantity>
 		<MeasuredInformation>
-		   ${SPECTRUM}
+            ${SPECTRUM}
 		</MeasuredInformation>
 		<AnalysisResults>
 		    <SampleCategorization>

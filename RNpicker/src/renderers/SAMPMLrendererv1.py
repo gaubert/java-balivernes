@@ -95,15 +95,17 @@ class ParticulateRenderer(BaseRenderer):
         self._readSpectrumTemplate()
         
         # add values specific to Particulate
-        dummy_dict = {  "COL_START"          :   "DATA_COLLECT_START",
-                        "COL_STOP"           :   "DATA_COLLECT_STOP",
-                        "ACQ_START"          :   "DATA_ACQ_START",
-                        "ACQ_STOP"           :   "DATA_ACQ_STOP",
-                        "SAMPLING_TIME"      :   "DATA_SAMPLING_TIME",
-                        "REAL_ACQ_TIME"      :   "DATA_ACQ_REAL_SEC",
-                        "LIVE_ACQ_TIME"      :   "DATA_ACQ_LIVE_SEC",
-                        "DECAY_TIME"         :   "DATA_DECAY_TIME",
-                        "SPECTRUM_DATA"      :   "rawdata_SPECTRUM"
+        dummy_dict = {  "COL_START"                      :   "DATA_COLLECT_START",
+                        "COL_STOP"                       :   "DATA_COLLECT_STOP",
+                        "ACQ_START"                      :   "DATA_ACQ_START",
+                        "ACQ_STOP"                       :   "DATA_ACQ_STOP",
+                        "SAMPLING_TIME"                  :   "DATA_SAMPLING_TIME",
+                        "REAL_ACQ_TIME"                  :   "DATA_ACQ_REAL_SEC",
+                        "LIVE_ACQ_TIME"                  :   "DATA_ACQ_LIVE_SEC",
+                        "DECAY_TIME"                     :   "DATA_DECAY_TIME",
+                        "SPECTRUM_DATA"                  :   "rawdata_SPECTRUM",
+                        "SPECTRUM_DATA_CHANNEL_SPAN"     :   "rawdata_SPECTRUM_channel_span",
+                        "SPECTRUM_DATA_ENERGY_SPAN"      :   "rawdata_SPECTRUM_energy_span",
                                      
                       }
         # add specific particulate keys

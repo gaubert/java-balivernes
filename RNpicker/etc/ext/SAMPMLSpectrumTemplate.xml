@@ -9,7 +9,7 @@
     <SamplingTime>${SAMPLING_TIME}</SamplingTime>
 	<DecayTime>${DECAY_TIME}</DecayTime>
 	<SourceType>Sample</SourceType>
-	<Data gammaChannelSpan="${SPECTRUM_CHANNEL_SPAN}" gammaEnergySpan="${SPECTRUM_ENERGY_SPAN}" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum (like counted zero method for example -->
-		${SPECTRUM_DATA}
+	<Data gammaChannelSpan="${SPECTRUM_DATA_CHANNEL_SPAN}" gammaEnergySpan="${SPECTRUM_DATA_ENERGY_SPAN}" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum (like counted zero method for example -->
+${SPECTRUM_DATA}
     </Data>
 </Spectrum>
