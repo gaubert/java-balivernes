@@ -1,0 +1,15 @@
+<Spectrum>
+	<!-- More than one spectrum can be entered -->
+	<CollectionStart>${COL_START}</CollectionStart>
+	<CollectionStop>${COL_STOP}</CollectionStop>
+	<AcquisitionStart>${ACQ_START}</AcquisitionStart>
+	<AcquisitionStop>${ACQ_STOP}</AcquisitionStop>
+	<RealAcquisitionTime>${REAL_ACQ_TIME}</RealAcquisitionTime>
+	<LiveAcquisitionTime>${LIVE_ACQ_TIME}</LiveAcquisitionTime>
+    <SamplingTime>${SAMPLING_TIME}</SamplingTime>
+	<DecayTime>${DECAY_TIME}</DecayTime>
+	<SourceType>Sample</SourceType>
+	<Data gammaChannelSpan="${SPECTRUM_CHANNEL_SPAN}" gammaEnergySpan="${SPECTRUM_ENERGY_SPAN}" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum (like counted zero method for example -->
+		${SPECTRUM_DATA}
+    </Data>
+</Spectrum>
