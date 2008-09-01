@@ -23,7 +23,8 @@
 				<CollectionStop>2008-07-18T22:25:00</CollectionStop>
 				<AcquisitionStart>2008-07-19T22:25:00</AcquisitionStart>
 				<AcquisitionStop>2008-07-20T22:25:00</AcquisitionStop>
-				<AcquisitionTime>PT23H41M</AcquisitionTime>
+				<RealAcquisitionTime>PT23H41M</RealAcquisitionTime>
+				<LiveAcquisitionTime>PT23H41M</LiveAcquisitionTime>
 				<SamplingTime>PT24H</SamplingTime>
 				<DecayTime>PT24H54M</DecayTime>
 				<SourceType>Sample</SourceType>

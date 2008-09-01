@@ -95,21 +95,25 @@ class ParticulateRenderer(BaseRenderer):
         self._readSpectrumTemplate()
         
         # add values specific to Particulate
-        self._substitutionDict = {  "COL_START"          :   "DATA_COLLECT_START",
-                                    "COL_STOP"           :   "DATA_COLLECT_STOP",
-                                    "ACQ_START"          :   "DATA_ACQ_START",
-                                    "ACQ_STOP"           :   "DATA_ACQ_STOP",
-                                    "ACQ_TIME"           :   "ACQ_REAL_SEC",
-                                    "SAMPLING_TIME"      :   "DATA_ACQ_LIVE_SEC",
-                                    "DECAY_TIME"         :   "ToBeFound",
+        dummy_dict = {  "COL_START"          :   "DATA_COLLECT_START",
+                        "COL_STOP"           :   "DATA_COLLECT_STOP",
+                        "ACQ_START"          :   "DATA_ACQ_START",
+                        "ACQ_STOP"           :   "DATA_ACQ_STOP",
+                        "SAMPLING_TIME"      :   "DATA_SAMPLING_TIME",
+                        "REAL_ACQ_TIME"      :   "DATA_ACQ_REAL_SEC",
+                        "LIVE_ACQ_TIME"      :   "DATA_ACQ_LIVE_SEC",
+                        "DECAY_TIME"         :   "DATA_DECAY_TIME",
+                        "SPECTRUM_DATA"      :   "rawdata_SPECTRUM"
                                      
-                                 }
+                      }
+        # add specific particulate keys
+        self._substitutionDict.update(dummy_dict)
         
     def _readSpectrumTemplate(self):
         """ Read XML template from a file and store it in a String """
         
         # get template path from conf
-        path = self._conf.get("TemplatingSystem","spectrumTemplate")
+        path = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
         
         # assert that the file exists
         common.utils.file_exits(path)
@@ -121,7 +125,13 @@ class ParticulateRenderer(BaseRenderer):
         
     
     def _fillRawData(self):
-        """ populate raw data part """
+        """ insert particulate spectrum data in final produced XML file """
+     
+        # Add spectrum template in final SAMPML template
+        pattern = "\${SPECTRUM}"
+        self._populatedTemplate = re.sub(pattern,self._spectrumTemplate, self._populatedTemplate)
+      
+        common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
         
         
         
@@ -129,10 +139,11 @@ class ParticulateRenderer(BaseRenderer):
     def asXmlStr(self):
        """ Return an xml tree as a string """
         
-       # father method first
+       self._fillRawData()
+        
+       # father 
        BaseRenderer.asXmlStr(self)
        
-       self._fillRawData()
        
        
        

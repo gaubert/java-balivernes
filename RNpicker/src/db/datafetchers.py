@@ -17,7 +17,7 @@ SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIO
 SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as sample_geometry, \
                                 spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
-                                acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as acq_real_sec \
+                                acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
                                 
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
@@ -160,6 +160,17 @@ class DBDataFetcher(object):
        
        result.close()
        
+    def _transformResults(self,aDataDict):
+        """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers """
+        
+        # transform date information
+        for (key,value) in aDataDict.items():
+          if str(value.__class__) == "<type 'datetime.datetime'>" :
+              aDataDict[key]= value.isoformat()
+              
+        return aDataDict
+              
+       
     def _fetchSampleInfo(self):
        """ get sample info from sample data """ 
        print "In fetch SampleInfo "
@@ -173,9 +184,25 @@ class DBDataFetcher(object):
        if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
          
+       # get retrieved data and transform dates
+       data = {}
+       data.update(rows[0])
+       
        # update data bag
-       self._dataBag.update(rows[0].items())
-          
+       self._dataBag.update(self._transformResults(data).items())
+       
+       # Work on dates and time
+       # add decay time => Collect_Stop - Acq_Start
+       dc = rows[0]['DATA_ACQ_STOP'] - rows[0]['DATA_COLLECT_STOP']
+       self._dataBag['DATA_DECAY_TIME'] = "PT%dS"%(dc.seconds)
+       
+       # sampling time
+       dc =  rows[0]['DATA_COLLECT_STOP'] - rows[0]['DATA_COLLECT_START']
+       self._dataBag['DATA_SAMPLING_TIME'] = "PT%dS"%(dc.seconds)
+       
+       self._dataBag['DATA_ACQ_LIVE_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_LIVE_SEC'])
+       self._dataBag['DATA_ACQ_REAL_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_REAL_SEC'])
+        
        result.close()
        
     def fetch(self):
@@ -217,7 +244,7 @@ class DBDataFetcher(object):
             
         input.close()
         
-        self._dataBag["rawdata_%s"%(aType)] = data
+        self._dataBag["rawdata_%s"%(aType)] = data.getvalue()
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
@@ -390,7 +417,12 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have 1 category for a particulate sample but got %d either None or more than one. %s"%(nbResults,rows))
         
-        self._dataBag.update(rows[0].items())
+        data = {}
+        data.update(rows[0])
+       
+        # update data bag
+        self._dataBag.update(self._transformResults(data).items())
+        
         
         result.close()
         

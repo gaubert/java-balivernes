@@ -190,11 +190,20 @@
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="1" maxOccurs="1" name="AcquisitionTime" type="xs:duration">
+      <xs:element minOccurs="1" maxOccurs="1" name="RealAcquisitionTime" type="xs:duration">
         <xs:annotation>
           <xs:documentation>
 						Duration of each sample measurement/interval at
-						which samples are taken
+						which samples are taken. The Real Acquisition time is the time
+						when the detector is really active
+					</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="LiveAcquisitionTime" type="xs:duration">
+        <xs:annotation>
+          <xs:documentation>
+						Duration of each sample measurement/interval at
+						which samples are taken. Total time when the AcqStop - AcqStart
 					</xs:documentation>
         </xs:annotation>
       </xs:element>
