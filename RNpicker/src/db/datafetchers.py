@@ -7,7 +7,7 @@ import string
 from StringIO import StringIO
 
 from common.exceptions import CTBTOError
-
+import common.utils
 
 """ sql requests """
 SQL_GETDETECTORINFO   = "select det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
@@ -195,14 +195,14 @@ class DBDataFetcher(object):
        # Work on dates and time
        # add decay time => Collect_Stop - Acq_Start
        dc = rows[0]['DATA_ACQ_STOP'] - rows[0]['DATA_COLLECT_STOP']
-       self._dataBag['DATA_DECAY_TIME'] = "PT%dS"%(dc.seconds)
+       self._dataBag[u'DATA_DECAY_TIME'] = "PT%dS"%(dc.seconds)
        
        # sampling time
        dc =  rows[0]['DATA_COLLECT_STOP'] - rows[0]['DATA_COLLECT_START']
-       self._dataBag['DATA_SAMPLING_TIME'] = "PT%dS"%(dc.seconds)
+       self._dataBag[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc.seconds)
        
-       self._dataBag['DATA_ACQ_LIVE_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_LIVE_SEC'])
-       self._dataBag['DATA_ACQ_REAL_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_REAL_SEC'])
+       self._dataBag[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_LIVE_SEC'])
+       self._dataBag[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_REAL_SEC'])
         
        result.close()
        
@@ -432,24 +432,30 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchCategoryResults(self):
         """ sub method of _fetchAnalysisResults. Get the Category info from the database """
         
-        
         result = self._connector.execute(SQL_PARTICULATE_CATEGORY%(self._sampleID))
        
         # only one row in result set
         rows = result.fetchall()
-       
-        nbResults = len(rows)
-       
-        if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 category for a particulate sample but got %d either None or more than one. %s"%(nbResults,rows))
+         
+        # add results in a list which will become a list of dicts
+        res = []
         
+        # first row is metadata
+        #res.append(rows[0].keys())
         data = {}
-        data.update(rows[0])
+        i = 0
+        
+        for row in rows:
+            data.update(row)
+            newRow = self._transformResults(data)
+            res.append(newRow)
+            data = {}
        
         # update data bag
-        self._dataBag.update(self._transformResults(data).items())
+        self._dataBag[u'CATEGORIES'] = res
         
-        
+        print "res = %s"%(self._dataBag[u'CATEGORIES'])
+       
         result.close()
         
     def _fetchPeaksResults(self):

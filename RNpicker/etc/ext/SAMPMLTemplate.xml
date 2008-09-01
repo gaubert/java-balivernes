@@ -21,8 +21,12 @@
 		</MeasuredInformation>
 		<AnalysisResults>
 		    <SampleCategorization>
-		        <Category>1</Category>
-		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
+		        <CategoryInformation>
+		           <Category>{$CATEGORY}</Category>
+                   <Nuclide>{$CATEGORY_NUCLIDE}</Nuclide>
+		           <CategoryComment>${CATEGORY_COMMENT}</CategoryComment>
+		           <CategoryReleaseDate>${CATEGORY_RELEASE_DATE}</CategoryReleaseDate>
+		        </CategoryInformation>
 		    </SampleCategorization>
 			<ActivityConcentrationSummary>
 				<NonQuantifiedNuclides>

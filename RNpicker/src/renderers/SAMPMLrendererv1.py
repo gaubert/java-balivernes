@@ -94,7 +94,7 @@ class ParticulateRenderer(BaseRenderer):
         
         self._readSpectrumTemplate()
         
-        # add values specific to Particulate
+        # add values specific to Particulates
         dummy_dict = {  "COL_START"                      :   "DATA_COLLECT_START",
                         "COL_STOP"                       :   "DATA_COLLECT_STOP",
                         "ACQ_START"                      :   "DATA_ACQ_START",
@@ -105,8 +105,7 @@ class ParticulateRenderer(BaseRenderer):
                         "DECAY_TIME"                     :   "DATA_DECAY_TIME",
                         "SPECTRUM_DATA"                  :   "rawdata_SPECTRUM",
                         "SPECTRUM_DATA_CHANNEL_SPAN"     :   "rawdata_SPECTRUM_channel_span",
-                        "SPECTRUM_DATA_ENERGY_SPAN"      :   "rawdata_SPECTRUM_energy_span",
-                                     
+                        "SPECTRUM_DATA_ENERGY_SPAN"      :   "rawdata_SPECTRUM_energy_span",                
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
@@ -135,6 +134,26 @@ class ParticulateRenderer(BaseRenderer):
       
         common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
         
+    def _fillAnalysisResults(self):
+        """fill the analysis results """
+        
+        cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
+        
+        xml_categories = ""
+        
+        # get categories
+        categories = self._fetcher.get(u'CATEGORIES',"None")
+        
+        dummy_template = cat_template
+        
+        for category in categories:
+            print "Cat = %s"%(category)
+            re.sub("\${CATEGORY}",category['CAT_CATEGORY'], self._populatedTemplate)
+            re.sub("\${CATEGORY_NUCLIDE}",category['CAT_CATEGORY'], self._populatedTemplate)
+            
+        
+        exit(1)
+        
         
         
         
@@ -142,6 +161,8 @@ class ParticulateRenderer(BaseRenderer):
        """ Return an xml tree as a string """
         
        self._fillRawData()
+       
+       self._fillAnalysisResults()
         
        # father 
        BaseRenderer.asXmlStr(self)

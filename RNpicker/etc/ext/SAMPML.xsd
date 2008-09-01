@@ -793,8 +793,19 @@
 			</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element minOccurs="1" maxOccurs="1" name="Category" type="enumCategoryType" />
-      <xs:element minOccurs="1" maxOccurs="1" name="CategoryComment" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="CategorizationInfo">
+         <xs:annotation>
+            <xs:documentation>
+				Categorization, Activity Summary, ...
+			</xs:documentation>
+         </xs:annotation>
+         <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="Category"           type="enumCategoryType" />
+            <xs:element minOccurs="1" maxOccurs="1" name="Nuclide"             type="xs:string" />
+            <xs:element minOccurs="0" maxOccurs="1" name="CategoryComment"     type="xs:string" />
+            <xs:element minOccurs="1" maxOccurs="1" name="CategoryReleaseDate" type="xs:dateTime" />
+         </xs:sequence>
+      </xs:element>
     </xs:sequence>
     <xs:anyAttribute namespace="##other" processContents="lax" />
   </xs:complexType>
