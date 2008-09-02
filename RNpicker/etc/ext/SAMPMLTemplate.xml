@@ -35,19 +35,7 @@
 				</MinimumDetectableConcentration>
 			</ActivityConcentrationSummary>
 			<PeakResults>
-				<PeakResult>
-					<Energy>239.027374267578 0.258760273456573</Energy>
-					<Centroid>700.034912109375 0.460972547531128</Centroid>
-					<Area>94.4806365966797 21.6091804504395</Area>
-					<Width>13</Width>
-					<FWHM>1.24280428886414 0.357939600944519</FWHM>
-					<BackgroundCounts>413.558532714844 20.3361377716064</BackgroundCounts>
-					<Efficiency>0.111674666404724 00</Efficiency>
-					<LC>76.933479309082</LC>
-					<LD>85.234567890901</LD>
-					<Detectibility>1.22808218002319</Detectibility>
-					<IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>
-				</PeakResult>
+				${PEAKS}
 			</PeakResults>
 		</AnalysisResults>
 		<Parameters>

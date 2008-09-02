@@ -509,7 +509,6 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
         
         # create a list of dicts
         data = {}
-        i = 0
         
         for row in rows:
             data.update(row)
@@ -517,7 +516,6 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
             newRow = self._transformResults(data)
             # add Comment
             self._addCategoryComments(newRow)
-            print "newRow %s"%(newRow)
             res.append(newRow)
             data = {}
        
@@ -539,14 +537,18 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
          # add results in a list which will become a list of dicts
         res = []
         
-        # first row is metadata
-        res.append(rows[0].keys())
+        data = {}
         
         for row in rows:
-            res.append(row.values())
+            data.update(row)
+            # transform dates if necessary
+            newRow = self._transformResults(data)
+            
+            res.append(newRow)
+            data = {}
                
         # add in dataBag
-        self._dataBag['peaks'] = res
+        self._dataBag[u'PEAKS'] = res
         
         result.close()
         

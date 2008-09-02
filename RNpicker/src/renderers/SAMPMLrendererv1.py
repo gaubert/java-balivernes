@@ -138,17 +138,50 @@ class ParticulateRenderer(BaseRenderer):
         categories = self._fetcher.get(u'CATEGORIES',"None")
         
         for category in categories:
-            print "Cat = %s"%(category)
             dummy_template = re.sub("\${CATEGORY}",str(category['CAT_CATEGORY']), cat_template)
             dummy_template = re.sub("\${CATEGORY_NUCLIDE}",category['CAT_NUCL_NAME'], dummy_template)
             dummy_template = re.sub("\${CATEGORY_COMMENT}",category.get('CAT_COMMENT',"No Comment"), dummy_template)
             # add generated xml in final container
             xml_categories += dummy_template
-            
-        print "xml_categories = %s"%(xml_categories)
-        
+             
         # add Category info in generated template
         self._populatedTemplate = re.sub("\${CATEGORIES}",xml_categories, self._populatedTemplate)
+     
+    def _fillPeaks(self):
+        """ fill Categories """
+        
+        peak_template = self._conf.get("TemplatingSystem","peaksTemplate")
+        
+        xml_peaks = ""
+        dummy_template = ""
+        
+        # get peak
+        peaks = self._fetcher.get(u'PEAKS',"None")
+        
+        for peak in peaks:
+            #print "peak = %s"%(peak)
+            dummy_template = re.sub("\${ENERGY}","%s %s"%(str(peak['ENERGY']),str(peak['ENERGY_ERR'])), peak_template)
+            dummy_template = re.sub("\${CENTROID}","%s %s"%(str(peak['CENTROID']),str(peak['CENTROID_ERR'])), dummy_template)
+            dummy_template = re.sub("\${AREA}","%s %s"%(str(peak['AREA']),str(peak['AREA_ERR'])), dummy_template)
+            dummy_template = re.sub("\${WIDTH}",str(peak['WIDTH']), dummy_template)
+            dummy_template = re.sub("\${FWHM}","%s %s"%(str(peak['FWHM']),str(peak['FWHM_ERR'])), dummy_template)
+            dummy_template = re.sub("\${BACKGROUNDCOUNTS}","%s %s"%(str(peak['BACK_COUNT']),str(peak['BACK_UNCER'])), dummy_template)
+            dummy_template = re.sub("\${EFFICIENCY}","%s %s"%(str(peak['EFFICIENCY']),str(peak['EFF_ERROR'])), dummy_template)
+            dummy_template = re.sub("\${LC}",str(peak['LC']), dummy_template)
+            
+            # to be checked with Romano
+            dummy_template = re.sub("\${LD}","None", dummy_template)
+            dummy_template = re.sub("\${DETECTIBILITY}",str(peak['DETECTABILITY']), dummy_template)
+            
+            dummy_template = re.sub("\${NUCLIDE}","None", dummy_template)
+            # to be checked
+            dummy_template = re.sub("\${NUCLIDE_PERCENTAGE}",str(100),dummy_template)
+            
+            # add generated xml in final container
+            xml_peaks += dummy_template
+               
+        # add Category info in generated template
+        self._populatedTemplate = re.sub("\${PEAKS}",xml_peaks, self._populatedTemplate)
         
     def _fillNuclides(self):
         """ fill Quantified and Non Quantified Nuclides """
@@ -225,6 +258,8 @@ class ParticulateRenderer(BaseRenderer):
         self._fillCategories()
         
         self._fillNuclides()
+        
+        self._fillPeaks()
        
         
         
