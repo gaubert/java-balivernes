@@ -48,6 +48,10 @@ SQL_PARTICULATE_GET_MDA_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided wh
 
 SQL_PARTICULATE_GET_PEAKS = "select * from RMSMAN.GARDS_PEAKS where sample_id=%s"
 
+SQL_PARTICULATE_GET_PROCESSING_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_PROC_PARAMS where sample_id=%s"
+
+SQL_PARTICULATE_GET_UPDATE_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_UPDATE_PARAMS where sample_id=%s"
+
 
 class DBDataFetcher(object):
     """ Base Class used to get data from the IDC Database """
@@ -252,6 +256,9 @@ class DBDataFetcher(object):
 
         # get analysis results
         self._fetchAnalysisResults()
+        
+        # get parameters
+        self._fetchParameters()
         
         print "dataBag = %s"%(self._dataBag)
        
@@ -639,6 +646,46 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
         self._fetchNuclidesResults()
         
         self._fetchPeaksResults()
+        
+    def _fetchParameters(self):
+        """ get the different parameters used for the analysis """
+        
+        print "into fetch Parameters"
+        result = self._connector.execute(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+         
+        # create a list of dicts
+        data = {}
+
+        data.update(rows[0].items())
+    
+        # add in dataBag
+        self._dataBag[u'PROCESSING_PARAMETERS'] = data
+        
+        result.close()  
+        
+        result = self._connector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+         
+        # create a list of dicts
+        data = {}
+
+        data.update(rows[0].items())
+        
+        # add in dataBag
+        self._dataBag[u'UPDATE_PARAMETERS'] = data
         
             
         

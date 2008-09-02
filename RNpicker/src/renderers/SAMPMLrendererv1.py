@@ -260,8 +260,83 @@ class ParticulateRenderer(BaseRenderer):
         self._fillNuclides()
         
         self._fillPeaks()
-       
         
+    
+    def _fillParameters(self):
+        """ Add the processing and update parameters """
+        
+        # first add Quantified Nuclides
+        template = self._conf.get("TemplatingSystem","processingParametersTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        
+        # get parameters
+        parameters = self._fetcher.get("PROCESSING_PARAMETERS","None")
+        
+        dummy_template = re.sub("\${THRESHOLD}",parameters.get('THRESHOLD',"None"), template)
+        dummy_template = re.sub("\${PEAK_START}",str(parameters.get('PEAK_START',"None")), dummy_template)
+        dummy_template = re.sub("\${PEAK_END}",str(parameters.get('PEAK_END',"None")), dummy_template)
+        dummy_template = re.sub("\${LEFT_FWHM}",str(parameters.get('LEFT_FWHM_LIM',"None")), dummy_template)
+        dummy_template = re.sub("\${RIGHT_FWHM}",str(parameters.get('RIGHT_FWHM_LIM',"None")), dummy_template)
+        dummy_template = re.sub("\${MULTI_FWHM}",str(parameters.get('FWHM_MULT_WIDTH',"None")), dummy_template)
+        dummy_template = re.sub("\${FIT_SINGLETS}",str(parameters.get('FIT_SINGLETS',"None")), dummy_template)
+        dummy_template = re.sub("\${CRITICAL_LEV_TEST}",str(parameters.get('CRIT_LEVEL',"None")), dummy_template)
+        dummy_template = re.sub("\${ESTIMATED_PEAK_WIDTHS}",str(parameters.get('MDC_WIDTH',"None")), dummy_template)
+        dummy_template = re.sub("\${BASELINE_TYPE}",str(parameters.get('BACK_TYPE',"None")), dummy_template)
+        dummy_template = re.sub("\${BASELINE_CHANNELS}",str(parameters.get('BACK_CHAN',"None")), dummy_template)
+        dummy_template = re.sub("\${SUBSTRACTION}",str(parameters.get('ToBeDefined',"None")), dummy_template)
+        dummy_template = re.sub("\${ENERGY_TOLERANCE}",str(parameters.get('ENERGY_TOL',"None")), dummy_template)
+        dummy_template = re.sub("\${CONFIDENCE_THRESHOLD}",str(parameters.get('NID_CONFID',"None")), dummy_template)
+        dummy_template = re.sub("\${RISK_LEVEL}",str(parameters.get('ToBeDefined',"None")), dummy_template)
+           
+        # add software, method and version
+        dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
+        dummy_template = re.sub("\${METHOD}","none", dummy_template)
+        dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
+            
+        # add generated xml in final container
+        xml += dummy_template
+       
+         # add Category info in generated template
+        self._populatedTemplate = re.sub("\${PROCESSING_PARAMETERS}",xml, self._populatedTemplate)
+        
+        # add Update parameters
+        # first add Quantified Nuclides
+        template = self._conf.get("TemplatingSystem","updateParametersTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        
+        # get parameters
+        parameters = self._fetcher.get("UPDATE_PARAMETERS","None")
+        
+        dummy_template = re.sub("\${USE_MRP}",str(parameters.get('MRP_USED',"None")), template)
+        dummy_template = re.sub("\${MRP_SAMPLEID}",str(parameters.get('MRP_SAMPLE_ID',"None")), dummy_template)
+        dummy_template = re.sub("\${GAIN_SHIFT}",str(parameters.get('GAINSHIFT',"None")), dummy_template)
+        dummy_template = re.sub("\${ZERO_SHIFT}",str(parameters.get('ZEROSHIFT',"None")), dummy_template)
+        dummy_template = re.sub("\${AREA_LIMIT}",str(parameters.get('AREA_LIM',"None")), dummy_template)
+        dummy_template = re.sub("\${USE_WEIGHT}",str(parameters.get('USE_WEIGHT',"None")), dummy_template)
+        dummy_template = re.sub("\${USE_MULTIPLET}",str(parameters.get('USE_MULT',"None")), dummy_template)
+        dummy_template = re.sub("\${FORCE_LINEAR}",str(parameters.get('F_LINEAR',"None")), dummy_template)
+        dummy_template = re.sub("\${IGNORE_PREVIOUS_ECR}",str(parameters.get('BOOTSTRAP',"None")), dummy_template)
+        dummy_template = re.sub("\${MINIMUM_LIB_LOOKUP_TOLERANCE}",str(parameters.get('MIN_LOOKUP',"None")), dummy_template)
+        dummy_template = re.sub("\${RER_INTERCEPT}",str(parameters.get('RER_INTERCEPT',"None")), dummy_template)
+        dummy_template = re.sub("\${RER_SLOPE}",str(parameters.get('RER_SLOPE',"None")), dummy_template)
+        dummy_template = re.sub("\${ECR_SLOPE}",str(parameters.get('ECR_SLOPE',"None")), dummy_template)
+        dummy_template = re.sub("\${DO_RESOLUTION_UPDATE}",str(parameters.get('DO_RERU',"None")), dummy_template)
+       
+           
+        # add software, method and version
+        dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
+        dummy_template = re.sub("\${METHOD}","none", dummy_template)
+        dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
+            
+        # add generated xml in final container
+        xml += dummy_template
+       
+         # add Category info in generated template
+        self._populatedTemplate = re.sub("\${UPDATE_PARAMETERS}",xml, self._populatedTemplate)
         
         
     def asXmlStr(self):
@@ -272,6 +347,8 @@ class ParticulateRenderer(BaseRenderer):
        self._fillRawData()
        
        self._fillAnalysisResults()
+       
+       self._fillParameters()
         
        # father 
        BaseRenderer.asXmlStr(self)

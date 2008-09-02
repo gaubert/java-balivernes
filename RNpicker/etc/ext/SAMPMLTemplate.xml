@@ -39,39 +39,8 @@
 			</PeakResults>
 		</AnalysisResults>
 		<Parameters>
-			<ProcessingParameters software="genie" method="none" version="1.0">
-				<Threshold>3</Threshold>
-				<PeakStart unit="keV">42</PeakStart>
-				<PeakEnd unit="keV">2750</PeakEnd>
-				<LeftFWHMLimit>2</LeftFWHMLimit>
-				<RightFWHMLimit>2</RightFWHMLimit>
-				<MutlipletFWHMLimit>4</MutlipletFWHMLimit>
-				<FitSinglet>true</FitSinglet>
-				<CriticalLevelTest>true</CriticalLevelTest>
-				<EstimatePeakWidths>true</EstimatePeakWidths>
-				<BaselineType>STEP</BaselineType>
-				<BaselineChannels>3</BaselineChannels>
-				<PerformSubstraction>false</PerformSubstraction>
-				<EnergyTolerance>0.4</EnergyTolerance>
-				<ConfidenceThreshold>0.25</ConfidenceThreshold>
-				<RiskLevel unit="percentage">0.01</RiskLevel>
-			</ProcessingParameters>
-			<UpdateParameters software="genie" method="none" version="1.0">
-				<UseMRP>true</UseMRP>
-				<MRPSampleID>0867749</MRPSampleID>
-				<GainShift unit="percentage">0.1</GainShift>
-				<ZeroShift>0.75</ZeroShift>
-				<AreaLimit>100</AreaLimit>
-				<UseWeight>true</UseWeight>
-				<UseMultiplet>true</UseMultiplet>
-				<ForceLinear>false</ForceLinear>
-				<IgnorePreviousECR>true</IgnorePreviousECR>
-				<MinimumLibLookupTolerance>0.200000002980232</MinimumLibLookupTolerance>
-				<RERIntercept>1.5</RERIntercept>
-				<RERSlope>0.2999999999999</RERSlope>
-				<ECRSlope>0</ECRSlope>
-				<DoResolutionUpdate>true</DoResolutionUpdate>
-			</UpdateParameters>
+			${PROCESSING_PARAMETERS}
+			${UPDATE_PARAMETERS}
 		</Parameters>
 		<Flags>
 			<TimelinessAndAvailabilityFlags>
