@@ -7,7 +7,7 @@
 			<StationLocation>${STATION_LOCATION}</StationLocation>
 			<StationCode>${STATION_CODE}</StationCode>
 			<CountryCode>${COUNTRY_CODE}</CountryCode>
-			<Coordinates>${COORDINATES}</Coordinates>     <!-- third value defines altitude -->
+			<Coordinates>${COORDINATES}</Coordinates>  
 		</StationInformation>
 		<DetectorInformation>
 			<DetectorCode>${DET_CODE}</DetectorCode>
@@ -25,114 +25,28 @@
 		    </SampleCategorization>
 			<ActivityConcentrationSummary>
 				<NonQuantifiedNuclides>
-					<Nuclide>
-						<Name>AC-228</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>BI-214</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>GE-75M</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>K-40</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>PA-234M</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>PB-214</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>TH-234</Name>
-						<Type>Natural</Type>
-					</Nuclide>
-					<Nuclide>
-						<Name>U-235</Name>
-						<Type>Natural</Type>
-					</Nuclide>
+					${NON_QUANTIFIED_NUCLIDES}
 				</NonQuantifiedNuclides>
 				<QuantifiedNuclides>
-					<Nuclide>
-						<Name>BE-7</Name>
-						<Type>Natural</Type>
-						<HalfLife>P53DT06H57M36S</HalfLife>
-						<!-- period following ISO format -->
-						<Concentration unit="uBq/m3">6200</Concentration>
-						<ConcentrationError unit="percentage">2.2</ConcentrationError>
-					</Nuclide>
-					<Nuclide>
-						<Name>PB-212F</Name>
-						<Type>Natural</Type>
-						<HalfLife>PT10H38M24S</HalfLife>
-						<!-- period following ISO format -->
-						<Concentration unit="uBq/m3">5400</Concentration>
-						<ConcentrationError unit="percentage">1.83</ConcentrationError>
-					</Nuclide>
-					<Nuclide>
-						<Name>CO-60</Name>
-						<Type>Activation</Type>
-						<HalfLife>PT166348548S</HalfLife>
-						<!-- period following ISO format -->
-						<Concentration unit="uBq/m3">1.3</Concentration>
-						<ConcentrationError unit="percentage">88.43</ConcentrationError>
-					</Nuclide>
+					${QUANTIFIED_NUCLIDES}
 				</QuantifiedNuclides>
 				<MinimumDetectableConcentration>
-					<Nuclide>
-						<Name>BA-140</Name>
-						<HalfLife>PT1101772.8S</HalfLife>
-						<Concentration unit="uBq/m3">7.76</Concentration>
-					</Nuclide>
-					<Nuclide>
-						<Name>CE-143</Name>
-						<HalfLife>PT118939.968S</HalfLife>
-						<Concentration unit="uBq/m3">16.69</Concentration>
-					</Nuclide>
-					<Nuclide>
-						<Name>CS-134</Name>
-						<HalfLife>PT65070381.4S</HalfLife>
-						<Concentration unit="uBq/m3">1.85</Concentration>
-					</Nuclide>
-					<Nuclide>
-						<Name>CS-136</Name>
-						<!-- 13.16D -->
-						<HalfLife>P13DT3H7M12S</HalfLife>
-						<Concentration unit="uBq/m3">1.82</Concentration>
-					</Nuclide>
-					<!-- ... There are more than these 4 nuclides -->
+					${MDA_NUCLIDES}
 				</MinimumDetectableConcentration>
 			</ActivityConcentrationSummary>
 			<PeakResults>
 				<PeakResult>
 					<Energy>239.027374267578 0.258760273456573</Energy>
-					<!-- En + En Err -->
 					<Centroid>700.034912109375 0.460972547531128</Centroid>
-					<!-- Centroid + Centroid Err -->
 					<Area>94.4806365966797 21.6091804504395</Area>
-					<!-- Area + Area Err -->
 					<Width>13</Width>
-					<!-- Width -->
 					<FWHM>1.24280428886414 0.357939600944519</FWHM>
-					<!-- FWHM + Err -->
 					<BackgroundCounts>413.558532714844 20.3361377716064</BackgroundCounts>
-					<!-- Background counts per second + err -->
 					<Efficiency>0.111674666404724 00</Efficiency>
-					<!-- Efficiency and its error -->
 					<LC>76.933479309082</LC>
-					<!-- Criticial Level  -->
 					<LD>85.234567890901</LD>
-					<!-- Detectable Level (100% sure of detection) -->
 					<Detectibility>1.22808218002319</Detectibility>
-					<!-- Number between 0 and 1 -->
 					<IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>
-					<!-- Associated Identified Nucl if there is one, None otherwise -->
 				</PeakResult>
 			</PeakResults>
 		</AnalysisResults>

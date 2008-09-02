@@ -2,6 +2,7 @@ import logging
 import sqlalchemy
 import new
 import os
+import re
 import pprint
 import string
 from StringIO import StringIO
@@ -55,6 +56,7 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
+   
     def getDataFetcher(cls,aDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
@@ -164,6 +166,31 @@ class DBDataFetcher(object):
        
        result.close()
        
+    def _formatHalfLife(self,aHalfLife):
+        """ transform halflife from the database given in days in an 8601 iso formatted period in seconds """
+        
+        try:
+            
+          pattern = "(?P<year>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*Y|(?P<month>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*M|(?P<day>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*D|(?P<hour>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*H|(?P<minute>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*M|(?P<second>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*S"
+          
+          result = re.match(pattern,aHalfLife)
+          
+          if result.group('year') != None:
+              return float(result.group('year')) 
+          elif result.group('month') != None:
+              return float(result.group('month'))
+          elif result.group('month') != None:
+              return float(result.group('day')) 
+          elif result.group('month') != None:
+              return float(result.group('hour')) 
+          elif result.group('month') != None:
+              return float(result.group('second'))  
+          return float(value)
+          
+        except Exception, ex:
+            raise CTBTOError(-1,"Error when parsing halflife value %s. Exception %s"%(aHalfLife,ex))
+            
+    
     def _transformResults(self,aDataDict):
         """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers """
         
@@ -480,8 +507,7 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
         # add results in a list which will become a list of dicts
         res = []
         
-        # first row is metadata
-        #res.append(rows[0].keys())
+        # create a list of dicts
         data = {}
         i = 0
         
@@ -537,14 +563,17 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
          # add results in a list which will become a list of dicts
         res = []
         
-        # first row is metadata
-        res.append(rows[0].keys())
-        
+        # create a list of dicts
+        data = {}
+
         for row in rows:
-            res.append(row.values())
-                
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
         # add in dataBag
-        self._dataBag['non_quantified_nuclides'] = res
+        self._dataBag[u'NON_QUANTIFIED_NUCLIDES'] = res
         
         result.close()  
       
@@ -557,14 +586,18 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
          # add results in a list which will become a list of dicts
         res = []
         
-        # first row is metadata
-        res.append(rows[0].keys())
-        
+        # create a list of dicts
+        data = {}
+
         for row in rows:
-            res.append(row.values())
+            # copy row in a normal dict
+            data.update(row)
+            
+            res.append(data)
+            data = {}
                 
         # add in dataBag
-        self._dataBag['quantified_nuclides'] = res
+        self._dataBag[u'QUANTIFIED_NUCLIDES'] = res
         
         result.close()  
         
@@ -576,14 +609,21 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
          # add results in a list which will become a list of dicts
         res = []
         
-        # first row is metadata
-        res.append(rows[0].keys())
-        
+        # create a list of dicts
+        data = {}
+
         for row in rows:
-            res.append(row.values())
+            # copy row in a normal dict
+            data.update(row)
+            
+             # format halflife
+             #data['HALFLIFE'] = self._formatHalfLife(data['HALFLIFE'])
+            
+            res.append(data)
+            data = {}
                
         # add in dataBag
-        self._dataBag['quantified_nuclides'] = res
+        self._dataBag[u'MDA_NUCLIDES'] = res
         
         result.close()  
         

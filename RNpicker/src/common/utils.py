@@ -68,6 +68,7 @@ def printInFile(aStr,aPath):
     f.write(aStr)
     f.close()
     
+    
 #####################################
 #
 #  pretty Format an Xml Tree

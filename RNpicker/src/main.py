@@ -1,10 +1,14 @@
 import logging
 import logging.handlers
+from lxml import etree
+from StringIO import StringIO
 
 import common.utils
 from db.datafetchers import DBDataFetcher
 from db.connections import DatabaseConnector
 from renderers.SAMPMLrendererv1 import ParticulateRenderer
+import sandbox.xmlpp
+
 
 def myBasicLoggingConfig():
     """
@@ -18,6 +22,22 @@ def myBasicLoggingConfig():
         fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         hdlr.setFormatter(fmt)
         logging.root.addHandler(hdlr)
+  
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        for e in elem:
+            indent(e, level+1)
+            if not e.tail or not e.tail.strip():
+                e.tail = i + "  "
+        if not e.tail or not e.tail.strip():
+            e.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
         
  
 if __name__ == '__main__':
@@ -50,11 +70,16 @@ if __name__ == '__main__':
    
    renderer = ParticulateRenderer(fetcher)
    
-   renderer.asXmlStr()
+   xmlStr = renderer.asXmlStr()
    
-   # create raw Renderer
-   #renderer = DBRawRenderer(conn)
+   f = StringIO(xmlStr)
    
-   #renderer.render('GARDS_SAMPLE_DATA')
+   tree = etree.parse(f)
    
+   transform = etree.XSLT(etree.parse(open("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/pretty-print.xslt")))
+   
+   result = transform(tree)
+   
+   common.utils.printInFile(str(result),"/tmp/subs-template.xml")
+     
    print "Bye"

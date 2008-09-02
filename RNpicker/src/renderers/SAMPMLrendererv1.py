@@ -63,9 +63,6 @@ class BaseRenderer(object):
             pattern = "\${%s}"%(key)
             self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val,"None")), self._populatedTemplate)
             
-        common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
-             
-        
     def asXml(self):
         """  """
         
@@ -129,11 +126,8 @@ class ParticulateRenderer(BaseRenderer):
         pattern = "\${SPECTRUM}"
         self._populatedTemplate = re.sub(pattern,self._spectrumTemplate, self._populatedTemplate)
         
-    def _fillAnalysisResults(self):
-        """fill the analysis results """
-        
-           # for debug purpose
-        self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
+    def _fillCategories(self):
+        """ fill Categories """
         
         cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
         
@@ -156,10 +150,89 @@ class ParticulateRenderer(BaseRenderer):
         # add Category info in generated template
         self._populatedTemplate = re.sub("\${CATEGORIES}",xml_categories, self._populatedTemplate)
         
+    def _fillNuclides(self):
+        """ fill Quantified and Non Quantified Nuclides """
+        
+        # first add Non Quantified Nuclides
+        template = self._conf.get("TemplatingSystem","particulateNonQuantifiedTemplate")
+        
+        xml_nonquantified_nuclides = ""
+        dummy_template = ""
+        
+        # get categories
+        nquantifiedNuclides = self._fetcher.get("NON_QUANTIFIED_NUCLIDES","None")
+        
+        for nuclide in nquantifiedNuclides:
+            dummy_template = re.sub("\${NAME}",nuclide['NAME'], template)
+            dummy_template = re.sub("\${TYPE}",nuclide['TYPE'], dummy_template)
+            # add generated xml in final container
+            xml_nonquantified_nuclides += dummy_template
+            
+        #print "xml_nonquantified_nuclides = %s"%(xml_nonquantified_nuclides)
+        
+        # add Category info in generated template
+        self._populatedTemplate = re.sub("\${NON_QUANTIFIED_NUCLIDES}",xml_nonquantified_nuclides, self._populatedTemplate)
+        
+         # first add Quantified Nuclides
+        template = self._conf.get("TemplatingSystem","particulateQuantifiedTemplate")
+        
+        xml_quantified_nuclides = ""
+        dummy_template = ""
+        
+        # get categories
+        quantifiedNuclides = self._fetcher.get("QUANTIFIED_NUCLIDES","None")
+        
+        for nuclide in quantifiedNuclides:
+            dummy_template = re.sub("\${NAME}",nuclide['NAME'], template)
+            dummy_template = re.sub("\${TYPE}",nuclide['TYPE'], dummy_template)
+            dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION}",str(nuclide['ACTIV_KEY']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION_ERROR}",str(nuclide['ACTIV_KEY_ERR']), dummy_template)
+            # add generated xml in final container
+            xml_quantified_nuclides += dummy_template
+            
+        #print "xml_quantified_nuclides = %s"%(xml_quantified_nuclides)
+        
+        # add Category info in generated template
+        self._populatedTemplate = re.sub("\${QUANTIFIED_NUCLIDES}",xml_quantified_nuclides, self._populatedTemplate)
+        
+        # first add MDA information
+        template = self._conf.get("TemplatingSystem","particulateMDATemplate")
+        
+        xml_mda = ""
+        dummy_template = ""
+        
+        # get categories
+        mdaNuclides = self._fetcher.get("MDA_NUCLIDES","None")
+        
+        for nuclide in mdaNuclides:
+            dummy_template = re.sub("\${NAME}",nuclide['NAME'], template)
+            dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
+            dummy_template = re.sub("\${MDA}","%s %s"%(str(nuclide['MDA']),str(nuclide['MDA_ERR'])), dummy_template)
+            # add generated xml in final container
+            xml_quantified_nuclides += dummy_template
+            
+        #print "xml_quantified_nuclides = %s"%(xml_quantified_nuclides)
+        
+        # add Category info in generated template
+        self._populatedTemplate = re.sub("\${MDA_NUCLIDES}",xml_quantified_nuclides, self._populatedTemplate)
+        
+        
+        
+    def _fillAnalysisResults(self):
+        """fill the analysis results """
+         
+        self._fillCategories()
+        
+        self._fillNuclides()
+       
+        
         
         
     def asXmlStr(self):
        """ Return an xml tree as a string """
+        
+       self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
         
        self._fillRawData()
        
@@ -168,7 +241,7 @@ class ParticulateRenderer(BaseRenderer):
        # father 
        BaseRenderer.asXmlStr(self)
        
-       common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
+       return self._populatedTemplate
        
        
        
