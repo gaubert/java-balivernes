@@ -803,7 +803,6 @@
             <xs:element minOccurs="1" maxOccurs="1" name="Category"           type="enumCategoryType" />
             <xs:element minOccurs="1" maxOccurs="1" name="Nuclide"             type="xs:string" />
             <xs:element minOccurs="0" maxOccurs="1" name="CategoryComment"     type="xs:string" />
-            <xs:element minOccurs="1" maxOccurs="1" name="CategoryReleaseDate" type="xs:dateTime" />
          </xs:sequence>
       </xs:element>
     </xs:sequence>

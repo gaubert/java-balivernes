@@ -33,7 +33,10 @@ SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as co
 SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
 """ get particulate category """
-SQL_PARTICULATE_CATEGORY ="select entry_date as cat_entry_date, cnf_begin_date as cat_cnf_begin_date,cnf_end_date as cat_cnf_end_date, review_date as cat_review_date, review_time as cat_review_time, analyst as cat_analyst, status as cat_status, category as cat_category, auto_category as cat_auto_category, release_date as cat_release_date from RMSMAN.GARDS_SAMPLE_STATUS where sample_id=%s"
+SQL_PARTICULATE_CATEGORY_STATUS ="select entry_date as cat_entry_date, cnf_begin_date as cat_cnf_begin_date,cnf_end_date as cat_cnf_end_date, review_date as cat_review_date, review_time as cat_review_time, analyst as cat_analyst, status as cat_status, category as cat_category, auto_category as cat_auto_category, release_date as cat_release_date from RMSMAN.GARDS_SAMPLE_STATUS where sample_id=%s"
+
+SQL_PARTICULATE_CATEGORY ="select NAME as CAT_NUCL_NAME, METHOD_ID as CAT_METHOD_ID, CATEGORY as CAT_CATEGORY, UPPER_BOUND as CAT_UPPER_BOUND, LOWER_BOUND as CAT_LOWER_BOUND, CENTRAL_VALUE as CAT_CENTRAL_VALUE, DELTA as CAT_DELTA, ACTIVITY as CAT_ACTIVITY from RMSMAN.GARDS_SAMPLE_CAT where sample_id=%s and hold=0"
+
 
 """ returned all ided nuclides for a particular sample """
 SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name not in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
@@ -429,6 +432,43 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         result.close()
         
+    def _addCategoryComments(self,aData):
+        """ Add the comments as it was defined in the RRR """
+        
+        if aData['CAT_CATEGORY'] != 1:
+            if aData['CAT_UPPER_BOUND'] == aData['CAT_LOWER_BOUND']:
+                aData['CAT_COMMENT'] = "Not Regularly Measured"
+            elif aData['CAT_ACTIVITY'] > aData['CAT_UPPER_BOUND']:
+                aData['CAT_COMMENT'] = "Above Statistical Range"
+            elif aData['CAT_ACTIVITY'] < aData['CAT_LOWER_BOUND']:
+                aData['CAT_COMMENT'] = "Below Statistical Range"
+            else:
+                aData['CAT_COMMENT'] = "Within Statistical Range"
+      
+        """if(sample_cat[i].category != 1)
+{
+  /* Guillaume: correct Array out of bounds read when i = 0. Added (i==0) ||  */
+  if((i == 0) || (sample_cat[i-1].category != 1)&&(sample_cat[i-1].category != sample_cat[i].category)) printf("\n");
+   rptBuffer += sprintf(rptBuffer, "%-13s %-8d ", sample_cat[i].name, sample_cat[i].category);
+
+fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i].activity,sample_cat[i].upper_bound);
+
+  if(sample_cat[i].upper_bound == sample_cat[i].lower_bound)
+   {
+     rptBuffer += sprintf(rptBuffer, "%-25s\n", "Not Regularly Measured");
+   }
+  else if(sample_cat[i].activity > sample_cat[i].upper_bound)
+   {
+     rptBuffer += sprintf(rptBuffer, "%-25s\n", "Above Statistical Range");
+   }
+  else if(sample_cat[i].activity < sample_cat[i].lower_bound)
+   {
+     rptBuffer += sprintf(rptBuffer, "%-25s\n", "Below Statistical Range");
+   }
+  else  rptBuffer += sprintf(rptBuffer, "%-25s\n", "Within Statistical Range");"""
+
+        
+        
     def _fetchCategoryResults(self):
         """ sub method of _fetchAnalysisResults. Get the Category info from the database """
         
@@ -447,7 +487,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         for row in rows:
             data.update(row)
+            # transform dates if necessary
             newRow = self._transformResults(data)
+            # add Comment
+            self._addCategoryComments(newRow)
+            print "newRow %s"%(newRow)
             res.append(newRow)
             data = {}
        

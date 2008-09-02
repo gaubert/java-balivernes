@@ -59,9 +59,6 @@ class BaseRenderer(object):
     def _substituteValues(self):
         """ substitue values """
         
-        # for debug purpose
-        self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
-        
         for (key,val) in self._substitutionDict.items():
             pattern = "\${%s}"%(key)
             self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val,"None")), self._populatedTemplate)
@@ -131,29 +128,33 @@ class ParticulateRenderer(BaseRenderer):
         # Add spectrum template in final SAMPML template
         pattern = "\${SPECTRUM}"
         self._populatedTemplate = re.sub(pattern,self._spectrumTemplate, self._populatedTemplate)
-      
-        common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
         
     def _fillAnalysisResults(self):
         """fill the analysis results """
         
+           # for debug purpose
+        self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
+        
         cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
         
         xml_categories = ""
+        dummy_template = ""
         
         # get categories
         categories = self._fetcher.get(u'CATEGORIES',"None")
         
-        dummy_template = cat_template
-        
         for category in categories:
             print "Cat = %s"%(category)
-            re.sub("\${CATEGORY}",category['CAT_CATEGORY'], self._populatedTemplate)
-            re.sub("\${CATEGORY_NUCLIDE}",category['CAT_CATEGORY'], self._populatedTemplate)
+            dummy_template = re.sub("\${CATEGORY}",str(category['CAT_CATEGORY']), cat_template)
+            dummy_template = re.sub("\${CATEGORY_NUCLIDE}",category['CAT_NUCL_NAME'], dummy_template)
+            dummy_template = re.sub("\${CATEGORY_COMMENT}",category.get('CAT_COMMENT',"No Comment"), dummy_template)
+            # add generated xml in final container
+            xml_categories += dummy_template
             
+        print "xml_categories = %s"%(xml_categories)
         
-        exit(1)
-        
+        # add Category info in generated template
+        self._populatedTemplate = re.sub("\${CATEGORIES}",xml_categories, self._populatedTemplate)
         
         
         
@@ -166,6 +167,8 @@ class ParticulateRenderer(BaseRenderer):
         
        # father 
        BaseRenderer.asXmlStr(self)
+       
+       common.utils.printInFile(self._populatedTemplate,"/tmp/subs-template.xml")
        
        
        

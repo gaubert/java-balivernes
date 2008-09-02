@@ -21,12 +21,7 @@
 		</MeasuredInformation>
 		<AnalysisResults>
 		    <SampleCategorization>
-		        <CategoryInformation>
-		           <Category>{$CATEGORY}</Category>
-                   <Nuclide>{$CATEGORY_NUCLIDE}</Nuclide>
-		           <CategoryComment>${CATEGORY_COMMENT}</CategoryComment>
-		           <CategoryReleaseDate>${CATEGORY_RELEASE_DATE}</CategoryReleaseDate>
-		        </CategoryInformation>
+		       ${CATEGORIES}
 		    </SampleCategorization>
 			<ActivityConcentrationSummary>
 				<NonQuantifiedNuclides>
