@@ -324,6 +324,55 @@ class ParticulateRenderer(BaseRenderer):
         self._populatedTemplate = re.sub("\${FLAGS}",xml, self._populatedTemplate)
         
     
+    def _fillCalibration(self):
+        """ Add the calibration parameters """
+        
+        # first add Energy Cal
+        template = self._conf.get("TemplatingSystem","particulateEnergyCalTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        
+        # get energy calibration 
+        energy = self._fetcher.get("ENERGY_CAL","None")
+        
+        dummy_template = re.sub("\${TERM0}",str(energy.get('COEFF1',"None")), template)
+        dummy_template = re.sub("\${TERM1}",str(energy.get('COEFF2',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM2}",str(energy.get('COEFF3',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM3}",str(energy.get('COEFF4',"None")), dummy_template)
+            
+        # add generated xml in final container
+        xml += dummy_template
+        
+        template = self._conf.get("TemplatingSystem","particulateResolutionCalTemplate")
+        
+        # get resolution calibration 
+        resolution = self._fetcher.get("RESOLUTION_CAL","None")
+        
+        dummy_template = re.sub("\${TERM0}",str(resolution.get('COEFF1',"None")), template)
+        dummy_template = re.sub("\${TERM1}",str(resolution.get('COEFF2',"None")), dummy_template)
+        
+        # add generated xml in final container
+        xml += dummy_template
+        
+        template = self._conf.get("TemplatingSystem","particulateEfficencyCalTemplate")
+        
+        # get resolution calibration 
+        eff = self._fetcher.get("EFFICIENCY_CAL","None")
+        
+        dummy_template = re.sub("\${LN_TERM0}",str(eff.get('COEFF1',"None")), template)
+        dummy_template = re.sub("\${TERM0}",str(eff.get('COEFF2',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM1}",str(eff.get('COEFF3',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM2}",str(eff.get('COEFF4',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM3}",str(eff.get('COEFF5',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM4}",str(eff.get('COEFF6',"None")), dummy_template)
+        dummy_template = re.sub("\${TERM5}",str(eff.get('COEFF7',"None")), dummy_template)
+        
+        # add generated xml in final container
+        xml += dummy_template
+        
+        self._populatedTemplate = re.sub("\${CALIBRATION}",xml, self._populatedTemplate)
+    
     def _fillParameters(self):
         """ Add the processing and update parameters """
         
@@ -413,6 +462,8 @@ class ParticulateRenderer(BaseRenderer):
        self._fillParameters()
        
        self._fillFlags()
+       
+       self._fillCalibration()
        
        # father 
        BaseRenderer.asXmlStr(self)

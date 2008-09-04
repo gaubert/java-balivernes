@@ -835,62 +835,52 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         rows = result.fetchall()
         
-         # add results in a list which will become a list of dicts
-        res = []
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 energy calibration row  but got %d either None or more than one. %s"%(nbResults,rows))
         
-        # create a list of dicts
+         # create a list of dicts
         data = {}
 
-        for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            res.append(data)
-            data = {}
+        data.update(rows[0].items())
         
         # add in dataBag
-        self._dataBag[u'ENERGY_CAL'] = res
-        
-        result.close()      
+        self._dataBag[u'ENERGY_CAL'] = data
         
         result = self._connector.execute(SQL_PARTICULATE_GET_RESOLUTION_CAL%(self._sampleID))
         
         rows = result.fetchall()
         
-         # add results in a list which will become a list of dicts
-        res = []
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 resolution calibration row  but got %d either None or more than one. %s"%(nbResults,rows))
         
-        # create a list of dicts
+         # create a list of dicts
         data = {}
 
-        for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            res.append(data)
-            data = {}
+        data.update(rows[0].items())
         
         # add in dataBag
-        self._dataBag[u'RESOLUTION_CAL'] = res
-        
-        result.close()
+        self._dataBag[u'RESOLUTION_CAL'] = data
         
         result = self._connector.execute(SQL_PARTICULATE_GET_EFFICIENCY_CAL%(self._sampleID))
         
         rows = result.fetchall()
         
-         # add results in a list which will become a list of dicts
-        res = []
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have 1 efficiency calibration row  but got %d either None or more than one. %s"%(nbResults,rows))
         
-        # create a list of dicts
+         # create a list of dicts
         data = {}
 
-        for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            res.append(data)
-            data = {}
+        data.update(rows[0].items())
         
         # add in dataBag
-        self._dataBag[u'EFFICIENCY_CAL'] = res
+        self._dataBag[u'EFFICIENCY_CAL'] = data
         
         result.close()            
         
