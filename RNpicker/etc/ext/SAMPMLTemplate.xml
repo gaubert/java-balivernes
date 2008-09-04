@@ -43,47 +43,7 @@
 			${UPDATE_PARAMETERS}
 		</Parameters>
 		<Flags>
-			<TimelinessAndAvailabilityFlags>
-				<PreviousSamplePresent>true</PreviousSamplePresent>
-				<CollectionTimeWithin24Hrs>true</CollectionTimeWithin24Hrs>
-				<AcquisitionTimeGTE20Hrs>true</AcquisitionTimeGTE20Hrs>
-				<DecayTimeLTE24Hrs>true</DecayTimeLTE24Hrs>
-				<SampleReceived72HrsFromCollectStart>true</SampleReceived72HrsFromCollectStart>
-			</TimelinessAndAvailabilityFlags>
-			<DataQualityFlags>
-				<Ba140MDC>
-					<Value>7.76414</Value>
-					<Pass>true</Pass>
-					<Test>lower than 30</Test>
-				</Ba140MDC>
-				<K40LocationDifference>
-					<Value>0.205566</Value>
-					<Pass>true</Pass>
-					<Test>lower than 3 * std deviation</Test>
-				</K40LocationDifference>
-				<NormalizedGainDifference>
-					<Value>0.0000222921</Value>
-					<Pass>true</Pass>
-					<Test>lower than 0.0001</Test>
-				</NormalizedGainDifference>
-				<Be7FWHM>
-					<Value>1.42555</Value>
-					<Pass>true</Pass>
-					<Test>lower than 1.7</Test>
-				</Be7FWHM>
-				<FlowRate>
-					<Value>972.755</Value>
-					<Pass>true</Pass>
-					<Test>greater than 500</Test>
-				</FlowRate>
-			</DataQualityFlags>
-			<EventScreeningFlags>
-				<ActivationProductsPresent>true</ActivationProductsPresent>
-				<NbOfDaysSinceLastActivationProduct>48.9999</NbOfDaysSinceLastActivationProduct>
-				<OnlyOneFissionProductPresent>false</OnlyOneFissionProductPresent>
-				<TwoOrMoreFissionProductsPresent>false</TwoOrMoreFissionProductsPresent>
-				<CS-137Present>false</CS-137Present>
-			</EventScreeningFlags>
+			${FLAGS}
 		</Flags>
 		<CalibrationInformation>
 			<Calibration Type="EnergyToChannels" EnergyUnits="keV" ID="en2ch">

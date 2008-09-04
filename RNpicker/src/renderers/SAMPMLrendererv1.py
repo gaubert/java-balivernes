@@ -271,7 +271,7 @@ class ParticulateRenderer(BaseRenderer):
         xml = ""
         dummy_template = ""
         
-        # get parameters
+        # get processing parameters
         parameters = self._fetcher.get("PROCESSING_PARAMETERS","None")
         
         dummy_template = re.sub("\${THRESHOLD}",parameters.get('THRESHOLD',"None"), template)
@@ -308,7 +308,7 @@ class ParticulateRenderer(BaseRenderer):
         xml = ""
         dummy_template = ""
         
-        # get parameters
+        # get update parameters
         parameters = self._fetcher.get("UPDATE_PARAMETERS","None")
         
         dummy_template = re.sub("\${USE_MRP}",str(parameters.get('MRP_USED',"None")), template)
