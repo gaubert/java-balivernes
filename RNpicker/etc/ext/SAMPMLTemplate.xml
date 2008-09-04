@@ -46,34 +46,7 @@
 			${FLAGS}
 		</Flags>
 		<CalibrationInformation>
-			<Calibration Type="EnergyToChannels" EnergyUnits="keV" ID="en2ch">
-				<Remark>Energy to Channel Calibration equation</Remark>
-				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
-				<Equation Model="Polynomial" Form="E(c)= Term0 + Term1 * c" >
-					<Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
-					<Coefficients>-0.350223245 0.32992958743</Coefficients>
-				</Equation>
-			</Calibration>
-			<Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="Energy" ID="re2en">
-				<Remark>Resolution to Energy Calibration equation</Remark>
-				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
-				<Equation Model="Polynomial" Form="FWHM(E)= Term0 + Term1 * SQRT(E)">
-					<Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
-					<Coefficients>0.632123456 0.0370345432</Coefficients>
-				</Equation>
-			</Calibration>
-			<Calibration Type="EfficiencyToEnergy" EnergyUnits="keV" FWHMUnits="Energy" ID="ef2en">
-				<Remark>Resolution to Energy Calibration equation</Remark>
-				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
-				<Equation Model="PolyLogarithmic" Form="L(E)=ln(948.0/E)">
-					<Remark>None</Remark>
-					<Coefficients>948.0</Coefficients>
-				</Equation>
-				<Equation Model="Exponential" Form="e(E)= exp( Term0 + Term1*L + Term2 * L^2 + Term3* L^3 + Term4 * L^4 + Term5 * L^5)">
-					<Remark>None</Remark>
-					<Coefficients>-3.423 0.8294 -0.2627 -0.2763 0.3371 -0.0953</Coefficients>
-				</Equation>
-			</Calibration>
+			${CALIBRATION}
 		</CalibrationInformation>
 	</SampleInformation>
 </SampML>

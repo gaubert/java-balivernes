@@ -65,7 +65,11 @@ SQL_PARTICULATE_GET_MRP = "select gsd.sample_id as mrp_sample_id, to_char (gsd.c
 
 SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS = "select gflags.flag_id as dq_flag_id, result as dq_result, value as dq_value, name as dq_name, threshold as dq_threshold, units as dq_units, test as dq_test from RMSMAN.GARDS_SAMPLE_FLAGS sflags,RMSMAN.GARDS_FLAGS gflags where sample_id=%s and sflags.FLAG_ID = gflags.FLAG_ID"
 
+SQL_PARTICULATE_GET_ENERGY_CAL         = "select * from RMSMAN.GARDS_ENERGY_CAL where sample_id=%s"
 
+SQL_PARTICULATE_GET_RESOLUTION_CAL     = "select * from RMSMAN.GARDS_RESOLUTION_CAL where sample_id=%s"
+
+SQL_PARTICULATE_GET_EFFICIENCY_CAL     = "select * from RMSMAN.GARDS_EFFICIENCY_CAL where sample_id=%s"
 
 class DBDataFetcher(object):
     """ Base Class used to get data from the IDC Database """
@@ -143,8 +147,13 @@ class DBDataFetcher(object):
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
     def _fetchFlags(self):
-        """ abstract global fetch fetching method """
+        """ abstract global fetching method for getting the flags"""
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+    
+    def _fetchCalibration(self):  
+        """ abstract global fetch method for get the Calibration info """
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+
     
     def asXML(self):
         """ abstract global xmlizer method """
@@ -279,7 +288,9 @@ class DBDataFetcher(object):
         self._fetchParameters()
         
         self._fetchFlags()
-
+        
+        self._fetchCalibration()
+        
     def _readDataFile(self,aDir,aFilename,aType):
         """ read a file in a string buffer. This is used for the data files """
         
@@ -673,13 +684,13 @@ class ParticulateDataFetcher(DBDataFetcher):
             mrp_sid   = row['mrp_sample_id']
             hoursDiff = row['mrp_collect_stop_diff']*24 
             
-            self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = True 
-            self._dataBag['TIME_FLAGS_MRP_SAMPLE_ID']    = mrp_sid
-            self._dataBag['TIME_FLAGS_MRP_HOURS_DIFF']   = hoursDiff
+            self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = True 
+            self._dataBag[u'TIME_FLAGS_MRP_SAMPLE_ID']    = mrp_sid
+            self._dataBag[u'TIME_FLAGS_MRP_HOURS_DIFF']   = hoursDiff
              
         else:
             
-           self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
+           self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
         
         
     def _fetchFlags(self):
@@ -734,9 +745,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         # between 21.6 and 26.4
         # if 0 within 24 hours
         if diff_in_sec > 95040 or diff_in_sec < 77760:
-           self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec
+           self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec
         else:
-           self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
+           self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
         
         
         # check acquisition flag
@@ -750,9 +761,9 @@ class ParticulateDataFetcher(DBDataFetcher):
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):
-           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec
+           self._dataBag[u'TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec
         else:
-           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = 0 
+           self._dataBag[u'TIME_FLAGS_ACQUISITION_FLAG'] = 0 
         
         # check decay flag
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
@@ -761,9 +772,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         decay_time_in_sec   = common.timeutils.getDifferenceInTime(collect_stop,acq_start)
         
         if (decay_time_in_sec > 24*60*60):
-            self._dataBag['TIME_FLAGS_DECAY_FLAG'] = decay_time_in_sec
+            self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = decay_time_in_sec
         else:
-            self._dataBag['TIME_FLAGS_DECAY_FLAG'] = 0
+            self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = 0
             
         #  check sample_arrival_delay
         entry_date_time      = common.timeutils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
@@ -771,9 +782,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # check that sample_arrival_delay is within 72 hours or 72*60*60 seconds
         if sample_arrival_delay > (72*60*60):
-           self._dataBag['TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = entry_date_time
+           self._dataBag[u'TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = entry_date_time
         else:
-           self._dataBag['TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = 0 
+           self._dataBag[u'TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = 0 
 
         
     def _fetchParameters(self):
@@ -816,7 +827,72 @@ class ParticulateDataFetcher(DBDataFetcher):
         # add in dataBag
         self._dataBag[u'UPDATE_PARAMETERS'] = data
         
-            
+    def _fetchCalibration(self):  
+        """ Fetch the calibration info for particulate """
+        
+        # get energy calibration info
+        result = self._connector.execute(SQL_PARTICULATE_GET_ENERGY_CAL%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'ENERGY_CAL'] = res
+        
+        result.close()      
+        
+        result = self._connector.execute(SQL_PARTICULATE_GET_RESOLUTION_CAL%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'RESOLUTION_CAL'] = res
+        
+        result.close()
+        
+        result = self._connector.execute(SQL_PARTICULATE_GET_EFFICIENCY_CAL%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'EFFICIENCY_CAL'] = res
+        
+        result.close()            
         
                    
 
