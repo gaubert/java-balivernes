@@ -63,6 +63,8 @@ SQL_PARTICULATE_GET_MRP = "select gsd.sample_id as mrp_sample_id, to_char (gsd.c
                              and gsd.spectral_qualifier = 'FULL' \
                            order by collect_stop desc"
 
+SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS = "select gflags.flag_id as dq_flag_id, result as dq_result, value as dq_value, name as dq_name, threshold as dq_threshold, units as dq_units, test as dq_test from RMSMAN.GARDS_SAMPLE_FLAGS sflags,RMSMAN.GARDS_FLAGS gflags where sample_id=%s and sflags.FLAG_ID = gflags.FLAG_ID"
+
 
 
 class DBDataFetcher(object):
@@ -497,6 +499,17 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchCategoryResults(self):
         """ sub method of _fetchAnalysisResults. Get the Category info from the database """
         
+        # get category status
+        result = self._connector.execute(SQL_PARTICULATE_CATEGORY_STATUS%(self._sampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+        
+        data = {}
+        data.update(rows[0])
+    
+        self._dataBag.update(self._transformResults(data))
+        
         result = self._connector.execute(SQL_PARTICULATE_CATEGORY%(self._sampleID))
        
         # only one row in result set
@@ -616,9 +629,6 @@ class ParticulateDataFetcher(DBDataFetcher):
             # copy row in a normal dict
             data.update(row)
             
-             # format halflife
-             #data['HALFLIFE'] = self._formatHalfLife(data['HALFLIFE'])
-            
             res.append(data)
             data = {}
                
@@ -675,9 +685,42 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchFlags(self):
         """ get the different flags """
         
+        self._fetchTimelinessFlags()
+        
+        self._fetchdataQualityFlags()
+        
+        # we miss event screening flags to be added
+        
+    
+    def _fetchdataQualityFlags(self):
+        """ data quality flags"""
+        
+         # get MDA nuclides
+        result = self._connector.execute(SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS%(self._sampleID))
+        
+        rows = result.fetchall()
+        
+        data = {}
+        
+        res = []
+        
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            
+            res.append(data)
+            data = {}
+               
+        # add in dataBag
+        self._dataBag[u'DATA_QUALITY_FLAGS'] = res
+        
+        
+        
+        
+    def _fetchTimelinessFlags(self):
+        """ prepare timeliness checking info """
         # get the timeliness flag
         self._getMRP()
-        
         
         # check collection flag
         
@@ -691,11 +734,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         # between 21.6 and 26.4
         # if 0 within 24 hours
         if diff_in_sec > 95040 or diff_in_sec < 77760:
-           self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec*60*60
+           self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec
         else:
            self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
         
-        print "diff %s"%(diff_in_sec)
         
         # check acquisition flag
         # need to be done within 3 hours
@@ -708,47 +750,31 @@ class ParticulateDataFetcher(DBDataFetcher):
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):
-           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec*60*60
+           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec
         else:
            self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = 0 
         
         # check decay flag
-        # need to be done within 3 hours
+        # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
         
         # check that collection time with 24 Hours
-        acq_start  = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_START'])
-        acq_stop   = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_STOP'])
-    
-        diff_in_sec = common.timeutils.getDifferenceInTime(collect_start, collect_stop)
-          
-        # acquisition diff with 3 hours
-        if diff_in_sec < (20*60*60):
-           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec*60*60
-        else:
-           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = 0 
-       
+        decay_time_in_sec   = common.timeutils.getDifferenceInTime(collect_stop,acq_start)
         
-         /* decay flag */
+        if (decay_time_in_sec > 24*60*60):
+            self._dataBag['TIME_FLAGS_DECAY_FLAG'] = decay_time_in_sec
+        else:
+            self._dataBag['TIME_FLAGS_DECAY_FLAG'] = 0
+            
+        #  check sample_arrival_delay
+        entry_date_time      = common.timeutils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
+        sample_arrival_delay = common.timeutils.getDifferenceInTime(entry_date_time,collect_start)
+        
+        # check that sample_arrival_delay is within 72 hours or 72*60*60 seconds
+        if sample_arrival_delay > (72*60*60):
+           self._dataBag['TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = entry_date_time
+        else:
+           self._dataBag['TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = 0 
 
-  decayTime = atoi(sdata_calc->decay_time_hrs);
-  /* If it is + or - more than 3 hours */
-  if(decayTime > 24)
-     {
-          sprintf(tempString,"%-55s%s%ld%s",
-                  "Decay time <= 24 hours?", "NO -> ",
-                   decayTime, " hours\n");
-     }
-   else
-     {
-          sprintf(tempString,"%-55s%s",
-                  "Decay time <= 24 hours?", "YES\n");
-     }
-
-    strcat(dataBuffer, tempString);
-
-
-
-          
         
     def _fetchParameters(self):
         """ get the different parameters used for the analysis """
