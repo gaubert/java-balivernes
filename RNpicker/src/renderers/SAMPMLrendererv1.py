@@ -261,6 +261,68 @@ class ParticulateRenderer(BaseRenderer):
         
         self._fillPeaks()
         
+    def _fillFlags(self):
+        """ add the Timeliness, Data Quality and Event Screening Flags """
+        
+         # first add timeliness Flags
+        template = self._conf.get("TemplatingSystem","timelinessFlagsTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        dummy_template += template
+          
+        param = self._fetcher.get('TIME_FLAGS_PREVIOUS_SAMPLE',False)
+        if param == True:
+            dummy_template = re.sub("\${PreviousSamplePresent}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${PreviousSamplePresent}","false", dummy_template)
+        
+        param = self._fetcher.get('TIME_FLAGS_COLLECTION_WITHIN_24',0)
+        if param == 0:
+            dummy_template = re.sub("\${CollectionTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${CollectionTime}","false", dummy_template)
+            
+        param = self._fetcher.get('TIME_FLAGS_ACQUISITION_FLAG',0)
+        if param == 0:
+            dummy_template = re.sub("\${AcquisitionTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${AcquisitionTime}","false", dummy_template)
+        
+        param = self._fetcher.get('TIME_FLAGS_DECAY_FLAG',0)
+        if param == 0:
+            dummy_template = re.sub("\${DecayTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${DecayTime}","false", dummy_template)
+            
+        param = self._fetcher.get('TIME_FLAGS_SAMPLE_ARRIVAL_FLAG',0)
+        if param == 0:
+            dummy_template = re.sub("\${SampleReceived}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${SampleReceived}","false", dummy_template)
+       
+        # add generated xml in final container
+        xml += dummy_template
+        
+        template = self._conf.get("TemplatingSystem","dataQualityFlagsTemplate")
+        
+        dummy_template = ""
+        dummy_template += template
+        
+        # add Data Quality Flags
+        DataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
+        
+        for flag in DataQFlags:
+            name = flag['DQ_NAME']
+            dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
+            dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
+            dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
+        
+        xml += dummy_template
+           
+        # add all flags in global template
+        self._populatedTemplate = re.sub("\${FLAGS}",xml, self._populatedTemplate)
+        
     
     def _fillParameters(self):
         """ Add the processing and update parameters """
@@ -349,7 +411,9 @@ class ParticulateRenderer(BaseRenderer):
        self._fillAnalysisResults()
        
        self._fillParameters()
-        
+       
+       self._fillFlags()
+       
        # father 
        BaseRenderer.asXmlStr(self)
        

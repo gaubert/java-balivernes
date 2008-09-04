@@ -673,13 +673,13 @@ class ParticulateDataFetcher(DBDataFetcher):
             mrp_sid   = row['mrp_sample_id']
             hoursDiff = row['mrp_collect_stop_diff']*24 
             
-            self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = 1 
+            self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = True 
             self._dataBag['TIME_FLAGS_MRP_SAMPLE_ID']    = mrp_sid
             self._dataBag['TIME_FLAGS_MRP_HOURS_DIFF']   = hoursDiff
              
         else:
             
-           self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = 0 
+           self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
         
         
     def _fetchFlags(self):
