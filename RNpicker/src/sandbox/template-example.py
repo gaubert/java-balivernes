@@ -1,8 +1,8 @@
 
 import re
 import common.utils
-import common.iso8601
 import datetime
+import time
 
 
 def main():
@@ -24,9 +24,30 @@ def main():
     print "Result = %s"%(result[1:200])
     
     
+def convert(aStr):
+    
+    return datetime.datetime.strptime(aStr,'%Y-%m-%dT%H:%M:%S')
 
 
 if __name__ == "__main__":
+    
+    
+    start = '2007-12-20T08:50:17'
+    stop  = '2007-12-21T08:48:37'
+    
+    s1 = datetime.datetime.strptime(start,'%Y-%m-%dT%H:%M:%S')
+    
+   # start = common.time.getDateTimeFromISO8601(start)
+    
+    stop = convert(stop)
+      
+   
+    print "epoch start time %s"%(time.mktime(s1.timetuple()))
+   # print "epoch stop time %s"%(time.mktime(stop.timetuple()))
+    
+    
+    exit(1)
+    
     
     textValue = '5PPP3.29 Y'
     

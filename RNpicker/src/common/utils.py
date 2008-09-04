@@ -1,5 +1,7 @@
-import ConfigParser
 import os
+
+import ConfigParser
+
 
 #####################################
 #
@@ -68,6 +70,7 @@ def printInFile(aStr,aPath):
     f.write(aStr)
     f.close()
     
+   
     
 #####################################
 #
@@ -89,3 +92,10 @@ def prettyFormatElem(elem,level=0):
     else:
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
+            
+if __name__ == "__main__":
+
+    print "Hello"
+    n = datetime.datetime.now()
+    
+    s1 = n.strptime("2007-12-20T08:50:17",'%Y-%m-%dT%H:%M:%S')

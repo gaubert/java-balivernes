@@ -5,10 +5,13 @@ import os
 import re
 import pprint
 import string
+import datetime
+import time
 from StringIO import StringIO
 
 from common.exceptions import CTBTOError
 import common.utils
+import common.timeutils
 
 """ sql requests """
 SQL_GETDETECTORINFO   = "select det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
@@ -17,7 +20,7 @@ SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIO
 
 
 SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as sample_geometry, \
-                                spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
+                                detector_id as detector_id, spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
@@ -51,6 +54,15 @@ SQL_PARTICULATE_GET_PEAKS = "select * from RMSMAN.GARDS_PEAKS where sample_id=%s
 SQL_PARTICULATE_GET_PROCESSING_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_PROC_PARAMS where sample_id=%s"
 
 SQL_PARTICULATE_GET_UPDATE_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_UPDATE_PARAMS where sample_id=%s"
+
+SQL_PARTICULATE_GET_MRP = "select gsd.sample_id as mrp_sample_id, to_char (gsd.collect_stop, 'YYYY-MM-DD HH24:MI:SS')  as mrp_collect_stop, gsd.collect_stop - to_date('%s', 'YYYY-MM-DD HH24:MI:SS') as mrp_collect_stop_diff from gards_sample_data gsd \
+                           where gsd.collect_stop < to_date ('%s','YYYY-MM-DD HH24:MI:SS') \
+                             and gsd.data_type = '%s' \
+                             and gsd.detector_id = %s \
+                             and gsd.sample_type = '%s' \
+                             and gsd.spectral_qualifier = 'FULL' \
+                           order by collect_stop desc"
+
 
 
 class DBDataFetcher(object):
@@ -126,6 +138,10 @@ class DBDataFetcher(object):
     
     def _fetchAnalysisResults(self):
         """ abstract global data fetching method """
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+    
+    def _fetchFlags(self):
+        """ abstract global fetch fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
     def asXML(self):
@@ -260,8 +276,7 @@ class DBDataFetcher(object):
         # get parameters
         self._fetchParameters()
         
-        print "dataBag = %s"%(self._dataBag)
-       
+        self._fetchFlags()
 
     def _readDataFile(self,aDir,aFilename,aType):
         """ read a file in a string buffer. This is used for the data files """
@@ -478,31 +493,7 @@ class ParticulateDataFetcher(DBDataFetcher):
                 aData['CAT_COMMENT'] = "Below Statistical Range"
             else:
                 aData['CAT_COMMENT'] = "Within Statistical Range"
-      
-        """if(sample_cat[i].category != 1)
-{
-  /* Guillaume: correct Array out of bounds read when i = 0. Added (i==0) ||  */
-  if((i == 0) || (sample_cat[i-1].category != 1)&&(sample_cat[i-1].category != sample_cat[i].category)) printf("\n");
-   rptBuffer += sprintf(rptBuffer, "%-13s %-8d ", sample_cat[i].name, sample_cat[i].category);
-
-fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i].activity,sample_cat[i].upper_bound);
-
-  if(sample_cat[i].upper_bound == sample_cat[i].lower_bound)
-   {
-     rptBuffer += sprintf(rptBuffer, "%-25s\n", "Not Regularly Measured");
-   }
-  else if(sample_cat[i].activity > sample_cat[i].upper_bound)
-   {
-     rptBuffer += sprintf(rptBuffer, "%-25s\n", "Above Statistical Range");
-   }
-  else if(sample_cat[i].activity < sample_cat[i].lower_bound)
-   {
-     rptBuffer += sprintf(rptBuffer, "%-25s\n", "Below Statistical Range");
-   }
-  else  rptBuffer += sprintf(rptBuffer, "%-25s\n", "Within Statistical Range");"""
-
-        
-        
+       
     def _fetchCategoryResults(self):
         """ sub method of _fetchAnalysisResults. Get the Category info from the database """
         
@@ -646,6 +637,118 @@ fprintf(stderr,"n = %s  act = %g  upp = %g\n", sample_cat[i].name, sample_cat[i]
         self._fetchNuclidesResults()
         
         self._fetchPeaksResults()
+        
+        self._fetchFlags()
+        
+    def _getMRP(self):
+        """ get the most recent prior """
+        
+        collect_stop = self._dataBag['DATA_COLLECT_STOP'].replace("T"," ")
+        
+        data_type    = self._dataBag['DATA_DATA_TYPE']
+        
+        detector_id  = self._dataBag['DETECTOR_ID']
+        
+        sample_type  = self._dataBag['SAMPLE_TYPE']
+    
+        # get MDA nuclides
+        result = self._connector.execute(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
+        
+        rows = result.fetchall()
+        
+        if len(rows) > 0:
+            
+            row = rows[0]
+            
+            mrp_sid   = row['mrp_sample_id']
+            hoursDiff = row['mrp_collect_stop_diff']*24 
+            
+            self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = 1 
+            self._dataBag['TIME_FLAGS_MRP_SAMPLE_ID']    = mrp_sid
+            self._dataBag['TIME_FLAGS_MRP_HOURS_DIFF']   = hoursDiff
+             
+        else:
+            
+           self._dataBag['TIME_FLAGS_PREVIOUS_SAMPLE']  = 0 
+        
+        
+    def _fetchFlags(self):
+        """ get the different flags """
+        
+        # get the timeliness flag
+        self._getMRP()
+        
+        
+        # check collection flag
+        
+        # check that collection time with 24 Hours
+        collect_start  = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_START'])
+        collect_stop   = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_STOP'])
+    
+        diff_in_sec = common.timeutils.getDifferenceInTime(collect_start, collect_stop)
+        
+        # check time collection within 24 hours +/- 10 % => 3hrs
+        # between 21.6 and 26.4
+        # if 0 within 24 hours
+        if diff_in_sec > 95040 or diff_in_sec < 77760:
+           self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec*60*60
+        else:
+           self._dataBag['TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
+        
+        print "diff %s"%(diff_in_sec)
+        
+        # check acquisition flag
+        # need to be done within 3 hours
+        
+        # check that collection time with 24 Hours
+        acq_start  = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_START'])
+        acq_stop   = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_STOP'])
+    
+        diff_in_sec = common.timeutils.getDifferenceInTime(collect_start, collect_stop)
+          
+        # acquisition diff with 3 hours
+        if diff_in_sec < (20*60*60):
+           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec*60*60
+        else:
+           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = 0 
+        
+        # check decay flag
+        # need to be done within 3 hours
+        
+        # check that collection time with 24 Hours
+        acq_start  = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_START'])
+        acq_stop   = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_STOP'])
+    
+        diff_in_sec = common.timeutils.getDifferenceInTime(collect_start, collect_stop)
+          
+        # acquisition diff with 3 hours
+        if diff_in_sec < (20*60*60):
+           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec*60*60
+        else:
+           self._dataBag['TIME_FLAGS_ACQUISITION_FLAG'] = 0 
+       
+        
+         /* decay flag */
+
+  decayTime = atoi(sdata_calc->decay_time_hrs);
+  /* If it is + or - more than 3 hours */
+  if(decayTime > 24)
+     {
+          sprintf(tempString,"%-55s%s%ld%s",
+                  "Decay time <= 24 hours?", "NO -> ",
+                   decayTime, " hours\n");
+     }
+   else
+     {
+          sprintf(tempString,"%-55s%s",
+                  "Decay time <= 24 hours?", "YES\n");
+     }
+
+    strcat(dataBuffer, tempString);
+
+
+
+          
         
     def _fetchParameters(self):
         """ get the different parameters used for the analysis """

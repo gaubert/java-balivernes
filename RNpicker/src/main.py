@@ -7,7 +7,7 @@ import common.utils
 from db.datafetchers import DBDataFetcher
 from db.connections import DatabaseConnector
 from renderers.SAMPMLrendererv1 import ParticulateRenderer
-import sandbox.xmlpp
+
 
 
 def myBasicLoggingConfig():
