@@ -9,7 +9,7 @@ from  common.exceptions import CTBTOError
 
 def valid_schema():
     
-    print " Start Tests \n"
+    print " Startjjj Tests \n"
     
     f = StringIO('''\
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
