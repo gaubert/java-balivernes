@@ -66,7 +66,13 @@ def dump(aData,aIostream=None):
     pp.pprint(self._dataBag)
 
 def printInFile(aStr,aPath):
-    f = open(aPath,"w")
+    #check if it is a path or a file
+     
+    if str(aPath.__class__) == "<type 'str'>":
+      f = open(aPath,"w")
+    else:
+      f = aPath
+    
     f.write(aStr)
     f.close()
     
