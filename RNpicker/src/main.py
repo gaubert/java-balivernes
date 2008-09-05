@@ -39,8 +39,6 @@ if __name__ == '__main__':
    
    print "URL=%s"%(url)
    
-   
-   
    # create DB connector
    conn = DatabaseConnector('oracle://aubert:ernest25@idcdev')
    

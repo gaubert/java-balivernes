@@ -11,7 +11,7 @@ from StringIO import StringIO
 
 from common.exceptions import CTBTOError
 import common.utils
-import common.timeutils
+import common.time_utils
 
 """ sql requests """
 SQL_GETDETECTORINFO   = "select det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
@@ -736,10 +736,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         # check collection flag
         
         # check that collection time with 24 Hours
-        collect_start  = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_START'])
-        collect_stop   = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_STOP'])
+        collect_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_START'])
+        collect_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_STOP'])
     
-        diff_in_sec = common.timeutils.getDifferenceInTime(collect_start, collect_stop)
+        diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
         
         # check time collection within 24 hours +/- 10 % => 3hrs
         # between 21.6 and 26.4
@@ -754,10 +754,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         # need to be done within 3 hours
         
         # check that collection time with 24 Hours
-        acq_start  = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_START'])
-        acq_stop   = common.timeutils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_STOP'])
+        acq_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_START'])
+        acq_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_STOP'])
     
-        diff_in_sec = common.timeutils.getDifferenceInTime(collect_start, collect_stop)
+        diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):
@@ -769,7 +769,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
         
         # check that collection time with 24 Hours
-        decay_time_in_sec   = common.timeutils.getDifferenceInTime(collect_stop,acq_start)
+        decay_time_in_sec   = common.time_utils.getDifferenceInTime(collect_stop,acq_start)
         
         if (decay_time_in_sec > 24*60*60):
             self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = decay_time_in_sec
@@ -777,8 +777,8 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = 0
             
         #  check sample_arrival_delay
-        entry_date_time      = common.timeutils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
-        sample_arrival_delay = common.timeutils.getDifferenceInTime(entry_date_time,collect_start)
+        entry_date_time      = common.time_utils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
+        sample_arrival_delay = common.time_utils.getDifferenceInTime(entry_date_time,collect_start)
         
         # check that sample_arrival_delay is within 72 hours or 72*60*60 seconds
         if sample_arrival_delay > (72*60*60):
