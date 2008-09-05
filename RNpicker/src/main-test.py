@@ -40,22 +40,35 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "URL=%s"%(self.url)
    
         # create DB connector
-        self.conn = DatabaseConnector('oracle://aubert:ernest25@idcdev')
+        self.conn = DatabaseConnector(self.url)
    
         self.conn.connect()
 
-    def testParticulateSample(self):
+    def testParticulateSamples(self):
         
-        # fetchnoble particulate
-        fetcher = DBDataFetcher.getDataFetcher(self.conn,"153961")
+        
+        
+        # another recent sample = "0889826" 
+        listOfSamplesToTest = [ "0890407"]
+        
+        #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
+        intifiedlist = map(int,listOfSamplesToTest)
+        
+        listOfSamplesToTest = map(str,intifiedlist)
+        
+        print "list of Sample",listOfSamplesToTest
+        
+        for sampleID in listOfSamplesToTest:
+           # fetchnoble particulate
+           fetcher = DBDataFetcher.getDataFetcher(self.conn,sampleID)
    
-        fetcher.fetch()
+           fetcher.fetch()
    
-        renderer = ParticulateRenderer(fetcher)
+           renderer = ParticulateRenderer(fetcher)
    
-        xmlStr = renderer.asXmlStr()
+           xmlStr = renderer.asXmlStr()
    
-        common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/subs-template.xml")
+           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/sampml-%s.xml"%(sampleID))
 
 if __name__ == '__main__':
     unittest.main()

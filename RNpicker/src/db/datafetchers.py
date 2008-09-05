@@ -298,7 +298,7 @@ class DBDataFetcher(object):
         path = "%s/%s"%(aDir,aFilename)
         
         if not os.path.exists(path):
-            raise CTBTOError(-1,"the file %s does not exits"%(filePath))
+            raise CTBTOError(-1,"the file %s does not exits"%(path))
         
         # store in a StringIO object
         input = open(path,"r")
@@ -477,6 +477,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ get the different raw data info """
         
         # need to get the gamma spectrum
+        
+        print "Get Particulate spectrum %s"%(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
         
         # first path information from database
         result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))

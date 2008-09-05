@@ -171,7 +171,7 @@ class ParticulateRenderer(BaseRenderer):
             
             # to be checked with Romano
             dummy_template = re.sub("\${LD}","None", dummy_template)
-            dummy_template = re.sub("\${DETECTIBILITY}",str(peak['DETECTABILITY']), dummy_template)
+            dummy_template = re.sub("\${DETECTIBILITY}",str(peak.get('DETECTABILITY',"None")), dummy_template)
             
             dummy_template = re.sub("\${NUCLIDE}","None", dummy_template)
             # to be checked
