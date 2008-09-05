@@ -1,5 +1,4 @@
 <Spectrum>
-	<!-- More than one spectrum can be entered -->
 	<CollectionStart>${COL_START}</CollectionStart>
 	<CollectionStop>${COL_STOP}</CollectionStop>
 	<AcquisitionStart>${ACQ_START}</AcquisitionStart>
@@ -10,6 +9,6 @@
 	<DecayTime>${DECAY_TIME}</DecayTime>
 	<SourceType>Sample</SourceType>
 	<Data gammaChannelSpan="${SPECTRUM_DATA_CHANNEL_SPAN}" gammaEnergySpan="${SPECTRUM_DATA_ENERGY_SPAN}" format="IMS2.0">
-${SPECTRUM_DATA}
+         ${SPECTRUM_DATA}
     </Data>
 </Spectrum>
