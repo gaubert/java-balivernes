@@ -49,7 +49,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         
         # another recent sample = "0889826" 
-        listOfSamplesToTest = [ "0890407","889826"]
+        # tanzani 0888997
+        listOfSamplesToTest = [ "0888997" ]
         
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         intifiedlist = map(int,listOfSamplesToTest)

@@ -453,7 +453,7 @@ class ParticulateRenderer(BaseRenderer):
     def asXmlStr(self):
        """ Return an xml tree as a string """
         
-       self._fetcher.printContent(open("/tmp/sample_extract.data","w"))
+       self._fetcher.printContent(open("/tmp/sample_%s_extract.data"%(self._fetcher.get("SAMPLE_ID")),"w"))
         
        self._fillRawData()
        
