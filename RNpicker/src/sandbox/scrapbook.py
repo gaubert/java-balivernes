@@ -7,7 +7,7 @@ if __name__ == '__main__':
     
     f = open("/tmp/subs-template.xml")
     
-    print "Hello"
+    print "Hello Scrapbook"
     
     sIO = StringIO("Blah Blsh")
     
