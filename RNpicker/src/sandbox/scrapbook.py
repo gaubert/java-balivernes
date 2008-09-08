@@ -9,6 +9,8 @@ if __name__ == '__main__':
     
     print "Hello Scrapbook"
     print "Hello Scrapbook 2"
+    print "Hello Scrapbook 3"
+    
     
     sIO = StringIO("Blah Blsh")
     
