@@ -24,15 +24,12 @@
 		       ${CATEGORIES}
 		    </SampleCategorization>
 			<ActivityConcentrationSummary>
-				<NonQuantifiedNuclides>
-					${NON_QUANTIFIED_NUCLIDES}
-				</NonQuantifiedNuclides>
 				<QuantifiedNuclides>
 					${QUANTIFIED_NUCLIDES}
 				</QuantifiedNuclides>
-				<MinimumDetectableConcentration>
+				<MinimumDetectableActivity>
 					${MDA_NUCLIDES}
-				</MinimumDetectableConcentration>
+				</MinimumDetectableActivity>
 			</ActivityConcentrationSummary>
 			<PeakResults>
 				${PEAKS}
