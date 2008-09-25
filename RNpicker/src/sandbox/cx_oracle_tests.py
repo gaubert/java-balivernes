@@ -4,7 +4,8 @@ import cx_Oracle
 
 def accessWithcx_Oracle():
 
-    conn = cx_Oracle.connect('aubert/ernest25@idcdev')
+    #conn = cx_Oracle.connect('aubert/ernest25@idcdev') 
+    conn = cx_Oracle.connect('SYSTEM','oracle','XE') 
     curs = curs = conn.cursor()
     sql = """SELECT * FROM FILEPRODUCT"""
 

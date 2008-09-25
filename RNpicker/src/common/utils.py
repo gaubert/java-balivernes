@@ -32,7 +32,7 @@ class Conf:
             Conf.load_config()
         return Conf._conf
 
-    def load_config(cls,aFile="/home/aubert/ecmwf/workspace/RNpicker/etc/conf/rnpicker.config"):
+    def load_config(cls,aFile="/home/aubert/workspace/RNpicker/etc/conf/rnpicker.config"):
         try:
             # [MAJ] can take a file list with default
             Conf._conf  = ConfigParser.ConfigParser()
