@@ -1,0 +1,35 @@
+1) You need to install Oracle XE
+
+2) Create Tablespace and users
+
+This can be done with the sql script create_tablespace_users.sql
+
+> sqlplus SYSTEM/oracle@localhost < create_tablespace_users.sql
+
+A tablespace RMS and a RMSAUTO and RMSUSER is created from this script
+
+3) Install schema 
+
+This can be done with drop_and_recreate_autosaint_schema.pl
+
+> ./drop_and_recreate_autosaint_schema.pl -db localhost -u rmsman -p rmsman
+
+This script cleans the database and recreate the entire schema
+
+4) suck Prod DB for testing purpose
+
+You can use extract_sampleml_data.pl for that
+
+>./extract_sampleml_data.pl -sid 0888997 -db maui -u rmsuser -p rmsuser -dir ../data
+
+-dir is where the data will be put 
+
+>./extract_sampleml_data.pl -sid 0889826 -db maui -u rmsuser -p rmsuser -dir ../data
+
+5) Insert data in DB
+
+./insert_sample_data.pl -u rmsman -p rmsman -db localhost -sid 0888997 -dir ../data
+
+6) Copy the data in /home/misc/rmsops
+
+The file is in ../data/XXXXXXXX-home-misc-rmsops.tar.gz
