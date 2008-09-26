@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<SampML xmlns="http://www.ctbto.org/SAMPML/0.5">
+	<Remark>Particulate Example. Note that some of the numbers are not the real one that would be found on the database</Remark>
+	<SampleInformation>
+		<StationInformation>
+			<StationLocation>Oahu, Hawaii, USA</StationLocation>
+			<StationCode>USP79</StationCode>
+			<CountryCode>USA</CountryCode>
+			<Coordinates>-5162.985094196054907 -626.585094196054907</Coordinates>     <!-- third value defines altitude -->
+		</StationInformation>
+		<DetectorInformation>
+			<DetectorCode>USP79_001</DetectorCode>
+			<DetectorDescription>Detector 1 in Oahu, Hawaii, USA</DetectorDescription>
+		</DetectorInformation>
+		<SampleType>particulate</SampleType>
+		<SampleGeometry>M4</SampleGeometry>
+		<SampleQuantity unit="m3">23346.11</SampleQuantity>
+		<Measurements>
+			<Spectrum id="dev-0867819" calibrationIDs="en2ch re2en ef2en">
+				<!-- More than one spectrum can be entered -->
+				<CollectionStart>2008-07-17T22:25:00</CollectionStart>
+				<CollectionStop>2008-07-18T22:25:00</CollectionStop>
+				<AcquisitionStart>2008-07-19T22:25:00</AcquisitionStart>
+				<AcquisitionStop>2008-07-20T22:25:00</AcquisitionStop>
+				<RealAcquisitionTime>PT23H41M</RealAcquisitionTime>
+				<LiveAcquisitionTime>PT23H41M</LiveAcquisitionTime>
+				<SamplingTime>PT24H</SamplingTime>
+				<DecayTime>PT24H54M</DecayTime>
+				<MeasurementType>GammaSample</MeasurementType>            <!--QC, Background, BetaSample, GammaSample -->
+				<SampleType>FULL</SampleType>                        <!-- Full or Prel: Preliminary -->
+				<Data gammaChannelSpan="8192" gammaEnergySpan="3100" format="IMS2.0">  <!-- Compression Algorithm could be used to reduce the size of the spectrum (like counted zero method for example -->
+					1     0          0          0          0          0
+					6     0          0          0          0          0
+					11    0          0          0          0          0
+					16    0          0          0          0          0
+					21    0          0          0          0          0
+					26    0          0          0          0          0
+					31    0          0          0          0          0
+					36    0          0          0          0          0
+					41    0          0          0          0          0
+					46    0          0          0          0          0
+					51    0          0          0          0          0
+					56    0          0          0          0          0
+					61    0          0          0          0          0
+					66    0          0          0          0          0
+					71    0          0          0          0          0
+					76    0          0          0          0          0
+					81    0          0          0          0          0
+					86    0          0          0          0          0
+					91    0          0          0          0          0
+					96    0          0          0          0          0
+					101   522        554        545        573        557
+					106   536        530        527        516        516
+					111   515        507        483        484        498
+					116   477        492        493        445        470
+					121   467        458        467        457        472
+					126   467        494        494        562        501
+					131   501        447        450        401        393
+					136   429        408        438        428        410
+					141   420        404        402        419        434
+					146   419        472        543        489        426
+					151   441        409        413        390        439
+					156   399        428        414        406        378
+					161   452        435        474        453        465
+           
+                    <!-- ..... Incomplete spectrum -->
+
+					8091  6          9          10         10         6
+					8096  10         6          5          5          8
+					8101  12         12         5          6          2
+					8106  12         10         7          12         10
+					8111  11         5          5          8          12
+					8116  12         8          5          5          3
+					8121  12         8          6          3          5
+					8126  9          8          12         11         6
+					8131  2          3          7          12         8
+					8136  6          6          7          3          7
+					8141  10         8          2          10         7
+					8146  5          5          9          9          14
+					8151  7          8          8          8          6
+					8156  9          6          5          7          6
+					8161  6          7          5          9          5
+					8166  8          6          7          5          8
+					8171  9          9          12         9          6
+					8176  5          5          10         14         11
+					8181  4          8          7          12         6
+					8186  10         3          7          7          11
+					8191  10         11
+                </Data>
+			</Spectrum>
+		</Measurements>
+		<Analyses>
+		  <AnalysisResults id="1" spectrumIDs="dev-0867819">
+		     <SampleCategorization> <!-- only one categorisation => the final one -->
+		        <Category>1</Category>
+		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
+		     </SampleCategorization>
+			 <ActivityConcentrationSummary>
+				<NonQuantifiedNuclides>
+					<Nuclide>
+						<Name>AC-228</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>BI-214</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>GE-75M</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>K-40</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>PA-234M</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>PB-214</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>TH-234</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+					<Nuclide>
+						<Name>U-235</Name>
+						<Type>Natural</Type>
+					</Nuclide>
+				</NonQuantifiedNuclides>
+				<QuantifiedNuclides>
+					<Nuclide>
+						<Name>BE-7</Name>
+						<Type>Natural</Type>
+						<HalfLife>P53DT06H57M36S</HalfLife>
+						<!-- period following ISO format -->
+						<Concentration unit="uBq/m3">6200</Concentration>
+						<ConcentrationError unit="percentage">2.2</ConcentrationError>
+					</Nuclide>
+					<Nuclide>
+						<Name>PB-212F</Name>
+						<Type>Natural</Type>
+						<HalfLife>PT10H38M24S</HalfLife>
+						<!-- period following ISO format -->
+						<Concentration unit="uBq/m3">5400</Concentration>
+						<ConcentrationError unit="percentage">1.83</ConcentrationError>
+					</Nuclide>
+					<Nuclide>
+						<Name>CO-60</Name>
+						<Type>Activation</Type>
+						<HalfLife>PT166348548S</HalfLife>
+						<!-- period following ISO format -->
+						<Concentration unit="uBq/m3">1.3</Concentration>
+						<ConcentrationError unit="percentage">88.43</ConcentrationError>
+					</Nuclide>
+				</QuantifiedNuclides>
+				<MinimumDetectableConcentration>
+					<Nuclide>
+						<Name>BA-140</Name>
+						<HalfLife>PT1101772.8S</HalfLife>
+						<Concentration unit="uBq/m3">7.76</Concentration>
+					</Nuclide>
+					<Nuclide>
+						<Name>CE-143</Name>
+						<HalfLife>PT118939.968S</HalfLife>
+						<Concentration unit="uBq/m3">16.69</Concentration>
+					</Nuclide>
+					<Nuclide>
+						<Name>CS-134</Name>
+						<HalfLife>PT65070381.4S</HalfLife>
+						<Concentration unit="uBq/m3">1.85</Concentration>
+					</Nuclide>
+					<Nuclide>
+						<Name>CS-136</Name>
+						<!-- 13.16D -->
+						<HalfLife>P13DT3H7M12S</HalfLife>
+						<Concentration unit="uBq/m3">1.82</Concentration>
+					</Nuclide>
+					<!-- ... There are more than these 4 nuclides -->
+				</MinimumDetectableConcentration>
+			</ActivityConcentrationSummary>
+			<PeakResults>
+				<PeakResult>
+					<Energy>239.027374267578 0.258760273456573</Energy>
+					<!-- En + En Err -->
+					<Centroid>700.034912109375 0.460972547531128</Centroid>
+					<!-- Centroid + Centroid Err -->
+					<Area>94.4806365966797 21.6091804504395</Area>
+					<!-- Area + Area Err -->
+					<Width>13</Width>
+					<!-- Width -->
+					<FWHM>1.24280428886414 0.357939600944519</FWHM>
+					<!-- FWHM + Err -->
+					<BackgroundCounts>413.558532714844 20.3361377716064</BackgroundCounts>
+					<!-- Background counts per second + err -->
+					<Efficiency>0.111674666404724 00</Efficiency>
+					<!-- Efficiency and its error -->
+					<LC>76.933479309082</LC>
+					<!-- Criticial Level  -->
+					<LD>85.234567890901</LD>
+					<!-- Detectable Level (100% sure of detection) -->
+					<Detectibility>1.22808218002319</Detectibility>
+					<!-- Number between 0 and 1 -->
+					<IdentifiedNuclide percentage="100">TH-234</IdentifiedNuclide>
+					<!-- Associated Identified Nucl if there is one, None otherwise -->
+				</PeakResult>
+			</PeakResults>
+		  </AnalysisResults>
+		</Analyses>
+		<Parameters>
+			<ProcessingParameters software="genie" method="none" version="1.0">
+				<Threshold>3</Threshold>
+				<PeakStart unit="keV">42</PeakStart>
+				<PeakEnd unit="keV">2750</PeakEnd>
+				<LeftFWHMLimit>2</LeftFWHMLimit>
+				<RightFWHMLimit>2</RightFWHMLimit>
+				<MutlipletFWHMLimit>4</MutlipletFWHMLimit>
+				<FitSinglet>true</FitSinglet>
+				<CriticalLevelTest>true</CriticalLevelTest>
+				<EstimatePeakWidths>true</EstimatePeakWidths>
+				<BaselineType>STEP</BaselineType>
+				<BaselineChannels>3</BaselineChannels>
+				<PerformSubstraction>false</PerformSubstraction>
+				<EnergyTolerance>0.4</EnergyTolerance>
+				<ConfidenceThreshold>0.25</ConfidenceThreshold>
+				<RiskLevel unit="percentage">0.01</RiskLevel>
+			</ProcessingParameters>
+			<UpdateParameters software="genie" method="none" version="1.0">
+				<UseMRP>true</UseMRP>
+				<MRPSampleID>0867749</MRPSampleID>
+				<GainShift unit="percentage">0.1</GainShift>
+				<ZeroShift>0.75</ZeroShift>
+				<AreaLimit>100</AreaLimit>
+				<UseWeight>true</UseWeight>
+				<UseMultiplet>true</UseMultiplet>
+				<ForceLinear>false</ForceLinear>
+				<IgnorePreviousECR>true</IgnorePreviousECR>
+				<MinimumLibLookupTolerance>0.200000002980232</MinimumLibLookupTolerance>
+				<RERIntercept>1.5</RERIntercept>
+				<RERSlope>0.2999999999999</RERSlope>
+				<ECRSlope>0</ECRSlope>
+				<DoResolutionUpdate>true</DoResolutionUpdate>
+			</UpdateParameters>
+		</Parameters>
+		<Flags>
+			<TimelinessAndAvailabilityFlags>
+				<PreviousSamplePresent>true</PreviousSamplePresent>
+				<CollectionTimeWithin24Hrs>true</CollectionTimeWithin24Hrs>
+				<AcquisitionTimeGTE20Hrs>true</AcquisitionTimeGTE20Hrs>
+				<DecayTimeLTE24Hrs>true</DecayTimeLTE24Hrs>
+				<SampleReceived72HrsFromCollectStart>true</SampleReceived72HrsFromCollectStart>
+			</TimelinessAndAvailabilityFlags>
+			<DataQualityFlags>
+				<Ba140MDC>
+					<Value>7.76414</Value>
+					<Pass>true</Pass>
+					<Test>lower than 30</Test>
+				</Ba140MDC>
+				<K40LocationDifference>
+					<Value>0.205566</Value>
+					<Pass>true</Pass>
+					<Test>lower than 3 * std deviation</Test>
+				</K40LocationDifference>
+				<NormalizedGainDifference>
+					<Value>0.0000222921</Value>
+					<Pass>true</Pass>
+					<Test>lower than 0.0001</Test>
+				</NormalizedGainDifference>
+				<Be7FWHM>
+					<Value>1.42555</Value>
+					<Pass>true</Pass>
+					<Test>lower than 1.7</Test>
+				</Be7FWHM>
+				<FlowRate>
+					<Value>972.755</Value>
+					<Pass>true</Pass>
+					<Test>greater than 500</Test>
+				</FlowRate>
+			</DataQualityFlags>
+			<EventScreeningFlags>
+				<ActivationProductsPresent>true</ActivationProductsPresent>
+				<NbOfDaysSinceLastActivationProduct>48.9999</NbOfDaysSinceLastActivationProduct>
+				<OnlyOneFissionProductPresent>false</OnlyOneFissionProductPresent>
+				<TwoOrMoreFissionProductsPresent>false</TwoOrMoreFissionProductsPresent>
+				<CS-137Present>false</CS-137Present>
+			</EventScreeningFlags>
+		</Flags>
+		<CalibrationInformation>
+			<Calibration Type="EnergyToChannels" EnergyUnits="keV" ID="en2ch">
+				<Remark>Energy to Channel Calibration equation</Remark>
+				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
+				<Equation Model="Polynomial" Form="E(c)= Term0 + Term1 * c" >
+					<Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
+					<Coefficients>-0.350223245 0.32992958743</Coefficients>
+				</Equation>
+			</Calibration>
+			<Calibration Type="ResolutionToEnergy" EnergyUnits="keV" FWHMUnits="Energy" ID="re2en">
+				<Remark>Resolution to Energy Calibration equation</Remark>
+				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
+				<Equation Model="Polynomial" Form="FWHM(E)= Term0 + Term1 * SQRT(E)">
+					<Remark>The coefficients taken from the database will have more decimals (higher precision) </Remark>
+					<Coefficients>0.632123456 0.0370345432</Coefficients>
+				</Equation>
+			</Calibration>
+			<Calibration Type="EfficiencyToEnergy" EnergyUnits="keV" FWHMUnits="Energy" ID="ef2en">
+				<Remark>Resolution to Energy Calibration equation</Remark>
+				<CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
+				<Equation Model="PolyLogarithmic" Form="L(E)=ln(948.0/E)">
+					<Remark>None</Remark>
+					<Coefficients>948.0</Coefficients>
+				</Equation>
+				<Equation Model="Exponential" Form="e(E)= exp( Term0 + Term1*L + Term2 * L^2 + Term3* L^3 + Term4 * L^4 + Term5 * L^5)">
+					<Remark>None</Remark>
+					<Coefficients>-3.423 0.8294 -0.2627 -0.2763 0.3371 -0.0953</Coefficients>
+				</Equation>
+			</Calibration>
+		</CalibrationInformation>
+	</SampleInformation>
+</SampML>
