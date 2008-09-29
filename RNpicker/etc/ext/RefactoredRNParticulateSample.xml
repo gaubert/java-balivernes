@@ -91,7 +91,7 @@
 			</Spectrum>
 		</Measurements>
 		<Analyses>
-		  <AnalysisResults id="1" spectrumIDs="dev-0867819">
+		  <AnalysisResults id="1" spectrumIDs="dev-0867819"> <!-- reference to the SpectrumID -->
 		     <SampleCategorization> <!-- only one categorisation => the final one -->
 		        <Category>1</Category>
 		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
@@ -208,9 +208,8 @@
 					<!-- Associated Identified Nucl if there is one, None otherwise -->
 				</PeakResult>
 			</PeakResults>
-		  </AnalysisResults>
-		</Analyses>
-		<Parameters>
+			<Parameters> <!-- Parameters are used during the analysis -->
+			             <!-- Need something to qulaify the tool used -->
 			<ProcessingParameters software="genie" method="none" version="1.0">
 				<Threshold>3</Threshold>
 				<PeakStart unit="keV">42</PeakStart>
@@ -288,6 +287,8 @@
 				<CS-137Present>false</CS-137Present>
 			</EventScreeningFlags>
 		</Flags>
+		  </AnalysisResults>
+		</Analyses>
 		<CalibrationInformation>
 			<Calibration Type="EnergyToChannels" EnergyUnits="keV" ID="en2ch">
 				<Remark>Energy to Channel Calibration equation</Remark>
