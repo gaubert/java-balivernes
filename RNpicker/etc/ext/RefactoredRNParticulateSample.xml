@@ -108,7 +108,7 @@
 		       </Nuclide> 
 		     </IdentifiedNuclides>
 		     <IdedNuclideLines peakID="1">
-		      <IdedNuclideLine>                             <!--  peakID is optional because all lines are attached to a peak --> 
+		      <IdedNuclideLine>                                                <!--  peakID is optional because all lines are attached to a peak --> 
 		         <Name>PB-217</Name>                                           <!-- Name of the Nuclide associated with the Line -->
 		         <Activity unit="mBq">0 0</Activity>                           <!-- Activity and Error        -->
 		         <Energy unit="keV">0 0</Energy>                               <!-- Energy and its Error      -->
