@@ -32,13 +32,15 @@ class Conf:
             Conf.load_config()
         return Conf._conf
 
-    def load_config(cls,aFile="/home/aubert/workspace/RNpicker/etc/conf/rnpicker.config"):
+    def load_config(cls,aFile="../etc/conf/rnpicker.config"):
         try:
             # [MAJ] can take a file list with default
             Conf._conf  = ConfigParser.ConfigParser()
             Conf._conf.read(aFile)
         except:
             print "Can't read the config file %s"%(aFile)
+            print "Current executing from dir = %s\n"%(os.getcwd())
+            
             #raise ContextError(-1,"Can't read the config file %s"%(aFile))
 
     load_config = classmethod(load_config)
@@ -102,6 +104,3 @@ def prettyFormatElem(elem,level=0):
 if __name__ == "__main__":
 
     print "Hello"
-    n = datetime.datetime.now()
-    
-    s1 = n.strptime("2007-12-20T08:50:17",'%Y-%m-%dT%H:%M:%S')

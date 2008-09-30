@@ -96,19 +96,19 @@
 		        <Category>1</Category>
 		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
 		     </SampleCategorization>
-		     <IdentifiedNuclides>
+		     <IdedNuclides>
 		       <Nuclide quantifiable="true" reportMDA="true"> <!--  used in reporting/ if not quantified no Concentration -->
-		         <Name></Name>
-		         <Type></Type>
-		         <HalfLife></HalfLife>
+		         <Name>PB-212F</Name>
+                 <Type>NATURAL</Type>
+                 <HalfLife>10.64 H</HalfLife>
 		         <Concentration unit="uBq/m3">6200</Concentration>  <!-- check but it might need to be optional -->
 				 <ConcentrationError unit="percentage">2.2</ConcentrationError>
 				 <MDA unit="uBq/m3">1.41439672252 0</MDA>
 				 <NuclideIdentificationIndicator>Identified</NuclideIdentificationIndicator> <!-- Identified, Non-Identified or IdentfiedAndRejected -->
 		       </Nuclide> 
-		     </IdentifiedNuclides>
-		     <IdedNuclideLines peakID="1">
-		      <IdedNuclideLine>                                                <!--  peakID is optional because all lines are attached to a peak --> 
+		     </IdedNuclides>
+		     <IdedNuclideLines>
+		      <IdedNuclideLine peakID="1">                                     <!--  peakID is optional because all lines are attached to a peak --> 
 		         <Name>PB-217</Name>                                           <!-- Name of the Nuclide associated with the Line -->
 		         <Activity unit="mBq">0 0</Activity>                           <!-- Activity and Error        -->
 		         <Energy unit="keV">0 0</Energy>                               <!-- Energy and its Error      -->
