@@ -91,7 +91,7 @@
 			</Spectrum>
 		</Measurements>
 		<Analyses>
-		  <AnalysisResults id="1" spectrumIDs="dev-0867819"> <!-- reference to the SpectrumID -->
+		  <Analysis id="1" spectrumIDs="dev-0867819"> <!-- reference to the SpectrumID -->
 		     <SampleCategorization> <!-- only one categorisation => the final one -->
 		        <Category>1</Category>
 		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
@@ -222,7 +222,7 @@
 				<CS-137Present>false</CS-137Present>
 			</EventScreeningFlags>
 		</Flags>
-		  </AnalysisResults>
+		  </Analysis>
 		</Analyses>
 		<CalibrationInformation>
 			<Calibration Type="EnergyToChannels" EnergyUnits="keV" ID="en2ch">

@@ -19,22 +19,9 @@
 		<MeasuredInformation>
             ${SPECTRUM}
 		</MeasuredInformation>
-		<AnalysisResults>
-		    <SampleCategorization>
-		       ${CATEGORIES}
-		    </SampleCategorization>
-			<ActivityConcentrationSummary>
-				<QuantifiedNuclides>
-					${QUANTIFIED_NUCLIDES}
-				</QuantifiedNuclides>
-				<MinimumDetectableActivity>
-					${MDA_NUCLIDES}
-				</MinimumDetectableActivity>
-			</ActivityConcentrationSummary>
-			<PeakResults>
-				${PEAKS}
-			</PeakResults>
-		</AnalysisResults>
+		<Analyses>
+		   ${AnalysisResults}
+		</Analyses>
 		<Parameters>
 			${PROCESSING_PARAMETERS}
 			${UPDATE_PARAMETERS}

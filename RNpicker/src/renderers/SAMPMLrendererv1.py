@@ -125,29 +125,8 @@ class ParticulateRenderer(BaseRenderer):
         # Add spectrum template in final SAMPML template
         pattern = "\${SPECTRUM}"
         self._populatedTemplate = re.sub(pattern,self._spectrumTemplate, self._populatedTemplate)
-        
-    def _fillCategories(self):
-        """ fill Categories """
-        
-        cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
-        
-        xml_categories = ""
-        dummy_template = ""
-        
-        # get categories
-        categories = self._fetcher.get(u'CATEGORIES',"None")
-        
-        for category in categories:
-            dummy_template = re.sub("\${CATEGORY}",str(category['CAT_CATEGORY']), cat_template)
-            dummy_template = re.sub("\${CATEGORY_NUCLIDE}",category['CAT_NUCL_NAME'], dummy_template)
-            dummy_template = re.sub("\${CATEGORY_COMMENT}",category.get('CAT_COMMENT',"No Comment"), dummy_template)
-            # add generated xml in final container
-            xml_categories += dummy_template
-             
-        # add Category info in generated template
-        self._populatedTemplate = re.sub("\${CATEGORIES}",xml_categories, self._populatedTemplate)
      
-    def _fillPeaks(self):
+    def _fillOldPeaks(self):
         """ fill Categories """
         
         peak_template = self._conf.get("TemplatingSystem","peaksTemplate")
@@ -182,8 +161,9 @@ class ParticulateRenderer(BaseRenderer):
                
         # add Category info in generated template
         self._populatedTemplate = re.sub("\${PEAKS}",xml_peaks, self._populatedTemplate)
+          
+    def _fillOldNuclides(self):
         
-    def _fillNuclides(self):
         """ fill Quantified and Non Quantified Nuclides """
         
         # first add Non Quantified Nuclides
@@ -250,16 +230,87 @@ class ParticulateRenderer(BaseRenderer):
         # add Category info in generated template
         self._populatedTemplate = re.sub("\${MDA_NUCLIDES}",xml_quantified_nuclides, self._populatedTemplate)
         
+    def _getCategory(self):
+        """ fill and return the category XML structure stringified """
+          
+        cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
+        
+        dummy_template = ""
+        
+        # get categories
+        categories = self._fetcher.get(u'CATEGORIES',"None")
+        
+        # for the moment do like that
+        if len(categories) > 0:
+            dummy_template = re.sub("\${CATEGORY}",str(categories[0]['CAT_CATEGORY']), cat_template)
+            dummy_template = re.sub("\${CATEGORY_COMMENT}",categories[0].get('CAT_COMMENT',"No Comment"), dummy_template)
+        
+        return dummy_template
+    
+    def _getNuclides(selfself):
+        """ fill and return the information regarding the nuclides """
+        
+        # first add Non Quantified Nuclides
+        template = self._conf.get("TemplatingSystem","particulateNuclideTemplate")
+        
+        xml_nuclides = ""
+        dummy_template = ""
+        
+        # get categories
+        ided_nuclide = self._fetcher.get("IDED_NUCLIDES","None")
+        
+        for nuclide in ided_nuclides:
+            dummy_template = re.sub("${REPORT_MDA}",( ("true") if nuclide['REPORT_MDA'] == 0 else "false"), template)
+            dummy_template = re.sub("\${NAME}",nuclide['NAME'], dummy_template)
+            dummy_template = re.sub("\${TYPE}",nuclide['TYPE'], dummy_template)
+            dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION}",str(nuclide['ACTIV_KEY']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION_ERROR}",str(nuclide['ACTIV_KEY_ERR']), dummy_template)
+            dummy_template = re.sub("\${MDA}","%s %s"%(str(nuclide['MDA']),str(nuclide['MDA_ERR'])), dummy_template)
+            dummy_template = re.sub("\${IDENTIFICATION_INDICATOR}",str(nuclide['NID_FLAG']), dummy_template)
+            
+            # add generated xml in final container
+            xml_nuclides += dummy_template
+            
+        print "xml_nonquantified_nuclides = %s"%(xml_nonquantified_nuclides)
+        
+        return xml_nuclides
+
+    def _getNuclideLines(self):
+        """ Return the lines informations """
+        
+        return ""
+    
+    def _getPeaks(self):
+        """ Return the peak information """
+        
         
         
     def _fillAnalysisResults(self):
-        """fill the analysis results """
+        """fill the analysis results for each result"""
+        
+        # first get the template
+        template = self._conf.get("TemplatingSystem","particulateAnalysisTemplate")
+        dummy_template = ""
+        
+        # for the moment only one result
+        dummy_template += template
+        
+        dummy_template = re.sub("\${CATEGORY}", self._getCategory(), dummy_template)
+        
+        dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(),dummy_template)
          
-        self._fillCategories()
+        dummy_template = re.sub("\${NUCLIDELINES}",self._getNuclideLines(),dummy_template)
         
-        self._fillNuclides()
+        dummy_template = re.sub("\${PEAKS}",self._getPeaks(),dummy_template)
         
-        self._fillPeaks()
+        dummy_template = re.sub("\${PARAMETERS}",self._getParameters(),dummy_template)
+        
+        dummy_template = re.sub("\${FLAGS}",self._getFlags(),dummy_template)
+        
+         # add Category info in generated template
+        self._populatedTemplate = re.sub("\${AnalysisResults}",dummy_template, self._populatedTemplate)
+         
         
     def _fillFlags(self):
         """ add the Timeliness, Data Quality and Event Screening Flags """

@@ -46,8 +46,6 @@ class TestSAMPMLCreator(unittest.TestCase):
 
     def testParticulateSamples(self):
         
-        
-        
         # another recent sample = "0889826" 
         # tanzani 0888997
         listOfSamplesToTest = [ "0889826" ]
@@ -67,11 +65,11 @@ class TestSAMPMLCreator(unittest.TestCase):
            
            fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
        
-           #renderer = ParticulateRenderer(fetcher)
+           renderer = ParticulateRenderer(fetcher)
    
-           #xmlStr = renderer.asXmlStr()
+           xmlStr = renderer.asXmlStr()
    
-           #common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/sampml-%s.xml"%(sampleID))
+           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/sampml-%s.xml"%(sampleID))
 
 if __name__ == '__main__':
     unittest.main()
