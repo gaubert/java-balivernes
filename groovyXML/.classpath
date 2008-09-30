@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/aubert/dev/groovy/groovy-1.5.4/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/ojdbc14_g.jar"/>
+	<classpathentry kind="lib" path="libs/ojdbc14dms_g.jar"/>
+	<classpathentry kind="lib" path="libs/shakra-config-1.0.jar"/>
+	<classpathentry kind="lib" path="libs/orai18n.jar"/>
+	<classpathentry kind="lib" path="libs/spring-core.jar"/>
+	<classpathentry kind="lib" path="libs/commons-logging.jar"/>
+	<classpathentry kind="lib" path="libs/groovy-all-1.5.4.jar"/>
+	<classpathentry kind="lib" path="libs/commons-cli-1.1.jar"/>
+	<classpathentry kind="output" path="bin-groovy"/>
+</classpath>
