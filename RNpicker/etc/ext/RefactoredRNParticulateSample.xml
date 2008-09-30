@@ -143,7 +143,7 @@
 					<!-- Associated Identified Nucl if there is one, None otherwise -->
 				</PeakResult>
 			 </PeakResults>
-			<Parameters> <!-- Parameters are used during the analysis -->
+			 <Parameters> <!-- Parameters are used during the analysis -->
 			             <!-- Need something to qulaify the tool used -->
 			<ProcessingParameters software="genie" method="none" version="1.0">
 				<Threshold>3</Threshold>

@@ -41,8 +41,11 @@ SQL_PARTICULATE_CATEGORY_STATUS ="select entry_date as cat_entry_date, cnf_begin
 
 SQL_PARTICULATE_CATEGORY ="select NAME as CAT_NUCL_NAME, METHOD_ID as CAT_METHOD_ID, CATEGORY as CAT_CATEGORY, UPPER_BOUND as CAT_UPPER_BOUND, LOWER_BOUND as CAT_LOWER_BOUND, CENTRAL_VALUE as CAT_CENTRAL_VALUE, DELTA as CAT_DELTA, ACTIVITY as CAT_ACTIVITY from RMSMAN.GARDS_SAMPLE_CAT where sample_id=%s and hold=0"
 
-
 """ returned all ided nuclides for a particular sample """
+SQL_PARTICULATE_GET_NUCL2QUANTIFY="select name from RMSMAN.GARDS_NUCL2QUANTIFY"
+
+SQL_PARTICULATE_GET_NUCLIDES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
+
 SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name not in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
 
 SQL_PARTICULATE_GET_QUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
@@ -578,11 +581,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         
     def _fetchNuclidesResults(self):
-        """ Get info regarding the ided, non ided, MDAed nuclides """
+        """ Get all info regarding the nuclides related to this sample """
          # get non quantified nuclides
         
         # to distinguish quantified and non quantified nuclide there is a table called GARDS_NUCL2QUANTIFY => static table of the nucl to treat
-        result = self._connector.execute(SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES%(self._sampleID))
+        result = self._connector.execute(SQL_PARTICULATE_GET_NUCLIDES_INFO%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -599,36 +602,12 @@ class ParticulateDataFetcher(DBDataFetcher):
             data = {}
         
         # add in dataBag
-        self._dataBag[u'NON_QUANTIFIED_NUCLIDES'] = res
+        self._dataBag[u'IDED_NUCLIDES'] = res
         
-        result.close()  
-      
-        # get quantified nuclides
-      
-        result = self._connector.execute(SQL_PARTICULATE_GET_QUANTIFIED_NUCLIDES%(self._sampleID))
+        resutl.close()
         
-        rows = result.fetchall()
-        
-         # add results in a list which will become a list of dicts
-        res = []
-        
-        # create a list of dicts
-        data = {}
-
-        for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            
-            res.append(data)
-            data = {}
-                
-        # add in dataBag
-        self._dataBag[u'QUANTIFIED_NUCLIDES'] = res
-        
-        result.close()  
-        
-        # get MDA nuclides
-        result = self._connector.execute(SQL_PARTICULATE_GET_MDA_NUCLIDES%(self._sampleID))
+        # return all nucl2quantify this is kind of static table
+        result = self._connector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -641,12 +620,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         for row in rows:
             # copy row in a normal dict
             data.update(row)
-            
             res.append(data)
             data = {}
-               
+        
         # add in dataBag
-        self._dataBag[u'MDA_NUCLIDES'] = res
+        self._dataBag[u'NUCLIDES_2_QUANTIFY'] = res
         
         result.close()  
         
