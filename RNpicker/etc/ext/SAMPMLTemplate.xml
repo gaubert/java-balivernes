@@ -22,13 +22,6 @@
 		<Analyses>
 		   ${AnalysisResults}
 		</Analyses>
-		<Parameters>
-			${PROCESSING_PARAMETERS}
-			${UPDATE_PARAMETERS}
-		</Parameters>
-		<Flags>
-			${FLAGS}
-		</Flags>
 		<CalibrationInformation>
 			${CALIBRATION}
 		</CalibrationInformation>
