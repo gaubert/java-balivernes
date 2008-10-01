@@ -1,9 +1,16 @@
 from xml.etree.ElementTree import ElementTree, Element, SubElement, dump # Python 2.5
-
+import sys
 
 def main():
     
     print "Hello"
+    s = set()
+    
+    s.add("One")
+    s.add("Two")
+    s.add("Three")
+    
+    sys.exit(1)
       
     # Build tree structure
     root = Element("table")

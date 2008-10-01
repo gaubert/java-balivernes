@@ -16,9 +16,10 @@ class BaseRenderer(object):
     
     def __init__(self,aDataFetcher):
         
-        self._conf     = common.utils.Conf.get_conf()
-        self._fetcher  = aDataFetcher
-        self._template = None
+        self._conf              = common.utils.Conf.get_conf()
+        self._fetcher           = aDataFetcher
+        self._quantifiable      = set()
+        self._template          = None
         self._populatedTemplate = None
         
         # dict used to substitute values in fetcher with template values
@@ -121,7 +122,7 @@ class ParticulateRenderer(BaseRenderer):
     
     def _fillRawData(self):
         """ insert particulate spectrum data in final produced XML file """
-     
+    
         # Add spectrum template in final SAMPML template
         pattern = "\${SPECTRUM}"
         self._populatedTemplate = re.sub(pattern,self._spectrumTemplate, self._populatedTemplate)
@@ -229,7 +230,69 @@ class ParticulateRenderer(BaseRenderer):
         
         # add Category info in generated template
         self._populatedTemplate = re.sub("\${MDA_NUCLIDES}",xml_quantified_nuclides, self._populatedTemplate)
+       
+    def _fillOldFlags(self):
+        """ add the Timeliness, Data Quality and Event Screening Flags """
         
+         # first add timeliness Flags
+        template = self._conf.get("TemplatingSystem","timelinessFlagsTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        dummy_template += template
+          
+        param = self._fetcher.get('TIME_FLAGS_PREVIOUS_SAMPLE',False)
+        if param == True:
+            dummy_template = re.sub("\${PreviousSamplePresent}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${PreviousSamplePresent}","false", dummy_template)
+        
+        param = self._fetcher.get('TIME_FLAGS_COLLECTION_WITHIN_24',0)
+        if param == 0:
+            dummy_template = re.sub("\${CollectionTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${CollectionTime}","false", dummy_template)
+            
+        param = self._fetcher.get('TIME_FLAGS_ACQUISITION_FLAG',0)
+        if param == 0:
+            dummy_template = re.sub("\${AcquisitionTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${AcquisitionTime}","false", dummy_template)
+        
+        param = self._fetcher.get('TIME_FLAGS_DECAY_FLAG',0)
+        if param == 0:
+            dummy_template = re.sub("\${DecayTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${DecayTime}","false", dummy_template)
+            
+        param = self._fetcher.get('TIME_FLAGS_SAMPLE_ARRIVAL_FLAG',0)
+        if param == 0:
+            dummy_template = re.sub("\${SampleReceived}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${SampleReceived}","false", dummy_template)
+       
+        # add generated xml in final container
+        xml += dummy_template
+        
+        template = self._conf.get("TemplatingSystem","dataQualityFlagsTemplate")
+        
+        dummy_template = ""
+        dummy_template += template
+        
+        # add Data Quality Flags
+        DataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
+        
+        for flag in DataQFlags:
+            name = flag['DQ_NAME']
+            dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
+            dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
+            dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
+        
+        xml += dummy_template
+           
+        # add all flags in global template
+        self._populatedTemplate = re.sub("\${FLAGS}",xml, self._populatedTemplate)
+         
     def _getCategory(self):
         """ fill and return the category XML structure stringified """
           
@@ -247,7 +310,7 @@ class ParticulateRenderer(BaseRenderer):
         
         return dummy_template
     
-    def _getNuclides(selfself):
+    def _getNuclides(self):
         """ fill and return the information regarding the nuclides """
         
         # first add Non Quantified Nuclides
@@ -255,12 +318,15 @@ class ParticulateRenderer(BaseRenderer):
         
         xml_nuclides = ""
         dummy_template = ""
+        cpt = 1
         
         # get categories
-        ided_nuclide = self._fetcher.get("IDED_NUCLIDES","None")
+        ided_nuclides = self._fetcher.get("IDED_NUCLIDES","None")
         
         for nuclide in ided_nuclides:
-            dummy_template = re.sub("${REPORT_MDA}",( ("true") if nuclide['REPORT_MDA'] == 0 else "false"), template)
+             
+            dummy_template = re.sub("\${REPORTMDA}",( ("true") if nuclide['REPORT_MDA'] == 0 else "false"), template)
+            dummy_template = re.sub("\${QUANTIFIABLE}",str(self._isQuantifiable(nuclide['NAME'])),dummy_template)
             dummy_template = re.sub("\${NAME}",nuclide['NAME'], dummy_template)
             dummy_template = re.sub("\${TYPE}",nuclide['TYPE'], dummy_template)
             dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
@@ -272,10 +338,26 @@ class ParticulateRenderer(BaseRenderer):
             # add generated xml in final container
             xml_nuclides += dummy_template
             
-        print "xml_nonquantified_nuclides = %s"%(xml_nonquantified_nuclides)
+        print "xml_nuclides = %s"%(xml_nuclides)
         
         return xml_nuclides
-
+    
+    def _isQuantifiable(self,aVal):
+        """ true if quantifiable, false otherwise """
+        nucl2quantify = self._fetcher.get("NUCLIDES_2_QUANTIFY")
+        
+        print "check if %s is quantifiable \n"%(aVal)
+        
+        # if set hasn't been populated do it
+        if len(self._quantifiable) == 0:
+          # create a set containing all quantifiable elements
+          for elem in nucl2quantify:
+              [(key,val)] = elem.items()
+              self._quantifiable.add(val)
+        
+        return (aVal in self._quantifiable)
+            
+        
     def _getNuclideLines(self):
         """ Return the lines informations """
         
@@ -473,70 +555,6 @@ class ParticulateRenderer(BaseRenderer):
          # add Category info in generated template
         self._populatedTemplate = re.sub("\${AnalysisResults}",dummy_template, self._populatedTemplate)
          
-        
-    def _fillFlags(self):
-        """ add the Timeliness, Data Quality and Event Screening Flags """
-        
-         # first add timeliness Flags
-        template = self._conf.get("TemplatingSystem","timelinessFlagsTemplate")
-        
-        xml = ""
-        dummy_template = ""
-        dummy_template += template
-          
-        param = self._fetcher.get('TIME_FLAGS_PREVIOUS_SAMPLE',False)
-        if param == True:
-            dummy_template = re.sub("\${PreviousSamplePresent}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${PreviousSamplePresent}","false", dummy_template)
-        
-        param = self._fetcher.get('TIME_FLAGS_COLLECTION_WITHIN_24',0)
-        if param == 0:
-            dummy_template = re.sub("\${CollectionTime}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${CollectionTime}","false", dummy_template)
-            
-        param = self._fetcher.get('TIME_FLAGS_ACQUISITION_FLAG',0)
-        if param == 0:
-            dummy_template = re.sub("\${AcquisitionTime}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${AcquisitionTime}","false", dummy_template)
-        
-        param = self._fetcher.get('TIME_FLAGS_DECAY_FLAG',0)
-        if param == 0:
-            dummy_template = re.sub("\${DecayTime}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${DecayTime}","false", dummy_template)
-            
-        param = self._fetcher.get('TIME_FLAGS_SAMPLE_ARRIVAL_FLAG',0)
-        if param == 0:
-            dummy_template = re.sub("\${SampleReceived}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${SampleReceived}","false", dummy_template)
-       
-        # add generated xml in final container
-        xml += dummy_template
-        
-        template = self._conf.get("TemplatingSystem","dataQualityFlagsTemplate")
-        
-        dummy_template = ""
-        dummy_template += template
-        
-        # add Data Quality Flags
-        DataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
-        
-        for flag in DataQFlags:
-            name = flag['DQ_NAME']
-            dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
-            dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
-            dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
-        
-        xml += dummy_template
-           
-        # add all flags in global template
-        self._populatedTemplate = re.sub("\${FLAGS}",xml, self._populatedTemplate)
-        
-    
     def _fillCalibration(self):
         """ Add the calibration parameters """
         
@@ -669,10 +687,6 @@ class ParticulateRenderer(BaseRenderer):
        self._fillRawData()
        
        self._fillAnalysisResults()
-       
-       self._fillParameters()
-       
-       self._fillFlags()
        
        self._fillCalibration()
        
