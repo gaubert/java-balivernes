@@ -48,12 +48,6 @@ SQL_PARTICULATE_GET_NUCLIDES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided whe
 
 SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
 
-SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name not in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
-
-SQL_PARTICULATE_GET_QUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
-
-SQL_PARTICULATE_GET_MDA_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and report_mda=1"
-
 SQL_PARTICULATE_GET_PEAKS = "select * from RMSMAN.GARDS_PEAKS where sample_id=%s"
 
 SQL_PARTICULATE_GET_PROCESSING_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_PROC_PARAMS where sample_id=%s"
@@ -342,6 +336,9 @@ class DBDataFetcher(object):
         self._dataBag["rawdata_%s_energy_span"%(aType)]  = energy_span
         self._dataBag["rawdata_%s"%(aType)] = data.getvalue()
         
+        # create a unique id for the extract data
+        self._dataBag["rawdata_%s_ID"%(aType)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],self._dataBag[u'SAMPLE_ID'],aType.lower())
+        
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
         
@@ -481,10 +478,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchData(self):
         """ get the different raw data info """
         
-        # need to get the gamma spectrum
-        
-        print "Get Particulate spectrum %s"%(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
-        
+        # need to get the gamma spectrum 
         # first path information from database
         result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
        
