@@ -46,6 +46,8 @@ SQL_PARTICULATE_GET_NUCL2QUANTIFY="select name from RMSMAN.GARDS_NUCL2QUANTIFY"
 
 SQL_PARTICULATE_GET_NUCLIDES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
 
+SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
+
 SQL_PARTICULATE_GET_NONQUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name not in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
 
 SQL_PARTICULATE_GET_QUANTIFIED_NUCLIDES = "select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s and name in (select name from RMSMAN.GARDS_NUCL2QUANTIFY)"
@@ -604,10 +606,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         # add in dataBag
         self._dataBag[u'IDED_NUCLIDES'] = res
         
-        resutl.close()
+        result.close()
         
         # return all nucl2quantify this is kind of static table
-        result = self._connector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY%(self._sampleID))
+        result = self._connector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
         
         rows = result.fetchall()
         

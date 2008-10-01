@@ -325,7 +325,7 @@ class ParticulateRenderer(BaseRenderer):
         
         for nuclide in ided_nuclides:
              
-            dummy_template = re.sub("\${REPORTMDA}",( ("true") if nuclide['REPORT_MDA'] == 0 else "false"), template)
+            dummy_template = re.sub("\${REPORTMDA}",( ("true") if nuclide['REPORT_MDA'] == 1 else "false"), template)
             dummy_template = re.sub("\${QUANTIFIABLE}",str(self._isQuantifiable(nuclide['NAME'])),dummy_template)
             dummy_template = re.sub("\${NAME}",nuclide['NAME'], dummy_template)
             dummy_template = re.sub("\${TYPE}",nuclide['TYPE'], dummy_template)
@@ -338,16 +338,14 @@ class ParticulateRenderer(BaseRenderer):
             # add generated xml in final container
             xml_nuclides += dummy_template
             
-        print "xml_nuclides = %s"%(xml_nuclides)
+        #print "xml_nuclides = %s"%(xml_nuclides)
         
         return xml_nuclides
     
     def _isQuantifiable(self,aVal):
         """ true if quantifiable, false otherwise """
         nucl2quantify = self._fetcher.get("NUCLIDES_2_QUANTIFY")
-        
-        print "check if %s is quantifiable \n"%(aVal)
-        
+     
         # if set hasn't been populated do it
         if len(self._quantifiable) == 0:
           # create a set containing all quantifiable elements
