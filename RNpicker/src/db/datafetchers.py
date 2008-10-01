@@ -133,10 +133,6 @@ class DBDataFetcher(object):
     def getSampleID(self):
         return self._sampleID
     
-    def fetch(self):
-        """ abstract global data fetching method """
-        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
-    
     def _fetchData(self):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
@@ -153,7 +149,6 @@ class DBDataFetcher(object):
         """ abstract global fetch method for get the Calibration info """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
 
-    
     def asXML(self):
         """ abstract global xmlizer method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
@@ -575,6 +570,29 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         result.close()
         
+    def _fetchNuclideLines(self):
+        """ Get all info regarding the nuclide lines of a particular sample"""
+         
+        # get the data from the DB
+        result = self._connector.execute(SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO%(self._sampleID))
+
+        rows = result.fetchall()
+        
+         # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'IDED_NUCLIDE_LINES'] = res
+        
         
     def _fetchNuclidesResults(self):
         """ Get all info regarding the nuclides related to this sample """
@@ -632,6 +650,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         self._fetchCategoryResults()
         
         self._fetchNuclidesResults()
+        
+        self._fetchNuclideLines()
         
         self._fetchPeaksResults()
         
