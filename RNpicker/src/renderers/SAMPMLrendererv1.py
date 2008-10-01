@@ -126,17 +126,22 @@ class ParticulateRenderer(BaseRenderer):
     def _getCategory(self):
         """ fill and return the category XML structure stringified """
           
+        category = "undefined"
+        
+        # get the status. If it is R or Q get category otherwise it isn't defined yet
+        status = self._fetcher.get(u'CAT_STATUS',"")
+        
+        if (status == 'R') or (status == 'Q'):
+            category = self._fetcher.get(u'CAT_CATEGORY')
+            comment  = self._fetcher.get(u'CAT_COMMENT',"No Comment")
+          
+        # xml filler 
         cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
         
         dummy_template = ""
         
-        # get categories
-        categories = self._fetcher.get(u'CATEGORIES',"None")
-        
-        # for the moment do like that
-        if len(categories) > 0:
-            dummy_template = re.sub("\${CATEGORY}",str(categories[0]['CAT_CATEGORY']), cat_template)
-            dummy_template = re.sub("\${CATEGORY_COMMENT}",categories[0].get('CAT_COMMENT',"No Comment"), dummy_template)
+        dummy_template = re.sub("\${CATEGORY}",str(category), cat_template)
+        dummy_template = re.sub("\${CATEGORY_COMMENT}",comment, dummy_template)
         
         return dummy_template
     
