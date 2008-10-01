@@ -91,7 +91,7 @@
 			</Spectrum>
 		</Measurements>
 		<Analyses>
-		  <Analysis id="1" spectrumIDs="dev-0867819"> <!-- reference to the SpectrumID -->
+		  <Analysis id="analysis-1" spectrumIDs="dev-0867819"> <!-- reference to the SpectrumID -->
 		     <SampleCategorization> <!-- only one categorisation => the final one -->
 		        <Category>1</Category>
 		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>

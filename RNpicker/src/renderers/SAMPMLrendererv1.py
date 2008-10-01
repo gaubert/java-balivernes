@@ -21,6 +21,7 @@ class BaseRenderer(object):
         self._quantifiable      = set()
         self._template          = None
         self._populatedTemplate = None
+        self._analysisCounter   = 0
         
         # dict used to substitute values in fetcher with template values
         self._substitutionDict = {  "SAMPLEID"           :   "SAMPLE_ID",
@@ -56,6 +57,12 @@ class BaseRenderer(object):
         
         self._populatedTemplate = self._template
         
+    def _generateAnalysisID(self):
+        """ simple counter incremented """
+     
+        self._analysisCounter += 1
+     
+        return "analysis-%d"%(self._analysisCounter)
     
     def _substituteValues(self):
         """ substitue values """
@@ -100,7 +107,7 @@ class ParticulateRenderer(BaseRenderer):
                         "SPECTRUM_DATA_ENERGY_SPAN"      :   "rawdata_SPECTRUM_energy_span",     
                         "SPECTRUM_ID"                    :   "rawdata_SPECTRUM_ID",  
                         "SAMPLE_TYPE"                    :   "DATA_SPECTRAL_QUALIFIER",  
-                        "MEASUREMENT_TYPE"               :   "DATA_DATA_TYPE"
+                        "MEASUREMENT_TYPE"               :   "DATA_DATA_TYPE",
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
@@ -359,6 +366,9 @@ class ParticulateRenderer(BaseRenderer):
         
         # for the moment only one result
         dummy_template += template
+        
+        # Add analysis identifier
+        dummy_template = re.sub("\${ANALYSISID}", self._generateAnalysisID(),dummy_template)
         
         dummy_template = re.sub("\${CATEGORY}", self._getCategory(), dummy_template)
         
