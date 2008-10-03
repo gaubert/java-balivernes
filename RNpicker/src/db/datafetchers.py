@@ -46,7 +46,7 @@ SQL_PARTICULATE_GET_NUCL2QUANTIFY="select name from RMSMAN.GARDS_NUCL2QUANTIFY"
 
 SQL_PARTICULATE_GET_NUCLIDES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
 
-SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
+SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO="select * from RMSMAN.GARDS_NUCL_IDED where sample_id=%s"
 
 SQL_PARTICULATE_GET_PEAKS = "select * from RMSMAN.GARDS_PEAKS where sample_id=%s"
 
@@ -571,7 +571,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         result.close()
         
     def _fetchNuclideLines(self):
-        """ Get all info regarding the nuclide lines of a particular sample"""
+        """Get all info regarding the Nuclide Lines for a particualr sample .
+         
+        """
          
         # get the data from the DB
         result = self._connector.execute(SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO%(self._sampleID))

@@ -160,7 +160,7 @@ class ParticulateRenderer(BaseRenderer):
         
         for nuclide in ided_nuclides:
             dummy_template = re.sub("\${REPORTMDA}",( ("true") if nuclide['REPORT_MDA'] == 1 else "false"), template)
-            dummy_template = re.sub("\${QUANTIFIABLE}",str(self._isQuantifiable(nuclide['NAME'])),dummy_template)
+            dummy_template = re.sub("\${QUANTIFIABLE}",str(self._isQuantifiable(nuclide['NAME'])).lower(),dummy_template)
             dummy_template = re.sub("\${NAME}",nuclide['NAME'], dummy_template)
             dummy_template = re.sub("\${TYPE}",nuclide['TYPE'], dummy_template)
             dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
@@ -191,13 +191,65 @@ class ParticulateRenderer(BaseRenderer):
             
         
     def _getNuclideLines(self):
-        """ Return the lines informations """
+        """Get the Nuclide Lines information from the data hashtable and render it.
         
-        return ""
+            Args:
+               None:
+        
+            Returns:
+              An XML string containing the formatted data.
+              
+            Raises:
+               exception
+        """
+        
+        # first get Nuclide Lines template
+        template = self._conf.get("TemplatingSystem","particulateNuclideLinesTemplate")
+        
+        xml_nuclidelines   = ""
+        dummy_template = ""
+        cpt = 1
+        
+        # get categories
+        nuclidelines = self._fetcher.get(u'IDED_NUCLIDE_LINES',"None")
+        
+        for line in nuclidelines:
+            
+            # if there is a peakID in the hash then replace it otherwise remove this info from the XML
+            dummy_template = re.sub("\${PEAKID}",("peakID=\"%s\""%(line['PEAK_ID']) if ('PEAK_ID' in line) else ""), template)
+            dummy_template = re.sub("\${NAME}",line['NAME'], dummy_template)
+            dummy_template = re.sub("\${TYPE}",line['TYPE'], dummy_template)
+            dummy_template = re.sub("\${HALFLIFE}",str(line['HALFLIFE']), dummy_template)
+            dummy_template = re.sub("\${ACTIVTIY}",( ("<Activity unit=\"mBq\">%s %s</Activity>"%(str(line['ACTIV_KEY']),str(line['ACTIV_KEY_ERR']))) if not (line['ACTIV_KEY'] == 0) else ""), dummy_template)
+            dummy_template = re.sub("\${MDA}","%s %s"%(str(line['MDA']),str(line['MDA_ERR'])), dummy_template)
+           
+            dummy_template = re.sub("\${ENERGY}",("<Energy unit=\"keV\">%s %s</Energy>"%(str(line['ENERGY']),str(line['ENERGY_ERR'])) if ('ENERGY' in line) else ""), dummy_template)
+            dummy_template = re.sub("\${ABUNDANCE}",("<Abundance unit=\"percent\">%s %s</Abundance>"%(str(line['ABUNDANCE']),str(line['ABUNDANCE_ERR'])) if ('ABUNDANCE' in line) else ""), dummy_template)
+            dummy_template = re.sub("\${EFFICIENCY}",("<Efficiency unit=\"percent\">%s %s</Efficiency>"%(str(line['EFFIC']),str(line['EFFIC_ERR'])) if ('EFFIC' in line) else ""), dummy_template)
+            
+            # add generated xml in final container
+            xml_nuclidelines += dummy_template
+            
+        #print "xml_nuclides = %s"%(xml_nuclides)
+        
+        return xml_nuclidelines  
+        
     
     def _getPeaks(self):
-        """ Return the peak information """
         
+        """Get the peaks information from the data hashtable and render it .
+
+         Args: 
+           None
+          
+
+         Returns:
+           An XML String containing the formatted data.
+
+         Raises:
+          None.
+        """
+  
         peak_template = self._conf.get("TemplatingSystem","peaksTemplate")
         
         xml_peaks = ""
@@ -209,6 +261,7 @@ class ParticulateRenderer(BaseRenderer):
         for peak in peaks:
             #print "peak = %s"%(peak)
             dummy_template = re.sub("\${ENERGY}","%s %s"%(str(peak['ENERGY']),str(peak['ENERGY_ERR'])), peak_template)
+            dummy_template = re.sub("\${PEAKID}","%s"%(str(peak['PEAK_ID'])), dummy_template)
             dummy_template = re.sub("\${CENTROID}","%s %s"%(str(peak['CENTROID']),str(peak['CENTROID_ERR'])), dummy_template)
             dummy_template = re.sub("\${AREA}","%s %s"%(str(peak['AREA']),str(peak['AREA_ERR'])), dummy_template)
             dummy_template = re.sub("\${WIDTH}",str(peak['WIDTH']), dummy_template)
