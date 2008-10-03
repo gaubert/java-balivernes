@@ -1,6 +1,7 @@
 from StringIO import StringIO
 import operator
 import string
+import base64
 
 import zlib
  
@@ -68,4 +69,6 @@ if __name__ == '__main__':
    uncompressed = zlib.decompress(zstr1)
    
    print "Lenght of unzipped str1 = ",len(uncompressed)
+   
+   s = base64.b64encode("ADDDDDD")
    

@@ -121,8 +121,9 @@ class ParticulateRenderer(BaseRenderer):
         self._populatedTemplate = re.sub("\${SPECTRUM}",spectrumTemplate, self._populatedTemplate)
         
         # TODO to remove just there for testing, deal with the compression flag
-        if self._fetcher.get("rawdata_SPECTRUM_compress",False) :
-            self._populatedTemplate = re.sub("\${COMPRESS}","compress=\"zip\"",self._populatedTemplate)
+        
+        if self._fetcher.get("rawdata_SPECTRUM_compressed",False) == True :
+            self._populatedTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",self._populatedTemplate)
         else:
             self._populatedTemplate = re.sub("\${COMPRESS}","",self._populatedTemplate)
         
