@@ -203,8 +203,16 @@ class ParticulateRenderer(BaseRenderer):
                exception
         """
         
+        # check if we need nuclidelines otherwise quit
+        if self._conf.get("Options","addNuclideLines") != "true":
+            print "Configuration says no nuclide lines\n"
+            return ""
+        
+        # get the global template
+        global_template = self._conf.get("TemplatingSystem","particulateNuclideLinesTemplate")
+        
         # first get Nuclide Lines template
-        template = self._conf.get("TemplatingSystem","particulateNuclideLinesTemplate")
+        template = self._conf.get("TemplatingSystem","particulateOneNuclideLineTemplate")
         
         xml_nuclidelines   = ""
         dummy_template = ""
@@ -230,10 +238,8 @@ class ParticulateRenderer(BaseRenderer):
             # add generated xml in final container
             xml_nuclidelines += dummy_template
             
-        #print "xml_nuclides = %s"%(xml_nuclides)
-        
-        return xml_nuclidelines  
-        
+        #add nuclide lines in global template
+        return re.sub("\${NUCLIDELINES}",xml_nuclidelines, global_template)
     
     def _getPeaks(self):
         
@@ -310,12 +316,7 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = re.sub("\${ENERGY_TOLERANCE}",str(parameters.get('ENERGY_TOL',"None")), dummy_template)
         dummy_template = re.sub("\${CONFIDENCE_THRESHOLD}",str(parameters.get('NID_CONFID',"None")), dummy_template)
         dummy_template = re.sub("\${RISK_LEVEL}",str(parameters.get('ToBeDefined',"None")), dummy_template)
-           
-        # add software, method and version
-        dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
-        dummy_template = re.sub("\${METHOD}","none", dummy_template)
-        dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
-            
+               
         # add generated xml in final container
         xml_parameters += dummy_template
        
@@ -342,12 +343,6 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = re.sub("\${RER_SLOPE}",str(parameters.get('RER_SLOPE',"None")), dummy_template)
         dummy_template = re.sub("\${ECR_SLOPE}",str(parameters.get('ECR_SLOPE',"None")), dummy_template)
         dummy_template = re.sub("\${DO_RESOLUTION_UPDATE}",str(parameters.get('DO_RERU',"None")), dummy_template)
-       
-           
-        # add software, method and version
-        dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
-        dummy_template = re.sub("\${METHOD}","none", dummy_template)
-        dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
             
         # add generated xml in final container
         xml_parameters += dummy_template
@@ -432,13 +427,19 @@ class ParticulateRenderer(BaseRenderer):
         
         dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(),dummy_template)
          
-        dummy_template = re.sub("\${NUCLIDELINES}",self._getNuclideLines(),dummy_template)
+        dummy_template = re.sub("\${WITHNUCLIDELINES}",self._getNuclideLines(),dummy_template)
         
         dummy_template = re.sub("\${PEAKS}",self._getPeaks(),dummy_template)
         
         dummy_template = re.sub("\${PARAMETERS}",self._getParameters(),dummy_template)
         
         dummy_template = re.sub("\${FLAGS}",self._getFlags(),dummy_template)
+        
+        # add software method version info
+        dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
+        dummy_template = re.sub("\${METHOD}","standard", dummy_template)
+        dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
+        dummy_template = re.sub("\${SOFTCOMMENTS}","Old version", dummy_template)
         
          # add Category info in generated template
         self._populatedTemplate = re.sub("\${AnalysisResults}",dummy_template, self._populatedTemplate)

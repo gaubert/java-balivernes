@@ -92,6 +92,12 @@
 		</Measurements>
 		<Analyses>
 		  <Analysis id="analysis-1" spectrumIDs="dev-0867819"> <!-- reference to the SpectrumID -->
+		     <Software>
+		        <Name>genie</Name>
+		        <Version>1.0</Version>
+		        <Method>Standard</Method>
+		        <Comments>Version including now this new feature</Comments>
+		     </Software>
 		     <SampleCategorization> <!-- only one categorisation => the final one -->
 		        <Category>1</Category>
 		        <CategoryComment>Typical Background Rad. Meas.</CategoryComment>
@@ -143,9 +149,8 @@
 					<!-- Associated Identified Nucl if there is one, None otherwise -->
 				</PeakResult>
 			 </PeakResults>
-			 <Parameters> <!-- Parameters are used during the analysis -->
-			             <!-- Need something to qulaify the tool used -->
-			<ProcessingParameters software="genie" method="none" version="1.0">
+			 <Parameters> 
+			  <ProcessingParameters>
 				<Threshold>3</Threshold>
 				<PeakStart unit="keV">42</PeakStart>
 				<PeakEnd unit="keV">2750</PeakEnd>
@@ -162,7 +167,7 @@
 				<ConfidenceThreshold>0.25</ConfidenceThreshold>
 				<RiskLevel unit="percentage">0.01</RiskLevel>
 			</ProcessingParameters>
-			<UpdateParameters software="genie" method="none" version="1.0">
+			<UpdateParameters>
 				<UseMRP>true</UseMRP>
 				<MRPSampleID>0867749</MRPSampleID>
 				<GainShift unit="percentage">0.1</GainShift>
