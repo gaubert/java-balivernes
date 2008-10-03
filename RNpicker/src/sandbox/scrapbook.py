@@ -1,19 +1,33 @@
 from StringIO import StringIO
+import operator
+import string
 
+def f(a,b):
+    
+    return a+b
+
+class curry:
+    
+    def __init__(self, fun, *args, **kwargs):
+        self.fun = fun
+        self.pending = args[:]
+        self.kwargs = kwargs.copy()
+    def __call__(self, *args, **kwargs):
+        if kwargs and self.kwargs:
+            kw = self.kwargs.copy()
+            kw.update(kwargs)
+        else:
+            kw = kwargs or self.kwargs
+        return self.fun(*(self.pending + args), **kw)
 
 if __name__ == '__main__':
     
-    s = "Mypath"
-    
-    f = open("/tmp/subs-template.xml")
-    
-    print "Hello Scrapbook"
-    print "Hello Scrapbook 2"
-    print "Hello Scrapbook 3"
-    
-    
-    sIO = StringIO("Blah Blsh")
-    
-    print "D",s.__class__
-    print f.__class__
-    print sIO.__class__
+   double = curry(string.ljust,width=20)
+
+   res = double("totototo")
+   
+   print "Res [%s]\n"%(res)
+   
+   list = ['4          ', '6          ', '3          ', '2          ', '5          ']
+   
+   print "res = %s\n"%("".join(list))

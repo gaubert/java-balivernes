@@ -220,9 +220,9 @@ class ParticulateRenderer(BaseRenderer):
             dummy_template = re.sub("\${NAME}",line['NAME'], dummy_template)
             dummy_template = re.sub("\${TYPE}",line['TYPE'], dummy_template)
             dummy_template = re.sub("\${HALFLIFE}",str(line['HALFLIFE']), dummy_template)
-            dummy_template = re.sub("\${ACTIVTIY}",( ("<Activity unit=\"mBq\">%s %s</Activity>"%(str(line['ACTIV_KEY']),str(line['ACTIV_KEY_ERR']))) if not (line['ACTIV_KEY'] == 0) else ""), dummy_template)
             dummy_template = re.sub("\${MDA}","%s %s"%(str(line['MDA']),str(line['MDA_ERR'])), dummy_template)
            
+            dummy_template = re.sub("\${ACTIVTIY}",( ("<Activity unit=\"mBq\">%s %s</Activity>"%(str(line['ACTIV_KEY']),str(line['ACTIV_KEY_ERR']))) if not (line['ACTIV_KEY'] == 0) else ""), dummy_template)
             dummy_template = re.sub("\${ENERGY}",("<Energy unit=\"keV\">%s %s</Energy>"%(str(line['ENERGY']),str(line['ENERGY_ERR'])) if ('ENERGY' in line) else ""), dummy_template)
             dummy_template = re.sub("\${ABUNDANCE}",("<Abundance unit=\"percent\">%s %s</Abundance>"%(str(line['ABUNDANCE']),str(line['ABUNDANCE_ERR'])) if ('ABUNDANCE' in line) else ""), dummy_template)
             dummy_template = re.sub("\${EFFICIENCY}",("<Efficiency unit=\"percent\">%s %s</Efficiency>"%(str(line['EFFIC']),str(line['EFFIC_ERR'])) if ('EFFIC' in line) else ""), dummy_template)

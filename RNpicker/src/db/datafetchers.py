@@ -110,7 +110,7 @@ class DBDataFetcher(object):
        if type is None: 
            type = "Particulate"
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type}}) 
+       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':common.utils.Conf.get_conf()}) 
     
        result.close()
        
@@ -126,6 +126,9 @@ class DBDataFetcher(object):
         self._sampleID  = aSampleID
         # dict containing all the data retrieved from the filesystems and DB
         self._dataBag   = {}
+        
+        # get reference to the conf object
+        self._conf              = common.utils.Conf.get_conf()
     
     def getConnector(self):
         return self._connector
@@ -266,7 +269,7 @@ class DBDataFetcher(object):
         # get station info
         self._fetchStationInfo()
         
-        # get station info
+        # get detector info
         self._fetchDetectorInfo()
         
         # get sample info
@@ -284,6 +287,28 @@ class DBDataFetcher(object):
         self._fetchFlags()
         
         self._fetchCalibration()
+    
+    def _removeChannelSpan(self,aLine):
+        """remove the first column of the matrix of values.
+           This is optional and can be remove
+        
+            Args:
+               aLine: line numbers as a line
+               
+            Returns:
+               return string representing the new line
+        
+        """
+        # use curryfication to create the justify func with 11 chars
+        justify = common.utils.curry(string.ljust,width=11)
+        
+        # justify all elements in the list
+        list = map(justify,aLine.split()[1:])
+        
+        # join all that to have a unique string 
+        # need to join on an empty string. Strange interface for the join method
+        return "%s\n"%("".join(list))
+        
         
     def _readDataFile(self,aDir,aFilename,aType):
         """ read a file in a string buffer. This is used for the data files """
@@ -306,10 +331,14 @@ class DBDataFetcher(object):
         data = StringIO()
         try:
            for line in input:
+                
               # we might also have to add more splitting character
-              # get of first column which should always be the last columns (channel span)
+              # get the first column which should always be the last columns (channel span)
               # get also max of value of other columns (energy span)
               l = map(string.atoi,line.split())
+              
+              #print "line %s"%(l)
+              
               
               if l[0] > channel_span:
                  channel_span = l[0]
@@ -320,7 +349,10 @@ class DBDataFetcher(object):
                   energy_span = e_max
               
               # add 16 spaces char for formatting purposes
-              data.write("                %s"%(line))
+              if (self._conf.get("Options","removeChannelIndex") == "true"):
+                  data.write("                %s"%(self._removeChannelSpan(line)))
+              else:
+                  data.write("                %s"%(line))
         finally:    
            input.close()
            
