@@ -7,6 +7,7 @@ import pprint
 import string
 import datetime
 import time
+import zlib
 from StringIO import StringIO
 
 from common.exceptions import CTBTOError
@@ -361,7 +362,18 @@ class DBDataFetcher(object):
          
         self._dataBag["rawdata_%s_channel_span"%(aType)] = channel_span
         self._dataBag["rawdata_%s_energy_span"%(aType)]  = energy_span
-        self._dataBag["rawdata_%s"%(aType)] = data.getvalue()
+        
+        
+        # check in the conf if we need to compress the data
+        if (self._conf.get("Options","compressSpectrum") == "true") :
+            self._dataBag["rawdata_%s"%(aType)] = zlib.compress(data.getvalue())
+            # add a compressed flag in dict
+            self._dataBag["rawdata_%s_compressed"%(aType)] = True
+        else:
+            #add raw data in clear
+            self._dataBag["rawdata_%s"%(aType)] = data.getvalue()
+             # add a compressed flag in dict
+            self._dataBag["rawdata_%s_compressed"%(aType)] = False
         
         # create a unique id for the extract data
         self._dataBag["rawdata_%s_ID"%(aType)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],self._dataBag[u'SAMPLE_ID'],aType.lower())

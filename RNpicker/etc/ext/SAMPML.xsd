@@ -1149,7 +1149,7 @@
 			</xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="Compression" type="enumSpectrumCompressionType" use="optional">
+        <xs:attribute name="compression" type="enumSpectrumCompressionType" use="optional">
           <xs:annotation>
             <xs:documentation>
 							The algorithm used to compress the channel

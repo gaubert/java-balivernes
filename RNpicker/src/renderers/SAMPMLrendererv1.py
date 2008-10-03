@@ -118,11 +118,15 @@ class ParticulateRenderer(BaseRenderer):
         spectrumTemplate = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
     
         # Add spectrum template in final SAMPML template
-        pattern = "\${SPECTRUM}"
-        self._populatedTemplate = re.sub(pattern,spectrumTemplate, self._populatedTemplate)
+        self._populatedTemplate = re.sub("\${SPECTRUM}",spectrumTemplate, self._populatedTemplate)
+        
+        # TODO to remove just there for testing, deal with the compression flag
+        if self._fetcher.get("rawdata_SPECTRUM_compress",False) :
+            self._populatedTemplate = re.sub("\${COMPRESS}","compress=\"zip\"",self._populatedTemplate)
+        else:
+            self._populatedTemplate = re.sub("\${COMPRESS}","",self._populatedTemplate)
+        
      
-   
-         
     def _getCategory(self):
         """ fill and return the category XML structure stringified """
           
