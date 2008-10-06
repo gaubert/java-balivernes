@@ -48,7 +48,9 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
-        listOfSamplesToTest = [ "0889826" ]
+        # list to run on production 
+        listOfSamplesToTest = ["892843","892533","892630","892506","892493"]
+        #listOfSamplesToTest = [ "0889826" ]
         
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         intifiedlist = map(int,listOfSamplesToTest)
@@ -63,7 +65,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch()
            
-           fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
+           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
        
            renderer = ParticulateRenderer(fetcher)
    

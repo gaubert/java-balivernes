@@ -1,6 +1,8 @@
 from StringIO import StringIO
 import operator
 import string
+import os
+import subprocess
 import base64
 
 import zlib
@@ -50,7 +52,7 @@ class curry:
             kw = kwargs or self.kwargs
         return self.fun(*(self.pending + args), **kw)
 
-if __name__ == '__main__':
+def testCurrying():
     
    double = curry(string.ljust,width=20)
 
@@ -59,9 +61,9 @@ if __name__ == '__main__':
    print "Res [%s]\n"%(res)
    
    list = ['4          ', '6          ', '3          ', '2          ', '5          ']
-   
-   print "res = %s\n"%("".join(list))
-   
+
+def testCompress():
+    
    zstr1 = zlib.compress(str1)
  
    print "Length of zipped str1 =", len(zstr1)
@@ -71,4 +73,13 @@ if __name__ == '__main__':
    print "Lenght of unzipped str1 = ",len(uncompressed)
    
    s = base64.b64encode("ADDDDDD")
+
+if __name__ == '__main__':
+    
+    res = subprocess.call(["/home/aubert/sftpTest.sh","08_sep_01"])
+    
+    #res = subprocess.call(["ls","-la"])
+    
+    print "res=%d\n"%(res)
+  
    
