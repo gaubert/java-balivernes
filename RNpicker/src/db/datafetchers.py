@@ -3,6 +3,7 @@ import sqlalchemy
 import new
 import os
 import re
+import pickle
 import pprint
 import string
 import datetime
@@ -112,7 +113,9 @@ class DBDataFetcher(object):
        if type is None: 
            type = "Particulate"
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':common.utils.Conf.get_conf()}) 
+       conf = common.utils.Conf.get_conf()
+       
+       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
        result.close()
        
@@ -131,12 +134,18 @@ class DBDataFetcher(object):
         
         # get reference to the conf object
         self._conf              = common.utils.Conf.get_conf()
+        
+         # get flag indicating if the cache function is activated
+        self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False
     
     def getConnector(self):
         return self._connector
     
     def getSampleID(self):
         return self._sampleID
+    
+    def activateCaching(self):
+        return self._activateCaching
     
     def _fetchData(self):
         """ abstract global data fetching method """
@@ -266,29 +275,85 @@ class DBDataFetcher(object):
         
        result.close()
        
+    def _createCachingFile(self,aSampleID):
+        """Build a caching file from the config caching dir and the given sampleID.
+        
+            Args:
+               aSampleID: given sampleID
+        
+            Returns:
+              the built hashtable
+              
+            Raises:
+               exception
+        """
+        return "%s/sampml_caching_%s.data"%(self._conf.get("Caching","dir","/tmp"),aSampleID)
+        
+    def _cache(self):
+        
+        """pickle the retrieved data in a file for a future usage
+        
+            Returns:
+              
+              
+            Raises:
+               exception if issue when pickling
+        """
+        
+        cachingFilename = self._createCachingFile(self.getSampleID())
+        
+        if self.activateCaching() and not os.path.exists(cachingFilename):
+            
+            # only rewrite when file doesn't exist for the moment
+            f = open(cachingFilename,"w")
+            
+            pickle.dump(self._dataBag,f)
+            
+            f.close()
+        
+        
     def fetch(self):
         
-        # get station info
-        self._fetchStationInfo()
+        # check if the caching function is activated
+        # if yes and if the caching file exist load it
         
-        # get detector info
-        self._fetchDetectorInfo()
+        cachingFilename = self._createCachingFile(self.getSampleID())
         
-        # get sample info
-        self._fetchSampleInfo()
+        if self.activateCaching() and os.path.exists(cachingFilename):
+            
+            print "fetch data from the caching file %s.\n"%(cachingFilename)
+            
+            f = open(cachingFilename,"r")
+            
+            self._dataBag = pickle.load(f)
+            
+        else:
+            
+          print "fetch data from the database.\n"
+          
+          # get station info
+          self._fetchStationInfo()
         
-        # get Data Files
-        self._fetchData()
+          # get detector info
+          self._fetchDetectorInfo()
+        
+          # get sample info
+          self._fetchSampleInfo()
+        
+          # get Data Files
+          self._fetchData()
 
-        # get analysis results
-        self._fetchAnalysisResults()
+          # get analysis results
+          self._fetchAnalysisResults()
         
-        # get parameters
-        self._fetchParameters()
+          # get parameters
+          self._fetchParameters()
         
-        self._fetchFlags()
+          self._fetchFlags()
         
-        self._fetchCalibration()
+          self._fetchCalibration()
+          
+          self._cache()
     
     def _removeChannelSpan(self,aLine):
         """remove the first column of the matrix of values.

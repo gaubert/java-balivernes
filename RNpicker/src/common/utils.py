@@ -37,6 +37,8 @@ def file_exits(aFilePath):
         # check if file exits
         if not os.path.exists(aFilePath):
             raise Exception(-1,"the file %s does not exits"%(aFilePath))
+        
+
 
 ###################################  
 #
