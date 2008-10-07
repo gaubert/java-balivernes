@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <SampML xmlns="http://www.ctbto.org/SAMPML/0.5">
-	<Remark>${REMARK}</Remark>
+	${REMARK}
 	<SampleInformation UUID="${SAMPLEID}">
 		<StationInformation>
 			<StationLocation>${STATION_LOCATION}</StationLocation>

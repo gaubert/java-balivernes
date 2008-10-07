@@ -34,7 +34,8 @@ class BaseRenderer(object):
                                     "DET_DESCRIPTION"    :   "DETECTOR_DESCRIPTION",
                                     "SAMPLE_TYPE"        :   "SAMPLE_TYPE",
                                     "SAMPLE_GEOMETRY"    :   "SAMPLE_GEOMETRY",
-                                    "SAMPLE_QUANTITY"    :   "SAMPLE_QUANTITY", 
+                                    "SAMPLE_QUANTITY"    :   "SAMPLE_QUANTITY",
+                                    "REMARK"             :   "TEMPLATE_COMMAND_NOTHING", 
                                  }
                                   
         self._createTemplate()
@@ -69,6 +70,10 @@ class BaseRenderer(object):
         
         for (key,val) in self._substitutionDict.items():
             pattern = "\${%s}"%(key)
+            
+            if val == "TEMPLATE_COMMAND_NOTHING":
+               self._populatedTemplate = re.sub(pattern, "", self._populatedTemplate)
+            
             self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val,"None")), self._populatedTemplate)
             
     def asXml(self):
@@ -305,23 +310,26 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get processing parameters
-        parameters = self._fetcher.get("PROCESSING_PARAMETERS","None")
+        parameters = self._fetcher.get("PROCESSING_PARAMETERS",None)
         
-        dummy_template = re.sub("\${THRESHOLD}",parameters.get('THRESHOLD',"None"), template)
-        dummy_template = re.sub("\${PEAK_START}",str(parameters.get('PEAK_START',"None")), dummy_template)
-        dummy_template = re.sub("\${PEAK_END}",str(parameters.get('PEAK_END',"None")), dummy_template)
-        dummy_template = re.sub("\${LEFT_FWHM}",str(parameters.get('LEFT_FWHM_LIM',"None")), dummy_template)
-        dummy_template = re.sub("\${RIGHT_FWHM}",str(parameters.get('RIGHT_FWHM_LIM',"None")), dummy_template)
-        dummy_template = re.sub("\${MULTI_FWHM}",str(parameters.get('FWHM_MULT_WIDTH',"None")), dummy_template)
-        dummy_template = re.sub("\${FIT_SINGLETS}",str(parameters.get('FIT_SINGLETS',"None")), dummy_template)
-        dummy_template = re.sub("\${CRITICAL_LEV_TEST}",str(parameters.get('CRIT_LEVEL',"None")), dummy_template)
-        dummy_template = re.sub("\${ESTIMATED_PEAK_WIDTHS}",str(parameters.get('MDC_WIDTH',"None")), dummy_template)
-        dummy_template = re.sub("\${BASELINE_TYPE}",str(parameters.get('BACK_TYPE',"None")), dummy_template)
-        dummy_template = re.sub("\${BASELINE_CHANNELS}",str(parameters.get('BACK_CHAN',"None")), dummy_template)
-        dummy_template = re.sub("\${SUBSTRACTION}",str(parameters.get('ToBeDefined',"None")), dummy_template)
-        dummy_template = re.sub("\${ENERGY_TOLERANCE}",str(parameters.get('ENERGY_TOL',"None")), dummy_template)
-        dummy_template = re.sub("\${CONFIDENCE_THRESHOLD}",str(parameters.get('NID_CONFID',"None")), dummy_template)
-        dummy_template = re.sub("\${RISK_LEVEL}",str(parameters.get('ToBeDefined',"None")), dummy_template)
+        print "parameters = %s"%(parameters)
+        
+        if (parameters is not None) and (len(parameters) > 0) :
+           dummy_template = re.sub("\${THRESHOLD}",parameters.get('THRESHOLD',"None"), template)
+           dummy_template = re.sub("\${PEAK_START}",str(parameters.get('PEAK_START',"None")), dummy_template)
+           dummy_template = re.sub("\${PEAK_END}",str(parameters.get('PEAK_END',"None")), dummy_template)
+           dummy_template = re.sub("\${LEFT_FWHM}",str(parameters.get('LEFT_FWHM_LIM',"None")), dummy_template)
+           dummy_template = re.sub("\${RIGHT_FWHM}",str(parameters.get('RIGHT_FWHM_LIM',"None")), dummy_template)
+           dummy_template = re.sub("\${MULTI_FWHM}",str(parameters.get('FWHM_MULT_WIDTH',"None")), dummy_template)
+           dummy_template = re.sub("\${FIT_SINGLETS}",str(parameters.get('FIT_SINGLETS',"None")), dummy_template)
+           dummy_template = re.sub("\${CRITICAL_LEV_TEST}",str(parameters.get('CRIT_LEVEL',"None")), dummy_template)
+           dummy_template = re.sub("\${ESTIMATED_PEAK_WIDTHS}",str(parameters.get('MDC_WIDTH',"None")), dummy_template)
+           dummy_template = re.sub("\${BASELINE_TYPE}",str(parameters.get('BACK_TYPE',"None")), dummy_template)
+           dummy_template = re.sub("\${BASELINE_CHANNELS}",str(parameters.get('BACK_CHAN',"None")), dummy_template)
+           dummy_template = re.sub("\${SUBSTRACTION}",str(parameters.get('ToBeDefined',"None")), dummy_template)
+           dummy_template = re.sub("\${ENERGY_TOLERANCE}",str(parameters.get('ENERGY_TOL',"None")), dummy_template)
+           dummy_template = re.sub("\${CONFIDENCE_THRESHOLD}",str(parameters.get('NID_CONFID',"None")), dummy_template)
+           dummy_template = re.sub("\${RISK_LEVEL}",str(parameters.get('ToBeDefined',"None")), dummy_template)
                
         # add generated xml in final container
         xml_parameters += dummy_template
@@ -329,26 +337,26 @@ class ParticulateRenderer(BaseRenderer):
         # add Update parameters
         # first add Quantified Nuclides
         template = self._conf.get("TemplatingSystem","updateParametersTemplate")
-        
         dummy_template = ""
         
         # get update parameters
         parameters = self._fetcher.get("UPDATE_PARAMETERS","None")
         
-        dummy_template = re.sub("\${USE_MRP}",str(parameters.get('MRP_USED',"None")), template)
-        dummy_template = re.sub("\${MRP_SAMPLEID}",str(parameters.get('MRP_SAMPLE_ID',"None")), dummy_template)
-        dummy_template = re.sub("\${GAIN_SHIFT}",str(parameters.get('GAINSHIFT',"None")), dummy_template)
-        dummy_template = re.sub("\${ZERO_SHIFT}",str(parameters.get('ZEROSHIFT',"None")), dummy_template)
-        dummy_template = re.sub("\${AREA_LIMIT}",str(parameters.get('AREA_LIM',"None")), dummy_template)
-        dummy_template = re.sub("\${USE_WEIGHT}",str(parameters.get('USE_WEIGHT',"None")), dummy_template)
-        dummy_template = re.sub("\${USE_MULTIPLET}",str(parameters.get('USE_MULT',"None")), dummy_template)
-        dummy_template = re.sub("\${FORCE_LINEAR}",str(parameters.get('F_LINEAR',"None")), dummy_template)
-        dummy_template = re.sub("\${IGNORE_PREVIOUS_ECR}",str(parameters.get('BOOTSTRAP',"None")), dummy_template)
-        dummy_template = re.sub("\${MINIMUM_LIB_LOOKUP_TOLERANCE}",str(parameters.get('MIN_LOOKUP',"None")), dummy_template)
-        dummy_template = re.sub("\${RER_INTERCEPT}",str(parameters.get('RER_INTERCEPT',"None")), dummy_template)
-        dummy_template = re.sub("\${RER_SLOPE}",str(parameters.get('RER_SLOPE',"None")), dummy_template)
-        dummy_template = re.sub("\${ECR_SLOPE}",str(parameters.get('ECR_SLOPE',"None")), dummy_template)
-        dummy_template = re.sub("\${DO_RESOLUTION_UPDATE}",str(parameters.get('DO_RERU',"None")), dummy_template)
+        if (parameters is not None) and (len(parameters) > 0):
+           dummy_template = re.sub("\${USE_MRP}",str(parameters.get('MRP_USED',"None")), template)
+           dummy_template = re.sub("\${MRP_SAMPLEID}",str(parameters.get('MRP_SAMPLE_ID',"None")), dummy_template)
+           dummy_template = re.sub("\${GAIN_SHIFT}",str(parameters.get('GAINSHIFT',"None")), dummy_template)
+           dummy_template = re.sub("\${ZERO_SHIFT}",str(parameters.get('ZEROSHIFT',"None")), dummy_template)
+           dummy_template = re.sub("\${AREA_LIMIT}",str(parameters.get('AREA_LIM',"None")), dummy_template)
+           dummy_template = re.sub("\${USE_WEIGHT}",str(parameters.get('USE_WEIGHT',"None")), dummy_template)
+           dummy_template = re.sub("\${USE_MULTIPLET}",str(parameters.get('USE_MULT',"None")), dummy_template)
+           dummy_template = re.sub("\${FORCE_LINEAR}",str(parameters.get('F_LINEAR',"None")), dummy_template)
+           dummy_template = re.sub("\${IGNORE_PREVIOUS_ECR}",str(parameters.get('BOOTSTRAP',"None")), dummy_template)
+           dummy_template = re.sub("\${MINIMUM_LIB_LOOKUP_TOLERANCE}",str(parameters.get('MIN_LOOKUP',"None")), dummy_template)
+           dummy_template = re.sub("\${RER_INTERCEPT}",str(parameters.get('RER_INTERCEPT',"None")), dummy_template)
+           dummy_template = re.sub("\${RER_SLOPE}",str(parameters.get('RER_SLOPE',"None")), dummy_template)
+           dummy_template = re.sub("\${ECR_SLOPE}",str(parameters.get('ECR_SLOPE',"None")), dummy_template)
+           dummy_template = re.sub("\${DO_RESOLUTION_UPDATE}",str(parameters.get('DO_RERU',"None")), dummy_template)
             
         # add generated xml in final container
         xml_parameters += dummy_template
@@ -404,15 +412,18 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template += template
         
         # add Data Quality Flags
-        DataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
+        dataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
         
-        for flag in DataQFlags:
-            name = flag['DQ_NAME']
-            dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
-            dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
-            dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
+        print "DataQFlags %s\n"%(dataQFlags)
         
-        xml += dummy_template
+        if len(dataQFlags) > 0:
+           for flag in dataQFlags:
+              name = flag['DQ_NAME']
+              dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
+              dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
+              dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
+        
+           xml += dummy_template
            
         return xml
         

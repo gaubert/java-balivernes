@@ -60,9 +60,40 @@ class TestSAMPMLCreator(unittest.TestCase):
        print "samples %s\n"%(sampleIDs)
       
        return sampleIDs
+      
+    def testPrelParticulateSamples(self):
         
+        # another recent sample = "0889826" 
+        # tanzani 0888997
+        # list to run on production 
+        #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
+        #listOfSamplesToTest = [ "0889826" ]
+        
+        # get full
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='1')
+        #listOfSamplesToTest = [857409]       
+        #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
+        #intifiedlist = map(int,listOfSamplesToTest)
+        
+        #listOfSamplesToTest = map(str,intifiedlist)
+        
+        print "list of Prel Sample",listOfSamplesToTest
+        
+        for sampleID in listOfSamplesToTest:
+           # fetchnoble particulate
+           fetcher = DBDataFetcher.getDataFetcher(self.conn,sampleID)
+   
+           fetcher.fetch()
+           
+           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
+       
+           renderer = ParticulateRenderer(fetcher)
+   
+           xmlStr = renderer.asXmlStr()
+   
+           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-prel-%s.xml"%(sampleID))  
 
-    def testFullParticulateSamples(self):
+    def tHHestFullParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -78,7 +109,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         #listOfSamplesToTest = map(str,intifiedlist)
         
-        print "list of Sample",listOfSamplesToTest
+        print "list Full of Sample",listOfSamplesToTest
         
         for sampleID in listOfSamplesToTest:
            # fetchnoble particulate
@@ -86,13 +117,13 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch()
            
-           fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
+           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
        
            renderer = ParticulateRenderer(fetcher)
    
            xmlStr = renderer.asXmlStr()
    
-           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-%s.xml"%(sampleID))
+           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-full-%s.xml"%(sampleID))
 
 if __name__ == '__main__':
     unittest.main()
