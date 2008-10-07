@@ -49,7 +49,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         # another recent sample = "0889826" 
         # tanzani 0888997
         # list to run on production 
-        listOfSamplesToTest = ["892843","892533","892630","892506","892493"]
+        listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         #listOfSamplesToTest = [ "0889826" ]
         
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"

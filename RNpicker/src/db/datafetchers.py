@@ -15,6 +15,7 @@ from StringIO import StringIO
 from common.exceptions import CTBTOError
 import common.utils
 import common.time_utils
+import db.rndata
 
 """ sql requests """
 SQL_GETDETECTORINFO   = "select det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
@@ -57,8 +58,10 @@ SQL_PARTICULATE_GET_PROCESSING_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_P
 
 SQL_PARTICULATE_GET_UPDATE_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_UPDATE_PARAMS where sample_id=%s"
 
+# beware with the date trick. In order to use the index and not perform a full scan on the table use between superior newest date and 1980-xxxxx 
+# to do the same as gsd.collect_stop < to_date(XXXXX) because in this case the index is not used
 SQL_PARTICULATE_GET_MRP = "select gsd.sample_id as mrp_sample_id, to_char (gsd.collect_stop, 'YYYY-MM-DD HH24:MI:SS')  as mrp_collect_stop, gsd.collect_stop - to_date('%s', 'YYYY-MM-DD HH24:MI:SS') as mrp_collect_stop_diff from gards_sample_data gsd \
-                           where gsd.collect_stop < to_date ('%s','YYYY-MM-DD HH24:MI:SS') \
+                           where gsd.collect_stop between to_date ('%s','YYYY-MM-DD HH24:MI:SS')-1 and  to_date ('1980-01-01','YYYY-MM-DD HH24:MI:SS')\
                              and gsd.data_type = '%s' \
                              and gsd.detector_id = %s \
                              and gsd.sample_type = '%s' \
@@ -380,21 +383,26 @@ class DBDataFetcher(object):
     def _readDataFile(self,aDir,aFilename,aType):
         """ read a file in a string buffer. This is used for the data files """
         
-        # check that the file exists
+         # check that the file exists
         path = "%s/%s"%(aDir,aFilename)
         
-        if not os.path.exists(path):
-            raise CTBTOError(-1,"the file %s does not exits"%(path))
-        
-        # store in a StringIO object
-        input = open(path,"r")
-        
+        # if config says RemoteDataSource is activated then create a remote data source
+        if self._conf.getboolean("Options","remoteDataSource") is True:
+           input = db.rndata.RemoteFSDataSource(path)
+        else:
+            # this is a local path so check if it exits and open fd
+            if not os.path.exists(path):
+               raise CTBTOError(-1,"the file %s does not exits"%(path))
+    
+            input = open(path,"r")
+       
         tok_list = []
         
         energy_span  = 0
         channel_span = 0
         e_max        = 0
         
+        # store in a StringIO object
         data = StringIO()
         try:
            for line in input:
@@ -416,7 +424,7 @@ class DBDataFetcher(object):
                   energy_span = e_max
               
               # add 16 spaces char for formatting purposes
-              if (self._conf.get("Options","removeChannelIndex") == "true"):
+              if self._conf.getboolean("Options","removeChannelIndex") is True:
                   data.write("                %s"%(self._removeChannelSpan(line)))
               else:
                   data.write("                %s"%(line))
@@ -431,7 +439,7 @@ class DBDataFetcher(object):
         
         
         # check in the conf if we need to compress the data
-        if (self._conf.get("Options","compressSpectrum") == "true") :
+        if self._conf.getboolean("Options","compressSpectrum") is True:
             # XML need to be 64base encoded
             self._dataBag["rawdata_%s"%(aType)] = base64.b64encode(zlib.compress(data.getvalue()))
             # add a compressed flag in dict
@@ -447,9 +455,6 @@ class DBDataFetcher(object):
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
-        
-        #print "data Bag %s"%(self._dataBag)
-        
         return self._dataBag.get(aKey,aDefault)
     
     def printContent(self,aIostream = None):
@@ -780,6 +785,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         detector_id  = self._dataBag['DETECTOR_ID']
         
         sample_type  = self._dataBag['SAMPLE_TYPE']
+        
+        print "Executed request %s\n"%(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
     
         # get MDA nuclides
         result = self._connector.execute(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
@@ -790,6 +797,8 @@ class ParticulateDataFetcher(DBDataFetcher):
             
             row = rows[0]
             
+            print "There is a mrp and it is %d\n"%(mrp_sid)
+            
             mrp_sid   = row['mrp_sample_id']
             hoursDiff = row['mrp_collect_stop_diff']*24 
             
@@ -799,6 +808,7 @@ class ParticulateDataFetcher(DBDataFetcher):
              
         else:
             
+           print "No MRP found\n"
            self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
         
         
@@ -900,6 +910,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ get the different parameters used for the analysis """
         
         print "into fetch Parameters"
+        print "request = %s\n"%(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
         result = self._connector.execute(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
         
         rows = result.fetchall()

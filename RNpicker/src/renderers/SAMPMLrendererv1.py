@@ -209,7 +209,7 @@ class ParticulateRenderer(BaseRenderer):
         """
         
         # check if we need nuclidelines otherwise quit
-        if self._conf.get("Options","addNuclideLines") != "true":
+        if self._conf.getboolean("Options","addNuclideLines") is False:
             print "Configuration says no nuclide lines\n"
             return ""
         
