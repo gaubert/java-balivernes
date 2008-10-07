@@ -132,6 +132,7 @@ class ParticulateRenderer(BaseRenderer):
         """ fill and return the category XML structure stringified """
           
         category = "undefined"
+        comment  = "No Comment"
         
         # get the status. If it is R or Q get category otherwise it isn't defined yet
         status = self._fetcher.get(u'CAT_STATUS',"")

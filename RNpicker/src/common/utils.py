@@ -38,6 +38,18 @@ def file_exits(aFilePath):
         if not os.path.exists(aFilePath):
             raise Exception(-1,"the file %s does not exits"%(aFilePath))
         
+def makedirs(aPath):
+    """ my own version of makedir """
+    
+    if os.path.isdir(aPath):
+        # it already exists so return
+        return
+    elif os.path.isfile(aPath):
+        raise OSError("a file with the same name as the desired dir, '%s', already exists."%(aPath))
+
+    os.makedirs(aPath)
+
+        
 
 
 ###################################  

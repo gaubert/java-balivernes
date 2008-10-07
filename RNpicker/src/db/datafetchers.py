@@ -290,7 +290,13 @@ class DBDataFetcher(object):
             Raises:
                exception
         """
-        return "%s/sampml_caching_%s.data"%(self._conf.get("Caching","dir","/tmp"),aSampleID)
+        
+        # create caching dir if it doesn't exist
+        dir = self._conf.get("Caching","dir","/tmp")
+        
+        common.utils.makedirs(dir)
+        
+        return "%s/sampml_caching_%s.data"%(dir,aSampleID)
         
     def _cache(self):
         
@@ -918,12 +924,16 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+            if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
+               raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+            else:
+               print("%s sample and no processing parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}
-
-        data.update(rows[0].items())
+        
+        
+        data.update((rows[0].items()) if len(rows) > 0 else {})
     
         # add in dataBag
         self._dataBag[u'PROCESSING_PARAMETERS'] = data
@@ -937,12 +947,15 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+            if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
+               raise CTBTOError(-1,"Expecting to have 1 set of update parameters but got %d either None or more than one. %s"%(nbResults,rows))
+            else:
+               print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update((rows[0].items()) if len(rows) > 0 else {})
         
         # add in dataBag
         self._dataBag[u'UPDATE_PARAMETERS'] = data
@@ -1009,4 +1022,7 @@ class ParticulateDataFetcher(DBDataFetcher):
 
 """ Dictionary used to map DB Sample type with the right fetcher """
 SAMPLE_TYPE = {'SAUNA':SaunaNobleGasDataFetcher, 'ARIX-4':SaunaNobleGasDataFetcher, 'SPALAX':SpalaxNobleGasDataFetcher, None:ParticulateDataFetcher}
+
+
+
         

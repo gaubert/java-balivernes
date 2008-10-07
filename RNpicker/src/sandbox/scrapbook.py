@@ -1,11 +1,12 @@
 from StringIO import StringIO
 import operator
 import string
-import os
 import subprocess
 import base64
-
+import os
 import zlib
+import distutils.dir_util
+import common.utils
 
 from db.rndata import RemoteFSDataSource
  
@@ -84,7 +85,7 @@ def testCompress():
    
    s = base64.b64encode("ADDDDDD")
 
-if __name__ == '__main__':
+def testRemoteDataSource(self):
     
     l = "/tmp/toto/titi/t.tmp"
     
@@ -95,6 +96,29 @@ if __name__ == '__main__':
     
     for line in input:
         print "the line = %s\n"%(line)
+
+def makedirrs(name):
+  head, tail = os.path.split(name)
+  if not tail:
+    head, tail = os.path.split(head)
+  if head and tail and not os.path.exists(head):
+    makedirs(head)
+  try:
+    os.mkdir(name)
+  except EnvironmentError:
+    if not os.path.isdir(name):
+      raise
+
+
+if __name__ == '__main__':
+    
+    #distutils.dir_util.mkpath("/tmp/totoo",verbose=1)
+    
+    common.utils.makedirs("/tmp/tata/r")
+    
+    print "Hello \n"
+    
+    
    
   
    

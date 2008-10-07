@@ -39,6 +39,9 @@ class RemoteFSDataSource:
         # no local filename so use the remote file basename
         if self._localFilename is None:
             self._localFilename = os.path.basename(self._remotePath)
+        
+        # make local dir if not done
+        common.utils.makedirs(self._localDir)
             
         # path under which the file is going to be stored
         destinationPath = "%s/%s"%(self._localDir,self._localFilename)
