@@ -6,6 +6,8 @@ import subprocess
 import base64
 
 import zlib
+
+from db.rndata import RemoteFSDataSource
  
 #
 str1 = """Dallas Cowboys football practice at Valley Ranch was delayed on Wednesday
@@ -62,6 +64,14 @@ def testCurrying():
    
    list = ['4          ', '6          ', '3          ', '2          ', '5          ']
 
+def testsubProcess():
+    
+    res = subprocess.call(["/home/aubert/sftpTest.sh","08_sep_01"])
+    
+    #res = subprocess.call(["ls","-la"])
+    
+    print "res=%d\n"%(res)
+
 def testCompress():
     
    zstr1 = zlib.compress(str1)
@@ -76,10 +86,15 @@ def testCompress():
 
 if __name__ == '__main__':
     
-    res = subprocess.call(["/home/aubert/sftpTest.sh","08_sep_01"])
+    l = "/tmp/toto/titi/t.tmp"
     
-    #res = subprocess.call(["ls","-la"])
+    print "basename = %s\n"%(os.path.basename(l))
     
-    print "res=%d\n"%(res)
+    
+    input = RemoteFSDataSource("/ops/data/rn/spectrum/08_aug_14/fjp26_001_882731g.s")
+    
+    for line in input:
+        print "the line = %s\n"%(line)
+   
   
    

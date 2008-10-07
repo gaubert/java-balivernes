@@ -54,7 +54,7 @@ class Conf:
             Conf.load_config()
         return Conf._conf
 
-    def load_config(cls,aFile="../etc/conf/rnpicker.config"):
+    def load_config(cls,aFile="/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"):
         try:
             # [MAJ] can take a file list with default
             Conf._conf  = ConfigParser.ConfigParser()
