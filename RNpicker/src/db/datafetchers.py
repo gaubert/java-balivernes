@@ -48,7 +48,7 @@ class DBDataFetcher(object):
        if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
         
-       print "Type = %s"%(rows[0]['SAMPLE_TYPE'])
+       print "sampleID=%s,Type = %s"%(aSampleID,rows[0]['SAMPLE_TYPE'])
        
        print "Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']])
        
@@ -869,7 +869,8 @@ class ParticulateDataFetcher(DBDataFetcher):
        
         if nbResults is not 1:
             if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
-               raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+               #raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
+               print("%s sample and no processing parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
             else:
                print("%s sample and no processing parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
          
@@ -892,7 +893,8 @@ class ParticulateDataFetcher(DBDataFetcher):
        
         if nbResults is not 1:
             if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
-               raise CTBTOError(-1,"Expecting to have 1 set of update parameters but got %d either None or more than one. %s"%(nbResults,rows))
+               #raise CTBTOError(-1,"Expecting to have 1 set of update parameters but got %d either None or more than one. %s"%(nbResults,rows))
+               print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
             else:
                print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
          
@@ -968,5 +970,5 @@ class ParticulateDataFetcher(DBDataFetcher):
 
 
 """ Dictionary used to map DB Sample type with the right fetcher """
-SAMPLE_TYPE = {'SAUNA':SaunaNobleGasDataFetcher, 'ARIX-4':SaunaNobleGasDataFetcher, 'SPALAX':SpalaxNobleGasDataFetcher, None:ParticulateDataFetcher}
+SAMPLE_TYPE = {'SAUNA':SaunaNobleGasDataFetcher, 'ARIX-4':SaunaNobleGasDataFetcher, 'SPALAX':SpalaxNobleGasDataFetcher, 'RASA':ParticulateDataFetcher,'CINDER':ParticulateDataFetcher, 'LAB':ParticulateDataFetcher, None:ParticulateDataFetcher}
         

@@ -54,7 +54,10 @@ class BaseRenderer(object):
         # read the full template in a string buffer
         f = open(path,"r") 
         
+        #self._template = unicode( f.read(), 'utf16' ) 
         self._template = f.read()
+        
+        print "template %s\n"%(self._template)
         
         self._populatedTemplate = self._template
         

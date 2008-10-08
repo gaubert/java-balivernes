@@ -70,8 +70,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         #listOfSamplesToTest = [ "0889826" ]
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='1')
-        #listOfSamplesToTest = [857409]       
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='300')
+        listOfSamplesToTest = [857991]       
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
         
@@ -85,7 +85,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch()
            
-           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
+           fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
        
            renderer = ParticulateRenderer(fetcher)
    
@@ -93,7 +93,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-prel-%s.xml"%(sampleID))  
 
-    def tHHestFullParticulateSamples(self):
+    def tefstFullParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -102,7 +102,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         #listOfSamplesToTest = [ "0889826" ]
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='300')
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
