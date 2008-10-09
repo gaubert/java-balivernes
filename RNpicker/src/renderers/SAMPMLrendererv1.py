@@ -123,17 +123,23 @@ class ParticulateRenderer(BaseRenderer):
     def _fillRawData(self):
         """ insert particulate spectrum data in final produced XML file """
     
-        spectrumTemplate = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
-    
-        # Add spectrum template in final SAMPML template
-        self._populatedTemplate = re.sub("\${SPECTRUM}",spectrumTemplate, self._populatedTemplate)
+        # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
         
-        # TODO to remove just there for testing, deal with the compression flag
-        
-        if self._fetcher.get("rawdata_SPECTRUM_compressed",False) == True :
-            self._populatedTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",self._populatedTemplate)
+        if self._fetcher.get("rawdata_SPECTRUM",None) == None:
+            # Add spectrum template in final SAMPML template
+            self._populatedTemplate = re.sub("\${SPECTRUM}","", self._populatedTemplate)
         else:
-            self._populatedTemplate = re.sub("\${COMPRESS}","",self._populatedTemplate)
+            spectrumTemplate = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
+    
+            # Add spectrum template in final SAMPML template
+            self._populatedTemplate = re.sub("\${SPECTRUM}",spectrumTemplate, self._populatedTemplate)
+        
+            # TODO to remove just there for testing, deal with the compression flag
+        
+            if self._fetcher.get("rawdata_SPECTRUM_compressed",False) == True :
+               self._populatedTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",self._populatedTemplate)
+            else:
+               self._populatedTemplate = re.sub("\${COMPRESS}","",self._populatedTemplate)
         
      
     def _getCategory(self):
@@ -409,24 +415,34 @@ class ParticulateRenderer(BaseRenderer):
         # add generated xml in final container
         xml += dummy_template
         
+        # get Data Quality Flags
         template = self._conf.get("TemplatingSystem","dataQualityFlagsTemplate")
-        
-        dummy_template = ""
-        dummy_template += template
         
         # add Data Quality Flags
         dataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
         
         print "DataQFlags %s\n"%(dataQFlags)
         
+        # list of all flags found
+        dq_xml = ""
+        
         if len(dataQFlags) > 0:
            for flag in dataQFlags:
               name = flag['DQ_NAME']
+              
+              # check if it has a template if not ignore => if if this is ok
+              
+              dummy_template = self._conf.get("TemplatingSystem","dataQFlags_%s_Template"%(name))
               dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
               dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
               dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
+              
+              dq_xml += dummy_template
+              
+        template = re.sub("\${DQ_FLAGS}",dq_xml, template)
         
-           xml += dummy_template
+        # replace global data quality flag template
+        xml += template
            
         return xml
         
