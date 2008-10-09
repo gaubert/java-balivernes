@@ -46,7 +46,7 @@ class DBDataFetcher(object):
        nbResults = len(rows)
        
        if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Error, Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(aSampleID,nbResults,rows))
         
        print "sampleID=%s,Type = %s"%(aSampleID,rows[0]['SAMPLE_TYPE'])
        
@@ -125,7 +125,7 @@ class DBDataFetcher(object):
        nbResults = len(rows)
        
        if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
        # update data bag
        self._dataBag.update(rows[0].items())
@@ -145,7 +145,7 @@ class DBDataFetcher(object):
        nbResults = len(rows)
        
        if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
        # update data bag
        self._dataBag.update(rows[0].items())
@@ -174,7 +174,7 @@ class DBDataFetcher(object):
           return float(value)
           
         except Exception, ex:
-            raise CTBTOError(-1,"Error when parsing halflife value %s. Exception %s"%(aHalfLife,ex))
+            raise CTBTOError(-1,"Error when parsing halflife value %s for sample_id %s. Exception %s"%(aHalfLife,self._sampleID,ex))
             
     
     def _transformResults(self,aDataDict):
@@ -199,7 +199,7 @@ class DBDataFetcher(object):
        nbResults = len(rows)
        
        if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have one result but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
        # get retrieved data and transform dates
        data = {}
@@ -448,7 +448,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 3:
-            raise CTBTOError(-1,"Expecting to have 3 products but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have 3 products for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         print "data Rows = %s"%(rows)
         
@@ -469,7 +469,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is 0:
-            raise CTBTOError(-1,"Expecting to have n identified nuclides but got 0")
+            raise CTBTOError(-1,"Expecting to have n identified nuclides for sample_id %s but got 0"%(self._sampleID))
         
         # add results in a list which will become a list of dicts
         res = {}
@@ -491,7 +491,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is 0:
-            raise CTBTOError(-1,"Expecting to have n nuclides but got 0")
+            raise CTBTOError(-1,"Expecting to have n nuclides for sample_id but got 0"%(self._sampleID))
         
         # add results in a list which will become a list of dicts
         res = {}
@@ -542,6 +542,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         # need to get the gamma spectrum 
         # first path information from database
         result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
+        
+        print "Executed Request =[%s]"%(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
        
         # only one row in result set
         rows = result.fetchall()
@@ -549,7 +551,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 product for particulate but got %d either None or more than one. %s"%(nbResults,rows))
+            print("sample_id %s has no spectrum\n"%(self._sampleID))
+            #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
         for row in rows:
             self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'])
@@ -869,10 +872,10 @@ class ParticulateDataFetcher(DBDataFetcher):
        
         if nbResults is not 1:
             if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
-               #raise CTBTOError(-1,"Expecting to have 1 set of processing parameters but got %d either None or more than one. %s"%(nbResults,rows))
-               print("%s sample and no processing parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
+               #raise CTBTOError(-1,"Expecting to have 1 set of processing parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
             else:
-               print("%s sample and no processing parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
+               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}
@@ -893,7 +896,7 @@ class ParticulateDataFetcher(DBDataFetcher):
        
         if nbResults is not 1:
             if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
-               #raise CTBTOError(-1,"Expecting to have 1 set of update parameters but got %d either None or more than one. %s"%(nbResults,rows))
+               #raise CTBTOError(-1,"Expecting to have 1 set of update parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
                print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
             else:
                print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
@@ -917,7 +920,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 energy calibration row  but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
          # create a list of dicts
         data = {}
@@ -934,7 +937,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 resolution calibration row  but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have 1 resolution calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
          # create a list of dicts
         data = {}
@@ -951,7 +954,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have 1 efficiency calibration row  but got %d either None or more than one. %s"%(nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have 1 efficiency calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
          # create a list of dicts
         data = {}

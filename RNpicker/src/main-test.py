@@ -61,7 +61,7 @@ class TestSAMPMLCreator(unittest.TestCase):
       
        return sampleIDs
       
-    def testPrelParticulateSamples(self):
+    def tesstPrelParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -71,7 +71,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # get full
         listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='300')
-        listOfSamplesToTest = [857991]       
+        #listOfSamplesToTest = [857991]       
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
         
@@ -93,16 +93,17 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-prel-%s.xml"%(sampleID))  
 
-    def tefstFullParticulateSamples(self):
+    def testFullParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
-        #listOfSamplesToTest = [ "0889826" ]
+        
         
         # get full
         listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='300')
+        listOfSamplesToTest = [ "860895" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
