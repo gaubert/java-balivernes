@@ -92,7 +92,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         #listOfSamplesToTest = [ "0889826" ]
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='500')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='10')
         #listOfSamplesToTest = [857991]       
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -107,13 +107,15 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch()
            
-           fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
+           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
        
            renderer = ParticulateRenderer(fetcher)
    
            xmlStr = renderer.asXmlStr()
+           
+           
    
-           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+           path = "/tmp/samples/sampml-prel-%s.xml"%(sampleID)
    
            common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
@@ -129,7 +131,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='500')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10')
         #listOfSamplesToTest = [ "860895" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
@@ -145,11 +147,18 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch()
            
-           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
+           fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
        
            renderer = ParticulateRenderer(fetcher)
    
            xmlStr = renderer.asXmlStr()
+           
+           #print "Non Formatted String [%s]\n"%(xmlStr)
+           
+           f = open("/tmp/xmlStr.xml","w")
+           
+           f.write(xmlStr)
+           f.close()
    
            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    

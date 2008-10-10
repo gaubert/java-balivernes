@@ -27,7 +27,6 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
-   
     def getDataFetcher(cls,aDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
@@ -130,7 +129,7 @@ class DBDataFetcher(object):
        # update data bag
        self._dataBag.update(rows[0].items())
        
-       print "dataBag= %s"%(self._dataBag)
+       #print "dataBag= %s"%(self._dataBag)
        
        result.close()
        
@@ -527,6 +526,9 @@ class ParticulateDataFetcher(DBDataFetcher):
       # Class members
     c_log = logging.getLogger("datafetchers.ParticulateDataFetcher")
     c_log.setLevel(logging.DEBUG)
+    
+    c_nid_translation = {0:"nuclide not identifided by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
+   
 
 
     def __init__(self):
@@ -609,7 +611,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # update data bag
         self._dataBag[u'CATEGORIES'] = res
         
-        print "res = %s"%(self._dataBag[u'CATEGORIES'])
+        #print "res = %s"%(self._dataBag[u'CATEGORIES'])
        
         result.close()
         
@@ -683,9 +685,17 @@ class ParticulateDataFetcher(DBDataFetcher):
         for row in rows:
             # copy row in a normal dict
             data.update(row)
+            
+            nidflag = data.get(u'NID_FLAG',None)
+
+            # check if there is NID key
+            if nidflag is not None:
+                val = ParticulateDataFetcher.c_nid_translation.get(nidflag,nidflag)
+                data[u'NID_FLAG']=val
+            
             res.append(data)
             data = {}
-        
+
         # add in dataBag
         self._dataBag[u'IDED_NUCLIDES'] = res
         

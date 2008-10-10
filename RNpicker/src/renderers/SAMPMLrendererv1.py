@@ -40,10 +40,9 @@ class BaseRenderer(object):
                                   
         self._createTemplate()
         
-        
-    
-    def _createTemplate(self):
-        """ Read XML template from a file and store it in a String """
+       
+    def _readTemplateMainTemplateFromFile(self):
+        """ Read the template from a file. Old method now everything is read from the conf """
         
         # get template path from conf
         path = self._conf.get("TemplatingSystem","baseTemplate")
@@ -54,12 +53,24 @@ class BaseRenderer(object):
         # read the full template in a string buffer
         f = open(path,"r") 
         
-        #self._template = unicode( f.read(), 'utf16' ) 
         self._template = f.read()
         
-        print "template %s\n"%(self._template)
-        
         self._populatedTemplate = self._template
+        
+    
+    def _createTemplate(self):
+        """ Read XML template from a file and store it in a String 
+            Read main template from a file because do not know how to setup the encoding.
+            When open(...) is used, the encoding is read properly
+        """
+        
+        self._readTemplateMainTemplateFromFile()
+        
+        #self._template = self._conf.get("TemplatingSystem","particulateSAMPMLTemplate")
+        
+        #print "template [%s]\n"%(self._template)
+        
+        #self._populatedTemplate = self._template
         
     def _generateAnalysisID(self):
         """ simple counter incremented """
@@ -321,7 +332,7 @@ class ParticulateRenderer(BaseRenderer):
         # get processing parameters
         parameters = self._fetcher.get("PROCESSING_PARAMETERS",None)
         
-        print "parameters = %s"%(parameters)
+        #print "parameters = %s"%(parameters)
         
         if (parameters is not None) and (len(parameters) > 0) :
            dummy_template = re.sub("\${THRESHOLD}",parameters.get('THRESHOLD',"None"), template)
@@ -421,7 +432,7 @@ class ParticulateRenderer(BaseRenderer):
         # add Data Quality Flags
         dataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
         
-        print "DataQFlags %s\n"%(dataQFlags)
+        #print "DataQFlags %s\n"%(dataQFlags)
         
         # list of all flags found
         dq_xml = ""
