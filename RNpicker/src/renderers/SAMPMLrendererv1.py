@@ -16,7 +16,7 @@ class BaseRenderer(object):
     
     def __init__(self,aDataFetcher):
         
-        self._conf              = common.utils.Conf.get_conf()
+        self._conf              = common.utils.Conf.get_instance()
         self._fetcher           = aDataFetcher
         self._quantifiable      = set()
         self._template          = None
@@ -430,14 +430,16 @@ class ParticulateRenderer(BaseRenderer):
            for flag in dataQFlags:
               name = flag['DQ_NAME']
               
-              # check if it has a template if not ignore => if if this is ok
+              # check if it has a template if not ignore.
               
-              dummy_template = self._conf.get("TemplatingSystem","dataQFlags_%s_Template"%(name))
-              dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
-              dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
-              dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
-              
-              dq_xml += dummy_template
+              dummy_template = self._conf.get("TemplatingSystem","dataQFlags_%s_Template"%(name),None)
+              if dummy_template != None:
+                 dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
+                 dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
+                 dummy_template = re.sub("\${%s_THRESOLD}"%(name),str(flag['DQ_THRESHOLD']), dummy_template)
+                 
+                 # add non empty template to data flags
+                 dq_xml += dummy_template
               
         template = re.sub("\${DQ_FLAGS}",dq_xml, template)
         

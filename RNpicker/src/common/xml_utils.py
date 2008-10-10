@@ -9,7 +9,7 @@ def pretty_print_xml(aFDescriptor,aOutput):
    tree = etree.parse(aFDescriptor)
    
    # get xslt stylesheet doing the transformation
-   xsltPath = common.utils.Conf.get_conf().get("Transformer","xsltPrettyPrinter")
+   xsltPath = common.utils.Conf.get_instance().get("Transformer","xsltPrettyPrinter")
    
    transform = etree.XSLT(etree.parse(open(xsltPath)))
    

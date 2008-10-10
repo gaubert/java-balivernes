@@ -34,7 +34,7 @@ if __name__ == '__main__':
    log.setLevel(logging.DEBUG)
    log.info("Start")
    
-   conf = common.utils.Conf.get_conf()
+   conf = common.utils.Conf.get_instance()
    url = conf.get("DatabaseAccess","url")
    
    print "URL=%s"%(url)

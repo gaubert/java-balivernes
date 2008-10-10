@@ -60,7 +60,7 @@ class DBDataFetcher(object):
        if type is None: 
            type = "Particulate"
        
-       conf = common.utils.Conf.get_conf()
+       conf = common.utils.Conf.get_instance()
        
        inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
@@ -80,7 +80,7 @@ class DBDataFetcher(object):
         self._dataBag   = {}
         
         # get reference to the conf object
-        self._conf              = common.utils.Conf.get_conf()
+        self._conf              = common.utils.Conf.get_instance()
         
          # get flag indicating if the cache function is activated
         self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False

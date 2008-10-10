@@ -68,7 +68,7 @@ class RemoteFSDataSource:
         # my variables
          
         # get reference to the conf object
-        self._conf              = common.utils.Conf.get_conf()
+        self._conf              = common.utils.Conf.get_instance()
         
         self._remotePath        = aDataPath
         

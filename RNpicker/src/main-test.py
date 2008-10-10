@@ -36,7 +36,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         log.setLevel(logging.DEBUG)
         log.info("Start")
    
-        self.conf = common.utils.Conf.get_conf()
+        self.conf = common.utils.Conf.get_instance()
         self.url  = self.conf.get("DatabaseAccess","url")
    
         print "URL=%s"%(self.url)
