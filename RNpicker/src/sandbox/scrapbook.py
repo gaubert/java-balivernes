@@ -7,6 +7,7 @@ import os
 import zlib
 import distutils.dir_util
 import common.utils
+import re
 
 from db.rndata import RemoteFSDataSource
  
@@ -85,7 +86,7 @@ def testCompress():
    
    s = base64.b64encode("ADDDDDD")
 
-def testRemoteDataSource(self):
+def testRemoteDataSource():
     
     l = "/tmp/toto/titi/t.tmp"
     
@@ -97,24 +98,41 @@ def testRemoteDataSource(self):
     for line in input:
         print "the line = %s\n"%(line)
 
-def makedirrs(name):
-  head, tail = os.path.split(name)
-  if not tail:
-    head, tail = os.path.split(head)
-  if head and tail and not os.path.exists(head):
-    makedirs(head)
-  try:
-    os.mkdir(name)
-  except EnvironmentError:
-    if not os.path.isdir(name):
-      raise
 
+
+def testMakedirs():
+    
+    common.utils.makedirs("/tmp/tata/r")
+    
+
+def testCheckThatNoTagsAreLeft():
+    
+    srcMustMatch=""" <Hello firstTag="${_j_j_j_}>
+               <T1> ${TAG_2} </T1>
+            </Hello>
+        """
+    
+    srcNoMatch=""" <Hello>
+               <T1> ${BALDLDLDL </T1>
+            </Hello>
+        """
+    
+    pattern="\${\w*}"
+    
+    res = re.findall(pattern, srcNoMatch)
+    
+    print "NoMatch =[%s]\n"%(len(res))
+    
+    res = re.findall(pattern, srcMustMatch)
+    
+    print "Match =[%s]\n"%(len(res))
+    
 
 if __name__ == '__main__':
     
     #distutils.dir_util.mkpath("/tmp/totoo",verbose=1)
     
-    common.utils.makedirs("/tmp/tata/r")
+    testCheckThatNoTagsAreLeft()
     
     print "Hello \n"
     

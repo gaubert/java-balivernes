@@ -4,11 +4,13 @@ import unittest
 import logging
 import logging.handlers
 import StringIO
+import re
 import common.utils
 import common.xml_utils
 from db.datafetchers import DBDataFetcher
 from db.connections import DatabaseConnector
 from renderers.SAMPMLrendererv1 import ParticulateRenderer
+
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
 
@@ -45,6 +47,26 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.conn = DatabaseConnector(self.url)
    
         self.conn.connect()
+        
+    def assertIfNoTagsLeft(self,path):
+        """
+           Check that no tags are left in the XML
+        """
+        
+        # pattern for looking for tags
+        pattern="\${\w*}"
+        
+        # first read file in memory as the file is small
+        f = open(path,"r")
+        
+        strToCheck = f.read()
+        
+        f.close()
+        
+        res = re.findall(pattern, strToCheck)
+         
+        self.failUnless((len(res) == 0), "Error. the file %s contains the following tags=%s"%(path,res))
+            
 
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
@@ -61,7 +83,7 @@ class TestSAMPMLCreator(unittest.TestCase):
       
        return sampleIDs
       
-    def tesstPrelParticulateSamples(self):
+    def testPrelParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -70,7 +92,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         #listOfSamplesToTest = [ "0889826" ]
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='300')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='500')
         #listOfSamplesToTest = [857991]       
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -91,7 +113,12 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            xmlStr = renderer.asXmlStr()
    
-           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-prel-%s.xml"%(sampleID))  
+           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+   
+           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           
+           # check if no tags are left
+           self.assertIfNoTagsLeft(path)
 
     def testFullParticulateSamples(self):
         
@@ -102,7 +129,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='300')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='500')
         #listOfSamplesToTest = [ "860895" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
@@ -124,7 +151,12 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            xmlStr = renderer.asXmlStr()
    
-           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),"/tmp/samples/sampml-full-%s.xml"%(sampleID))
+           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+   
+           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           
+           # check if no tags are left
+           self.assertIfNoTagsLeft(path)
 
 if __name__ == '__main__':
     unittest.main()
