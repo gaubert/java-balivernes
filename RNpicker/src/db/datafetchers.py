@@ -186,10 +186,34 @@ class DBDataFetcher(object):
               
         return aDataDict
               
+    def _fetchSampleRefId(self):
+        """get the reference_id for this sample
+        
+            Returns: Nothing
+              
+              
+            Raises:
+               exception if issue when accesing the database
+        """
+        result = self._connector.execute(SQL_PARTICULATE_GET_SAMPLE_REF_ID%(self._sampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+         
+        self._dataBag[u'REFERENCE_ID'] = rows[0]['SAMPLE_REF_ID']
+       
+        result.close()
        
     def _fetchSampleInfo(self):
        """ get sample info from sample data """ 
+       
        print "In fetch SampleInfo "
+       
        result = self._connector.execute(SQL_GETSAMPLEINFO%(self._sampleID))
        
        # only one row in result set
@@ -283,12 +307,15 @@ class DBDataFetcher(object):
             
           print "fetch data from the database.\n"
           
+          #get refID
+          self._fetchSampleRefId()
+          
           # get station info
           self._fetchStationInfo()
         
           # get detector info
           self._fetchDetectorInfo()
-        
+          
           # get sample info
           self._fetchSampleInfo()
         

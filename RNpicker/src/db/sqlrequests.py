@@ -30,6 +30,9 @@ SQL_PARTICULATE_CATEGORY ="select NAME as CAT_NUCL_NAME, METHOD_ID as CAT_METHOD
 """ returned all ided nuclides for a particular sample """
 SQL_PARTICULATE_GET_NUCL2QUANTIFY="select name from RMSMAN.GARDS_NUCL2QUANTIFY"
 
+""" return sample_ref_id. Identifier given by the detector for the sample. It is unique """
+SQL_PARTICULATE_GET_SAMPLE_REF_ID="select sample_ref_id from RMSMAN.GARDS_SAMPLE_AUX where sample_id=%s"
+
 SQL_PARTICULATE_GET_NUCLIDES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
 
 SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO="select * from RMSMAN.GARDS_NUCL_IDED where sample_id=%s"

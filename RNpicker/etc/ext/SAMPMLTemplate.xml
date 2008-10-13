@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <SampML xmlns="http://www.ctbto.org/SAMPML/0.5">
 	${REMARK}
-	<SampleInformation UUID="${SAMPLEID}">
+	<SampleInformation UUID="${REFERENCEID}"> <!-- This is a reference ID and a sampleInformation should contain all the spectrum (FULL and PREL), QC and Related Background => plus the analysis and calibration used -->
 		<StationInformation>
 			<StationLocation>${STATION_LOCATION}</StationLocation>
 			<StationCode>${STATION_CODE}</StationCode>

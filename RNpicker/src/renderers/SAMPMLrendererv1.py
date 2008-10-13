@@ -25,6 +25,7 @@ class BaseRenderer(object):
         
         # dict used to substitute values in fetcher with template values
         self._substitutionDict = {  "SAMPLEID"           :   "SAMPLE_ID",
+                                    "REFERENCEID"        :   "REFERENCE_ID",
                                     "STATION_LOCATION"   :   "STATION_LOCATION",
                                     "STATION_CODE"       :   "STATION_CODE",
                                     "COUNTRY_CODE"       :   "STATION_COUNTRY_CODE",
