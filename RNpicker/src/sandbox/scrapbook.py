@@ -132,6 +132,8 @@ if __name__ == '__main__':
     
     #distutils.dir_util.mkpath("/tmp/totoo",verbose=1)
     
+    print "Hello %s\n"%(os.path.splitext("tototo/tototoit/tititi/ttt.txt")[-1])
+    
     testCheckThatNoTagsAreLeft()
     
     print "Hello \n"

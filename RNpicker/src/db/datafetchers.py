@@ -396,6 +396,54 @@ class DBDataFetcher(object):
         # need to join on an empty string. Strange interface for the join method
         return "%s\n"%("".join(list))
         
+    def _extractSpectrumFromMessageFile(self,aInput):
+        """read a station message and extract the spectrum from it.
+        
+            Args:
+               params:
+               
+            Returns:
+               return
+        
+            Raises:
+               exception
+        """
+        
+        # look for #g_Spectrum
+        for line in aInput:
+             if line.find('#g_Spectrum') >= 0:
+                 # quit the loop
+                 break
+        
+        limits = aInput.readline()
+        
+        print "read limits %s"%(limits)
+        
+        # read the spectrum in a StringIO
+        data = StringIO()
+        
+        for line in aInput:
+            if line.find('#') >= 0:
+                # we have reached the end leave
+                break
+            else:
+                data.write(line)
+        
+        # go to the beginning of the Stream
+        data.seek(0)
+        
+        return (data,limits)
+
+    def _extractSpectrumFromSpectrumFile(self,aInput):
+        
+        data = StringIO()
+        
+        data.writelines(aInput)
+        
+        # go to the beginning of the Stream
+        data.seek(0)
+        
+        return (data,"0 0")
         
     def _readDataFile(self,aDir,aFilename,aProdType,aSampleID,aDataname='current',aSpectrumType='SPHD'):
         """ read a file in a string buffer. This is used for the data files """
@@ -413,6 +461,18 @@ class DBDataFetcher(object):
     
             input = open(path,"r")
        
+       
+        ext = os.path.splitext(aFilename)[-1] 
+        
+        # check the message type and do the necessary.
+        # here we expect a .msg or .s
+        if ext == '.msg':
+           (data,limits)  =  self._extractSpectrumFromMessageFile(input)
+        elif ext == '.s':
+            (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+        else:
+            raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID"%(ext,path,aSampleID))
+        
         tok_list = []
         
         energy_span  = 0
@@ -420,17 +480,16 @@ class DBDataFetcher(object):
         e_max        = 0
         
         # store in a StringIO object
-        data = StringIO()
+        # not very efficient as the spectrum is parsed two times
+        # [MAJ] to change
+        parsedSpectrum = StringIO()
         try:
-           for line in input:
+           for line in data:
                 
               # we might also have to add more splitting character
               # get the first column which should always be the last columns (channel span)
               # get also max of value of other columns (energy span)
               l = map(string.atoi,line.split())
-              
-              #print "line %s"%(l)
-              
               
               if l[0] > channel_span:
                  channel_span = l[0]
@@ -442,10 +501,11 @@ class DBDataFetcher(object):
               
               # add 16 spaces char for formatting purposes
               if self._conf.getboolean("Options","removeChannelIndex") is True:
-                  data.write("                %s"%(self._removeChannelSpan(line)))
+                  parsedSpectrum.write("                %s"%(self._removeChannelSpan(line)))
               else:
-                  data.write("                %s"%(line))
-        finally:    
+                  parsedSpectrum.write("                %s"%(line))
+        finally: 
+           data.close()   
            input.close()
            
         print "channel_span %s"%(channel_span)
@@ -458,12 +518,12 @@ class DBDataFetcher(object):
         # check in the conf if we need to compress the data
         if self._conf.getboolean("Options","compressSpectrum") is True:
             # XML need to be 64base encoded
-            self._dataBag[u"%s_DATA"%(aDataname)] = base64.b64encode(zlib.compress(data.getvalue()))
+            self._dataBag[u"%s_DATA"%(aDataname)] = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
             # add a compressed flag in dict
             self._dataBag[u"%_DATA_COMPRESSED"%(aDataname)] = True
         else:
             #add raw data in clear
-            self._dataBag[u"%s_DATA"%(aDataname)] = data.getvalue()
+            self._dataBag[u"%s_DATA"%(aDataname)] = parsedSpectrum.getvalue()
              # add a compressed flag in dict
             self._dataBag[u"%s_DATA_COMPRESSED"%(aDataname)] = False
         
