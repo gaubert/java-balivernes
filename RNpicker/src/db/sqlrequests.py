@@ -14,7 +14,10 @@ SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spect
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
 SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
+""" get any spectrum full or prel or qc or back """
 SQL_GETPARTICULATE_SPECTRUM    = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
+SQL_GETPARTICULATE_BK_SAMPLEID  = "select gd.sample_id from gards_sample_data gd, gards_sample_status gs where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P')"
 
 """ Get information regarding all identified nuclides """
 SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"

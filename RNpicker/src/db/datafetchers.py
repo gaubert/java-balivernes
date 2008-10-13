@@ -356,7 +356,7 @@ class DBDataFetcher(object):
         return "%s\n"%("".join(list))
         
         
-    def _readDataFile(self,aDir,aFilename,aType):
+    def _readDataFile(self,aDir,aFilename,aProdType,aDataname='current',aSpectrumType='FULL'):
         """ read a file in a string buffer. This is used for the data files """
         
          # check that the file exists
@@ -410,24 +410,26 @@ class DBDataFetcher(object):
         print "channel_span %s"%(channel_span)
         print "energy_span %s"%(energy_span)
          
-        self._dataBag["rawdata_%s_channel_span"%(aType)] = channel_span
-        self._dataBag["rawdata_%s_energy_span"%(aType)]  = energy_span
+        self._dataBag["%sdata_%s_channel_span"%(aDataname,aProdType)] = channel_span
+        self._dataBag["%sdata_%s_energy_span"%(aDataname,aProdType)]  = energy_span
         
         
         # check in the conf if we need to compress the data
         if self._conf.getboolean("Options","compressSpectrum") is True:
             # XML need to be 64base encoded
-            self._dataBag["rawdata_%s"%(aType)] = base64.b64encode(zlib.compress(data.getvalue()))
+            self._dataBag["%sdata_%s"%(aDataname,aProdType)] = base64.b64encode(zlib.compress(data.getvalue()))
             # add a compressed flag in dict
-            self._dataBag["rawdata_%s_compressed"%(aType)] = True
+            self._dataBag["%sdata_%s_compressed"%(aDataname,aProdType)] = True
         else:
             #add raw data in clear
-            self._dataBag["rawdata_%s"%(aType)] = data.getvalue()
+            self._dataBag["%sdata_%s"%(aDataname,aProdType)] = data.getvalue()
              # add a compressed flag in dict
-            self._dataBag["rawdata_%s_compressed"%(aType)] = False
+            self._dataBag["%sdata_%s_compressed"%(aDataname,aProdType)] = False
         
         # create a unique id for the extract data
-        self._dataBag["rawdata_%s_ID"%(aType)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],self._dataBag[u'SAMPLE_ID'],aType.lower())
+        self._dataBag["%sdata_%s_ID"%(aDataname,aProdType)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],self._dataBag[u'SAMPLE_ID'],aProdType.lower())
+        # add spectrum type FULL, DETBACK, PREL
+        self._dataBag["%sdata_%s_TYPE"%(aDataname,aProdType)] = aSpectrumType
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
@@ -565,14 +567,25 @@ class ParticulateDataFetcher(DBDataFetcher):
        
         self._dataBag['SAMPLE_TYPE']="PARTICULATE"
     
-    def _fetchData(self):
-        """ get the different raw data info """
+    def _fetchSpectrumData(self,aSampleID,aDataname,aType):
+        """get the any spectrum data.
+           If the caching function is activated save the retrieved specturm on disc.
         
+            Args:
+               aDataname: Name of the data. This will be used to create the name in the persistent hashtable and in the data spectrum filename
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+            
         # need to get the gamma spectrum 
         # first path information from database
-        result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
+        result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']))
         
-        print "Executed Request =[%s]"%(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
+        #print "Executed Request =[%s]"%(SQL_GETPARTICULATE_FULL_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
        
         # only one row in result set
         rows = result.fetchall()
@@ -580,13 +593,64 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("sample_id %s has no spectrum\n"%(self._sampleID))
+            print("sample_id %s has no spectrum\n"%(aSampleID))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
         for row in rows:
-            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'])
+            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],aDataname,aType)
         
         result.close()
+        
+    def _fetchBKSpectrumData(self,aDataname):
+        """get the Background spectrum.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # need to get the latest BK sample_id
+        result = self._connector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        
+        # only one row in result set
+        rows = result.fetchall()
+       
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            print("There is more than one BK or none. Database query result %s"%(self._sampleID,rows))
+            #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        
+        sid = rows[0]['SAMPLE_ID']
+         
+        result.close()
+        
+        # now fetch the spectrum
+        self._fetchSpectrumData(sid,aDataname,'DETBACK')
+    
+    def _fetchData(self):
+        """ get the different raw data info """
+        
+        #fetch current spectrum
+        self._fetchSpectrumData(self._sampleID,'current','FULL')
+        
+        self._fetchBKSpectrumData('background')
+        
+        #self._fetchPrelSpectrumsData()
+        
+       
+        
+       # if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] != 'PREL':
+            
+        
+        
+        
         
     def _addCategoryComments(self,aData):
         """ Add the comments as it was defined in the RRR """

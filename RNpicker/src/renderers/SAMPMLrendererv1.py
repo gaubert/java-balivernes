@@ -121,37 +121,61 @@ class ParticulateRenderer(BaseRenderer):
                         "SAMPLING_TIME"                  :   "DATA_SAMPLING_TIME",
                         "REAL_ACQ_TIME"                  :   "DATA_ACQ_REAL_SEC",
                         "LIVE_ACQ_TIME"                  :   "DATA_ACQ_LIVE_SEC",
-                        "DECAY_TIME"                     :   "DATA_DECAY_TIME",
-                        "SPECTRUM_DATA"                  :   "rawdata_SPECTRUM",
-                        "SPECTRUM_DATA_CHANNEL_SPAN"     :   "rawdata_SPECTRUM_channel_span",
-                        "SPECTRUM_DATA_ENERGY_SPAN"      :   "rawdata_SPECTRUM_energy_span",     
-                        "SPECTRUM_ID"                    :   "rawdata_SPECTRUM_ID",  
+                        "DECAY_TIME"                     :   "DATA_DECAY_TIME", 
                         "SAMPLE_TYPE"                    :   "DATA_SPECTRAL_QUALIFIER",  
                         "MEASUREMENT_TYPE"               :   "DATA_DATA_TYPE",
+                        # to be changed as only one analysis is supported at the moment
+                        "SPECTRUM_ID"                    :   "currentdata_SPECTRUM_ID"
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
         
-    def _fillRawData(self):
-        """ insert particulate spectrum data in final produced XML file """
+    def _fillData(self):
+        """ insert all spectrum data in final produced XML file """
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
         
-        if self._fetcher.get("rawdata_SPECTRUM",None) == None:
-            # Add spectrum template in final SAMPML template
-            self._populatedTemplate = re.sub("\${SPECTRUM}","", self._populatedTemplate)
-        else:
-            spectrumTemplate = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
-    
-            # Add spectrum template in final SAMPML template
-            self._populatedTemplate = re.sub("\${SPECTRUM}",spectrumTemplate, self._populatedTemplate)
+        spectrumType = ['current','background']
         
-            # TODO to remove just there for testing, deal with the compression flag
+        finalTemplate = ""
         
-            if self._fetcher.get("rawdata_SPECTRUM_compressed",False) == True :
-               self._populatedTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",self._populatedTemplate)
-            else:
-               self._populatedTemplate = re.sub("\${COMPRESS}","",self._populatedTemplate)
+        for type in spectrumType:
+            
+            spectrumTemplate = ""
+            
+            fname = "%sdata_SPECTRUM"%(type)
+            data  = self._fetcher.get(fname,None)
+            
+            if data is not None:
+               
+              spectrumTemplate = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
+              
+              # insert data
+              spectrumTemplate = re.sub("\${SPECTRUM_DATA}",data, spectrumTemplate)
+              
+              # insert spectrum ID
+              spectrumTemplate = re.sub("\${SPECTRUM_ID}",self._fetcher.get("%s_ID"%(fname)), spectrumTemplate)
+              
+              # insert spectrum type
+              # insert spectrum ID
+              spectrumTemplate = re.sub("\${SPECTRUM_TYPE}",self._fetcher.get("%s_TYPE"%(fname)), spectrumTemplate)
+              
+              #print "fetched = %s, data=%s\n"%("%s_channel_span"%(fname),self._fetcher.get("%s_channel_span"%(fname),None))
+              
+              # insert energy and channel span
+              spectrumTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_channel_span"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_energy_span"%(fname))), spectrumTemplate)
+            
+              # TODO to remove just there for testing, deal with the compression flag
+              if self._fetcher.get("%s_compressed"%(fname),False) == True :
+                 spectrumTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",spectrumTemplate)
+              else:
+                 spectrumTemplate = re.sub("\${COMPRESS}","",spectrumTemplate)
+        
+            # add fill spectrum template in global template 
+            finalTemplate += spectrumTemplate
+        
+        self._populatedTemplate = re.sub("\${SPECTRUM}",finalTemplate, self._populatedTemplate)
         
      
     def _getCategory(self):
@@ -546,7 +570,7 @@ class ParticulateRenderer(BaseRenderer):
     def asXmlStr(self):
        """ Return an xml tree as a string """
          
-       self._fillRawData()
+       self._fillData()
        
        self._fillAnalysisResults()
        
