@@ -114,18 +114,9 @@ class ParticulateRenderer(BaseRenderer):
         super(ParticulateRenderer,self).__init__(aDataFetcher)
         
         # add values specific to Particulates
-        dummy_dict = {  "COL_START"                      :   "DATA_COLLECT_START",
-                        "COL_STOP"                       :   "DATA_COLLECT_STOP",
-                        "ACQ_START"                      :   "DATA_ACQ_START",
-                        "ACQ_STOP"                       :   "DATA_ACQ_STOP",
-                        "SAMPLING_TIME"                  :   "DATA_SAMPLING_TIME",
-                        "REAL_ACQ_TIME"                  :   "DATA_ACQ_REAL_SEC",
-                        "LIVE_ACQ_TIME"                  :   "DATA_ACQ_LIVE_SEC",
-                        "DECAY_TIME"                     :   "DATA_DECAY_TIME", 
-                        "SAMPLE_TYPE"                    :   "DATA_SPECTRAL_QUALIFIER",  
-                        "MEASUREMENT_TYPE"               :   "DATA_DATA_TYPE",
+        dummy_dict = {  
                         # to be changed as only one analysis is supported at the moment
-                        "SPECTRUM_ID"                    :   "currentdata_SPECTRUM_ID"
+                        "SPECTRUM_ID"                    :   "CURRENT_DATA_ID"
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
@@ -135,7 +126,7 @@ class ParticulateRenderer(BaseRenderer):
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
         
-        spectrumType = ['current','background']
+        spectrumType = ['CURRENT','BACKGROUND']
         
         finalTemplate = ""
         
@@ -143,7 +134,7 @@ class ParticulateRenderer(BaseRenderer):
             
             spectrumTemplate = ""
             
-            fname = "%sdata_SPECTRUM"%(type)
+            fname = "%s_DATA"%(type)
             data  = self._fetcher.get(fname,None)
             
             if data is not None:
@@ -163,15 +154,28 @@ class ParticulateRenderer(BaseRenderer):
               #print "fetched = %s, data=%s\n"%("%s_channel_span"%(fname),self._fetcher.get("%s_channel_span"%(fname),None))
               
               # insert energy and channel span
-              spectrumTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_channel_span"%(fname))), spectrumTemplate)
-              spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_energy_span"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_CHANNEL_SPAN"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_ENERGY_SPAN"%(fname))), spectrumTemplate)
             
+              # get the date information
+              spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_COLLECT_START"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_COLLECT_STOP"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_ACQ_START"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_ACQ_STOP"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_SAMPLING_TIME"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_ACQ_REAL_SEC"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_ACQ_LIVE_SEC"%(fname))), spectrumTemplate)
+              
+              spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DECAY_TIME"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_SPECTRAL_QUALIFIER"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_TYPE"%(fname))), spectrumTemplate)
+              
               # TODO to remove just there for testing, deal with the compression flag
-              if self._fetcher.get("%s_compressed"%(fname),False) == True :
+              if self._fetcher.get("%s_COMPRESSED"%(fname),False) == True :
                  spectrumTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",spectrumTemplate)
               else:
                  spectrumTemplate = re.sub("\${COMPRESS}","",spectrumTemplate)
-        
+                     
             # add fill spectrum template in global template 
             finalTemplate += spectrumTemplate
         

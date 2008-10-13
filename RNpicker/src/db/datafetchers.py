@@ -185,6 +185,28 @@ class DBDataFetcher(object):
               aDataDict[key]= value.isoformat()
               
         return aDataDict
+    
+    def _addKeyPrefix(self,aDict,aPrefix):
+        """add a prefix in the key.
+        
+            Args:
+               aDict  : dict to transform
+               aPrefix: the prefix to be added    
+               
+            Returns:
+               return the transformed hash
+        
+            Raises:
+               exception
+        """
+        transformedDict = {}
+        
+        # transform date information
+        for (key,value) in aDict.items():
+            transformedDict["%s_%s"%(aPrefix,key)] = value
+              
+        return transformedDict
+            
               
     def _fetchSampleRefId(self):
         """get the reference_id for this sample
@@ -209,15 +231,19 @@ class DBDataFetcher(object):
        
         result.close()
        
-    def _fetchSampleInfo(self):
+    def _fetchSampleInfo(self,aSampleID,aDataname='current'):
        """ get sample info from sample data """ 
        
-       print "In fetch SampleInfo "
+       print "In fetch SampleInfo for %s\n"%(aSampleID)
        
-       result = self._connector.execute(SQL_GETSAMPLEINFO%(self._sampleID))
+       result = self._connector.execute(SQL_GETSAMPLEINFO%(aSampleID))
+       
+       print "request = %s\n"%(SQL_GETSAMPLEINFO%(aSampleID))
        
        # only one row in result set
        rows = result.fetchall()
+       
+       print "rows = %s \n"%(rows)
        
        nbResults = len(rows)
        
@@ -228,20 +254,42 @@ class DBDataFetcher(object):
        data = {}
        data.update(rows[0])
        
-       # update data bag
-       self._dataBag.update(self._transformResults(data).items())
+       # transform dates in data
+       self._transformResults(data)
        
        # Work on dates and time
-       # add decay time => Collect_Stop - Acq_Start
-       dc = rows[0]['DATA_ACQ_STOP'] - rows[0]['DATA_COLLECT_STOP']
-       self._dataBag[u'DATA_DECAY_TIME'] = "PT%dS"%(dc.seconds)
+       # add decay time => Acq_Start - Coll_Stop
        
-       # sampling time
-       dc =  rows[0]['DATA_COLLECT_STOP'] - rows[0]['DATA_COLLECT_START']
-       self._dataBag[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc.seconds)
+       #take the two operands
        
-       self._dataBag[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_LIVE_SEC'])
-       self._dataBag[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(self._dataBag['DATA_ACQ_REAL_SEC'])
+       a = rows[0]['DATA_ACQ_START']
+       b = rows[0]['DATA_COLLECT_STOP']
+       
+       if a is None or b is None:
+         data[u'DATA_DECAY_TIME'] = "Unknown"
+       else:   
+         # retrun difference in seconds
+         dc = common.time_utils.getDifferenceInTime(b,a)
+         data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
+       
+       a = rows[0][u'DATA_COLLECT_STOP']
+       b = rows[0]['DATA_COLLECT_START']
+       
+       if a is None or b is None:
+         data[u'DATA_SAMPLING_TIME'] = "Unknown"
+       else:
+         # sampling time in secondds
+         dc =  common.time_utils.getDifferenceInTime(b,a)
+         data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
+       
+       data[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(data['DATA_ACQ_LIVE_SEC']) if data['DATA_ACQ_LIVE_SEC'] is not None else ""
+       data[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(data['DATA_ACQ_REAL_SEC']) if data['DATA_ACQ_REAL_SEC'] is not None else ""
+       
+       # add prefix
+       data = self._addKeyPrefix(data,aDataname)
+       
+       # update data bag
+       self._dataBag.update(data.items())
         
        result.close()
        
@@ -316,9 +364,6 @@ class DBDataFetcher(object):
           # get detector info
           self._fetchDetectorInfo()
           
-          # get sample info
-          self._fetchSampleInfo()
-        
           # get Data Files
           self._fetchData()
 
@@ -356,7 +401,7 @@ class DBDataFetcher(object):
         return "%s\n"%("".join(list))
         
         
-    def _readDataFile(self,aDir,aFilename,aProdType,aDataname='current',aSpectrumType='FULL'):
+    def _readDataFile(self,aDir,aFilename,aProdType,aSampleID,aDataname='current',aSpectrumType='SPHD'):
         """ read a file in a string buffer. This is used for the data files """
         
          # check that the file exists
@@ -410,26 +455,26 @@ class DBDataFetcher(object):
         print "channel_span %s"%(channel_span)
         print "energy_span %s"%(energy_span)
          
-        self._dataBag["%sdata_%s_channel_span"%(aDataname,aProdType)] = channel_span
-        self._dataBag["%sdata_%s_energy_span"%(aDataname,aProdType)]  = energy_span
+        self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(aDataname)] = channel_span
+        self._dataBag[u"%s_DATA_ENERGY_SPAN"%(aDataname)]  = energy_span
         
         
         # check in the conf if we need to compress the data
         if self._conf.getboolean("Options","compressSpectrum") is True:
             # XML need to be 64base encoded
-            self._dataBag["%sdata_%s"%(aDataname,aProdType)] = base64.b64encode(zlib.compress(data.getvalue()))
+            self._dataBag[u"%s_DATA"%(aDataname)] = base64.b64encode(zlib.compress(data.getvalue()))
             # add a compressed flag in dict
-            self._dataBag["%sdata_%s_compressed"%(aDataname,aProdType)] = True
+            self._dataBag[u"%_DATA_COMPRESSED"%(aDataname)] = True
         else:
             #add raw data in clear
-            self._dataBag["%sdata_%s"%(aDataname,aProdType)] = data.getvalue()
+            self._dataBag[u"%s_DATA"%(aDataname)] = data.getvalue()
              # add a compressed flag in dict
-            self._dataBag["%sdata_%s_compressed"%(aDataname,aProdType)] = False
+            self._dataBag[u"%s_DATA_COMPRESSED"%(aDataname)] = False
         
         # create a unique id for the extract data
-        self._dataBag["%sdata_%s_ID"%(aDataname,aProdType)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],self._dataBag[u'SAMPLE_ID'],aProdType.lower())
+        self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aProdType.lower())
         # add spectrum type FULL, DETBACK, PREL
-        self._dataBag["%sdata_%s_TYPE"%(aDataname,aProdType)] = aSpectrumType
+        self._dataBag[u"%s_DATA_TYPE"%(aDataname)] = aSpectrumType
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
@@ -481,7 +526,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         print "data Rows = %s"%(rows)
         
         for row in rows:
-            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'])
+            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],self._sampleID)
         
         result.close()
     
@@ -580,6 +625,9 @@ class ParticulateDataFetcher(DBDataFetcher):
             Raises:
                exception
         """
+           
+        # get sample info related to this sampleID
+        self._fetchSampleInfo(aSampleID,aDataname)
             
         # need to get the gamma spectrum 
         # first path information from database
@@ -597,7 +645,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
         for row in rows:
-            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],aDataname,aType)
+            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],aSampleID,aDataname,aType)
         
         result.close()
         
@@ -628,7 +676,9 @@ class ParticulateDataFetcher(DBDataFetcher):
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
-         
+        
+        print "sid = %s\n"%(sid)
+        
         result.close()
         
         # now fetch the spectrum
@@ -638,9 +688,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ get the different raw data info """
         
         #fetch current spectrum
-        self._fetchSpectrumData(self._sampleID,'current','FULL')
+        self._fetchSpectrumData(self._sampleID,'CURRENT','SPHD')
         
-        self._fetchBKSpectrumData('background')
+        self._fetchBKSpectrumData('BACKGROUND')
         
         #self._fetchPrelSpectrumsData()
         
@@ -832,9 +882,9 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _getMRP(self):
         """ get the most recent prior """
         
-        collect_stop = self._dataBag['DATA_COLLECT_STOP'].replace("T"," ")
+        collect_stop = self._dataBag['CURRENT_DATA_COLLECT_STOP'].replace("T"," ")
         
-        data_type    = self._dataBag['DATA_DATA_TYPE']
+        data_type    = self._dataBag['CURRENT_DATA_DATA_TYPE']
         
         detector_id  = self._dataBag['DETECTOR_ID']
         
@@ -909,8 +959,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         # check collection flag
         
         # check that collection time with 24 Hours
-        collect_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_START'])
-        collect_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_COLLECT_STOP'])
+        collect_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_COLLECT_START'])
+        collect_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_COLLECT_STOP'])
     
         diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
         
@@ -927,8 +977,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         # need to be done within 3 hours
         
         # check that collection time with 24 Hours
-        acq_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_START'])
-        acq_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['DATA_ACQ_STOP'])
+        acq_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_ACQ_START'])
+        acq_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_ACQ_STOP'])
     
         diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
           
@@ -972,11 +1022,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
+            if self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'FULL':
                #raise CTBTOError(-1,"Expecting to have 1 set of processing parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
+               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
             else:
-               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
+               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}
@@ -996,11 +1046,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] == 'FULL':
+            if self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'FULL':
                #raise CTBTOError(-1,"Expecting to have 1 set of update parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-               print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
+               print("%s sample and no update parameters found\n"%(self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
             else:
-               print("%s sample and no update parameters found\n"%(self._dataBag[u'DATA_SPECTRAL_QUALIFIER']))
+               print("%s sample and no update parameters found\n"%(self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}

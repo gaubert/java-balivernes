@@ -1,12 +1,12 @@
 
 """ sql requests """
-SQL_GETDETECTORINFO   = "select det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
+SQL_GETDETECTORINFO   = "select det.detector_id as detector_id, det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
 SQL_GETSTATIONINFO    = "select sta.station_code as station_code, sta.country_code as station_country_code, sta.type as station_type, sta.description as station_location,to_char(sta.lat)||' '||to_char(sta.lon)||' '||to_char(sta.elevation) as station_coordinates from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
 SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
 
 
 SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as sample_geometry, \
-                                detector_id as detector_id, spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
+                                spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
