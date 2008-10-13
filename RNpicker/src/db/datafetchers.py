@@ -471,7 +471,7 @@ class DBDataFetcher(object):
         elif ext == '.s':
             (data,limits) = self._extractSpectrumFromSpectrumFile(input)
         else:
-            raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID"%(ext,path,aSampleID))
+            raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
         
         tok_list = []
         
@@ -744,6 +744,47 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # now fetch the spectrum
         self._fetchSpectrumData(sid,aDataname,'DETBACK')
+    
+    def _fetchQCSpectrumData(self,aDataname):
+        """get the QC spectrum.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the current sample is a Detector background itself
+        if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'Q':
+            return
+        
+        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        
+        # need to get the latest BK sample_id
+        result = self._connector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        
+        # only one row in result set
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            print("There is more than one BK or none for %s. Take the first result. Database query result %s"%(self._sampleID,rows))
+            #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        
+        sid = rows[0]['SAMPLE_ID']
+        
+        print "sid = %s\n"%(sid)
+        
+        result.close()
+        
+        # now fetch the spectrum
+        self._fetchSpectrumData(sid,aDataname,'QC')
         
     def _fetchPrelsSpectrumData(self):
         """get the preliminary spectrums.
@@ -794,13 +835,16 @@ class ParticulateDataFetcher(DBDataFetcher):
            
         
         result.close()
-        
+    
+    
     
     def _fetchData(self):
         """ get the different raw data info """
         
         #fetch current spectrum
         self._fetchSpectrumData(self._sampleID,'CURRENT','SPHD')
+        
+        self._fetchQCSpectrumData('QC')
         
         self._fetchBKSpectrumData('BACKGROUND')
         

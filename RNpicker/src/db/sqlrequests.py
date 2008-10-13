@@ -16,10 +16,14 @@ SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEP
 
 """ get any spectrum full or prel or qc or back """
 SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+#SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where (fp.typeid=29 or fp.typeid=13) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 SQL_GETPARTICULATE_BK_SAMPLEID   = "select gd.sample_id from gards_sample_data gd, gards_sample_status gs where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P') order by gd.acquisition_start DESC"
 
 SQL_GETPARTICULATE_PREL_SAMPLEIDS = "select gsd.sample_id from GARDS_SAMPLE_AUX gsx,GARDS_SAMPLE_DATA gsd where gsd.sample_id=gsx.sample_id and gsx.sample_ref_id='%s' and gsd.Spectral_qualifier='PREL'"
+
+""" Should be dependant on the date as well otherwise we get the latest qc """
+SQL_GETPARTICULATE_QC_SAMPLEID = "select gd.sample_id from gards_sample_data gd, gards_sample_status gs where rownum<=500 and detector_id=%s and gd.sample_id = gs.sample_id and data_type='Q' and Spectral_qualifier='FULL' and gs.status in ('V','P') order by gd.sample_id DESC"
 
 """ Get information regarding all identified nuclides """
 SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
