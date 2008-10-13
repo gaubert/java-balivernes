@@ -13,8 +13,6 @@
 			<DetectorDescription>${DET_DESCRIPTION}</DetectorDescription>
 		</DetectorInformation>
 		<SampleType>${SAMPLE_TYPE}</SampleType>
-		<SampleGeometry>${SAMPLE_GEOMETRY}</SampleGeometry>
-		<SampleQuantity unit="m3">${SAMPLE_QUANTITY}</SampleQuantity>
 		<MeasuredInformation>
             ${SPECTRUM}
 		</MeasuredInformation>

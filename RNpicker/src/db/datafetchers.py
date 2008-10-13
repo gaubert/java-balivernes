@@ -238,13 +238,9 @@ class DBDataFetcher(object):
        
        result = self._connector.execute(SQL_GETSAMPLEINFO%(aSampleID))
        
-       print "request = %s\n"%(SQL_GETSAMPLEINFO%(aSampleID))
-       
        # only one row in result set
        rows = result.fetchall()
-       
-       print "rows = %s \n"%(rows)
-       
+        
        nbResults = len(rows)
        
        if nbResults is not 1:
@@ -472,9 +468,8 @@ class DBDataFetcher(object):
             self._dataBag[u"%s_DATA_COMPRESSED"%(aDataname)] = False
         
         # create a unique id for the extract data
-        self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aProdType.lower())
-        # add spectrum type FULL, DETBACK, PREL
-        self._dataBag[u"%s_DATA_TYPE"%(aDataname)] = aSpectrumType
+        self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
+       
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
@@ -633,7 +628,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # first path information from database
         result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']))
         
-        #print "Executed Request =[%s]"%(SQL_GETPARTICULATE_FULL_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
+        #print "Executed Request =[%s]"%(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
        
         # only one row in result set
         rows = result.fetchall()
@@ -663,16 +658,22 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
         
+        # precondition do nothing if there the current sample is a Detector background itself
+        if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'D':
+            return
+        
+        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        
         # need to get the latest BK sample_id
         result = self._connector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # only one row in result set
         rows = result.fetchall()
-       
+        
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one BK or none. Database query result %s"%(self._sampleID,rows))
+            print("There is more than one BK or none for %s. Take the first result. Database query result %s"%(self._sampleID,rows))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
@@ -683,6 +684,57 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # now fetch the spectrum
         self._fetchSpectrumData(sid,aDataname,'DETBACK')
+        
+    def _fetchPrelsSpectrumData(self):
+        """get the preliminary spectrums.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the current sample is a Detector background itself
+        if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'S' and self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'PREL':
+            return
+        
+        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        
+        # need to get the latest BK sample_id
+        result = self._connector.execute(SQL_GETPARTICULATE_PREL_SAMPLEIDS%(self._dataBag[u'REFERENCE_ID']))
+        
+        # only one row in result set
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults is 0:
+            print("There is no PREL spectrum for %s."%(self._sampleID))
+            return
+        
+        listOfPrel = []
+          
+        for row in rows:
+            sid = row['SAMPLE_ID']
+            
+            print "sid = %s\n"%(sid)
+            
+            prelID = 'PREL_%d'%(sid)
+            # now fetch the spectrum with the a PREL_cpt id
+            self._fetchSpectrumData(sid,prelID,'PRELSPHD')
+            # update list of prels
+            listOfPrel.append(prelID)
+         
+        self._dataBag['CURRENT_List_OF_PRELS']  =  listOfPrel
+           
+        
+        result.close()
+        
     
     def _fetchData(self):
         """ get the different raw data info """
@@ -692,15 +744,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         self._fetchBKSpectrumData('BACKGROUND')
         
-        #self._fetchPrelSpectrumsData()
-        
-       
-        
-       # if self._dataBag[u'DATA_SPECTRAL_QUALIFIER'] != 'PREL':
-            
-        
-        
-        
+        self._fetchPrelsSpectrumData()
         
     def _addCategoryComments(self,aData):
         """ Add the comments as it was defined in the RRR """

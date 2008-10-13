@@ -34,8 +34,6 @@ class BaseRenderer(object):
                                     "DET_TYPE"           :   "DETECTOR_TYPE",
                                     "DET_DESCRIPTION"    :   "DETECTOR_DESCRIPTION",
                                     "SAMPLE_TYPE"        :   "SAMPLE_TYPE",
-                                    "SAMPLE_GEOMETRY"    :   "SAMPLE_GEOMETRY",
-                                    "SAMPLE_QUANTITY"    :   "SAMPLE_QUANTITY",
                                     "REMARK"             :   "TEMPLATE_COMMAND_NOTHING", 
                                  }
                                   
@@ -126,7 +124,12 @@ class ParticulateRenderer(BaseRenderer):
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
         
+        
+        
         spectrumType = ['CURRENT','BACKGROUND']
+        
+        # check if there are some preliminary samples. If yes then add there names into the spectrumType list
+        spectrumType.extend(self._fetcher.get(u'CURRENT_List_OF_PRELS',[]))
         
         finalTemplate = ""
         
@@ -146,13 +149,7 @@ class ParticulateRenderer(BaseRenderer):
               
               # insert spectrum ID
               spectrumTemplate = re.sub("\${SPECTRUM_ID}",self._fetcher.get("%s_ID"%(fname)), spectrumTemplate)
-              
-              # insert spectrum type
-              # insert spectrum ID
-              spectrumTemplate = re.sub("\${SPECTRUM_TYPE}",self._fetcher.get("%s_TYPE"%(fname)), spectrumTemplate)
-              
-              #print "fetched = %s, data=%s\n"%("%s_channel_span"%(fname),self._fetcher.get("%s_channel_span"%(fname),None))
-              
+            
               # insert energy and channel span
               spectrumTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_CHANNEL_SPAN"%(fname))), spectrumTemplate)
               spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_ENERGY_SPAN"%(fname))), spectrumTemplate)
@@ -169,6 +166,10 @@ class ParticulateRenderer(BaseRenderer):
               spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DECAY_TIME"%(fname))), spectrumTemplate)
               spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_SPECTRAL_QUALIFIER"%(fname))), spectrumTemplate)
               spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_TYPE"%(fname))), spectrumTemplate)
+              
+              # add quantity and geometry
+              spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_SAMPLE_QUANTITY"%(fname))), spectrumTemplate)
+              spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_SAMPLE_GEOMETRY"%(fname))), spectrumTemplate)
               
               # TODO to remove just there for testing, deal with the compression flag
               if self._fetcher.get("%s_COMPRESSED"%(fname),False) == True :

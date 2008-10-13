@@ -5,8 +5,8 @@ SQL_GETSTATIONINFO    = "select sta.station_code as station_code, sta.country_co
 SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
 
 
-SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as sample_geometry, \
-                                spectral_qualifier as data_spectral_qualifier, quantity as sample_quantity, transmit_dtg as data_transmit_dtg , \
+SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as data_sample_geometry, \
+                                spectral_qualifier as data_spectral_qualifier, quantity as data_sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
@@ -15,9 +15,11 @@ SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spect
 SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 """ get any spectrum full or prel or qc or back """
-SQL_GETPARTICULATE_SPECTRUM    = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
-SQL_GETPARTICULATE_BK_SAMPLEID  = "select gd.sample_id from gards_sample_data gd, gards_sample_status gs where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P')"
+SQL_GETPARTICULATE_BK_SAMPLEID   = "select gd.sample_id from gards_sample_data gd, gards_sample_status gs where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P') order by gd.acquisition_start DESC"
+
+SQL_GETPARTICULATE_PREL_SAMPLEIDS = "select gsd.sample_id from GARDS_SAMPLE_AUX gsx,GARDS_SAMPLE_DATA gsd where gsd.sample_id=gsx.sample_id and gsx.sample_ref_id='%s' and gsd.Spectral_qualifier='PREL'"
 
 """ Get information regarding all identified nuclides """
 SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
