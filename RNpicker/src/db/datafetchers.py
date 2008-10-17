@@ -97,11 +97,12 @@ class DBDataFetcher(object):
               aRaiseExceptionOnError: raise an exception on error.
               
            Returns:
-              return a tuple containing (rows,nbOfResults)
+              return a tuple containing (rows,nbOfResults,foundOnArchive)
        
            Raises:
               exception CTBTOError if the aRaiseExceptionOnError flag is activated
        """
+       # on main connection
        # try on the main connection
        result = self._mainConnector.execute(aRequest)
        
@@ -122,10 +123,10 @@ class DBDataFetcher(object):
                   result.close()
                   raise CTBTOError(-1,"Error in Execute().Expecting to have one result for request %s but got %d either None or more than one. %s"%(aRequest,nbResults,rows))
               else:
-                  return (rows,nbResults)
+                  return (rows,nbResults,True)
               
        result.close()
-       return (rows,nbResults)
+       return (rows,nbResults,False)
            
     
     def getMainConnector(self):
@@ -492,9 +493,53 @@ class DBDataFetcher(object):
         
         return (data,"0 0")
         
-    def _readDataFile(self,aDir,aFilename,aProdType,aSampleID,aDataname='current',aSpectrumType='SPHD'):
-        """ read a file in a string buffer. This is used for the data files """
+    def _readDataFileFromArchive(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
+        """read data from an archive file (either local or remote).
+           This is different from a non archived file as an archive file is a concatenation of multiple files.
+           You need to have an offset and a size to access the data.
+           The data dict will be populated accordingly to the data found.
         
+            Args:
+               aFoundOnArchive. True if found on archive,
+               aDir. Dir where to get the data,
+               aFile. File name,
+               aProdType. Type of product to extract,
+               aOffset. Offset from where to read the data in the file,
+               aSize. Size to read in the file,
+               aSampeID. sampleID to read,
+               aDataname.
+               aSpectrumType.
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        print "Hello \n"
+        
+    def _readDataFileFromMain(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
+        """read data from the main connection which is not archived.
+           The data dict will be populated accordingly to the data found.
+        
+            Args:
+               aFoundOnArchive. True if found on archive,
+               aDir. Dir where to get the data,
+               aFile. File name,
+               aProdType. Type of product to extract,
+               aOffset. Offset from where to read the data in the file,
+               aSize. Size to read in the file,
+               aSampeID. sampleID to read,
+               aDataname.
+               aSpectrumType.
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
          # check that the file exists
         path = "%s/%s"%(aDir,aFilename)
         
@@ -577,6 +622,15 @@ class DBDataFetcher(object):
         # create a unique id for the extract data
         self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
        
+    
+    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
+        """ read a file in a string buffer. This is used for the data files """
+        
+        if aFoundOnArchive:
+            self._readDataFileFromArchive(aFoundOnArchive, aDir, aFilename, aProdType, aOffset, aSize, aSampleID, aDataname, aSpectrumType)
+        else:
+            self._readDataFileFromMain(aFoundOnArchive, aDir, aFilename, aProdType, aOffset, aSize, aSampleID, aDataname, aSpectrumType)
+        
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
@@ -732,13 +786,15 @@ class ParticulateDataFetcher(DBDataFetcher):
         self._fetchSampleInfo(aSampleID,aDataname)
          
          
-        (rows,nbResults) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True)
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True)
          
-        if nbResults is not 1:
+        if nbResults is 0:
             print("WARNING: sample_id %s has no spectrum\n"%(aSampleID))
-           
+        elif nbResults > 1:
+            print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+        
         for row in rows:
-            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],aSampleID,aDataname,aType)
+            self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,aDataname,aType)
         
         
     def _fetchBKSpectrumData(self,aDataname):

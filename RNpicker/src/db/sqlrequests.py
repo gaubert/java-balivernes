@@ -15,7 +15,7 @@ SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spect
 SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 """ get any spectrum full or prel or qc or back """
-SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from FILEPRODUCT prod,FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 #SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where (fp.typeid=29 or fp.typeid=13) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 SQL_GETPARTICULATE_BK_SAMPLEID   = "select gd.sample_id from gards_sample_data gd, gards_sample_status gs where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P') order by gd.acquisition_start DESC"
