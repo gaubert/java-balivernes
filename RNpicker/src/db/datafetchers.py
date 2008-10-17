@@ -521,9 +521,9 @@ class DBDataFetcher(object):
         if self._conf.getboolean("Options","remoteDataSource") is True:
            # to be changed as a factory should be used
            if aFoundOnArchive is True:
-              input = db.rndata.RemoteArchiveDataSource(path,aSampleID)
+              input = db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
            else: 
-              input = db.rndata.RemoteFSDataSource(path,aSampleID)
+              input = db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
         else:
             # this is a local path so check if it exits and open fd
             if not os.path.exists(path):
@@ -538,7 +538,8 @@ class DBDataFetcher(object):
         # here we expect a .msg or .s
         if ext == '.msg':
            (data,limits)  =  self._extractSpectrumFromMessageFile(input)
-        elif ext == '.s':
+        # for all the rest, try to read a spectrum
+        elif:
             (data,limits) = self._extractSpectrumFromSpectrumFile(input)
         else:
             raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))

@@ -22,7 +22,7 @@ class BaseRemoteDataSource(object):
     c_log = logging.getLogger("rndata.BaseRemoteDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID):
+    def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize):
         
         self.len = 0
         self.buflist = []
@@ -39,8 +39,6 @@ class BaseRemoteDataSource(object):
         
         self._id                = aID
         
-        self._remoteScript      = self._conf.get("RemoteAccess","sftpScript")
-        
         self._localDir          = self._conf.get("RemoteAccess","localDir")
         
         self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
@@ -49,7 +47,15 @@ class BaseRemoteDataSource(object):
         
         self._fd                = None
         
-        self._getRemoteFile()
+        # these two options are only read in the ArchiveDataSource for the moment.
+        # This should be generalized to all Files and the hierachy might disapear ?
+        
+        # where to point in the file
+        self._remoteOffset      = aRemoteOffset
+        
+        # Size to read 
+        self._remoteSize        = aRemoteSize
+        
         
         
     def _getRemoteFile(self):
@@ -187,9 +193,14 @@ class RemoteFSDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID):
+    def __init__(self, aDataPath,aID,aOffset,aSize):
         
-       super(RemoteFSDataSource,self).__init__(aDataPath,aID)
+       super(RemoteFSDataSource,self).__init__(aDataPath,aID,aOffset,aSize)
+       
+       self._remoteScript      = self._conf.get("RemoteAccess","sftpScript")
+        
+       self._getRemoteFile()
+        
     
     def _getRemoteFile(self):
         """ fetch the file and store it in a temporary location """
@@ -236,12 +247,11 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteArchiveDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID):
-        
-        super(RemoteArchiveDataSource,self).__init__(aDataPath,aID)
+    def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize):
         
         # my variables
-         
+        super(RemoteArchiveDataSource,self).__init__(aDataPath,aID,aRemoteOffset,aRemoteSize)
+            
         # get reference to the conf object
         self._conf              = common.utils.Conf.get_instance()
         
@@ -254,11 +264,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         self._localDir          = self._conf.get("RemoteAccess","localDir")
         
         self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
-        
-        self._localFilename     = None
-        
-        self._fd                = None
-        
+    
         self._getRemoteFile()
     
     def _getRemoteFile(self):
@@ -280,7 +286,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
             self._fd = open(destinationPath,"r")
             return
         
-        res = subprocess.call([self._remoteScript,self._remoteHostname,self._remotePath,self._remoteOffset,self._remoteSize,destinationPath,self._remoteUser])
+        res = subprocess.call([self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser])
         if res != 0:
            raise common.exceptions.CTBTOError(-1,"Error when executing archiveAccess Script %s\n"%(self._remoteScript))
         
