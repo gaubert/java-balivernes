@@ -492,34 +492,8 @@ class DBDataFetcher(object):
         data.seek(0)
         
         return (data,"0 0")
-        
-    def _readDataFileFromArchive(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
-        """read data from an archive file (either local or remote).
-           This is different from a non archived file as an archive file is a concatenation of multiple files.
-           You need to have an offset and a size to access the data.
-           The data dict will be populated accordingly to the data found.
-        
-            Args:
-               aFoundOnArchive. True if found on archive,
-               aDir. Dir where to get the data,
-               aFile. File name,
-               aProdType. Type of product to extract,
-               aOffset. Offset from where to read the data in the file,
-               aSize. Size to read in the file,
-               aSampeID. sampleID to read,
-               aDataname.
-               aSpectrumType.
-               
-            Returns:
-               return Nothing
-        
-            Raises:
-               exception
-        """
-        
-        print "Hello \n"
-        
-    def _readDataFileFromMain(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
+    
+    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
         """read data from the main connection which is not archived.
            The data dict will be populated accordingly to the data found.
         
@@ -545,7 +519,11 @@ class DBDataFetcher(object):
         
         # if config says RemoteDataSource is activated then create a remote data source
         if self._conf.getboolean("Options","remoteDataSource") is True:
-           input = db.rndata.RemoteFSDataSource(path)
+           # to be changed as a factory should be used
+           if aFoundOnArchive is True:
+              input = db.rndata.RemoteArchiveDataSource(path,aSampleID)
+           else: 
+              input = db.rndata.RemoteFSDataSource(path,aSampleID)
         else:
             # this is a local path so check if it exits and open fd
             if not os.path.exists(path):
@@ -621,16 +599,6 @@ class DBDataFetcher(object):
         
         # create a unique id for the extract data
         self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
-       
-    
-    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
-        """ read a file in a string buffer. This is used for the data files """
-        
-        if aFoundOnArchive:
-            self._readDataFileFromArchive(aFoundOnArchive, aDir, aFilename, aProdType, aOffset, aSize, aSampleID, aDataname, aSpectrumType)
-        else:
-            self._readDataFileFromMain(aFoundOnArchive, aDir, aFilename, aProdType, aOffset, aSize, aSampleID, aDataname, aSpectrumType)
-        
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """

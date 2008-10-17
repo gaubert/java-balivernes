@@ -8,56 +8,21 @@ import subprocess
 import common.utils
 import common.exceptions
 
-__all__ = ["RemoteFSDataSource"]
+__all__ = ["RemoteFSDataSource","RemoteArchiveDataSource"]
 
 def _complain_ifclosed(closed):
     if closed:
         raise ValueError, "I/O operation on closed file"
-
-class RemoteFSDataSource:
-    """ get data from the a remote filesystem using ssh.
-        fetch remote file and open a file descriptor on the local file
-        and delegate all methods to the open file
-        
-            Args:
-               aFilePath
-        
-            Returns:
-              the built hashtable
-              
-            Raises:
-               exception
+    
+class BaseRemoteDataSource(object):
+    """ Base class for All Remote Sources
     """
     
-     # Class members
-    c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
+    # Class members
+    c_log = logging.getLogger("rndata.BaseRemoteDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def _getRemoteFile(self):
-        """ fetch the file and store it in a temporary location """
-        
-        # no local filename so use the remote file basename
-        if self._localFilename is None:
-            self._localFilename = os.path.basename(self._remotePath)
-        
-        # make local dir if not done
-        common.utils.makedirs(self._localDir)
-            
-        # path under which the file is going to be stored
-        destinationPath = "%s/%s"%(self._localDir,self._localFilename)
-        
-        # if file there and caching activated open fd and quit
-        if os.path.exists(destinationPath) and self._cachingActivated:
-            self._fd = open("%s/%s"%(self._localDir,self._localFilename),"r")
-            return
-        
-        res = subprocess.call([self._remoteScript,self._remotePath,destinationPath])
-        if res != 0:
-           raise common.exceptions.CTBTOError(-1,"Error when executing sftp Script %s\n"%(self._remoteScript))
-        
-        self._fd = open("%s/%s"%(self._localDir,self._localFilename),"r")
-    
-    def __init__(self, aDataPath):
+    def __init__(self, aDataPath,aID):
         
         self.len = 0
         self.buflist = []
@@ -72,6 +37,8 @@ class RemoteFSDataSource:
         
         self._remotePath        = aDataPath
         
+        self._id                = aID
+        
         self._remoteScript      = self._conf.get("RemoteAccess","sftpScript")
         
         self._localDir          = self._conf.get("RemoteAccess","localDir")
@@ -80,10 +47,15 @@ class RemoteFSDataSource:
         
         self._localFilename     = self._conf.get("RemoteAccess","localFilename") if self._conf.has_option("RemoteAccess","localFilename") else None
         
-        self._fd                 = None
+        self._fd                = None
         
         self._getRemoteFile()
         
+        
+    def _getRemoteFile(self):
+        """ abstract global data fetching method """
+        raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+    
 
     def __iter__(self):
         return self
@@ -205,49 +177,116 @@ class RemoteFSDataSource:
         _complain_ifclosed(self.closed)
         self._fd.flush()
 
-# A little test suite
+class RemoteFSDataSource(BaseRemoteDataSource):
+    """ get data from the a remote filesystem using ssh.
+        fetch remote file and open a file descriptor on the local file
+        and delegate all methods to the open file
+    """
+    
+    # Class members
+    c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self, aDataPath,aID):
+        
+       super(RemoteFSDataSource,self).__init__(aDataPath,aID)
+    
+    def _getRemoteFile(self):
+        """ fetch the file and store it in a temporary location """
+        
+        # no local filename so use the remote file basename
+        if self._localFilename is None:
+            self._localFilename = os.path.basename(self._remotePath)
+        
+        # make local dir if not done
+        common.utils.makedirs(self._localDir)
+            
+        # path under which the file is going to be stored
+        destinationPath = "%s/%s"%(self._localDir,self._localFilename)
+        
+        # if file there and caching activated open fd and quit
+        if os.path.exists(destinationPath) and self._cachingActivated:
+            self._fd = open(destinationPath,"r")
+            return
+        
+        res = subprocess.call([self._remoteScript,self._remotePath,destinationPath])
+        if res != 0:
+           raise common.exceptions.CTBTOError(-1,"Error when executing sftp Script %s\n"%(self._remoteScript))
+        
+        self._fd = open(destinationPath,"r")
+    
+       
 
-def test():
-    import sys
-    if sys.argv[1:]:
-        file = sys.argv[1]
-    else:
-        file = '/etc/passwd'
-    lines = open(file, 'r').readlines()
-    text = open(file, 'r').read()
-    f = StringIO()
-    for line in lines[:-2]:
-        f.write(line)
-    f.writelines(lines[-2:])
-    if f.getvalue() != text:
-        raise RuntimeError, 'write failed'
-    length = f.tell()
-    print 'File length =', length
-    f.seek(len(lines[0]))
-    f.write(lines[1])
-    f.seek(0)
-    print 'First line =', repr(f.readline())
-    print 'Position =', f.tell()
-    line = f.readline()
-    print 'Second line =', repr(line)
-    f.seek(-len(line), 1)
-    line2 = f.read(len(line))
-    if line != line2:
-        raise RuntimeError, 'bad result after seek back'
-    f.seek(len(line2), 1)
-    list = f.readlines()
-    line = list[-1]
-    f.seek(f.tell() - len(line))
-    line2 = f.read()
-    if line != line2:
-        raise RuntimeError, 'bad result after seek back from EOF'
-    print 'Read', len(list), 'more lines'
-    print 'File length =', f.tell()
-    if f.tell() != length:
-        raise RuntimeError, 'bad length'
-    f.truncate(length/2)
-    f.seek(0, 2)
-    print 'Truncated length =', f.tell()
-    if f.tell() != length/2:
-        raise RuntimeError, 'truncate did not adjust length'
-    f.close()
+class RemoteArchiveDataSource(BaseRemoteDataSource):
+    """ get data from the a remote archive filesystem using ssh.
+        Go to the given offset, fetch the data and put it locally in a file named
+        PATH_SAMPLEID
+        
+            Args:
+               aFilePath
+        
+            Returns:
+              the built hashtable
+              
+            Raises:
+               exception
+    """
+    
+     # Class members
+    c_log = logging.getLogger("rndata.RemoteArchiveDataSource")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self, aDataPath,aID):
+        
+        super(RemoteArchiveDataSource,self).__init__(aDataPath,aID)
+        
+        # my variables
+         
+        # get reference to the conf object
+        self._conf              = common.utils.Conf.get_instance()
+        
+        self._remoteScript      = self._conf.get("RemoteAccess","archiveAccessScript")
+        
+        self._remoteHostname    = self._conf.get("RemoteAccess","archiveAccessHost")
+        
+        self._remoteUser        = self._conf.get("RemoteAccess","archiveAccessUser")
+        
+        self._localDir          = self._conf.get("RemoteAccess","localDir")
+        
+        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
+        
+        self._localFilename     = None
+        
+        self._fd                = None
+        
+        self._getRemoteFile()
+    
+    def _getRemoteFile(self):
+        """ fetch the file and store it in a temporary location """
+        
+        # no local filename so use the remote file basename
+        if self._localFilename is None:
+            self._localFilename = os.path.basename(self._remotePath)
+        
+        # make local dir if not done
+        common.utils.makedirs(self._localDir)
+            
+        # path under which the file is going to be stored
+        # It is the original filename_id
+        destinationPath = "%s/%s_%s"%(self._localDir,self._localFilename,self._id)
+        
+        # if file there and caching activated open fd and quit
+        if os.path.exists(destinationPath) and self._cachingActivated:
+            self._fd = open(destinationPath,"r")
+            return
+        
+        res = subprocess.call([self._remoteScript,self._remoteHostname,self._remotePath,self._remoteOffset,self._remoteSize,destinationPath,self._remoteUser])
+        if res != 0:
+           raise common.exceptions.CTBTOError(-1,"Error when executing archiveAccess Script %s\n"%(self._remoteScript))
+        
+        self._fd = open(destinationPath,"r")
+    
+
+        
+
+   

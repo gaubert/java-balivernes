@@ -5,7 +5,9 @@
 #$2 file to access
 #$3 offset to reach
 #$4 size to read
+#$5 local file where to put the results
 # return a specturm in stdout
+
 
 tempfile="/tmp/job.$$.remote"
 
@@ -40,10 +42,17 @@ while ( (\$total > 0) && ( (\$n = read(\$fhandle,\$buffer,\$blocksize)) > 0 ) )
 exit 0;
 EOF
 
-cat $tempfile | ssh $1 perl
+cat $tempfile | ssh $6@$1 perl > $5
 res="$?"
 
 rm -f $tempfile
+
+if [ $res != 0 ];
+then
+  echo "Error.delete $5"
+  rm -f $5
+fi
+
 
 exit $res
 
