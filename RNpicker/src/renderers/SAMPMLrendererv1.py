@@ -123,10 +123,7 @@ class ParticulateRenderer(BaseRenderer):
         """ insert all spectrum data in final produced XML file """
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
-        
-        
-        
-        spectrumType = ['CURRENT','BACKGROUND']
+        spectrumType = ['CURRENT','BACKGROUND','QC']
         
         # check if there are some preliminary samples. If yes then add there names into the spectrumType list
         spectrumType.extend(self._fetcher.get(u'CURRENT_List_OF_PRELS',[]))
