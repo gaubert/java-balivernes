@@ -797,7 +797,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one BK or none for %s. Take the first result. Database query result %s"%(self._sampleID,rows))
+            print("There is more than one BK or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']),rows))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
@@ -827,7 +827,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'Q':
             return
         
-        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        #print "request %s\n"%(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # need to get the latest BK sample_id
         result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
@@ -838,7 +838,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one BK or none for %s. Take the first result. Database query result %s"%(self._sampleID,rows))
+            print("There is more than one QC or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']),rows))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
