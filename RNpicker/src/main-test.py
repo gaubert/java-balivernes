@@ -39,14 +39,23 @@ class TestSAMPMLCreator(unittest.TestCase):
         log.info("Start")
    
         self.conf = common.utils.Conf.get_instance()
-        self.url  = self.conf.get("DatabaseAccess","url")
+        self.mainUrl  = self.conf.get("MainDatabaseAccess","url")
    
-        print "URL=%s"%(self.url)
+        print "Main URL=%s"%(self.mainUrl)
    
         # create DB connector
-        self.conn = DatabaseConnector(self.url)
+        self.mainConn = DatabaseConnector(self.mainUrl)
    
-        self.conn.connect()
+        self.mainConn.connect()
+        
+        self.archiveUrl  = self.conf.get("ArchiveDatabaseAccess","url")
+   
+        print "URL=%s"%(self.archiveUrl)
+   
+        # create DB connector
+        self.archConn = DatabaseConnector(self.archiveUrl)
+   
+        self.archConn.connect()
         
     def assertIfNoTagsLeft(self,path):
         """
@@ -70,7 +79,7 @@ class TestSAMPMLCreator(unittest.TestCase):
 
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
-       result = self.conn.execute(SQL_GETSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
+       result = self.mainConn.execute(SQL_GETSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
         
        sampleIDs= []
         
@@ -103,7 +112,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
            # fetchnoble particulate
-           fetcher = DBDataFetcher.getDataFetcher(self.conn,sampleID)
+           fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
            fetcher.fetch()
            
@@ -130,8 +139,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # get full
         listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10')
-        listOfSamplesToTest = [ "857874" ]
-        #listOfSamplesToTest = [ "857882" ]
+        #listOfSamplesToTest = [ "857874" ]
+        listOfSamplesToTest = [ "857882" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -142,7 +151,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
            # fetchnoble particulate
-           fetcher = DBDataFetcher.getDataFetcher(self.conn,sampleID)
+           fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
            fetcher.fetch()
            

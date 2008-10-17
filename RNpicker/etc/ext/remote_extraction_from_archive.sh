@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# quick script for extracting spectrum from archive file
+#$1 ssh hostname (need to have a public key installed)"
+#$2 file to access
+#$3 offset to reach
+#$4 size to read
+# return a specturm in stdout
+
+tempfile="/tmp/job.$$.remote"
+
+cat <<EOF >> $tempfile
+#!/usr/bin/perl -w
+
+my \$DEFAULT_BLOCKSIZE= 1024;
+
+my \$fhandle;
+#my \$pos = 46317568;
+my \$pos = $3;
+
+# read 1KB
+my \$blocksize = \$DEFAULT_BLOCKSIZE;
+my \$n;
+my \$total = $4;
+
+open(\$fhandle,"<$2") or die "Couldn't open file fro reading: \$! \n";
+
+seek(\$fhandle, \$pos, 0)     or die "Couldn't seek to \$pos: \$!\n";
+
+while ( (\$total > 0) && ( (\$n = read(\$fhandle,\$buffer,\$blocksize)) > 0 ) )
+{
+   # print buffer
+   print "\$buffer";
+
+   \$total = \$total - \$n;
+
+   # resize buffer to read when left to read become inferior to buffer size
+   \$blocksize = \$total if (\$total < \$blocksize);
+}
+exit 0;
+EOF
+
+cat $tempfile | ssh $1 perl
+res="$?"
+
+rm -f $tempfile
+
+exit $res
+
+

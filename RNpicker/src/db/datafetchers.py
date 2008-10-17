@@ -27,18 +27,20 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
-    def getDataFetcher(cls,aDbConnector=None,aSampleID=None):
+    def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
        """
        
        # check preconditions
-       if aDbConnector is None: raise CTBTOError(-1,"passed argument aDbConnector is null")
+       if aMainDbConnector is None: raise CTBTOError(-1,"passed argument aMainDbConnector is null")
+       
+       if aArchiveDbConnector is None: raise CTBTOError(-1,"passed argument aArchiveDbConnector is null")
        
        if aSampleID is None : raise CTBTOError(-1,"passed argument aSampleID is null")
        
        # get sampleID type (ARIX or SAUNA or SPALAX or Particulate)
-       result = aDbConnector.execute(SQL_GETSAMPLETYPE%(aSampleID))
+       result = aMainDbConnector.execute(SQL_GETSAMPLETYPE%(aSampleID))
         
        rows = result.fetchall()
        
@@ -61,7 +63,7 @@ class DBDataFetcher(object):
        
        conf = common.utils.Conf.get_instance()
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_connector':aDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
+       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
        result.close()
        
@@ -71,9 +73,11 @@ class DBDataFetcher(object):
     getDataFetcher = classmethod(getDataFetcher)
     
      
-    def __init__(self,aDbConnector=None,aSampleID=None):
+    def __init__(self,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
         
-        self._connector = aDbConnector
+        self._mainConnector    = aMainDbConnector
+        self._archiveConnector = aArchiveDbConnector
+        
         self._sampleID  = aSampleID
         # dict containing all the data retrieved from the filesystems and DB
         self._dataBag   = {}
@@ -84,8 +88,51 @@ class DBDataFetcher(object):
          # get flag indicating if the cache function is activated
         self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False
     
-    def getConnector(self):
-        return self._connector
+    
+    def execute(self,aRequest,aTryOnArchive=False,aRaiseExceptionOnError=True):
+       """execute a sql request on the main connection and on the archive connection if necessary.
+       
+           Args:
+              aTryOnArchive: boolean for looking on the archive if no data has been retrieved
+              aRaiseExceptionOnError: raise an exception on error.
+              
+           Returns:
+              return a tuple containing (rows,nbOfResults)
+       
+           Raises:
+              exception CTBTOError if the aRaiseExceptionOnError flag is activated
+       """
+       # try on the main connection
+       result = self._mainConnector.execute(aRequest)
+       
+       # fetch all rows and check if there is a least one
+       rows = result.fetchall()
+       nbResults = len(rows)
+       
+       if nbResults <= 0:
+           #no results found so if flag is activated look into archive
+           if aTryOnArchive:
+              result.close()
+              result = self._archiveConnector.execute(aRequest)
+              
+              rows = result.fetchall()
+              nbResults = len(rows)
+              
+              if nbResults == 0 and aRaiseExceptionOnError is True:
+                  result.close()
+                  raise CTBTOError(-1,"Error in Execute().Expecting to have one result for request %s but got %d either None or more than one. %s"%(aRequest,nbResults,rows))
+              else:
+                  return (rows,nbResults)
+              
+       result.close()
+       return (rows,nbResults)
+           
+    
+    def getMainConnector(self):
+        return self._mainConnector
+    
+    def getArchiveConnector(self):
+        return self._archiveConnector
     
     def getSampleID(self):
         return self._sampleID
@@ -116,7 +163,7 @@ class DBDataFetcher(object):
     def _fetchStationInfo(self):
        """ get station info. same treatment for all sample types """ 
        print "In fetch Station Info "
-       result = self._connector.execute(SQL_GETSTATIONINFO%(self._sampleID))
+       result = self._mainConnector.execute(SQL_GETSTATIONINFO%(self._sampleID))
        
        # only one row in result set
        rows = result.fetchall()
@@ -136,7 +183,7 @@ class DBDataFetcher(object):
     def _fetchDetectorInfo(self):
        """ get station info. same treatment for all sample types """ 
        print "In fetch Detector Info "
-       result = self._connector.execute(SQL_GETDETECTORINFO%(self._sampleID))
+       result = self._mainConnector.execute(SQL_GETDETECTORINFO%(self._sampleID))
        
        # only one row in result set
        rows = result.fetchall()
@@ -217,7 +264,7 @@ class DBDataFetcher(object):
             Raises:
                exception if issue when accesing the database
         """
-        result = self._connector.execute(SQL_PARTICULATE_GET_SAMPLE_REF_ID%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_SAMPLE_REF_ID%(self._sampleID))
        
         # only one row in result set
         rows = result.fetchall()
@@ -236,7 +283,7 @@ class DBDataFetcher(object):
        
        print "In fetch SampleInfo for %s\n"%(aSampleID)
        
-       result = self._connector.execute(SQL_GETSAMPLEINFO%(aSampleID))
+       result = self._mainConnector.execute(SQL_GETSAMPLEINFO%(aSampleID))
        
        # only one row in result set
        rows = result.fetchall()
@@ -568,7 +615,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # there are 3 components: histogram, beta and gamma spectrum
         
         # first path information from database
-        result = self._connector.execute(SQL_GETSAUNA_FILES%(self._sampleID,self._dataBag['STATION_CODE']))
+        result = self._mainConnector.execute(SQL_GETSAUNA_FILES%(self._sampleID,self._dataBag['STATION_CODE']))
        
         # only one row in result set
         rows = result.fetchall()
@@ -589,7 +636,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
         
         # get identified Nuclides
-        result = self._connector.execute(SQL_SAUNA_GETIDENTIFIEDNUCLIDES%(self._sampleID))
+        result = self._mainConnector.execute(SQL_SAUNA_GETIDENTIFIEDNUCLIDES%(self._sampleID))
        
         # only one row in result set
         rows = result.fetchall()
@@ -611,7 +658,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         result.close()
         
         # get information regarding all Nuclides
-        result = self._connector.execute(SQL_SAUNA_GETALLNUCLIDES%(self._sampleID))
+        result = self._mainConnector.execute(SQL_SAUNA_GETALLNUCLIDES%(self._sampleID))
        
         # only one row in result set
         rows = result.fetchall()
@@ -683,26 +730,16 @@ class ParticulateDataFetcher(DBDataFetcher):
            
         # get sample info related to this sampleID
         self._fetchSampleInfo(aSampleID,aDataname)
-            
-        # need to get the gamma spectrum 
-        # first path information from database
-        result = self._connector.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']))
-        
-        #print "Executed Request =[%s]"%(SQL_GETPARTICULATE_SPECTRUM%(self._sampleID,self._dataBag['STATION_CODE']))
-       
-        # only one row in result set
-        rows = result.fetchall()
-       
-        nbResults = len(rows)
-       
-        if nbResults is not 1:
-            print("sample_id %s has no spectrum\n"%(aSampleID))
-            #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
+         
+        (rows,nbResults) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True)
+         
+        if nbResults is not 1:
+            print("WARNING: sample_id %s has no spectrum\n"%(aSampleID))
+           
         for row in rows:
             self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],aSampleID,aDataname,aType)
         
-        result.close()
         
     def _fetchBKSpectrumData(self,aDataname):
         """get the Background spectrum.
@@ -725,7 +762,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # need to get the latest BK sample_id
-        result = self._connector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # only one row in result set
         rows = result.fetchall()
@@ -766,7 +803,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # need to get the latest BK sample_id
-        result = self._connector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # only one row in result set
         rows = result.fetchall()
@@ -807,7 +844,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # need to get the latest BK sample_id
-        result = self._connector.execute(SQL_GETPARTICULATE_PREL_SAMPLEIDS%(self._dataBag[u'REFERENCE_ID']))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_PREL_SAMPLEIDS%(self._dataBag[u'REFERENCE_ID']))
         
         # only one row in result set
         rows = result.fetchall()
@@ -867,7 +904,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ sub method of _fetchAnalysisResults. Get the Category info from the database """
         
         # get category status
-        result = self._connector.execute(SQL_PARTICULATE_CATEGORY_STATUS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY_STATUS%(self._sampleID))
        
         # only one row in result set
         rows = result.fetchall()
@@ -877,7 +914,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     
         self._dataBag.update(self._transformResults(data))
         
-        result = self._connector.execute(SQL_PARTICULATE_CATEGORY%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY%(self._sampleID))
        
         # only one row in result set
         rows = result.fetchall()
@@ -908,7 +945,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ Get info regarding the found peaks """
         
         # get peaks
-        result = self._connector.execute(SQL_PARTICULATE_GET_PEAKS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_PEAKS%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -936,7 +973,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """
          
         # get the data from the DB
-        result = self._connector.execute(SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO%(self._sampleID))
 
         rows = result.fetchall()
         
@@ -961,7 +998,7 @@ class ParticulateDataFetcher(DBDataFetcher):
          # get non quantified nuclides
         
         # to distinguish quantified and non quantified nuclide there is a table called GARDS_NUCL2QUANTIFY => static table of the nucl to treat
-        result = self._connector.execute(SQL_PARTICULATE_GET_NUCLIDES_INFO%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCLIDES_INFO%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -991,7 +1028,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         result.close()
         
         # return all nucl2quantify this is kind of static table
-        result = self._connector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
         
         rows = result.fetchall()
         
@@ -1041,7 +1078,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         print "Executed request %s\n"%(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
     
         # get MDA nuclides
-        result = self._connector.execute(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
         
         rows = result.fetchall()
         
@@ -1078,7 +1115,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ data quality flags"""
         
          # get MDA nuclides
-        result = self._connector.execute(SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -1163,7 +1200,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         print "into fetch Parameters"
         print "request = %s\n"%(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
-        result = self._connector.execute(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -1187,7 +1224,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         result.close()  
         
-        result = self._connector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -1212,7 +1249,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """ Fetch the calibration info for particulate """
         
         # get energy calibration info
-        result = self._connector.execute(SQL_PARTICULATE_GET_ENERGY_CAL%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_ENERGY_CAL%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -1229,7 +1266,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # add in dataBag
         self._dataBag[u'ENERGY_CAL'] = data
         
-        result = self._connector.execute(SQL_PARTICULATE_GET_RESOLUTION_CAL%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_RESOLUTION_CAL%(self._sampleID))
         
         rows = result.fetchall()
         
@@ -1246,7 +1283,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # add in dataBag
         self._dataBag[u'RESOLUTION_CAL'] = data
         
-        result = self._connector.execute(SQL_PARTICULATE_GET_EFFICIENCY_CAL%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_EFFICIENCY_CAL%(self._sampleID))
         
         rows = result.fetchall()
         
