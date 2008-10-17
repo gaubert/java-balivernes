@@ -56,6 +56,10 @@ class BaseRemoteDataSource(object):
         # Size to read 
         self._remoteSize        = aRemoteSize
         
+    def getLocalFilename(self):
+        """ localFilename Accessor """
+        
+        return self._localFilename
         
         
     def _getRemoteFile(self):
@@ -264,22 +268,21 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         self._localDir          = self._conf.get("RemoteAccess","localDir")
         
         self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
+        
+        self._localFilename     = "%s_%s.archs"%(os.path.basename(self._remotePath),self._id)
     
         self._getRemoteFile()
     
     def _getRemoteFile(self):
         """ fetch the file and store it in a temporary location """
         
-        # no local filename so use the remote file basename
-        if self._localFilename is None:
-            self._localFilename = os.path.basename(self._remotePath)
-        
         # make local dir if not done
         common.utils.makedirs(self._localDir)
             
         # path under which the file is going to be stored
         # It is the original filename_id
-        destinationPath = "%s/%s_%s"%(self._localDir,self._localFilename,self._id)
+        # for the moment always assume that it is a spectrum
+        destinationPath = "%s/%s"%(self._localDir,self._localFilename)
         
         # if file there and caching activated open fd and quit
         if os.path.exists(destinationPath) and self._cachingActivated:

@@ -516,33 +516,35 @@ class DBDataFetcher(object):
         """
          # check that the file exists
         path = "%s/%s"%(aDir,aFilename)
+        ext  = ""
         
         # if config says RemoteDataSource is activated then create a remote data source
         if self._conf.getboolean("Options","remoteDataSource") is True:
            # to be changed as a factory should be used
            if aFoundOnArchive is True:
               input = db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
+              ext   = os.path.splitext(input.getLocalFilename())[-1]
            else: 
               input = db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
+              ext   = os.path.splitext(input.getLocalFilename())[-1]
         else:
             # this is a local path so check if it exits and open fd
             if not os.path.exists(path):
                raise CTBTOError(-1,"the file %s does not exits"%(path))
-    
+           
             input = open(path,"r")
-       
-       
-        ext = os.path.splitext(aFilename)[-1] 
+            ext = os.path.splitext(aFilename)[-1] 
         
         # check the message type and do the necessary.
         # here we expect a .msg or .s
         if ext == '.msg':
            (data,limits)  =  self._extractSpectrumFromMessageFile(input)
-        # for all the rest, try to read a spectrum
-        elif:
-            (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+        # '.archs' given for an archived sample
+        elif ext == '.s' or ext == '.archs':
+           (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+        # remove it for the moment
         else:
-            raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
+           raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
         
         tok_list = []
         
