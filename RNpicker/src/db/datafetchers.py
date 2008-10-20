@@ -1102,9 +1102,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _getMRP(self):
         """ get the most recent prior """
         
-        path = "/tmp/samples/sampml-prel-%s.xml"%(self._sampleID)
-   
-        common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+        self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
         
         data_type    = self._dataBag['CURRENT_DATA_DATA_TYPE']
         
