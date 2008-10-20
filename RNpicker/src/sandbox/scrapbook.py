@@ -132,11 +132,15 @@ if __name__ == '__main__':
     
     #distutils.dir_util.mkpath("/tmp/totoo",verbose=1)
     
-    print "Hello %s\n"%(os.path.splitext("tototo/tototoit/tititi/ttt.txt")[-1])
+    print "res = %s\n"%(re.sub("T", " ", "2008-07-02T02:41:11"))
     
-    testCheckThatNoTagsAreLeft()
+    s = "2008-07-02T02:41:11"
     
-    print "Hello \n"
+    r = s.replace("T"," ")
+    
+    print "s = %s, r = %s\n"%(s,r)
+    
+    
     
     
    

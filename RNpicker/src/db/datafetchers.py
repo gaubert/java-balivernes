@@ -49,9 +49,9 @@ class DBDataFetcher(object):
        if nbResults is not 1:
             raise CTBTOError(-1,"Error, Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(aSampleID,nbResults,rows))
         
-       print "sampleID=%s,Type = %s"%(aSampleID,rows[0]['SAMPLE_TYPE'])
+       cls.c_log.debug("sampleID=%s,Type = %s"%(aSampleID,rows[0]['SAMPLE_TYPE']))
        
-       print "Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']])
+       cls.c_log.debug("Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']]))
        
        
        # create object and update its internal dictionary
@@ -282,7 +282,7 @@ class DBDataFetcher(object):
     def _fetchSampleInfo(self,aSampleID,aDataname='current'):
        """ get sample info from sample data """ 
        
-       print "In fetch SampleInfo for %s\n"%(aSampleID)
+       print "Getting general sample info for %s\n"%(aSampleID)
        
        result = self._mainConnector.execute(SQL_GETSAMPLEINFO%(aSampleID))
        
@@ -385,11 +385,11 @@ class DBDataFetcher(object):
         # check if the caching function is activated
         # if yes and if the caching file exist load it
         
-        cachingFilename = self._createCachingFile(self.getSampleID())
+        cachingFilename = self._createCachingFile(self._sampleID)
         
         if self.activateCaching() and os.path.exists(cachingFilename):
             
-            print "fetch data from the caching file %s.\n"%(cachingFilename)
+            print "Read sample data for %s from the caching file %s.\n"%(self._sampleID,cachingFilename)
             
             f = open(cachingFilename,"r")
             
@@ -397,7 +397,7 @@ class DBDataFetcher(object):
             
         else:
             
-          print "fetch data from the database.\n"
+          print "Read sample data for %s from the database.\n"%(self._sampleID)
           
           #get refID
           self._fetchSampleRefId()
@@ -753,6 +753,8 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
            
+        print "Getting %s Spectrum for %s\n"%(aDataname,aSampleID)
+           
         # get sample info related to this sampleID
         self._fetchSampleInfo(aSampleID,aDataname)
          
@@ -786,10 +788,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'D':
             return
         
-        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        print "Getting Background Spectrum for %s\n"%(self._sampleID)
         
         # need to get the latest BK sample_id
-        result = self._mainConnector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],common.time_utils.getOracleDateFromISO8601(self._dataBag[u'CURRENT_DATA_ACQ_START'])))
         
         # only one row in result set
         rows = result.fetchall()
@@ -797,7 +799,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one BK or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']),rows))
+            print("There is more than one BK or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],common.time_utils.getOracleDateFromISO8601(self._dataBag[u'CURRENT_DATA_ACQ_START'])),rows))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
@@ -827,10 +829,12 @@ class ParticulateDataFetcher(DBDataFetcher):
         if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'Q':
             return
         
+        print "Getting QC Spectrum for %s\n"%(self._sampleID)
+        
         #print "request %s\n"%(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # need to get the latest BK sample_id
-        result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],common.time_utils.getOracleDateFromISO8601(self._dataBag[u'CURRENT_DATA_ACQ_START'])))
         
         # only one row in result set
         rows = result.fetchall()
@@ -838,12 +842,12 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one QC or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']),rows))
+            print("There is more than one QC or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],self._dataBag[u'CURRENT_DATA_ACQ_START']),rows))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
         
-        print "sid = %s\n"%(sid)
+        #print "sid = %s\n"%(sid)
         
         result.close()
         
@@ -867,6 +871,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         # precondition do nothing if there the current sample is a Detector background itself
         if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'S' and self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'PREL':
             return
+        
+        print "Getting Prels Spectrum for %s\n"%(self._sampleID)
         
         #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
@@ -1080,7 +1086,8 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchAnalysisResults(self):
         """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
-        print "into Fetch Analysis Results"
+        print "Getting Analysis Results for %s\n"%(self._sampleID)
+        
         self._fetchCategoryResults()
         
         self._fetchNuclidesResults()
@@ -1225,8 +1232,10 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchParameters(self):
         """ get the different parameters used for the analysis """
         
-        print "into fetch Parameters"
-        print "request = %s\n"%(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
+        print "Getting Analysis parameters for %s\n"%(self._sampleID)
+        
+        #print "request = %s\n"%(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
+        
         result = self._mainConnector.execute(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
         
         rows = result.fetchall()

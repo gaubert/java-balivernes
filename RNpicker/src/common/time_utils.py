@@ -6,6 +6,11 @@ def getDateTimeFromISO8601(aISOStr):
     
     return datetime.datetime.strptime(aISOStr,'%Y-%m-%dT%H:%M:%S')
     
+def getOracleDateFromISO8601(aISOStr):
+    """ transform an ISO8601 date into an Oracle compatible date.
+        The transformation consist in removing the T and replacing it with space
+    """
+    return aISOStr.replace("T"," ")
 
 def getDifferenceInTime(aStart,aStop):
     """ return in seconds the difference between the two passed dates doing (aStop - aStart)"""
