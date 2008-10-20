@@ -38,13 +38,15 @@ class TestSAMPMLCreator(unittest.TestCase):
         log.setLevel(logging.DEBUG)
         log.info("Start")
    
+        activateTimer = True
+   
         self.conf = common.utils.Conf.get_instance()
         self.mainUrl  = self.conf.get("MainDatabaseAccess","url")
    
         print "Main URL=%s"%(self.mainUrl)
    
         # create DB connector
-        self.mainConn = DatabaseConnector(self.mainUrl)
+        self.mainConn = DatabaseConnector(self.mainUrl,activateTimer)
    
         self.mainConn.connect()
         
@@ -53,7 +55,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "URL=%s"%(self.archiveUrl)
    
         # create DB connector
-        self.archConn = DatabaseConnector(self.archiveUrl)
+        self.archConn = DatabaseConnector(self.archiveUrl,activateTimer)
    
         self.archConn.connect()
         

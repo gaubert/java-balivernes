@@ -581,8 +581,8 @@ class DBDataFetcher(object):
            data.close()   
            input.close()
            
-        print "channel_span %s"%(channel_span)
-        print "energy_span %s"%(energy_span)
+        DBDataFetcher.c_log.debug("channel_span %s"%(channel_span))
+        DBDataFetcher.c_log.debug("energy_span %s"%(energy_span))
          
         self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(aDataname)] = channel_span
         self._dataBag[u"%s_DATA_ENERGY_SPAN"%(aDataname)]  = energy_span
@@ -804,7 +804,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         sid = rows[0]['SAMPLE_ID']
         
-        print "sid = %s\n"%(sid)
+        DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
         
         result.close()
         

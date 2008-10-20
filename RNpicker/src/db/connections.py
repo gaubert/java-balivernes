@@ -1,6 +1,7 @@
 import logging
 import sqlalchemy
 
+import common
 from common.exceptions import CTBTOError
 
 
@@ -11,10 +12,10 @@ class DatabaseConnector:
     c_log = logging.getLogger("connections.DatabaseConnector")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self,aUrl,aEchoLevel=True):
+    def __init__(self,aUrl,aTimeReqs=False):
         
         self._url  = aUrl
-        self._echo = aEchoLevel
+        self._activateTimer = aTimeReqs
         self._connected = False;
         
         
@@ -85,9 +86,16 @@ class DatabaseConnector:
         
         sql = sqlalchemy.text(aSql)
         
-        result = self._conn.execute(sql)
+        if not self._activateTimer:
+           result = self._conn.execute(sql)
+           return result
+        else:
+           result = []
+           func = self._conn.execute
+           print "executed %s in %s secs\n"%(aSql,common.utils.ftimer(func,[sql],{},result,number=1))
+           return result[0]
         
-        return result
+        
         
 
     def executeOnEachRow(self,aSql,aTreatment):

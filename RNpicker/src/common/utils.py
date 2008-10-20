@@ -1,5 +1,7 @@
 import os
-
+import time
+import itertools
+import gc
 import ConfigParser
 
 
@@ -49,7 +51,26 @@ def makedirs(aPath):
 
     os.makedirs(aPath)
 
+def ftimer(func, args, kwargs, result = [], number=1, timer=time.time):
+    """ time a func or object method """
+    it = itertools.repeat(None, number)
+    gc_saved = gc.isenabled()
+    
+    try:
+       gc.disable()
+       t0 = timer()
+       for i in it:
+         r = func(*args, **kwargs)
+         if r is not None:
+            result.append(r)
+       t1 = timer()
+    finally:
+       if gc_saved:
+          gc.enable()
         
+    t = t1-t0 
+    return t1 - t0
+      
 
 
 
