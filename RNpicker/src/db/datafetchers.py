@@ -791,7 +791,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         print "Getting Background Spectrum for %s\n"%(self._sampleID)
         
         # need to get the latest BK sample_id
-        result = self._mainConnector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],common.time_utils.getOracleDateFromISO8601(self._dataBag[u'CURRENT_DATA_ACQ_START'])))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
         
         # only one row in result set
         rows = result.fetchall()
@@ -799,7 +799,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one BK or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],common.time_utils.getOracleDateFromISO8601(self._dataBag[u'CURRENT_DATA_ACQ_START'])),rows))
+            print("There is more than one BK or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
             #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
         sid = rows[0]['SAMPLE_ID']
@@ -809,7 +809,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         result.close()
         
         # now fetch the spectrum
-        self._fetchSpectrumData(sid,aDataname,'DETBACK')
+        try:
+           self._fetchSpectrumData(sid,aDataname,'DETBACK')
+        except Exception, e:
+           print "Warning. No Data File found for background %s\n"%(sid)
+            
     
     def _fetchQCSpectrumData(self,aDataname):
         """get the QC spectrum.
@@ -831,10 +835,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         print "Getting QC Spectrum for %s\n"%(self._sampleID)
         
-        #print "request %s\n"%(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
-        
         # need to get the latest BK sample_id
-        result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],common.time_utils.getOracleDateFromISO8601(self._dataBag[u'CURRENT_DATA_ACQ_START'])))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
         
         # only one row in result set
         rows = result.fetchall()
@@ -842,9 +844,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print("There is more than one QC or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'DETECTOR_ID'],self._dataBag[u'CURRENT_DATA_ACQ_START']),rows))
-            #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-        
+            print("There is more than one QC or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
         sid = rows[0]['SAMPLE_ID']
         
         #print "sid = %s\n"%(sid)
@@ -1101,13 +1102,18 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _getMRP(self):
         """ get the most recent prior """
         
-        collect_stop = self._dataBag['CURRENT_DATA_COLLECT_STOP'].replace("T"," ")
+        path = "/tmp/samples/sampml-prel-%s.xml"%(self._sampleID)
+   
+        common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
         
         data_type    = self._dataBag['CURRENT_DATA_DATA_TYPE']
         
         detector_id  = self._dataBag['DETECTOR_ID']
         
         sample_type  = self._dataBag['SAMPLE_TYPE']
+        
+        collect_stop = self._dataBag['CURRENT_DATA_COLLECT_STOP'].replace("T"," ")
+        
         
         print "Executed request %s\n"%(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
     

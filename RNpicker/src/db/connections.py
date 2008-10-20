@@ -12,16 +12,42 @@ class DatabaseConnector:
     c_log = logging.getLogger("connections.DatabaseConnector")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self,aUrl,aTimeReqs=False):
+    def __init__(self,aDatabase,aUser,aPassword,aTimeReqs=False):
         
-        self._url  = aUrl
+        self._database      = aDatabase
+        self._user          = aUser
+        self._password      = aPassword
         self._activateTimer = aTimeReqs
-        self._connected = False;
+        self._connected     = False;
+        
+        self._url = None
+        
+        self._createUrl()
+        
+    
+    def _createUrl(self):
+        
+        if self._database is None:
+            raise CTBTOError("Need a database hostname to make the connection url\n")
+        
+        if self._user is None:
+            raise CTBTOError("Need a user to connect to the database\n")
+        
+        if self._password is None:
+            raise CTBTOError("Need a password to connect to the database\n")
+        
+        self._url = "oracle://%s:%s@%s"%(self._user,self._password,self._database)
         
         
     def __repr__(self):
         return "<DatabaseConnector instance. id = %s, length = %d>" %(self._id,self._length)
 
+
+    def hostname(self):
+        return self._database
+    
+    def user(self):
+        return self._user
 
     def connect(self):
         """ connect to the database. 
@@ -92,7 +118,7 @@ class DatabaseConnector:
         else:
            result = []
            func = self._conn.execute
-           print "executed %s in %s secs\n"%(aSql,common.utils.ftimer(func,[sql],{},result,number=1))
+           print "Time: %s secs \nDatabase: %s\nRequest: %s\n"%(common.utils.ftimer(func,[sql],{},result,number=1),self._database,aSql)
            return result[0]
         
         

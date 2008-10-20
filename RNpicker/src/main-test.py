@@ -41,21 +41,25 @@ class TestSAMPMLCreator(unittest.TestCase):
         activateTimer = True
    
         self.conf = common.utils.Conf.get_instance()
-        self.mainUrl  = self.conf.get("MainDatabaseAccess","url")
+        self.mainDatabase  = self.conf.get("MainDatabaseAccess","hostname")
+        self.mainUser      = self.conf.get("MainDatabaseAccess","user")
+        self.mainPassword  = self.conf.get("MainDatabaseAccess","password")
    
-        print "Main URL=%s"%(self.mainUrl)
+        print "Main Database=%s"%(self.mainDatabase)
    
         # create DB connector
-        self.mainConn = DatabaseConnector(self.mainUrl,activateTimer)
+        self.mainConn = DatabaseConnector(self.mainDatabase,self.mainUser,self.mainPassword,activateTimer)
    
         self.mainConn.connect()
         
-        self.archiveUrl  = self.conf.get("ArchiveDatabaseAccess","url")
+        self.archiveDatabase  = self.conf.get("ArchiveDatabaseAccess","hostname")
+        self.archiveUser      = self.conf.get("ArchiveDatabaseAccess","user")
+        self.archivePassword  = self.conf.get("ArchiveDatabaseAccess","password")
    
-        print "URL=%s"%(self.archiveUrl)
+        print "Archive Database=%s"%(self.archiveDatabase)
    
         # create DB connector
-        self.archConn = DatabaseConnector(self.archiveUrl,activateTimer)
+        self.archConn = DatabaseConnector(self.archiveDatabase,self.archiveUser,self.archivePassword,activateTimer)
    
         self.archConn.connect()
         
@@ -144,7 +148,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         #istOfSamplesToTest = [ "857874" ]
         
         # background error
-        #listOfSamplesToTest = [ "857893" ]
+        listOfSamplesToTest = [ "857454" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
