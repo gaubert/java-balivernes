@@ -476,13 +476,18 @@ class DBDataFetcher(object):
         
         # read the spectrum in a StringIO
         data = StringIO()
+        hasFoundEOSpectrum = False
         
         for line in aInput:
             if line.find('#') >= 0:
                 # we have reached the end leave
+                hasFoundEOSpectrum = True
                 break
             else:
                 data.write(line)
+        
+        if hasFoundEOSpectrum is False:
+            raise CTBTOError(-1,"No end of spectrum tag # found in file "%(aInput))
         
         # go to the beginning of the Stream
         data.seek(0)
@@ -891,7 +896,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
         
         # need to get the latest BK sample_id
-        result = self._mainConnector.execute(SQL_GETPARTICULATE_PREL_SAMPLEIDS%(self._dataBag[u'REFERENCE_ID']))
+        result = self._mainConnector.execute(SQL_GETPARTICULATE_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID']))
         
         # only one row in result set
         rows = result.fetchall()

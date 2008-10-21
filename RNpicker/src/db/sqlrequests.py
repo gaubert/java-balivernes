@@ -1,5 +1,38 @@
 
-""" sql requests """
+""" sql requests to be optimized """
+
+""" These two requests are slow because no indexes are used on GARDS_SAMPLE_STATUS """
+SQL_GETPARTICULATE_BK_SAMPLEID_old   = "select * from \
+                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                     where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P') and gd.acquisition_stop <= to_date('%s','YYYY-MM-DD HH24:MI:SS')\
+                                     order by gd.acquisition_start DESC)\
+                                    where rownum=1"
+
+SQL_GETPARTICULATE_QC_SAMPLEID_old = "select * from \
+                                  (select gd.sample_id from rmsman.gards_sample_data gd, rmsman.gards_sample_status gs \
+                                   where detector_id=%s and gd.sample_id = gs.sample_id and data_type='Q' and Spectral_qualifier='FULL' \
+                                   and gs.status in ('V','P') and gd.acquisition_stop <= to_date('%s','YYYY-MM-DD HH24:MI:SS') order by gd.sample_id DESC) \
+                                   where rownum=1"
+   
+""" No index in GARDS_SAMPLE_AUX on sample_ref_id. This would be very beneficial. In the mean time trick using the Collection_date """                                 
+SQL_GETPARTICULATE_PREL_SAMPLEIDS_old = "select gsd.sample_id from GARDS_SAMPLE_AUX gsx,GARDS_SAMPLE_DATA gsd where gsd.sample_id=gsx.sample_id and gsx.sample_ref_id='%s' and gsd.Spectral_qualifier='PREL'"
+
+""" There is no index on chan in moorea. It would be very benefical to have it. No solutions regarding that """
+SQL_GETPARTICULATE_SPECTRUM_old      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
+""" Forced to use between operator to trigger the use of the index. Because on maui if < is used the index is not used. If > is used it works. """
+# beware with the date trick. In order to use the index and not perform a full scan on the table use between superior newest date and 1980-xxxxx 
+# to do the same as gsd.collect_stop < to_date(XXXXX) because in this case the index is not used
+SQL_PARTICULATE_GET_MRP_old = "select gsd.sample_id as mrp_sample_id, to_char (gsd.collect_stop, 'YYYY-MM-DD HH24:MI:SS')  as mrp_collect_stop, gsd.collect_stop - to_date('%s', 'YYYY-MM-DD HH24:MI:SS') as mrp_collect_stop_diff from gards_sample_data gsd \
+                           where gsd.collect_stop between to_date ('%s','YYYY-MM-DD HH24:MI:SS')-1 and  to_date ('1980-01-01','YYYY-MM-DD HH24:MI:SS')\
+                             and gsd.data_type = '%s' \
+                             and gsd.detector_id = %s \
+                             and gsd.sample_type = '%s' \
+                             and gsd.spectral_qualifier = 'FULL' \
+                           order by collect_stop desc"
+
+
+""" sql used requests  """
 SQL_GETDETECTORINFO   = "select det.detector_id as detector_id, det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
 SQL_GETSTATIONINFO    = "select sta.station_id as station_id, sta.station_code as station_code, sta.country_code as station_country_code, sta.type as station_type, sta.description as station_location,to_char(sta.lat)||' '||to_char(sta.lon)||' '||to_char(sta.elevation) as station_coordinates from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
 SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
@@ -20,11 +53,7 @@ SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod
 SQL_GETPARTICULATE_RAW_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 
-SQL_GETPARTICULATE_BK_SAMPLEID_old   = "select * from \
-                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
-                                     where detector_id=%s and gd.sample_id = gs.sample_id and data_type='D' and Spectral_qualifier='FULL' and gs.status in ('V','P') and gd.acquisition_stop <= to_date('%s','YYYY-MM-DD HH24:MI:SS')\
-                                     order by gd.acquisition_start DESC)\
-                                    where rownum=1"
+
                                     
 SQL_GETPARTICULATE_BK_SAMPLEID   = "select * from \
                                     (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
@@ -39,15 +68,13 @@ SQL_GETPARTICULATE_BK_SAMPLEID   = "select * from \
                                     where rownum=1"
                                   
 
-SQL_GETPARTICULATE_PREL_SAMPLEIDS = "select gsd.sample_id from GARDS_SAMPLE_AUX gsx,GARDS_SAMPLE_DATA gsd where gsd.sample_id=gsx.sample_id and gsx.sample_ref_id='%s' and gsd.Spectral_qualifier='PREL'"
+SQL_GETPARTICULATE_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
+                                     where COLLECT_STOP=\
+                                     (select COLLECT_STOP from gards_sample_data where sample_id=%s)\
+                                     and detector_id=%s\
+                                     and Spectral_qualifier='PREL'\
+                                     order by  ACQUISITION_REAL_SEC asc"
 
-
-
-SQL_GETPARTICULATE_QC_SAMPLEID_old = "select * from \
-                                  (select gd.sample_id from rmsman.gards_sample_data gd, rmsman.gards_sample_status gs \
-                                   where detector_id=%s and gd.sample_id = gs.sample_id and data_type='Q' and Spectral_qualifier='FULL' \
-                                   and gs.status in ('V','P') and gd.acquisition_stop <= to_date('%s','YYYY-MM-DD HH24:MI:SS') order by gd.sample_id DESC) \
-                                   where rownum=1"
                                    
 SQL_GETPARTICULATE_QC_SAMPLEID = "select * from \
                                     (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \

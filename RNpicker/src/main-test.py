@@ -1,6 +1,7 @@
 import random
 import unittest
 
+import time
 import logging
 import logging.handlers
 import StringIO
@@ -144,10 +145,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-08-31',spectralQualif='FULL',nbOfElem='10')
         
         # error
-        listOfSamplesToTest = [ "858202" ]
+        #listOfSamplesToTest = [ "858202" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -156,7 +157,15 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         print "list Full of Sample",listOfSamplesToTest
         
+        cpt = 1
+        total_t0 = time.time()
+        
         for sampleID in listOfSamplesToTest:
+            
+           print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+           
+           t0 = time.time()
+           
            # fetchnoble particulate
            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
@@ -181,6 +190,21 @@ class TestSAMPMLCreator(unittest.TestCase):
            
            # check if no tags are left
            self.assertIfNoTagsLeft(path)
+           
+           t1 = time.time()
+           
+           print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+           
+           cpt +=1
+        
+        total_t1 = time.time()
+        
+        print "****************************************************************************\n"
+        print "****************************************************************************\n"
+        print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
+        print "****************************************************************************\n"
+        print "****************************************************************************\n"
+        
 
 if __name__ == '__main__':
     unittest.main()
