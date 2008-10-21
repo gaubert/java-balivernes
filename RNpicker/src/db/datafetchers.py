@@ -136,7 +136,7 @@ class DBDataFetcher(object):
         
         values = m.group('values')
       
-        vals = values.split('|')
+        vals = values.split('/')
       
         if len(vals) == 0:
           raise CTBTOError(-1,"Cannot find values for the spectrum params in parameters string %s"%(aParams))
@@ -490,7 +490,7 @@ class DBDataFetcher(object):
             if len(rest) > 0:
                 # if difference rest - CONTENT_NOT_PRESENT = 0 then we have retrieved everything 
                 # So we can use the cache otherwise launch a retrieval for what is missing
-                rest = rest.diffence(self._dataBag[u'CONTENT_NOT_PRESENT'])
+                rest = rest.difference(self._dataBag[u'CONTENT_NOT_PRESENT'])
                 if len(rest) > 0:
                  # something needs to be looked for: it is in rest
                  # rebuild a spectrum param
