@@ -145,7 +145,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-08-31',spectralQualif='FULL',nbOfElem='10')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='600')
         
         # error
         #listOfSamplesToTest = [ "858202" ]
@@ -170,9 +170,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
            fetcher.fetch()
-           
-           fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
-       
+                 
            renderer = ParticulateRenderer(fetcher)
    
            xmlStr = renderer.asXmlStr()

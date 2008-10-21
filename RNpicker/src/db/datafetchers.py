@@ -141,7 +141,7 @@ class DBDataFetcher(object):
     def activateCaching(self):
         return self._activateCaching
     
-    def _fetchData(self):
+    def _fetchData(self,aParams=None):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
@@ -380,8 +380,18 @@ class DBDataFetcher(object):
             f.close()
         
         
-    def fetch(self):
+    def fetch(self,aParams=None):
+        """pickle the retrieved data in a file for a future usage
         
+            Args:
+               aParams: string containing some parameters for each fetching bloc (ex params="specturm=current/qc/prels/background")
+            
+            Returns: Nothing
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
         # check if the caching function is activated
         # if yes and if the caching file exist load it
         
@@ -422,6 +432,10 @@ class DBDataFetcher(object):
           self._fetchCalibration()
           
           self._cache()
+          
+        # create human readable Hash in /tmp if option activated
+        if self._conf.getboolean("Options","writeHumanReadableData") is True:
+           self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
     
     def _removeChannelSpan(self,aLine):
         """remove the first column of the matrix of values.
@@ -646,7 +660,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._dataBag['SAMPLE_TYPE']="SAUNA"
         
-    def _fetchData(self):
+    def _fetchData(self,aParams=None):
         """ get the different raw data info """
         
         # there are 3 components: histogram, beta and gamma spectrum
@@ -927,7 +941,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     
     
     
-    def _fetchData(self):
+    def _fetchData(self,aParams=None):
         """ get the different raw data info """
         
         #fetch current spectrum
