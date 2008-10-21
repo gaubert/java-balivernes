@@ -6,7 +6,7 @@
 #$3 offset to reach
 #$4 size to read
 #$5 local file where to put the results
-# return a specturm in stdout
+# return a spectrum in stdout
 
 
 tempfile="/tmp/job.$$.remote"
@@ -17,7 +17,6 @@ cat <<EOF >> $tempfile
 my \$DEFAULT_BLOCKSIZE= 1024;
 
 my \$fhandle;
-#my \$pos = 46317568;
 my \$pos = $3;
 
 # read 1KB

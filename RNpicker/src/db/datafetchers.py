@@ -27,6 +27,13 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
+    # spectrum types
+    c_spectrum_types = set(['SPHD','QC','PREL','BK'])
+    
+    # regular expression stuff for spectrum param
+    c_pattern        ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
+    c_spectrum_rex   = re.compile(c_pattern, re.IGNORECASE)
+    
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
@@ -63,7 +70,7 @@ class DBDataFetcher(object):
        
        conf = common.utils.Conf.get_instance()
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_dataBag':{u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
+       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
        result.close()
        
@@ -82,12 +89,73 @@ class DBDataFetcher(object):
         # dict containing all the data retrieved from the filesystems and DB
         self._dataBag   = {}
         
+        # this part will contain all the retrieved elements
+        # this can be used for consistency checking
+        self._dataBag[u'CONTENT_PRESENT']    = set()
+        # to flag what cannot be found for the DB
+        self._dataBag[u'CONTENT_NOT_PRESENT'] = set()
+        
         # get reference to the conf object
         self._conf              = common.utils.Conf.get_instance()
         
          # get flag indicating if the cache function is activated
         self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False
     
+    def _parseSpectrumParams(self,aParams=""):
+       
+        """ parse the spectrum part of the params string. It should be something like spectrum=FULL/QC/BK.
+            This is used to specify which of the spectra related to the current spectrum must be retrieved
+            The different values:
+            - ALL all the spectrum. This is the default,
+            - FULL if the associated FULL spectrum should be retrieved,
+            - QC the QC Spectrum
+            - BK the Background Spectrum
+        
+            Args:
+               aParams: string of parameters in the form of param=values,param=values ....
+                        From this string the spectrum=ALL or spectrum=QC/FULL is searched. 
+                        The found values will be used to retrieved the related associated samples
+               
+            Returns:
+               return List of spectrum types to fetch
+        
+            Raises:
+               exception CTBTOError if the syntax of the aParams string is incorrect
+        """
+        
+        result = set()
+        
+        # try to match the spectrum param
+        m = DBDataFetcher.c_spectrum_rex.match(aParams)
+    
+    
+        if m is None:
+            print("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aParams))
+            result.update(DBDataFetcher.c_spectrum_types)
+            return result
+        
+        values = m.group('values')
+      
+        vals = values.split('|')
+      
+        if len(vals) == 0:
+          raise CTBTOError(-1,"Cannot find values for the spectrum params in parameters string %s"%(aParams))
+        
+        for val in vals:
+          dummy = val.strip().upper()
+          
+          if dummy == 'ALL':
+             #ALL superseeds everything and add all the different types
+             result.update(DBDataFetcher.c_spectrum_types)
+             # leave loop
+             break
+                
+          if dummy not in DBDataFetcher.c_spectrum_types:
+              raise CTBTOError(-1,"Unknown spectrum type %s. The spectrum type can only be one of the following %s"%(dummy,DBDataFetcher.c_spectrum_types))
+          
+          result.add(dummy)
+          
+        return result
     
     def execute(self,aRequest,aTryOnArchive=False,aRaiseExceptionOnError=True):
        """execute a sql request on the main connection and on the archive connection if necessary.
@@ -380,7 +448,7 @@ class DBDataFetcher(object):
             f.close()
         
         
-    def fetch(self,aParams=None):
+    def fetch(self,aParams=""):
         """pickle the retrieved data in a file for a future usage
         
             Args:
@@ -392,9 +460,14 @@ class DBDataFetcher(object):
             Raises:
                exception if issue fetching data (CTBTOError)
         """
+        
+        params         = None
+        # when the cache is not sufficient
+        accessDatabase = False
+        
+        
         # check if the caching function is activated
         # if yes and if the caching file exist load it
-        
         cachingFilename = self._createCachingFile(self._sampleID)
         
         if self.activateCaching() and os.path.exists(cachingFilename):
@@ -405,8 +478,35 @@ class DBDataFetcher(object):
             
             self._dataBag = pickle.load(f)
             
-        else:
+            print "Checking cache consistency\n"
             
+            # cache checking : Checks that the request doesn't contain more spectrum than asked
+            spectra = self._parseSpectrumParams(aParams)
+            
+            # do ensemble difference spectra - CONTENT_PRESENT
+            rest = spectra.difference(self._dataBag[u'CONTENT_PRESENT'])
+            
+            # there are more elements passed that the ones in content_present
+            if len(rest) > 0:
+                # if difference rest - CONTENT_NOT_PRESENT = 0 then we have retrieved everything 
+                # So we can use the cache otherwise launch a retrieval for what is missing
+                rest = rest.diffence(self._dataBag[u'CONTENT_NOT_PRESENT'])
+                if len(rest) > 0:
+                 # something needs to be looked for: it is in rest
+                 # rebuild a spectrum param
+                 params         = "spectrum="
+                 accessDatabase = True
+                 cpt = 0
+                 for elem in rest:
+                   if cpt-1 != len(rest):
+                     params += "%s\\"%(elem)  
+                   else:
+                     params += "%s"           
+        else:
+          params = aParams 
+          accessDatabase = True
+         
+        if accessDatabase:
           print "Read sample data for %s from the database.\n"%(self._sampleID)
           
           #get refID
@@ -419,7 +519,7 @@ class DBDataFetcher(object):
           self._fetchDetectorInfo()
           
           # get Data Files
-          self._fetchData()
+          self._fetchData(params)
 
           # get analysis results
           self._fetchAnalysisResults()
@@ -629,6 +729,9 @@ class DBDataFetcher(object):
         # create a unique id for the extract data
         self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
         
+        if aSpectrumType not in self._dataBag[u'CONTENT_PRESENT']:
+           self._dataBag[u'CONTENT_PRESENT'].add(aSpectrumType) 
+        
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
         return self._dataBag.get(aKey,aDefault)
@@ -756,8 +859,10 @@ class ParticulateDataFetcher(DBDataFetcher):
     
     c_nid_translation = {0:"nuclide not identifided by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
     
-    c_fpdescription_type_translation = {"SPHD":"SPHDF","PRELSPHD":"SPHDP","":"BLANKPHD","QC":"QCPHD","DETBACK":"DETBKPHD"}
-
+    c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
+    
+   
+   
 
     def __init__(self):
         print "create ParticulateDataFetcher"
@@ -792,8 +897,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults is 0:
             print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
             type = ParticulateDataFetcher.c_fpdescription_type_translation.get(aType,"")
-            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_RAW_SPECTRUM%(type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True)
-            
+            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_RAW_SPECTRUM%(type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
         elif nbResults > 1:
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
@@ -803,7 +907,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
     def _fetchBKSpectrumData(self,aDataname):
         """get the Background spectrum.
-           If the caching function is activated save the retrieved specturm on disc.
+           If the caching function is activated save the retrieved spectrum on disc.
         
             Args:
                params: None
@@ -830,7 +934,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is 0:
-           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
            return
        
         if nbResults > 1:
@@ -844,7 +949,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # now fetch the spectrum
         try:
-           self._fetchSpectrumData(sid,aDataname,'DETBACK')
+           self._fetchSpectrumData(sid,aDataname,'BK')
         except Exception, e:
            print "Warning. No Data File found for background %s\n"%(sid)
             
@@ -876,6 +981,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         if nbResults is 0:
            print("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           # add in CONTENT_NOT_PRESENT this is used by the cache
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
            return
        
         if nbResults > 1:
@@ -919,6 +1026,7 @@ class ParticulateDataFetcher(DBDataFetcher):
        
         if nbResults is 0:
             print("There is no PREL spectrum for %s."%(self._sampleID))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('PREL')
             return
         
         listOfPrel = []
@@ -930,7 +1038,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             
             prelID = 'PREL_%d'%(sid)
             # now fetch the spectrum with the a PREL_cpt id
-            self._fetchSpectrumData(sid,prelID,'PRELSPHD')
+            self._fetchSpectrumData(sid,prelID,'PREL')
             # update list of prels
             listOfPrel.append(prelID)
          
@@ -941,17 +1049,23 @@ class ParticulateDataFetcher(DBDataFetcher):
     
     
     
-    def _fetchData(self,aParams=None):
+    def _fetchData(self,aParams=""):
         """ get the different raw data info """
         
+        spectrums = self._parseSpectrumParams(aParams)
+        
         #fetch current spectrum
-        self._fetchSpectrumData(self._sampleID,'CURRENT','SPHD')
+        if ('SPHD' in spectrums):
+           self._fetchSpectrumData(self._sampleID,'CURRENT','SPHD')
         
-        self._fetchQCSpectrumData('QC')
+        if ('QC' in spectrums):
+           self._fetchQCSpectrumData('QC')
         
-        self._fetchBKSpectrumData('BACKGROUND')
+        if ('BK' in spectrums):
+           self._fetchBKSpectrumData('BACKGROUND')
         
-        self._fetchPrelsSpectrumData()
+        if ('PREL' in spectrums):
+          self._fetchPrelsSpectrumData()
         
     def _addCategoryComments(self,aData):
         """ Add the comments as it was defined in the RRR """

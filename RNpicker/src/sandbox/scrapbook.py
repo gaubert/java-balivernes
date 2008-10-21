@@ -127,18 +127,36 @@ def testCheckThatNoTagsAreLeft():
     
     print "Match =[%s]\n"%(len(res))
     
+def testParseSpectrumInfo():
+    
+    strToParse = "spectrum=ALL"
+    
+    pattern ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
+   
+    reSpec = re.compile(pattern, re.IGNORECASE)
+    
+    m = reSpec.match(strToParse)
+    
+    if m is not None:
+      #print "Matooch =[%s],matched=%s\n"%(len(res),res)
+      print "command = %s\n"%(m.group('command'))
+      
+      values = m.group('values')
+      
+      print "vakues = %s\n"%(values)
+      
+      vals = values.split('/')
+      
+      if len(vals) == 0:
+          print "There is a problem\n"
+        
+      for val in vals:
+          print "val = %s\n"%(val.strip().upper())
 
 if __name__ == '__main__':
     
-    #distutils.dir_util.mkpath("/tmp/totoo",verbose=1)
+    testParseSpectrumInfo()
     
-    print "res = %s\n"%(re.sub("T", " ", "2008-07-02T02:41:11"))
-    
-    s = "2008-07-02T02:41:11"
-    
-    r = s.replace("T"," ")
-    
-    print "s = %s, r = %s\n"%(s,r)
     
     
     
