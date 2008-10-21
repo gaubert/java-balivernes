@@ -269,9 +269,22 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
         
-        self._localFilename     = "%s_%s.archs"%(os.path.basename(self._remotePath),self._id)
+        self._localFilename     = "%s_%s.%s"%(os.path.basename(self._remotePath),self._id,self._getExtension(self._remotePath))
     
         self._getRemoteFile()
+        
+    def _getExtension(self,aRemotePath):
+        """ Find out if this is msg or an extracted spectrum to specify the extension """
+        
+        # If it contains data then it is msg
+        if aRemotePath.find("DATA") != -1:
+            return "archmsg"
+        elif aRemotePath.find("SPECTHIST") != -1:
+            return "archs"
+        else:
+            print "Warning cannot find the archived file type for %s. Guess it is a message\n"%(aRemotePath)
+            return "archmsg"
+        
     
     def _getRemoteFile(self):
         """ fetch the file and store it in a temporary location """

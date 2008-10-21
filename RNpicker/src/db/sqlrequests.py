@@ -16,7 +16,9 @@ SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEP
 
 """ get any spectrum full or prel or qc or back """
 SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
-#SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype from FILEPRODUCT prod,FPDESCRIPTIoN fp where (fp.typeid=29 or fp.typeid=13) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
+SQL_GETPARTICULATE_RAW_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
 
 SQL_GETPARTICULATE_BK_SAMPLEID_old   = "select * from \
                                     (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \

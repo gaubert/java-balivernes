@@ -144,11 +144,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='30')
-        #istOfSamplesToTest = [ "857874" ]
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100')
         
-        # background error
-        listOfSamplesToTest = [ "857454" ]
+        # error
+        listOfSamplesToTest = [ "858202" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)

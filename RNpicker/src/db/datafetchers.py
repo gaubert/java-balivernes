@@ -457,13 +457,20 @@ class DBDataFetcher(object):
                exception
         """
         
+        hasFoundSpectrum = False
+        
         # look for #g_Spectrum
         for line in aInput:
              if line.find('#g_Spectrum') >= 0:
                  # quit the loop
+                 hasFoundSpectrum = True
                  break
         
-        limits = aInput.readline()
+        if hasFoundSpectrum is False:
+            raise CTBTOError(-1,"No spectrum tag #g_Spectrum found in file "%(aInput))
+            
+        # get the next line
+        limits = aInput.next()
         
         print "read limits %s"%(limits)
         
@@ -537,7 +544,7 @@ class DBDataFetcher(object):
         
         # check the message type and do the necessary.
         # here we expect a .msg or .s
-        if ext == '.msg':
+        if ext == '.msg' or ext == '.archmsg':
            (data,limits)  =  self._extractSpectrumFromMessageFile(input)
         # '.archs' given for an archived sample
         elif ext == '.s' or ext == '.archs':
@@ -729,7 +736,8 @@ class ParticulateDataFetcher(DBDataFetcher):
     c_log.setLevel(logging.DEBUG)
     
     c_nid_translation = {0:"nuclide not identifided by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
-   
+    
+    c_fpdescription_type_translation = {"SPHD":"SPHDF","PRELSPHD":"SPHDP","":"BLANKPHD","QC":"QCPHD","DETBACK":"DETBKPHD"}
 
 
     def __init__(self):
@@ -742,6 +750,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchSpectrumData(self,aSampleID,aDataname,aType):
         """get the any spectrum data.
            If the caching function is activated save the retrieved specturm on disc.
+           Try to find an extracted spectrum on OPS and Archive and if there is none of them look for the raw message (typeid)
         
             Args:
                aDataname: Name of the data. This will be used to create the name in the persistent hashtable and in the data spectrum filename
@@ -759,10 +768,13 @@ class ParticulateDataFetcher(DBDataFetcher):
         self._fetchSampleInfo(aSampleID,aDataname)
          
          
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True)
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
          
         if nbResults is 0:
-            print("WARNING: sample_id %s has no spectrum\n"%(aSampleID))
+            print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
+            type = ParticulateDataFetcher.c_fpdescription_type_translation.get(aType,"")
+            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_RAW_SPECTRUM%(type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True)
+            
         elif nbResults > 1:
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
@@ -798,10 +810,13 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         nbResults = len(rows)
        
-        if nbResults is not 1:
-            print("There is more than one BK or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-            #raise CTBTOError(-1,"Expecting to have 1 product for particulate sample_id=%s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-        
+        if nbResults is 0:
+           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           return
+       
+        if nbResults > 1:
+            print("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
         sid = rows[0]['SAMPLE_ID']
         
         DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
@@ -836,21 +851,19 @@ class ParticulateDataFetcher(DBDataFetcher):
         print "Getting QC Spectrum for %s\n"%(self._sampleID)
         
         # need to get the latest BK sample_id
-        result = self._mainConnector.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
-        
-        # only one row in result set
-        rows = result.fetchall()
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
         
         nbResults = len(rows)
+        
+        if nbResults is 0:
+           print("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           return
        
-        if nbResults is not 1:
-            print("There is more than one QC or none for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+        if nbResults > 1:
+            print("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
-        #print "sid = %s\n"%(sid)
-        
-        result.close()
         
         # now fetch the spectrum
         self._fetchSpectrumData(sid,aDataname,'QC')
@@ -1102,8 +1115,6 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _getMRP(self):
         """ get the most recent prior """
         
-        self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
-        
         data_type    = self._dataBag['CURRENT_DATA_DATA_TYPE']
         
         detector_id  = self._dataBag['DETECTOR_ID']
@@ -1112,8 +1123,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         collect_stop = self._dataBag['CURRENT_DATA_COLLECT_STOP'].replace("T"," ")
         
-        
-        print "Executed request %s\n"%(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
+        ParticulateDataFetcher.c_log.debug("Executed request %s\n"%(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type)))
     
         # get MDA nuclides
         result = self._mainConnector.execute(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type))
@@ -1176,7 +1186,15 @@ class ParticulateDataFetcher(DBDataFetcher):
         
     def _fetchTimelinessFlags(self):
         """ prepare timeliness checking info """
+        
+        # precondition check that there is COLLECT_START 
+        # otherwise quit
+        if (self._dataBag['CURRENT_DATA_COLLECT_START'] is None) or (self._dataBag['CURRENT_DATA_COLLECT_STOP'] is None):
+            print "Warnings. Cannot compute the timeliness flags missing information for %s\n"%(self._sampleID)
+            return
+       
         # get the timeliness flag
+         
         self._getMRP()
         
         # check collection flag
@@ -1191,9 +1209,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         # between 21.6 and 26.4
         # if 0 within 24 hours
         if diff_in_sec > 95040 or diff_in_sec < 77760:
-           self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec
+          self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec
         else:
-           self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
+          self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
         
         
         # check acquisition flag
