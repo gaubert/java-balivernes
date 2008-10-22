@@ -99,7 +99,7 @@ class TestSAMPMLCreator(unittest.TestCase):
       
        return sampleIDs
       
-    def tesstPrelParticulateSamples(self):
+    def testPrelParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -108,7 +108,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         #listOfSamplesToTest = [ "0889826" ]
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='10')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='1')
         #listOfSamplesToTest = [857991]       
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -136,7 +136,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            # check if no tags are left
            self.assertIfNoTagsLeft(path)
 
-    def testFullParticulateSamples(self):
+    def tesstFullParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -146,10 +146,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='2')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='1')
         
         # error
-        listOfSamplesToTest = [ "893769" ]
+        #listOfSamplesToTest = [ "893769" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)

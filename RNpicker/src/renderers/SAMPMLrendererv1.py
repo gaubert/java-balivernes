@@ -139,15 +139,15 @@ class ParticulateRenderer(BaseRenderer):
         results = []
         
         if 'CURR' in aSpectrums:
-            results.append('CURR')
+            results.append(self._fetcher.get(u'CURRENT_SPECTRUM',None))
             aSpectrums.remove('CURR')
         
         if 'BK' in aSpectrums:
-            results.append('BK')
+            results.append(self._fetcher.get(u'CURRENT_BK',None))
             aSpectrums.remove('BK')
         
         if 'QC' in aSpectrums:
-            results.append('QC')
+            results.append(self._fetcher.get(u'CURRENT_QC',None))
             aSpectrums.remove('QC')
             
         # for the rest alphabetical order sorting
@@ -636,11 +636,11 @@ class ParticulateRenderer(BaseRenderer):
         
         self._populatedTemplate = re.sub("\${CALIBRATION}",xml, self._populatedTemplate)
     
-    def asXmlStr(self,aRequest):
+    def asXmlStr(self,aRequest=""):
        """ return the xml particulate product according to the passed request
         
             Args:
-               aRequest: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk")
+               aRequest: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk"). Default = ""
             
             Returns: the populated template
               

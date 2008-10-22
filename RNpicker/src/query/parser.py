@@ -79,7 +79,7 @@ class RequestParser(object):
     
         if m is None:
             print("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aRequest))
-            result.update(DBDataFetcher.c_spectrum_types)
+            result.update(RequestParser.c_spectrum_types)
             return result
         
         values = m.group('values')
