@@ -16,7 +16,7 @@ class RequestParser(object):
     c_log.setLevel(logging.DEBUG)
     
     # spectrum types
-    c_spectrum_types = set(['SPHD','QC','PREL','BK'])
+    c_spectrum_types = set(['CURR','QC','PREL','BK'])
     
     # regular expression stuff for spectrum param
     c_pattern        ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"

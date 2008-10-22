@@ -155,7 +155,12 @@ def testParseSpectrumInfo():
 
 if __name__ == '__main__':
     
-    testParseSpectrumInfo()
+    s = set()
+    
+    s.add('A')
+    s.add('B')
+    
+    
     
     
     

@@ -28,9 +28,6 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
-    # spectrum types
-    c_spectrum_types = set(['SPHD','QC','PREL','BK'])
-    
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
@@ -291,7 +288,7 @@ class DBDataFetcher(object):
        
         result.close()
        
-    def _fetchSampleInfo(self,aSampleID,aDataname='current'):
+    def _fetchSampleInfo(self,aSampleID,aDataname='curr'):
        """ get sample info from sample data """ 
        
        print "Getting general sample info for %s\n"%(aSampleID)
@@ -397,7 +394,7 @@ class DBDataFetcher(object):
         """pickle the retrieved data in a file for a future usage
         
             Args:
-               aParams: string containing some parameters for each fetching bloc (ex params="specturm=current/qc/prels/background")
+               aParams: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk")
             
             Returns: Nothing
               
@@ -572,7 +569,7 @@ class DBDataFetcher(object):
         
         return (data,"0 0")
     
-    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='current',aSpectrumType='SPHD'):
+    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='curr',aSpectrumType='CURR'):
         """read data from the main connection which is not archived.
            The data dict will be populated accordingly to the data found.
         
@@ -872,8 +869,8 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
         
-        # precondition do nothing if there the current sample is a Detector background itself
-        if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'D':
+        # precondition do nothing if there the curr sample is a Detector background itself
+        if self._dataBag[u'CURR_DATA_DATA_TYPE'] == 'D':
             return
         
         print "Getting Background Spectrum for %s\n"%(self._sampleID)
@@ -921,8 +918,10 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
         
-        # precondition do nothing if there the current sample is a Detector background itself
-        if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'Q':
+        #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
+        
+        # precondition do nothing if there the curr sample is a Detector background itself
+        if self._dataBag[u'CURR_DATA_DATA_TYPE'] == 'Q':
             return
         
         print "Getting QC Spectrum for %s\n"%(self._sampleID)
@@ -961,8 +960,8 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
         
-        # precondition do nothing if there the current sample is a Detector background itself
-        if self._dataBag[u'CURRENT_DATA_DATA_TYPE'] == 'S' and self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'PREL':
+        # precondition do nothing if there the curr sample is a Detector background itself
+        if self._dataBag[u'CURR_DATA_DATA_TYPE'] == 'S' and self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER'] == 'PREL':
             return
         
         print "Getting Prels Spectrum for %s\n"%(self._sampleID)
@@ -995,7 +994,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             # update list of prels
             listOfPrel.append(prelID)
          
-        self._dataBag['CURRENT_List_OF_PRELS']  =  listOfPrel
+        self._dataBag['CURR_List_OF_PRELS']  =  listOfPrel
            
         
         result.close()
@@ -1008,14 +1007,14 @@ class ParticulateDataFetcher(DBDataFetcher):
         spectrums = self._parser.parse(aParams).get(query.parser.RequestParser.SPECTRUM,set())
         
         #fetch current spectrum
-        if ('SPHD' in spectrums):
-           self._fetchSpectrumData(self._sampleID,'CURRENT','SPHD')
+        if ('CURR' in spectrums):
+           self._fetchSpectrumData(self._sampleID,'CURR','CURR')
         
         if ('QC' in spectrums):
            self._fetchQCSpectrumData('QC')
         
         if ('BK' in spectrums):
-           self._fetchBKSpectrumData('BACKGROUND')
+           self._fetchBKSpectrumData('BK')
         
         if ('PREL' in spectrums):
           self._fetchPrelsSpectrumData()
@@ -1201,13 +1200,13 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _getMRP(self):
         """ get the most recent prior """
         
-        data_type    = self._dataBag['CURRENT_DATA_DATA_TYPE']
+        data_type    = self._dataBag['CURR_DATA_DATA_TYPE']
         
         detector_id  = self._dataBag['DETECTOR_ID']
         
         sample_type  = self._dataBag['SAMPLE_TYPE']
         
-        collect_stop = self._dataBag['CURRENT_DATA_COLLECT_STOP'].replace("T"," ")
+        collect_stop = self._dataBag['CURR_DATA_COLLECT_STOP'].replace("T"," ")
         
         ParticulateDataFetcher.c_log.debug("Executed request %s\n"%(SQL_PARTICULATE_GET_MRP%(collect_stop,collect_stop,data_type,detector_id,sample_type)))
     
@@ -1275,7 +1274,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # precondition check that there is COLLECT_START 
         # otherwise quit
-        if (self._dataBag['CURRENT_DATA_COLLECT_START'] is None) or (self._dataBag['CURRENT_DATA_COLLECT_STOP'] is None):
+        if (self._dataBag['CURR_DATA_COLLECT_START'] is None) or (self._dataBag['CURR_DATA_COLLECT_STOP'] is None):
             print "Warnings. Cannot compute the timeliness flags missing information for %s\n"%(self._sampleID)
             return
        
@@ -1286,8 +1285,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         # check collection flag
         
         # check that collection time with 24 Hours
-        collect_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_COLLECT_START'])
-        collect_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_COLLECT_STOP'])
+        collect_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURR_DATA_COLLECT_START'])
+        collect_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURR_DATA_COLLECT_STOP'])
     
         diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
         
@@ -1304,8 +1303,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         # need to be done within 3 hours
         
         # check that collection time with 24 Hours
-        acq_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_ACQ_START'])
-        acq_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURRENT_DATA_ACQ_STOP'])
+        acq_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURR_DATA_ACQ_START'])
+        acq_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag['CURR_DATA_ACQ_STOP'])
     
         diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
           
@@ -1351,11 +1350,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            if self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'FULL':
+            if self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER'] == 'FULL':
                #raise CTBTOError(-1,"Expecting to have 1 set of processing parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
+               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER']))
             else:
-               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
+               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}
@@ -1375,11 +1374,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            if self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER'] == 'FULL':
+            if self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER'] == 'FULL':
                #raise CTBTOError(-1,"Expecting to have 1 set of update parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-               print("%s sample and no update parameters found\n"%(self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
+               print("%s sample and no update parameters found\n"%(self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER']))
             else:
-               print("%s sample and no update parameters found\n"%(self._dataBag[u'CURRENT_DATA_SPECTRAL_QUALIFIER']))
+               print("%s sample and no update parameters found\n"%(self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER']))
          
         # create a list of dicts
         data = {}

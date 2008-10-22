@@ -1,7 +1,7 @@
 import logging
 import re
 
-
+import query.parser
 import common.utils
 
 
@@ -22,6 +22,9 @@ class BaseRenderer(object):
         self._template          = None
         self._populatedTemplate = None
         self._analysisCounter   = 0
+        
+        # create query parser 
+        self._parser            = query.parser.RequestParser()
         
         # dict used to substitute values in fetcher with template values
         self._substitutionDict = {  "SAMPLEID"           :   "SAMPLE_ID",
@@ -92,12 +95,24 @@ class BaseRenderer(object):
     def asXml(self):
         """  """
         
-    def asXmlStr(self):
-        """ Return an xml tree as a string """
+    def asXmlStr(self,aRequest):
+        """ return the xml product according to the passed request
+        
+            Args:
+               aRequest: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk")
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
         
         print "into asXMLStr"
         
         self._substituteValues()
+        
+        return self._populatedTemplate
         
 class ParticulateRenderer(BaseRenderer):
     
@@ -114,23 +129,66 @@ class ParticulateRenderer(BaseRenderer):
         # add values specific to Particulates
         dummy_dict = {  
                         # to be changed as only one analysis is supported at the moment
-                        "SPECTRUM_ID"                    :   "CURRENT_DATA_ID"
+                        "SPECTRUM_ID"                    :   "CURR_DATA_ID"
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
+    
+    def _sortSpectrumsSet(self,aSpectrums):
         
-    def _fillData(self):
-        """ insert all spectrum data in final produced XML file """
+        results = []
+        
+        if 'CURR' in aSpectrums:
+            results.append('CURR')
+            aSpectrums.remove('CURR')
+        
+        if 'BK' in aSpectrums:
+            results.append('BK')
+            aSpectrums.remove('BK')
+        
+        if 'QC' in aSpectrums:
+            results.append('QC')
+            aSpectrums.remove('QC')
+            
+        # for the rest alphabetical order sorting
+        l = []
+        for e in aSpectrums:
+            l.append(e)
+        
+        l.sort()
+        results.extend(l)
+        
+        return results
+        
+        
+    def _fillData(self,requestDict):
+        """ Insert the spectrum data expected as defined in the initial passed request
+        
+            Args:
+               requestDict: dictionary representing the different elements of the request (analysis, spectrum, ...)
+            
+            Returns: Nothing
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+       """
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
-        spectrumType = ['CURRENT','BACKGROUND','QC']
+        requestedTypes = requestDict[query.parser.RequestParser.SPECTRUM]
         
-        # check if there are some preliminary samples. If yes then add there names into the spectrumType list
-        spectrumType.extend(self._fetcher.get(u'CURRENT_List_OF_PRELS',[]))
+        if 'PREL' in requestedTypes:
+            # add all prels found in CURR_List_OF_PRELS in the set
+            requestedTypes.remove('PREL')
+            requestedTypes.update(self._fetcher.get(u'CURR_List_OF_PRELS',[]))
+        
+        spectrums = self._sortSpectrumsSet(requestedTypes)
+        
         
         finalTemplate = ""
         
-        for type in spectrumType:
+      
+        for type in spectrums:
             
             spectrumTemplate = ""
             
@@ -569,17 +627,31 @@ class ParticulateRenderer(BaseRenderer):
         
         self._populatedTemplate = re.sub("\${CALIBRATION}",xml, self._populatedTemplate)
     
-    def asXmlStr(self):
-       """ Return an xml tree as a string """
+    def asXmlStr(self,aRequest):
+       """ return the xml particulate product according to the passed request
+        
+            Args:
+               aRequest: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk")
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+       """
+       
+       # parse request to know what need to be added in the product
+       # [Parsing could be done for once and shared between fetcher and renderer]
+       reqDict = self._parser.parse(aRequest)
          
-       self._fillData()
+       self._fillData(reqDict)
        
        self._fillAnalysisResults()
        
        self._fillCalibration()
        
        # father 
-       BaseRenderer.asXmlStr(self)
+       BaseRenderer.asXmlStr(self,aRequest)
        
        return self._populatedTemplate
        

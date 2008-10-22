@@ -143,7 +143,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         
-        request="spectrum=ALL"
+        request="spectrum=CURR"
         
         # get full
         listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='1')
@@ -174,7 +174,7 @@ class TestSAMPMLCreator(unittest.TestCase):
                  
            renderer = ParticulateRenderer(fetcher)
    
-           xmlStr = renderer.asXmlStr()
+           xmlStr = renderer.asXmlStr(request)
            
            #print "Non Formatted String [%s]\n"%(xmlStr)
            
