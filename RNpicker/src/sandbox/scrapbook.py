@@ -129,7 +129,7 @@ def testCheckThatNoTagsAreLeft():
     
 def testParseSpectrumInfo():
     
-    strToParse = "spectrum=SPHD/BK"
+    strToParse = "spectrum=PREL/QC/BK"
     
     pattern ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
    

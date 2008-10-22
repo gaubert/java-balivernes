@@ -15,6 +15,7 @@ from StringIO import StringIO
 import common.utils
 import common.time_utils
 import db.rndata
+import query.parser
 from common.exceptions import CTBTOError
 # list of requests
 from sqlrequests import *
@@ -29,10 +30,6 @@ class DBDataFetcher(object):
     
     # spectrum types
     c_spectrum_types = set(['SPHD','QC','PREL','BK'])
-    
-    # regular expression stuff for spectrum param
-    c_pattern        ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
-    c_spectrum_rex   = re.compile(c_pattern, re.IGNORECASE)
     
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
@@ -70,7 +67,7 @@ class DBDataFetcher(object):
        
        conf = common.utils.Conf.get_instance()
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
+       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_parser':query.parser.RequestParser(),'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
        result.close()
        
@@ -98,64 +95,11 @@ class DBDataFetcher(object):
         # get reference to the conf object
         self._conf              = common.utils.Conf.get_instance()
         
+        # create query parser 
+        self._parser            = query.parser.RequestParser()
+        
          # get flag indicating if the cache function is activated
         self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False
-    
-    def _parseSpectrumParams(self,aParams=""):
-       
-        """ parse the spectrum part of the params string. It should be something like spectrum=FULL/QC/BK.
-            This is used to specify which of the spectra related to the current spectrum must be retrieved
-            The different values:
-            - ALL all the spectrum. This is the default,
-            - FULL if the associated FULL spectrum should be retrieved,
-            - QC the QC Spectrum
-            - BK the Background Spectrum
-        
-            Args:
-               aParams: string of parameters in the form of param=values,param=values ....
-                        From this string the spectrum=ALL or spectrum=QC/FULL is searched. 
-                        The found values will be used to retrieved the related associated samples
-               
-            Returns:
-               return List of spectrum types to fetch
-        
-            Raises:
-               exception CTBTOError if the syntax of the aParams string is incorrect
-        """
-        
-        result = set()
-        
-        # try to match the spectrum param
-        m = DBDataFetcher.c_spectrum_rex.match(aParams)
-    
-    
-        if m is None:
-            print("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aParams))
-            result.update(DBDataFetcher.c_spectrum_types)
-            return result
-        
-        values = m.group('values')
-      
-        vals = values.split('/')
-      
-        if len(vals) == 0:
-          raise CTBTOError(-1,"Cannot find values for the spectrum params in parameters string %s"%(aParams))
-        
-        for val in vals:
-          dummy = val.strip().upper()
-          
-          if dummy == 'ALL':
-             #ALL superseeds everything and add all the different types
-             result.update(DBDataFetcher.c_spectrum_types)
-             # leave loop
-             break
-                
-          if dummy not in DBDataFetcher.c_spectrum_types:
-              raise CTBTOError(-1,"Unknown spectrum type %s. The spectrum type can only be one of the following %s"%(dummy,DBDataFetcher.c_spectrum_types))
-          
-          result.add(dummy)
-          
-        return result
     
     def execute(self,aRequest,aTryOnArchive=False,aRaiseExceptionOnError=True):
        """execute a sql request on the main connection and on the archive connection if necessary.
@@ -427,9 +371,10 @@ class DBDataFetcher(object):
         
     def _cache(self):
         
-        """pickle the retrieved data in a file for a future usage
+        """pickle the retrieved data in a file for a future usage.
+           Ask to owerwrite the cache
         
-            Returns:
+            Returns: Nothing
               
               
             Raises:
@@ -438,7 +383,7 @@ class DBDataFetcher(object):
         
         cachingFilename = self._createCachingFile(self.getSampleID())
         
-        if self.activateCaching() and not os.path.exists(cachingFilename):
+        if self.activateCaching():
             
             # only rewrite when file doesn't exist for the moment
             f = open(cachingFilename,"w")
@@ -481,7 +426,13 @@ class DBDataFetcher(object):
             print "Checking cache consistency\n"
             
             # cache checking : Checks that the request doesn't contain more spectrum than asked
-            spectra = self._parseSpectrumParams(aParams)
+            reqDict = self._parser.parse(aParams)
+            
+            spectra = reqDict[query.parser.RequestParser.SPECTRUM]
+            
+            present = self._dataBag[u'CONTENT_PRESENT']
+            
+            r = spectra.difference(present)
             
             # do ensemble difference spectra - CONTENT_PRESENT
             rest = spectra.difference(self._dataBag[u'CONTENT_PRESENT'])
@@ -496,12 +447,14 @@ class DBDataFetcher(object):
                  # rebuild a spectrum param
                  params         = "spectrum="
                  accessDatabase = True
-                 cpt = 0
+                 cpt = 1
                  for elem in rest:
-                   if cpt-1 != len(rest):
-                     params += "%s\\"%(elem)  
+                   if cpt != len(rest):
+                     params += "%s/"%(elem)  
                    else:
-                     params += "%s"           
+                     params += "%s"%(elem) 
+                   
+                   cpt += 1          
         else:
           params = aParams 
           accessDatabase = True
@@ -1052,7 +1005,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchData(self,aParams=""):
         """ get the different raw data info """
         
-        spectrums = self._parseSpectrumParams(aParams)
+        spectrums = self._parser.parse(aParams).get(query.parser.RequestParser.SPECTRUM,set())
         
         #fetch current spectrum
         if ('SPHD' in spectrums):

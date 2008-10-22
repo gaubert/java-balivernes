@@ -146,7 +146,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='500')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='1')
         
         # error
         #listOfSamplesToTest = [ "858202" ]
@@ -158,7 +158,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         print "list Full of Sample",listOfSamplesToTest
         
-        cpt = 1
+        cpt = 0
         total_t0 = time.time()
         
         for sampleID in listOfSamplesToTest:
