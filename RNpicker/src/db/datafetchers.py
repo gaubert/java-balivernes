@@ -1033,8 +1033,21 @@ class ParticulateDataFetcher(DBDataFetcher):
                 aData['CAT_COMMENT'] = "Within Statistical Range"
        
     def _fetchCategoryResults(self):
-        """ sub method of _fetchAnalysisResults. Get the Category info from the database """
         
+        """sub method of _fetchAnalysisResults. Get the Category info from the database.
+           First get the category status which is the global category defined for a particular sampleID.
+           Then get the details for all nuclides
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception CTBTOError if any issue
+        """
+            
         # get category status
         result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY_STATUS%(self._sampleID))
        

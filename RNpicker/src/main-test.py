@@ -143,13 +143,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         
-        request="spectrum=CURR"
+        request="spectrum=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-08-01',endDate='2008-09-30',spectralQualif='FULL',nbOfElem='2')
         
         # error
-        #listOfSamplesToTest = [ "858202" ]
+        listOfSamplesToTest = [ "893769" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
