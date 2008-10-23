@@ -303,14 +303,15 @@ class DBDataFetcher(object):
                exception
         """
         
+        # strip the retruned dataname as the database name can contain some funny characters
         if aDataType == 'S' and aSpectralQualifier == 'PREL':
-           return ("PREL_%s"%(aSampleID),'PREL')
+           return (("PREL_%s"%(aSampleID)).strip(),'PREL')
         elif aDataType == 'S' and aSpectralQualifier == 'FULL':
-           return ("SPHD_%s"%(aSampleID),'SPHD')
+           return (("SPHD_%s"%(aSampleID)).strip(),'SPHD')
         elif aDataType == 'Q':
-           return ("QC_%s"%(aSampleID),'QC')
+           return (("QC_%s"%(aSampleID)).strip(),'QC')
         elif aDataType == 'D':
-           return ("BK_%s"%(aSampleID),'BK')
+           return (("BK_%s"%(aSampleID)).strip(),'BK')
         else:
            raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
@@ -692,10 +693,17 @@ class DBDataFetcher(object):
         
         # check in the conf if we need to compress the data
         if self._conf.getboolean("Options","compressSpectrum") is True:
-            # XML need to be 64base encoded
-            self._dataBag[u"%s_DATA"%(aDataname)] = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
-            # add a compressed flag in dict
-            self._dataBag[u"%_DATA_COMPRESSED"%(aDataname)] = True
+            try:
+              # XML need to be 64base encoded
+              self._dataBag[u"%s_DATA"%(aDataname)] = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
+            except Exception, e:
+                print "Error,%s\n"%(e)
+            
+            try:
+                # add a compressed flag in dict
+              self._dataBag[u"%s_DATA_COMPRESSED"%(aDataname)] = True
+            except Exception, e:
+                print "Error,%s\n"%(e)
         else:
             #add raw data in clear
             self._dataBag[u"%s_DATA"%(aDataname)] = parsedSpectrum.getvalue()
