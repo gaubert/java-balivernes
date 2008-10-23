@@ -143,10 +143,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         
-        request="spectrum=CURR/BK"
+        request="spectrum=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-01',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSampleIDs('2007-10-01',endDate='2007-10-15',spectralQualif='FULL',nbOfElem='1')
         
         # error
         #listOfSamplesToTest = [ "914290" ]

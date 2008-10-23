@@ -259,7 +259,7 @@ class ParticulateRenderer(BaseRenderer):
             comment  = self._fetcher.get(u'CAT_COMMENT',"No Comment")
 
             # if there is something fill the template otherwise do nothing
-            if category == "undefined":
+            if category != "undefined":
               # xml filler 
               cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
         
