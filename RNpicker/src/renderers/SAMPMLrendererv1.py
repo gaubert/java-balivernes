@@ -108,8 +108,6 @@ class BaseRenderer(object):
                exception if issue fetching data (CTBTOError)
         """
         
-        print "into asXMLStr"
-        
         self._substituteValues()
         
         return self._populatedTemplate
@@ -293,6 +291,7 @@ class ParticulateRenderer(BaseRenderer):
             dummy_template = re.sub("\${CONCENTRATION_ERROR}",str(nuclide['ACTIV_KEY_ERR']), dummy_template)
             dummy_template = re.sub("\${MDA}","%s %s"%(str(nuclide['MDA']),str(nuclide['MDA_ERR'])), dummy_template)
             dummy_template = re.sub("\${IDENTIFICATION_INDICATOR}",str(nuclide['NID_FLAG']), dummy_template)
+            dummy_template = re.sub("\${IDENTIFICATION_NUM}",str(nuclide['NID_FLAG_NUM']), dummy_template)
             
             # add generated xml in final container
             xml_nuclides += dummy_template
@@ -351,11 +350,9 @@ class ParticulateRenderer(BaseRenderer):
             # if there is a peakID in the hash then replace it otherwise remove this info from the XML
             dummy_template = re.sub("\${PEAKID}",("peakID=\"%s\""%(line['PEAK_ID']) if ('PEAK_ID' in line) else ""), template)
             dummy_template = re.sub("\${NAME}",line['NAME'], dummy_template)
-            dummy_template = re.sub("\${TYPE}",line['TYPE'], dummy_template)
-            dummy_template = re.sub("\${HALFLIFE}",str(line['HALFLIFE']), dummy_template)
-            dummy_template = re.sub("\${MDA}","%s %s"%(str(line['MDA']),str(line['MDA_ERR'])), dummy_template)
+            dummy_template = re.sub("\${MDA}","%s"%(str(line['MDA'])), dummy_template)
            
-            dummy_template = re.sub("\${ACTIVTIY}",( ("<Activity unit=\"mBq\">%s %s</Activity>"%(str(line['ACTIV_KEY']),str(line['ACTIV_KEY_ERR']))) if not (line['ACTIV_KEY'] == 0) else ""), dummy_template)
+            dummy_template = re.sub("\${ACTIVTIY}",( ("<Activity unit=\"mBq\">%s %s</Activity>"%(str(line['ACTIVITY']),str(line['ACTIV_ERR']))) if not (line['ACTIVITY'] == 0) else ""), dummy_template)
             dummy_template = re.sub("\${ENERGY}",("<Energy unit=\"keV\">%s %s</Energy>"%(str(line['ENERGY']),str(line['ENERGY_ERR'])) if ('ENERGY' in line) else ""), dummy_template)
             dummy_template = re.sub("\${ABUNDANCE}",("<Abundance unit=\"percent\">%s %s</Abundance>"%(str(line['ABUNDANCE']),str(line['ABUNDANCE_ERR'])) if ('ABUNDANCE' in line) else ""), dummy_template)
             dummy_template = re.sub("\${EFFICIENCY}",("<Efficiency unit=\"percent\">%s %s</Efficiency>"%(str(line['EFFIC']),str(line['EFFIC_ERR'])) if ('EFFIC' in line) else ""), dummy_template)
@@ -565,6 +562,10 @@ class ParticulateRenderer(BaseRenderer):
         
         # Add analysis identifier
         dummy_template = re.sub("\${ANALYSISID}", self._generateAnalysisID(),dummy_template)
+        
+        spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get(u'CURRENT_SPECTRUM','')),"unknown")
+        
+        dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
         
         dummy_template = re.sub("\${CATEGORY}", self._getCategory(), dummy_template)
         

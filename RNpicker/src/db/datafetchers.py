@@ -432,7 +432,6 @@ class DBDataFetcher(object):
             Raises:
                exception if issue fetching data (CTBTOError)
         """
-        
         params         = None
         # when the cache is not sufficient
         accessDatabase = False
@@ -444,7 +443,7 @@ class DBDataFetcher(object):
         
         if self.activateCaching() and os.path.exists(cachingFilename):
             
-            print "Read sample data for %s from the caching file %s.\n"%(self._sampleID,cachingFilename)
+            print "Loading cache data from file %s for sampleID %s.\n"%(cachingFilename,self._sampleID)
             
             f = open(cachingFilename,"r")
             
@@ -487,7 +486,7 @@ class DBDataFetcher(object):
           accessDatabase = True
          
         if accessDatabase:
-          print "Read sample data for %s from the database.\n"%(self._sampleID)
+          print "Read missing sample data from the database for %s.\n"%(self._sampleID)
           
           #get refID
           self._fetchSampleRefId()
@@ -507,6 +506,8 @@ class DBDataFetcher(object):
           self._fetchCalibration()
           
           self._cache()
+        else:
+          print "Entirely rely on the cache for %s\n"%(self._sampleID)
           
         # create human readable Hash in /tmp if option activated
         if self._conf.getboolean("Options","writeHumanReadableData") is True:
@@ -704,9 +705,6 @@ class DBDataFetcher(object):
         # create a unique id for the extract data
         self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
         
-        if aSpectrumType not in self._dataBag[u'CONTENT_PRESENT']:
-           self._dataBag[u'CONTENT_PRESENT'].add(aSpectrumType) 
-        
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
         return self._dataBag.get(aKey,aDefault)
@@ -899,8 +897,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         """
         
         # precondition do nothing if there the curr sample is a Detector background itself
-        #if self._dataBag[u'CURR_DATA_DATA_TYPE'] == 'D':
-        #    return
+        prefix = self._dataBag.get(u'CURRENT_SPECTRUM',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
+           return
         
         print "Getting Background Spectrum for %s\n"%(self._sampleID)
         
@@ -931,8 +930,12 @@ class ParticulateDataFetcher(DBDataFetcher):
            (dataname,type) = self._fetchSpectrumData(sid)
            
            self._dataBag[u'CURRENT_BK'] = dataname
+           
+           self._dataBag[u'CONTENT_PRESENT'].add('BK') 
+           
         except Exception, e:
            print "Warning. No Data File found for background %s\n"%(sid)
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
             
     
     def _fetchQCSpectrumData(self):
@@ -952,10 +955,11 @@ class ParticulateDataFetcher(DBDataFetcher):
         #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
         
         # precondition do nothing if there the curr sample is a Detector background itself
-        #if self._dataBag[u'CURR_DATA_DATA_TYPE'] == 'Q':
-        #    return
+        prefix = self._dataBag.get(u'CURRENT_SPECTRUM',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
+           return
         
-        print "Getting QC Spectrum for %s\n"%(self._sampleID)
+        print "Getting QC Spectrum of %s\n"%(self._sampleID)
         
         # need to get the latest BK sample_id
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
@@ -973,11 +977,17 @@ class ParticulateDataFetcher(DBDataFetcher):
            
         sid = rows[0]['SAMPLE_ID']
         
+        try:
+          # now fetch the spectrum
+          (dataname,type) = self._fetchSpectrumData(sid)
         
-        # now fetch the spectrum
-        (dataname,type) = self._fetchSpectrumData(sid)
+          self._dataBag[u'CURRENT_QC'] = dataname
         
-        self._dataBag[u'CURRENT_QC'] = dataname
+          self._dataBag[u'CONTENT_PRESENT'].add('QC') 
+        
+        except Exception, e:
+         print "Warning. No Data File found for QC %s\n"%(sid)
+         self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
         
     def _fetchPrelsSpectrumData(self):
         """get the preliminary spectrums.
@@ -994,9 +1004,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         """
         
         # precondition do nothing if there the curr sample is a prel itself
-        #if self._dataBag[u'CURR_DATA_DATA_TYPE'] == 'S' and self._dataBag[u'CURR_DATA_SPECTRAL_QUALIFIER'] == 'PREL':
-        #    return
-        
+        prefix = self._dataBag.get(u'CURRENT_SPECTRUM',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
+           return
+    
         print "Getting Prels Spectrum for %s\n"%(self._sampleID)
         
         #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
@@ -1027,6 +1038,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             listOfPrel.append(dataname)
          
         self._dataBag['CURR_List_OF_PRELS']  =  listOfPrel
+        self._dataBag[u'CONTENT_PRESENT'].add('PREL') 
            
         
         result.close()
@@ -1048,6 +1060,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         (dataname,type) = self._fetchSpectrumData(self._sampleID)
         
         self._dataBag[u'CURRENT_SPECTRUM'] = dataname
+        
+        if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
+           self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
     
     def _fetchData(self,aParams=""):
         """ get the different raw data info """
@@ -1210,7 +1225,8 @@ class ParticulateDataFetcher(DBDataFetcher):
             # check if there is NID key
             if nidflag is not None:
                 val = ParticulateDataFetcher.c_nid_translation.get(nidflag,nidflag)
-                data[u'NID_FLAG']=val
+                data[u'NID_FLAG']     = val
+                data[u'NID_FLAG_NUM'] = nidflag
             
             res.append(data)
             data = {}
@@ -1249,7 +1265,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         print "Getting Analysis Results for %s\n"%(self._sampleID)
         
         # get the dataname of the current spectrum (it is the main spectrum)
-        dataname = self._dataBag['CURRENT_SPECTRUM']
+        dataname = self._dataBag.get('CURRENT_SPECTRUM','')
         
         self._fetchCategoryResults()
         
@@ -1341,7 +1357,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # precondition check that there is COLLECT_START 
         # otherwise quit
-        if (self._dataBag["%s_DATA_COLLECT_START"%(aDataname)] is None) or (self._dataBag["%s_DATA_COLLECT_STOP"%(aDataname)] is None):
+        if (self._dataBag.get("%s_DATA_COLLECT_START"%(aDataname),None) is None) or (self._dataBag.get("%s_DATA_COLLECT_STOP"%(aDataname),None) is None):
             print "Warnings. Cannot compute the timeliness flags missing information for %s\n"%(self._sampleID)
             return
        
@@ -1417,10 +1433,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            if self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)] == 'FULL':
-               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
-            else:
-               print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
+            print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname),"(undefined)")))
          
         # create a list of dicts
         data = {}
