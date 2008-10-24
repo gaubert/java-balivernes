@@ -348,7 +348,7 @@ class ParticulateRenderer(BaseRenderer):
         for line in nuclidelines:
             
             # if there is a peakID in the hash then replace it otherwise remove this info from the XML
-            dummy_template = re.sub("\${PEAKID}",("peakID=\"%s\""%(line['PEAK_ID']) if ('PEAK_ID' in line) else ""), template)
+            dummy_template = re.sub("\${PEAKID}",("peakID=\"%s\""%(line['PEAK']) if (line.get('PEAK',0) != 0) else ""), template)
             dummy_template = re.sub("\${NAME}",line['NAME'], dummy_template)
             dummy_template = re.sub("\${MDA}","%s"%(str(line['MDA'])), dummy_template)
            
