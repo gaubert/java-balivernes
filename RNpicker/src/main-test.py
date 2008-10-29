@@ -8,8 +8,8 @@ import StringIO
 import re
 import common.utils
 import common.xml_utils
-from db.datafetchers import DBDataFetcher
-from db.connections import DatabaseConnector
+from db import DatabaseConnector
+from db import DBDataFetcher
 from renderers.SAMPMLrendererv1 import ParticulateRenderer
 
 

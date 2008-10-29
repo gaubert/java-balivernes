@@ -3,6 +3,7 @@
 *.pyc
 *.log
 bin-groovy
+bin-python
 bin
 build
 tools
