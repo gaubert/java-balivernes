@@ -1,5 +1,8 @@
 import ConfigParser
 
+import resource
+import os
+
 class Conf(object):
     """ 
        Configuration Singleton Class used to access configuration information
@@ -7,6 +10,9 @@ class Conf(object):
        It implements a default behavior.  
     
     """
+    # command line and env resource stuff
+    _CLINAME ="--conf_file"
+    _ENVNAME ="CONF_FILE" 
     
     #class member
     _instance = None
@@ -17,18 +23,31 @@ class Conf(object):
         return Conf._instance
     
     def __init__(self):
-        # create config object
+        
+        # create resource for the conf file
+        self._confResource = resource.Resource(Conf._CLINAME,Conf._ENVNAME)
+        
+        # create config object        
         self._load_config()
 
    
-    def _load_config(self,aFile="/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"):
+    def _load_config(self,aFile=None):
         try:
             # [MAJ] can take a file list with default
             self._conf  = ConfigParser.ConfigParser()
+            
+            # get it from a Resource if not files are passed
+            if aFile is None:
+             aFile = self._confResource.getValue() 
+             
+            if aFile is None:
+                raise CTBTOError("Conf. Error, need a configuration file path\n")
+                
             self._conf.read(aFile)
-        except:
+        except Exception, e:
             print "Can't read the config file %s"%(aFile)
             print "Current executing from dir = %s\n"%(os.getcwd())
+            raise e
             
             #raise ContextError(-1,"Can't read the config file %s"%(aFile))
 

@@ -18,6 +18,7 @@ class ResourceError(Exception):
         self.errno  = -1
         self.errmsg = aMsg
 
+
 class Resource(object):
     """
         Class read a ressource.
@@ -89,10 +90,7 @@ class Resource(object):
       if self._envVar == None:
           return None
      
-      if os.environ[self._envVar]:
-         return os.environ[self._envVar]
-      else:
-         return None
+      return os.environ.get(self._envVar,None)
       
     def _getFromConf(self):
         """

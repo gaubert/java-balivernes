@@ -2,6 +2,7 @@ import random
 import unittest
 
 import time
+import os
 import logging
 import logging.handlers
 import StringIO
@@ -42,6 +43,9 @@ class TestSAMPMLCreator(unittest.TestCase):
         log.info("Start")
    
         activateTimer = True
+        
+        # need to setup the ENV containing the the path to the conf file:
+        os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
    
         self.conf = Conf.get_instance()
         self.mainDatabase  = self.conf.get("MainDatabaseAccess","hostname")
