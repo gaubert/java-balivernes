@@ -8,6 +8,7 @@ import subprocess
 import common.utils
 
 from common import CTBTOError
+from common import Conf
 
 __all__ = ["RemoteFSDataSource","RemoteArchiveDataSource"]
 
@@ -34,7 +35,7 @@ class BaseRemoteDataSource(object):
         # my variables
          
         # get reference to the conf object
-        self._conf              = common.utils.Conf.get_instance()
+        self._conf              = Conf.get_instance()
         
         self._remotePath        = aDataPath
         
@@ -42,7 +43,7 @@ class BaseRemoteDataSource(object):
         
         self._localDir          = self._conf.get("RemoteAccess","localDir")
         
-        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
+        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated",False)
         
         self._localFilename     = self._conf.get("RemoteAccess","localFilename") if self._conf.has_option("RemoteAccess","localFilename") else None
         
@@ -258,7 +259,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         super(RemoteArchiveDataSource,self).__init__(aDataPath,aID,aRemoteOffset,aRemoteSize)
             
         # get reference to the conf object
-        self._conf              = common.utils.Conf.get_instance()
+        self._conf              = Conf.get_instance()
         
         self._remoteScript      = self._conf.get("RemoteAccess","archiveAccessScript")
         
