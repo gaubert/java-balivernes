@@ -10,8 +10,6 @@ import common.utils
 from common import CTBTOError
 from common import Conf
 
-__all__ = ["RemoteFSDataSource","RemoteArchiveDataSource"]
-
 def _complain_ifclosed(closed):
     if closed:
         raise ValueError, "I/O operation on closed file"

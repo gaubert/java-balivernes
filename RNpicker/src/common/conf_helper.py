@@ -1,6 +1,6 @@
 import ConfigParser
 
-class Conf:
+class Conf(object):
     """ 
        Configuration Singleton Class used to access configuration information
        Wrapper over ConfigParser.

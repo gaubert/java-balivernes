@@ -116,12 +116,11 @@ class BaseRenderer(object):
         
 class ParticulateRenderer(BaseRenderer):
     
-     # Class members
+    # Class members
     c_log = logging.getLogger("SAMPMLrendererv1.ParticulateRenderer")
     c_log.setLevel(logging.DEBUG)
     
-    
-    
+      
     def __init__(self,aDataFetcher):
         
         super(ParticulateRenderer,self).__init__(aDataFetcher)
