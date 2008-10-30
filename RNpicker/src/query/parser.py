@@ -3,7 +3,9 @@ import logging
 
 
 import common.utils
-from common.exceptions import CTBTOError
+
+from common import CTBTOError
+from common import Conf
 
 
 class RequestParser(object):
@@ -25,7 +27,7 @@ class RequestParser(object):
     def __init__(self,):
         """ constructor """
         # get reference to the conf object
-        self._conf              = common.utils.Conf.get_instance()
+        self._conf              = Conf.get_instance()
         
     
     def parse(self,aRequest):

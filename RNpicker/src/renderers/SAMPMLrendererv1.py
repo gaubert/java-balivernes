@@ -4,6 +4,7 @@ import re
 import query.parser
 import common.utils
 
+from common import Conf
 
 class BaseRenderer(object):
     """ Base Class used to transform the fetcher content into XML """
@@ -16,7 +17,7 @@ class BaseRenderer(object):
     
     def __init__(self,aDataFetcher):
         
-        self._conf              = common.utils.Conf.get_instance()
+        self._conf              = common.Conf.get_instance()
         self._fetcher           = aDataFetcher
         self._quantifiable      = set()
         self._template          = None

@@ -8,8 +8,9 @@ import StringIO
 import re
 import common.utils
 import common.xml_utils
-from db import DatabaseConnector
-from db import DBDataFetcher
+from common import Conf
+from db     import DatabaseConnector
+from db     import DBDataFetcher
 from renderers.SAMPMLrendererv1 import ParticulateRenderer
 
 
@@ -41,7 +42,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
         activateTimer = True
    
-        self.conf = common.utils.Conf.get_instance()
+        self.conf = Conf.get_instance()
         self.mainDatabase  = self.conf.get("MainDatabaseAccess","hostname")
         self.mainUser      = self.conf.get("MainDatabaseAccess","user")
         self.mainPassword  = self.conf.get("MainDatabaseAccess","password")

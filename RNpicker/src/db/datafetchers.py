@@ -12,11 +12,13 @@ import zlib
 import base64
 from StringIO import StringIO
 
-import common.utils
+#import common.utils
 import common.time_utils
 import db.rndata
 import query.parser
-from common.exceptions import CTBTOError
+
+from common import CTBTOError
+from common import Conf
 # list of requests
 from sqlrequests import *
 
@@ -62,7 +64,7 @@ class DBDataFetcher(object):
        if type is None: 
            type = "Particulate"
        
-       conf = common.utils.Conf.get_instance()
+       conf = Conf.get_instance()
        
        inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_parser':query.parser.RequestParser(),'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     

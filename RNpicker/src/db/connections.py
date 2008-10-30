@@ -1,8 +1,8 @@
 import logging
 import sqlalchemy
 
-import common
-from common.exceptions import CTBTOError
+import common.utils
+from common import CTBTOError
 
 
 class DatabaseConnector:

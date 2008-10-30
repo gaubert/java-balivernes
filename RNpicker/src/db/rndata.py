@@ -6,7 +6,8 @@ import logging
 import os
 import subprocess
 import common.utils
-import common.exceptions
+
+from common import CTBTOError
 
 __all__ = ["RemoteFSDataSource","RemoteArchiveDataSource"]
 
@@ -226,7 +227,7 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         
         res = subprocess.call([self._remoteScript,self._remotePath,destinationPath])
         if res != 0:
-           raise common.exceptions.CTBTOError(-1,"Error when executing sftp Script %s\n"%(self._remoteScript))
+           raise CTBTOError(-1,"Error when executing sftp Script %s\n"%(self._remoteScript))
         
         self._fd = open(destinationPath,"r")
     
@@ -304,7 +305,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         res = subprocess.call([self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser])
         if res != 0:
-           raise common.exceptions.CTBTOError(-1,"Error when executing archiveAccess Script %s\n"%(self._remoteScript))
+           raise CTBTOError(-1,"Error when executing archiveAccess Script %s\n"%(self._remoteScript))
         
         self._fd = open(destinationPath,"r")
     
