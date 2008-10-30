@@ -15,7 +15,7 @@ from StringIO import StringIO
 #import common.utils
 import common.time_utils
 import db.rndata
-import query.parser
+from query import RequestParser
 
 from common import CTBTOError
 from common import Conf
@@ -66,7 +66,7 @@ class DBDataFetcher(object):
        
        conf = Conf.get_instance()
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_parser':query.parser.RequestParser(),'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
+       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_parser':RequestParser(),'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':type},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
        result.close()
        
@@ -95,7 +95,7 @@ class DBDataFetcher(object):
         self._conf              = common.utils.Conf.get_instance()
         
         # create query parser 
-        self._parser            = query.parser.RequestParser()
+        self._parser            = RequestParser()
         
          # get flag indicating if the cache function is activated
         self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False
@@ -457,7 +457,7 @@ class DBDataFetcher(object):
             # cache checking : Checks that the request doesn't contain more spectrum than asked
             reqDict = self._parser.parse(aParams)
             
-            spectra = reqDict[query.parser.RequestParser.SPECTRUM]
+            spectra = reqDict[RequestParser.SPECTRUM]
             
             present = self._dataBag[u'CONTENT_PRESENT']
             
@@ -1077,7 +1077,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchData(self,aParams=""):
         """ get the different raw data info """
         
-        spectrums = self._parser.parse(aParams).get(query.parser.RequestParser.SPECTRUM,set())
+        spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
         
         #fetch current spectrum
         if ('CURR' in spectrums):

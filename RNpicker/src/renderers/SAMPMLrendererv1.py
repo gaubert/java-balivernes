@@ -5,6 +5,7 @@ import query.parser
 import common.utils
 
 from common import Conf
+from query  import RequestParser
 
 class BaseRenderer(object):
     """ Base Class used to transform the fetcher content into XML """
@@ -25,7 +26,7 @@ class BaseRenderer(object):
         self._analysisCounter   = 0
         
         # create query parser 
-        self._parser            = query.parser.RequestParser()
+        self._parser            = RequestParser()
         
         # dict used to substitute values in fetcher with template values
         self._substitutionDict = {  "SAMPLEID"           :   "SAMPLE_ID",
@@ -174,7 +175,7 @@ class ParticulateRenderer(BaseRenderer):
        """
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
-        requestedTypes = requestDict[query.parser.RequestParser.SPECTRUM]
+        requestedTypes = requestDict[RequestParser.SPECTRUM]
         
         if 'PREL' in requestedTypes:
             # add all prels found in CURR_List_OF_PRELS in the set

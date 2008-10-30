@@ -8,10 +8,11 @@ import StringIO
 import re
 import common.utils
 import common.xml_utils
+
 from common import Conf
 from db     import DatabaseConnector
 from db     import DBDataFetcher
-from renderers.SAMPMLrendererv1 import ParticulateRenderer
+from renderers import ParticulateRenderer
 
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
