@@ -121,6 +121,62 @@ class Resource(object):
     
        # we do have a val
        return val
+   
+    def _get(self,conv):
+      """
+           Private _get method used to convert to the right expected type (int,float or boolean).
+           Strongly inspired by ConfigParser.py
+              
+           Returns:
+              value converted into the asked type
+       
+           Raises:
+              exception ValueError if conversion issue
+      """
+      return conv(self.getValue())
+
+    def getValueAsInt(self):
+      """
+           Return the value as an int
+              
+           Returns:
+              value converted into the asked type
+       
+           Raises:
+              exception ValueError if conversion issue
+      """
+      return self._get(int)
+
+    def getValueAsFloat(self):
+      """
+           Return the value as a float
+              
+           Returns:
+              value converted into the asked type
+       
+           Raises:
+              exception ValueError if conversion issue
+      """
+      return self._get(float)
+
+    _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
+                       '0': False, 'no': False, 'false': False, 'off': False}
+
+    def getValueAsBoolean(self):
+        """
+           Return the value as a boolean
+              
+           Returns:
+              value converted into the asked type
+       
+           Raises:
+              exception ValueError if conversion issue
+        """
+        v = self.getValue()
+        if v.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % v
+        return self._boolean_states[v.lower()]
+   
 def tests():
 
   # set command line
@@ -140,6 +196,26 @@ def tests():
   r = Resource(CliArgument="--LongName",EnvVariable="MYENVVAR")
   
   print "Check precedence Rule. Should get the Cli Val first [%s]=[My Cli Value]\n"%(r.getValue())
+  
+  os.environ["MYENVVAR"]="yes"
+  
+  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+  
+  print "Get Boolean Value =%s. return res of (r.getValueAsBoolean) == True : %s \n"%(r.getValueAsBoolean(),(r.getValueAsBoolean() == True))
+  
+  os.environ["MYENVVAR"]="4"
+  
+  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+  
+  print "Get Int Value =%s. return res of (r.getValueAsInt()+1) = %s \n"%(r.getValueAsInt(),(r.getValueAsInt()+1))
+  
+  os.environ["MYENVVAR"]="4.345"
+  
+  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+  
+  print "Get Float Value =%s. return res of (r.getValueAsFloat()+1) = %s \n"%(r.getValueAsFloat(),(r.getValueAsFloat()+1))
+  
+  
   
   
 if __name__ == '__main__':
