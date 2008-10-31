@@ -4,7 +4,7 @@ import os
 from lxml import etree
 from StringIO import StringIO
 
-from  common.exceptions import CTBTOError
+from  ctbto.common.exceptions import CTBTOError
 
 
 def valid_schema():

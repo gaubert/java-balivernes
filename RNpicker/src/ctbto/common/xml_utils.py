@@ -1,7 +1,7 @@
-import common.utils
 from lxml import etree
 
-from common import Conf
+import ctbto.common.utils
+from ctbto.common import Conf
 
 def pretty_print_xml(aFDescriptor,aOutput):
    """ xml pretty printing from a stream. Take a file descriptor (fd or StringIO for example """
@@ -15,4 +15,4 @@ def pretty_print_xml(aFDescriptor,aOutput):
    
    result = transform(tree)
    
-   common.utils.printInFile(str(result),aOutput)
+   ctbto.common.utils.printInFile(str(result),aOutput)

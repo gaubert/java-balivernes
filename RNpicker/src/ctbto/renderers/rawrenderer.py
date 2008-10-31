@@ -5,9 +5,9 @@ import re
 from xml.etree.ElementTree import ElementTree, Element, SubElement, dump # Python 2.5
 
 # internal libraries
-from  common.exceptions import CTBTOError
-from  db.connections    import DatabaseConnector
-import common.utils as utils
+from  ctbto.common.exceptions import CTBTOError
+from  ctbto.db.connections    import DatabaseConnector
+import ctbto.common.utils as utils
 
 """ Module used to dump the database table content in an xml relational context """
 

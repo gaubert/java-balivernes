@@ -3,11 +3,12 @@
     Use this to export Classes public to the package (used outside of the package)
 '''
 __all__ = []
-for subpackage in ['connections','datafetchers']:
+for subpackage in ['datafetchers','connections']:
     try:
        exec 'import ' + subpackage
        exec 'from ' + subpackage + ' import *'
        __all__.append( subpackage )
-    except ImportError:
+    except ImportError, e:
+       print "received exception = %s\n"%(e)
        pass
 

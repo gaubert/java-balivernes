@@ -12,14 +12,14 @@ import zlib
 import base64
 from StringIO import StringIO
 
-#import common.utils
-import common.time_utils
-import db.rndata
-from query import RequestParser
+import ctbto.common.time_utils
+import ctbto.db.rndata
+from ctbto.query import RequestParser
 
-from common import CTBTOError
-from common import Conf
-# list of requests
+from ctbto.common import CTBTOError
+from ctbto.common import Conf
+# module local to the package so no needs of ctbto here
+#list of requests
 from sqlrequests import *
 
 
@@ -92,7 +92,7 @@ class DBDataFetcher(object):
         self._dataBag[u'CONTENT_NOT_PRESENT'] = set()
         
         # get reference to the conf object
-        self._conf              = common.utils.Conf.get_instance()
+        self._conf              = ctbto.common.utils.Conf.get_instance()
         
         # create query parser 
         self._parser            = RequestParser()
@@ -351,7 +351,7 @@ class DBDataFetcher(object):
          data[u'DATA_DECAY_TIME'] = "Unknown"
        else:   
          # retrun difference in seconds
-         dc = common.time_utils.getDifferenceInTime(b,a)
+         dc = ctbto.common.time_utils.getDifferenceInTime(b,a)
          data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
        
        a = rows[0][u'DATA_COLLECT_STOP']
@@ -361,7 +361,7 @@ class DBDataFetcher(object):
          data[u'DATA_SAMPLING_TIME'] = "Unknown"
        else:
          # sampling time in secondds
-         dc =  common.time_utils.getDifferenceInTime(b,a)
+         dc =  ctbto.common.time_utils.getDifferenceInTime(b,a)
          data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
        
        data[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(data['DATA_ACQ_LIVE_SEC']) if data['DATA_ACQ_LIVE_SEC'] is not None else ""
@@ -395,7 +395,7 @@ class DBDataFetcher(object):
         # create caching dir if it doesn't exist
         dir = self._conf.get("Caching","dir","/tmp")
         
-        common.utils.makedirs(dir)
+        ctbto.common.utils.makedirs(dir)
         
         return "%s/sampml_caching_%s.data"%(dir,aSampleID)
         
@@ -528,7 +528,7 @@ class DBDataFetcher(object):
         
         """
         # use curryfication to create the justify func with 11 chars
-        justify = common.utils.curry(string.ljust,width=11)
+        justify = ctbto.common.utils.curry(string.ljust,width=11)
         
         # justify all elements in the list
         list = map(justify,aLine.split()[1:])
@@ -627,7 +627,7 @@ class DBDataFetcher(object):
         if self._conf.getboolean("Options","remoteDataSource") is True:
            # to be changed as a factory should be used
            if aFoundOnArchive is True:
-              input = db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
+              input = ctbto.db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
               ext   = os.path.splitext(input.getLocalFilename())[-1]
            else: 
               input = db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
@@ -1378,10 +1378,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         # check collection flag
         
         # check that collection time with 24 Hours
-        collect_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_START"%(aDataname)])
-        collect_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_STOP"%(aDataname)])
+        collect_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_START"%(aDataname)])
+        collect_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_STOP"%(aDataname)])
     
-        diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start, collect_stop)
         
         # check time collection within 24 hours +/- 10 % => 3hrs
         # between 21.6 and 26.4
@@ -1396,10 +1396,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         # need to be done within 3 hours
         
         # check that collection time with 24 Hours
-        acq_start  = common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_START"%(aDataname)])
-        acq_stop   = common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_STOP"%(aDataname)])
+        acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_START"%(aDataname)])
+        acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_STOP"%(aDataname)])
     
-        diff_in_sec = common.time_utils.getDifferenceInTime(collect_start, collect_stop)
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start, collect_stop)
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):
@@ -1411,7 +1411,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
         
         # check that collection time with 24 Hours
-        decay_time_in_sec   = common.time_utils.getDifferenceInTime(collect_stop,acq_start)
+        decay_time_in_sec   = ctbto.common.time_utils.getDifferenceInTime(collect_stop,acq_start)
         
         if (decay_time_in_sec > 24*60*60):
             self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = decay_time_in_sec
@@ -1419,8 +1419,8 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = 0
             
         #  check sample_arrival_delay
-        entry_date_time      = common.time_utils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
-        sample_arrival_delay = common.time_utils.getDifferenceInTime(entry_date_time,collect_start)
+        entry_date_time      = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
+        sample_arrival_delay = ctbto.common.time_utils.getDifferenceInTime(entry_date_time,collect_start)
         
         # check that sample_arrival_delay is within 72 hours or 72*60*60 seconds
         if sample_arrival_delay > (72*60*60):

@@ -5,10 +5,10 @@ r""" Return object for access the Radionuclide data locally or remotely
 import logging
 import os
 import subprocess
-import common.utils
 
-from common import CTBTOError
-from common import Conf
+import ctbto.common.utils
+from ctbto.common import CTBTOError
+from ctbto.common import Conf
 
 def _complain_ifclosed(closed):
     if closed:
@@ -214,7 +214,7 @@ class RemoteFSDataSource(BaseRemoteDataSource):
             self._localFilename = os.path.basename(self._remotePath)
         
         # make local dir if not done
-        common.utils.makedirs(self._localDir)
+        ctbto.common.utils.makedirs(self._localDir)
             
         # path under which the file is going to be stored
         destinationPath = "%s/%s"%(self._localDir,self._localFilename)
@@ -290,7 +290,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         """ fetch the file and store it in a temporary location """
         
         # make local dir if not done
-        common.utils.makedirs(self._localDir)
+        ctbto.common.utils.makedirs(self._localDir)
             
         # path under which the file is going to be stored
         # It is the original filename_id
