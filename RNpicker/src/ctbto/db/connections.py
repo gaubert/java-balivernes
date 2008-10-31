@@ -1,8 +1,9 @@
 import logging
 import sqlalchemy
 
-import common.utils
-from common import CTBTOError
+
+from ctbto.common.utils import ftimer
+from ctbto.common import CTBTOError
 
 
 class DatabaseConnector:
@@ -118,7 +119,7 @@ class DatabaseConnector:
         else:
            result = []
            func = self._conn.execute
-           print "Time: %s secs \nDatabase: %s\nRequest: %s\n"%(common.utils.ftimer(func,[sql],{},result,number=1),self._database,aSql)
+           print "Time: %s secs \nDatabase: %s\nRequest: %s\n"%(ftimer(func,[sql],{},result,number=1),self._database,aSql)
            return result[0]
         
         

@@ -6,7 +6,7 @@ import base64
 import os
 import zlib
 import distutils.dir_util
-import common.utils
+import ctbto.common.utils
 import re
 
 from db.rndata import RemoteFSDataSource
@@ -102,7 +102,7 @@ def testRemoteDataSource():
 
 def testMakedirs():
     
-    common.utils.makedirs("/tmp/tata/r")
+    ctbto.common.utils.makedirs("/tmp/tata/r")
     
 
 def testCheckThatNoTagsAreLeft():

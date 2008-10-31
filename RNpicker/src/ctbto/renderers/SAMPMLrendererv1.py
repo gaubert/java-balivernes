@@ -1,11 +1,11 @@
 import logging
 import re
 
-import query.parser
-import common.utils
+import ctbto.query.parser
+import ctbto.common.utils
 
-from common import Conf
-from query  import RequestParser
+from ctbto.common import Conf
+from ctbto.query  import RequestParser
 
 class BaseRenderer(object):
     """ Base Class used to transform the fetcher content into XML """
@@ -18,7 +18,7 @@ class BaseRenderer(object):
     
     def __init__(self,aDataFetcher):
         
-        self._conf              = common.Conf.get_instance()
+        self._conf              = ctbto.common.Conf.get_instance()
         self._fetcher           = aDataFetcher
         self._quantifiable      = set()
         self._template          = None
@@ -52,7 +52,7 @@ class BaseRenderer(object):
         path = self._conf.get("TemplatingSystem","baseTemplate")
         
         # assert that the file exists
-        common.utils.file_exits(path)
+        ctbto.common.utils.file_exits(path)
         
         # read the full template in a string buffer
         f = open(path,"r") 

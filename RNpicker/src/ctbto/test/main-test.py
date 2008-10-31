@@ -7,13 +7,15 @@ import logging
 import logging.handlers
 import StringIO
 import re
-import common.utils
-import common.xml_utils
+import ctbto.common.utils
+import ctbto.common.xml_utils
 
-from common import Conf
-from db     import DatabaseConnector
-from db     import DBDataFetcher
-from renderers import ParticulateRenderer
+from ctbto.common    import Conf
+from ctbto.db        import DatabaseConnector,DBDataFetcher
+
+#from ctbto.db        import DBDataFetcher
+
+from ctbto.renderers import ParticulateRenderer
 
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
@@ -191,7 +193,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    
-           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
            # check if no tags are left
            self.assertIfNoTagsLeft(path)

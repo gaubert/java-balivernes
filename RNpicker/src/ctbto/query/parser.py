@@ -2,10 +2,10 @@ import re
 import logging
 
 
-import common.utils
+import ctbto.common.utils
 
-from common import CTBTOError
-from common import Conf
+from ctbto.common import CTBTOError
+from ctbto.common import Conf
 
 
 class RequestParser(object):
