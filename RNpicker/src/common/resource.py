@@ -3,6 +3,7 @@
    For example the Conf object is defining a ressource called conf-path as 
 """
 
+
 import sys
 import os
 
@@ -25,7 +26,7 @@ class Resource(object):
         It can be read first from the Command Line, then from the ENV as an env variable and finally from a conf file 
     """
     
-    def __init__(self,CliArgument=None,EnvVariable=None): 
+    def __init__(self,CliArgument=None,EnvVariable=None,ConfProperty=None): 
       """ 
           Default Constructor.
           It is important to understand that there is precedence between the different ways to set the ressource:
@@ -34,12 +35,17 @@ class Resource(object):
            Args:
               CliArgument : The command line argument name
               EnvVariable : The env variable name used for this ressource
+              ConfProperty: It should be a tupr containing two elements (group,property)
        """
       
       self._cliArg   = CliArgument.lower() if CliArgument is not None else None
       self._envVar   = EnvVariable.upper() if EnvVariable is not None else None
-      #TODO be implemented  
-      self._confVal  = None   
+      
+      if ConfProperty is not None:
+         (self._confGroup,self._confProperty) = ConfProperty
+      else:
+         self._confGroup    = None
+         self._confProperty = None
       
     def setCliArgument(self,CliArgument):
         self._cliArg = CliArgument.lower()
@@ -61,8 +67,6 @@ class Resource(object):
       if self._cliArg == None:
         return None
     
-     
-     
       # look for cliArg in sys argv
       for arg in sys.argv:
          if arg.lower() == self._cliArg:
@@ -96,13 +100,21 @@ class Resource(object):
         """
            Get from conf. To be done.
         """
-        return None
+        if (self._confGroup is not None) and (self._confProperty is not None):
+            # TODO: do something with the conf 
+            if Conf.can_be_instanciated():
+                return Conf.get_instance().get(self._confGroup,self._confProperty)
         
-    def getValue(self):
+        return False
+          
+        
+    def getValue(self,aRaiseException=True):
        """
            Return the value of the Resource as a string.
            - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
               
+           Arguments:
+              aRaiseException: flag indicating if an exception should be raise if value not found
            Returns:
               value of the Resource as a String
        
@@ -116,8 +128,8 @@ class Resource(object):
            val = self._getValueFromEnv()
            if val is None:
                val = self._getFromConf()
-               if val is None:
-                   raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf value %s\n"%(self._cliArg,self._envVar,self._confVal))
+               if (val is None) and ARaisException:
+                  raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf value %s\n"%(self._cliArg,self._envVar,self._confVal))
     
        # we do have a val
        return val
@@ -177,8 +189,8 @@ class Resource(object):
             raise ValueError, 'Not a boolean: %s' % v
         return self._boolean_states[v.lower()]
    
+   
 def tests():
-
   # set command line
   sys.argv.append("--LongName")
   sys.argv.append("My Cli Value")

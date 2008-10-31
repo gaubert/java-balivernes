@@ -22,6 +22,28 @@ class Conf(object):
             Conf._instance = Conf()
         return Conf._instance
     
+    def can_be_instanciated(cls):
+        """Class method used by the Resource to check that the Conf can be instantiated.
+           This two objects have a special contract as they are strongly coupled:
+           A Resource can use the Conf to check for a Resource and the Conf uses a Resource to read Conf filepath
+        
+            Returns:
+               return True if the Conf file has got a file
+        
+            Raises:
+               exception
+        """
+        #No conf info passed to the resource so the Resource will not look into the conf (to avoid recursive search)
+        r = resource.Resource(Conf._CLINAME,Conf._ENVNAME)
+        
+        filepath = r.getValue(aRaiseException=False)
+        
+        if (filepath is not None) and os.path.exists(filepath):
+            return True
+        
+        return False
+            
+    
     def __init__(self):
         
         # create resource for the conf file
@@ -51,7 +73,8 @@ class Conf(object):
             
             #raise ContextError(-1,"Can't read the config file %s"%(aFile))
 
-    get_instance    = classmethod(get_instance)
+    get_instance          = classmethod(get_instance)
+    can_be_instanciated   = classmethod(can_be_instanciated)
     
     def sections(self):
         """Return a list of section names, excluding [DEFAULT]"""
