@@ -19,5 +19,5 @@ setup(name='RNPicker',
       license='Apache 2.0',
       packages=find_packages(),
       namespace_packages=['ctbto'],
-      install_requires=['SQLAchemy']
+      install_requires=['SQLAchemy>=0.5.0','cx-Oracle>=','lxml>=2.0']
       )
