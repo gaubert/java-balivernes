@@ -7,3 +7,5 @@ bin-python
 bin
 build
 tools
+RNpicker/dist/RNPicker.egg-info/
+RNpicker/dist/RNPicker.egg-info/*
