@@ -3,8 +3,10 @@
 # author: guillaume.aubert@ctbto.org
 #=============================================================================
 BASEDIR=.
+# internal dirs
 DIST=$(BASEDIR)/dist
-BUILDDIST=$(BASEDIR)/build/dist
+BUILD=$(BASEDIR)/build
+BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
 PYTHONBIN=/usr/bin/python
@@ -22,8 +24,11 @@ init:
 egg-dist: init 
 	cd $(DIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(DISTNAME) -d ../$(BUILDDIST) 
 
-clean:
-	cd $(DIST); rm -Rf build; rm -Rf RNPicker.egg-info; rm -Rf dist
+clean: clean-build
+	cd $(DIST); rm -Rf build; rm -Rf RNPicker.egg-info
+	
+clean-build:
+	cd $(BUILD); rm -Rf egg-dist
 
     
 
