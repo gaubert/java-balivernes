@@ -22,7 +22,35 @@ class curry:
             kw = kwargs or self.kwargs
         return self.fun(*(self.pending + args), **kw)
 
+def checksum(aString):
+    """checksum the passed string. This is a 32 bits checksum
+    
+        Args:
+           params: aString. String from which the checksum is computed 
+           
+        Returns:
+           return the checksum of the passed string
+    
+        Raises:
+           exception
+    """
+        
+    chksum = 0L
+    toggle = 0
 
+    i = 0
+    while i < len(aString):
+        ch = aString[i]
+        if ord(ch) > 0:
+            if toggle: chksum = chksum << 1
+            chksum = chksum + ord(ch)
+            chksum = chksum & 0X7fffffff
+            toggle = not toggle
+        else:
+            chksum = chksum + 1
+        i = i + 1
+
+    return chksum
 
 #####################################
 #

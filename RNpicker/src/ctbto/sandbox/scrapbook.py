@@ -9,7 +9,7 @@ import distutils.dir_util
 import ctbto.common.utils
 import re
 
-from db.rndata import RemoteFSDataSource
+from ctbto.db.rndata import RemoteFSDataSource
  
 #
 str1 = """Dallas Cowboys football practice at Valley Ranch was delayed on Wednesday
@@ -153,13 +153,32 @@ def testParseSpectrumInfo():
       for val in vals:
           print "val = %s\n"%(val.strip().upper())
 
+def checksumTest(str):
+
+    chksum = 0L
+    toggle = 0
+
+    i = 0
+    while i < len(str):
+        ch = str[i]
+        if ord(ch) > 0:
+            if toggle: chksum = chksum << 1
+            chksum = chksum + ord(ch)
+            chksum = chksum & 0X7fffffff
+            toggle = not toggle
+        else:
+            chksum = chksum + 1
+        i = i + 1
+
+    return chksum
+
 if __name__ == '__main__':
     
-    s = set()
+    print "checksum = %s\n"%(checksumTest("947.91448974609398-3.288769245147710.889110267162323-0.132615581154823-0.194482043385505980.25442627072334301-0.08029260486364360505"))
     
-    s.add('A')
-    s.add('B')
-    
+    d = {'a':1,'b':2,'c':3,'d':4}
+
+    print "hash(l)="%(hash(l))
     
     
     
