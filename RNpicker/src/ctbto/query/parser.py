@@ -12,6 +12,7 @@ class RequestParser(object):
     """ Class used to parse a user request """
     
     SPECTRUM = 'spectrum'
+    ANALYSIS = 'analysis'
     
     # Class members
     c_log = logging.getLogger("query.RequestParser")
@@ -19,10 +20,13 @@ class RequestParser(object):
     
     # spectrum types
     c_spectrum_types = set(['CURR','QC','PREL','BK'])
+    c_analysis_types = set(['CURR','QC','PREL','BK'])
     
     # regular expression stuff for spectrum param
-    c_pattern        ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
-    c_spectrum_rex   = re.compile(c_pattern, re.IGNORECASE)
+    c_pattern             ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
+    c_spectrum_rex        = re.compile(c_pattern, re.IGNORECASE)
+    c_analysis_pattern    ="(?P<command>\s*analysis\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
+    c_analysis_rex        = re.compile(c_analysis_pattern, re.IGNORECASE)
     
     def __init__(self,):
         """ constructor """
@@ -47,17 +51,73 @@ class RequestParser(object):
         result = {}
         
         result[RequestParser.SPECTRUM] = self._parseSpectrumParams(aRequest)
+        result[RequestParser.ANALYSIS] = self._parseAnalysisParams(aRequest)
         
         return result
-     
+    
+    def _parseAnalysisParams(self,aRequest=""):
+       
+        """ parse the analysis part of the params string. It should be something like analysis=CURR/QC/BK/PREL.
+            This is used to specify which of the spectra related to the current spectrum must be retrieved
+            The different values:
+            - ALL all the analyses. 
+            - CURR if the analysis associated with the current spectrum should be retrieved,
+            - QC the QC Analysis
+            - BK the Background Analysis
+        
+            Args:
+               aRequest: string of parameters in the form of param=values,param=values ....
+                        From this string the analysis=ALL or analysis=QC/CURR is searched. 
+                        The found values will be used to retrieved the related associated samples
+               
+            Returns:
+               return List of spectrum types to fetch
+        
+            Raises:
+               exception CTBTOError if the syntax of the aRequest string is incorrect
+        """
+        
+        result = set()
+        
+        # try to match the spectrum param
+        m = RequestParser.c_analysis_rex.match(aRequest)
+    
+        if m is None:
+            print("Warning, Cannot find the analysis=val1/val2 in param string %s\nUse default analysis=CURR"%(aRequest))
+            result.update(RequestParser.c_analysis_types)
+            return result
+        
+        values = m.group('values')
+      
+        vals = values.split('/')
+      
+        if len(vals) == 0:
+          raise CTBTOError(-1,"Cannot find values for the analysis params in parameters string %s"%(aRequest))
+        
+        for val in vals:
+          dummy = val.strip().upper()
+          
+          if dummy == 'ALL':
+             #ALL superseeds everything and add all the different types
+             result.update(RequestParser.c_analysis_types)
+             # leave loop
+             break
+                
+          if dummy not in RequestParser.c_analysis_types:
+              raise CTBTOError(-1,"Unknown analysis type %s. The analysis type can only be one of the following %s"%(dummy,RequestParser.c_analysis_types))
+          
+          result.add(dummy)
+          
+        return result  
+    
      
     def _parseSpectrumParams(self,aRequest=""):
        
-        """ parse the spectrum part of the params string. It should be something like spectrum=FULL/QC/BK.
+        """ parse the spectrum part of the params string. It should be something like spectrum=CURR/QC/BK.
             This is used to specify which of the spectra related to the current spectrum must be retrieved
             The different values:
             - ALL all the spectrum. This is the default,
-            - FULL if the associated FULL spectrum should be retrieved,
+            - CURR if the associated CURR spectrum should be retrieved,
             - QC the QC Spectrum
             - BK the Background Spectrum
         

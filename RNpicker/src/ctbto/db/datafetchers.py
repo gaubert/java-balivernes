@@ -1290,6 +1290,8 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchAnalysisResults(self):
         """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
+        
+        
         print "Getting Analysis Results for %s\n"%(self._sampleID)
         
         # get the dataname of the current spectrum (it is the main spectrum)
