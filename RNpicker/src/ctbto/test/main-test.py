@@ -7,6 +7,8 @@ import logging
 import logging.handlers
 import StringIO
 import re
+from lxml import etree
+
 import ctbto.common.utils
 import ctbto.common.xml_utils
 
@@ -72,6 +74,10 @@ class TestSAMPMLCreator(unittest.TestCase):
    
         self.archConn.connect()
         
+        # compile xpath expressions used to check final product
+        self.xpath_calIDs      = etree.XPath("//*[local-name(.)='CalibrationInformation']/*[local-name(.)='Calibration']/@ID")
+        self.xpath_specalIDs   = etree.XPath("//*[local-name(.)='MeasuredInformation']/*[local-name(.)='Spectrum']/@calibrationIDs")
+        
     def assertIfNoTagsLeft(self,path):
         """
            Check that no tags are left in the XML
@@ -90,7 +96,30 @@ class TestSAMPMLCreator(unittest.TestCase):
         res = re.findall(pattern, strToCheck)
          
         self.failUnless((len(res) == 0), "Error. the file %s contains the following tags=%s"%(path,res))
-            
+        
+    def assertAllCalibrationInfo(self,path):
+        """
+           check that the calibration info is there
+        """
+        
+        tree = etree.parse(open(path,"r"))
+        
+        #xpath1 = etree.XPath("//CalibrationInformation/Calibration[@ID]")
+        
+        calibrationIDs    = self.xpath_calIDs(tree)
+        specCalIDs        = self.xpath_specalIDs(tree)
+
+        print "spec cal = %s\n"%(specCalIDs)
+        print "calibrationIDs =%s\n"%(calibrationIDs)
+        
+        for cals in specCalIDs:
+            # split string
+            clist = cals.split(' ')
+            for elem in clist:
+                self.failUnless((elem in calibrationIDs), "Error the following calibration info %s is not defined in the <Calibration> Tag. Xml file produced %s\n"%(elem,path))
+        
+   
+           
 
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
@@ -154,7 +183,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-01',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-01',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='10')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -197,6 +226,8 @@ class TestSAMPMLCreator(unittest.TestCase):
            
            # check if no tags are left
            self.assertIfNoTagsLeft(path)
+           
+           self.assertAllCalibrationInfo(path)
            
            t1 = time.time()
            
