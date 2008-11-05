@@ -265,7 +265,25 @@ class DBDataFetcher(object):
             transformedDict["%s_%s"%(aPrefix,key)] = value
               
         return transformedDict
-            
+    
+    def _getCalibrationCheckSum(self,aCoeffs):
+        """return the checksum of the calibration coeffs. This is done to create a unique id for the different calibration types.
+        
+            Args:
+               aCoeffs: a list of coeffs
+               
+            Returns:
+               return the transformed hash
+        
+            Raises:
+               exception
+        """
+        
+        coeffsStr = ''.join(map(str,aCoeffs))
+        
+        return ctbto.common.utils.checksum(coeffsStr)
+        
+          
               
     def _fetchSampleRefId(self):
         """get the reference_id for this sample
@@ -630,7 +648,7 @@ class DBDataFetcher(object):
               input = ctbto.db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
               ext   = os.path.splitext(input.getLocalFilename())[-1]
            else: 
-              input = db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
+              input = ctbto.db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
               ext   = os.path.splitext(input.getLocalFilename())[-1]
         else:
             # this is a local path so check if it exits and open fd
@@ -834,7 +852,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         
 
 class ParticulateDataFetcher(DBDataFetcher):
-    """ Class for fetching particualte related data """
+    """ Class for fetching particulate related data """
     
       # Class members
     c_log = logging.getLogger("datafetchers.ParticulateDataFetcher")
@@ -907,7 +925,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """
         
         # precondition do nothing if there the curr sample is a Detector background itself
-        prefix = self._dataBag.get(u'CURRENT_SPECTRUM',"")
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
            return
         
@@ -965,7 +983,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
         
         # precondition do nothing if there the curr sample is a Detector background itself
-        prefix = self._dataBag.get(u'CURRENT_SPECTRUM',"")
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
            return
         
@@ -1014,7 +1032,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         """
         
         # precondition do nothing if there the curr sample is a prel itself
-        prefix = self._dataBag.get(u'CURRENT_SPECTRUM',"")
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
            return
     
@@ -1069,7 +1087,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         (dataname,type) = self._fetchSpectrumData(self._sampleID)
         
-        self._dataBag[u'CURRENT_SPECTRUM'] = dataname
+        self._dataBag[u'CURRENT_CURR'] = dataname
         
         if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
            self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
@@ -1275,7 +1293,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         print "Getting Analysis Results for %s\n"%(self._sampleID)
         
         # get the dataname of the current spectrum (it is the main spectrum)
-        dataname = self._dataBag.get('CURRENT_SPECTRUM','')
+        dataname = self._dataBag.get('CURRENT_CURR','')
         
         self._fetchCategoryResults()
         
@@ -1477,11 +1495,18 @@ class ParticulateDataFetcher(DBDataFetcher):
         # add in dataBag
         self._dataBag[u'UPDATE_PARAMETERS'] = data
         
-    def _fetchCalibration(self):  
-        """ Fetch the calibration info for particulate """
+    def _fetchCalibrationCoeffs(self,prefix):
+        
+        # get the sampleID 
+        sid = self._dataBag.get("%s_SAMPLE_ID"%(prefix),None)
+           
+        if sid is None:
+            raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
+        
+        calIDs_list = []
         
         # get energy calibration info
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_ENERGY_CAL%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_ENERGY_CAL%(sid))
         
         rows = result.fetchall()
         
@@ -1490,15 +1515,27 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
-         # create a list of dicts
+        # create a list of dicts
         data = {}
 
         data.update(rows[0].items())
         
-        # add in dataBag
-        self._dataBag[u'ENERGY_CAL'] = data
+        checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_RESOLUTION_CAL%(self._sampleID))
+        cal_id = 'EN_%s'%(checksum)
+        
+        # add in dataBag as EN_checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # prefix_ENERGY_CAL now refers to this calibration ID
+        self._dataBag[u'%s_ENERGY_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        # get resolution Calibration
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_RESOLUTION_CAL%(sid))
         
         rows = result.fetchall()
         
@@ -1507,15 +1544,26 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have 1 resolution calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
-         # create a list of dicts
+        # init list of dicts
         data = {}
 
         data.update(rows[0].items())
         
-        # add in dataBag
-        self._dataBag[u'RESOLUTION_CAL'] = data
+        checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_EFFICIENCY_CAL%(self._sampleID))
+        cal_id = 'RE_%s'%(checksum)
+        
+        # add in dataBag as EN_checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # add in dataBag
+        self._dataBag[u'%s_RESOLUTION_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_EFFICIENCY_CAL%(sid))
         
         rows = result.fetchall()
         
@@ -1524,15 +1572,52 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults is not 1:
             raise CTBTOError(-1,"Expecting to have 1 efficiency calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
         
-         # create a list of dicts
+        # create a list of dicts
         data = {}
 
         data.update(rows[0].items())
         
-        # add in dataBag
-        self._dataBag[u'EFFICIENCY_CAL'] = data
+        checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
+       
+        cal_id = 'EF_%s'%(checksum)
         
-        result.close()            
+        # add in dataBag as EN_checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # add in dataBag
+        self._dataBag[u'%s_EFFICIENCY_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        # add the list of calib_infos in the bag
+        self._dataBag[u'%s_DATA_ALL_CALS'%(prefix)] = calIDs_list
+        
+        result.close()
+        
+    def _fetchCalibration(self):  
+        """ Fetch the calibration info for all the different spectrums """
+        
+        for present in self._dataBag.get('CONTENT_PRESENT',[]):
+            
+            # treat preliminary samples differently
+            if present == 'PREL':
+                
+                for prel in self._dataBag.get('CURR_List_OF_PRELS',[]):
+                    
+                    if prel is None:
+                       raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                    
+                    self._fetchCalibrationCoeffs(prel)
+            else:    
+            
+               prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
+               if prefix is None:
+                  raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+               
+               self._fetchCalibrationCoeffs(prefix)
+                        
         
                    
 

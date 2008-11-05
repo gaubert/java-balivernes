@@ -4,6 +4,8 @@ import re
 import ctbto.query.parser
 import ctbto.common.utils
 
+from ctbto.common import CTBTOError
+
 from ctbto.common import Conf
 from ctbto.query  import RequestParser
 
@@ -138,7 +140,7 @@ class ParticulateRenderer(BaseRenderer):
         results = []
         
         if 'CURR' in aSpectrums:
-            results.append(self._fetcher.get(u'CURRENT_SPECTRUM',None))
+            results.append(self._fetcher.get(u'CURRENT_CURR',None))
             aSpectrums.remove('CURR')
         
         if 'BK' in aSpectrums:
@@ -224,6 +226,13 @@ class ParticulateRenderer(BaseRenderer):
               # add quantity and geometry
               spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_SAMPLE_QUANTITY"%(fname))), spectrumTemplate)
               spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_SAMPLE_GEOMETRY"%(fname))), spectrumTemplate)
+              
+              l = self._fetcher.get("%s_ALL_CALS"%(fname))
+              if l is None :
+                 raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
+             
+              # add calibration info
+              spectrumTemplate = re.sub("\${CAL_INFOS}",' '.join(map(str,l)), spectrumTemplate)
               
               # TODO to remove just there for testing, deal with the compression flag
               if self._fetcher.get("%s_COMPRESSED"%(fname),False) == True :
@@ -564,7 +573,7 @@ class ParticulateRenderer(BaseRenderer):
         # Add analysis identifier
         dummy_template = re.sub("\${ANALYSISID}", self._generateAnalysisID(),dummy_template)
         
-        spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get(u'CURRENT_SPECTRUM','')),"unknown")
+        spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get(u'CURRENT_CURR','')),"unknown")
         
         dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
         
@@ -589,8 +598,18 @@ class ParticulateRenderer(BaseRenderer):
          # add Category info in generated template
         self._populatedTemplate = re.sub("\${AnalysisResults}",dummy_template, self._populatedTemplate)
          
-    def _fillCalibration(self):
-        """ Add the calibration parameters """
+    def _fillCalibrationCoeffs(self,prefix,calibInfos):
+        """ Insert the calibration information
+        
+            Args:
+               prefix: the prefix for constituting the UID identifying the currently treated sampleID in the fetcher object
+               calibInfos: set of calib info ids that have already been included in the xml
+            
+            Returns: generated xml data for displaying calibration info
+               
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
         
         # first add Energy Cal
         template = self._conf.get("TemplatingSystem","particulateEnergyCalTemplate")
@@ -599,44 +618,102 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get energy calibration 
-        energy = self._fetcher.get("ENERGY_CAL","None")
+        en_id = self._fetcher.get("%s_ENERGY_CAL"%(prefix),None)
         
-        dummy_template = re.sub("\${TERM0}",str(energy.get('COEFF1',"None")), template)
-        dummy_template = re.sub("\${TERM1}",str(energy.get('COEFF2',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM2}",str(energy.get('COEFF3',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM3}",str(energy.get('COEFF4',"None")), dummy_template)
-            
-        # add generated xml in final container
-        xml += dummy_template
+        if (en_id is not None):
+        
+          # add calib info if it isn't there already
+          if en_id not in calibInfos:
+            energy = self._fetcher.get(en_id,{})
+            dummy_template = re.sub("\${TERM0}",str(energy.get(u'COEFF1',"None")), template)
+            dummy_template = re.sub("\${TERM1}",str(energy.get(u'COEFF2',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM2}",str(energy.get(u'COEFF3',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM3}",str(energy.get(u'COEFF4',"None")), dummy_template)
+            dummy_template = re.sub("\${EN_ID}",en_id, dummy_template)
+            # add generated xml in final container
+            xml += dummy_template
+            # add the id in the set of existing infos
+            calibInfos.add(en_id)
+        else:
+            print "Warning. Could not find any energy calibration info for sample %s\n"%(prefix)
         
         template = self._conf.get("TemplatingSystem","particulateResolutionCalTemplate")
         
-        # get resolution calibration 
-        resolution = self._fetcher.get("RESOLUTION_CAL","None")
+        re_id = self._fetcher.get("%s_RESOLUTION_CAL"%(prefix),None)
         
-        dummy_template = re.sub("\${TERM0}",str(resolution.get('COEFF1',"None")), template)
-        dummy_template = re.sub("\${TERM1}",str(resolution.get('COEFF2',"None")), dummy_template)
+        if re_id is not None: 
+          # add calib info if it isn't there already
+          if re_id not in calibInfos:
+            # get resolution calibration 
+            resolution = self._fetcher.get(re_id,{})
         
-        # add generated xml in final container
-        xml += dummy_template
+            dummy_template = re.sub("\${TERM0}",str(resolution.get('COEFF1',"None")), template)
+            dummy_template = re.sub("\${TERM1}",str(resolution.get('COEFF2',"None")), dummy_template)
+            dummy_template = re.sub("\${RE_ID}",re_id, dummy_template)
+        
+            # add generated xml in final container
+            xml += dummy_template
+    
+            # add the id in the set of existing infos
+            calibInfos.add(re_id)
+        else:
+           print "Warning. Could not find any resolution calibration info for sample %s\n"%(prefix) 
         
         template = self._conf.get("TemplatingSystem","particulateEfficencyCalTemplate")
         
-        # get resolution calibration 
-        eff = self._fetcher.get("EFFICIENCY_CAL","None")
+        eff_id = self._fetcher.get("%s_EFFICIENCY_CAL"%(prefix),None)
         
-        dummy_template = re.sub("\${LN_TERM0}",str(eff.get('COEFF1',"None")), template)
-        dummy_template = re.sub("\${TERM0}",str(eff.get('COEFF2',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM1}",str(eff.get('COEFF3',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM2}",str(eff.get('COEFF4',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM3}",str(eff.get('COEFF5',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM4}",str(eff.get('COEFF6',"None")), dummy_template)
-        dummy_template = re.sub("\${TERM5}",str(eff.get('COEFF7',"None")), dummy_template)
         
-        # add generated xml in final container
-        xml += dummy_template
         
+        if (eff_id is not None):
+          # add calib info if it isn't there already
+          if eff_id not in calibInfos:
+            # get efficiency calibration 
+            eff = self._fetcher.get(eff_id,{})
+        
+            dummy_template = re.sub("\${LN_TERM0}",str(eff.get('COEFF1',"None")), template)
+            dummy_template = re.sub("\${TERM0}",str(eff.get('COEFF2',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM1}",str(eff.get('COEFF3',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM2}",str(eff.get('COEFF4',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM3}",str(eff.get('COEFF5',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM4}",str(eff.get('COEFF6',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM5}",str(eff.get('COEFF7',"None")), dummy_template)
+            dummy_template = re.sub("\${EF_ID}",eff_id, dummy_template)
+        
+            # add generated xml in final container
+            xml += dummy_template
+            
+            # add the id in the set of existing infos
+            calibInfos.add(eff_id)
+        
+        return xml
+        
+    def _fillCalibration(self):
+        """ Add the calibration parameters for each of the spectrum"""
+        
+        xml =""
+        # list of ids added in the xml document
+        addedCalibrationIDs= set()
+        
+        for type in self._fetcher.get('CONTENT_PRESENT',[]):
+            
+           # treat preliminary samples differently as there is another indirection
+           if type == 'PREL':
+              for prefix in self._fetcher.get('CURR_List_OF_PRELS',[]):
+                  if prefix is None:
+                    raise CTBTOError(-1,"Error when filling Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(prefix,prefix))
+                
+                  xml += self._fillCalibrationCoeffs(prefix,addedCalibrationIDs)    
+           else:
+                prefix = self._fetcher.get(u'CURRENT_%s'%(type),None)
+                if prefix is None:
+                  raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(prefix,prefix))
+               
+                xml += self._fillCalibrationCoeffs(prefix,addedCalibrationIDs)      
+            
+        # out of the loop
         self._populatedTemplate = re.sub("\${CALIBRATION}",xml, self._populatedTemplate)
+       
     
     def asXmlStr(self,aRequest=""):
        """ return the xml particulate product according to the passed request
