@@ -183,7 +183,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-01',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='10')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-01',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='1')
         
         # error
         #listOfSamplesToTest = [ "700637" ]

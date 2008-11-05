@@ -156,7 +156,7 @@ class DBDataFetcher(object):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
-    def _fetchAnalysisResults(self):
+    def _fetchAnalysisResults(self,params):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
@@ -522,7 +522,7 @@ class DBDataFetcher(object):
           self._fetchData(params)
 
           # get analysis results
-          self._fetchAnalysisResults()
+          self._fetchAnalysisResults(params)
         
           self._fetchCalibration()
           
@@ -1123,14 +1123,15 @@ class ParticulateDataFetcher(DBDataFetcher):
             else:
                 aData['CAT_COMMENT'] = "Within Statistical Range"
        
-    def _fetchCategoryResults(self):
+    def _fetchCategoryResults(self,sid,dataname):
         
         """sub method of _fetchAnalysisResults. Get the Category info from the database.
            First get the category status which is the global category defined for a particular sampleID.
            Then get the details for all nuclides
         
             Args:
-               params: None
+               params: sid: Look for an analysis for the following sid
+                       dataname: prefix of the analysis
                
             Returns:
                return Nothing
@@ -1140,28 +1141,31 @@ class ParticulateDataFetcher(DBDataFetcher):
         """
             
         # get category status
-        result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY_STATUS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY_STATUS%(sid))
        
-        # only one row in result set
+        # do something only if there is some information
+        
         rows = result.fetchall()
         
-        data = {}
-        data.update(rows[0])
+        if len(rows) > 0:
+        
+          data = {}
+          data.update(rows[0])
     
-        self._dataBag.update(self._transformResults(data))
-        
-        result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY%(self._sampleID))
+          self._dataBag[u'%s_CAT_INFOS'%(dataname)] = self._transformResults(data)
+          
+          result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY%(sid))
        
-        # only one row in result set
-        rows = result.fetchall()
+          # only one row in result set
+          rows = result.fetchall()
          
-        # add results in a list which will become a list of dicts
-        res = []
+          # add results in a list which will become a list of dicts
+          res = []
         
-        # create a list of dicts
-        data = {}
+          # create a list of dicts
+          data = {}
         
-        for row in rows:
+          for row in rows:
             data.update(row)
             # transform dates if necessary
             newRow = self._transformResults(data)
@@ -1170,27 +1174,28 @@ class ParticulateDataFetcher(DBDataFetcher):
             res.append(newRow)
             data = {}
        
-        # update data bag
-        self._dataBag[u'CATEGORIES'] = res
+          # update data bag
+          self._dataBag[u'%s_CATEGORIES'%(dataname)] = res
         
         #print "res = %s"%(self._dataBag[u'CATEGORIES'])
        
         result.close()
         
-    def _fetchPeaksResults(self):
+    def _fetchPeaksResults(self,sid,dataname):
         """ Get info regarding the found peaks """
         
         # get peaks
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_PEAKS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_PEAKS%(sid))
         
         rows = result.fetchall()
         
-         # add results in a list which will become a list of dicts
-        res = []
+        if len(rows) > 0:
+          # add results in a list which will become a list of dicts
+          res = []
         
-        data = {}
+          data = {}
         
-        for row in rows:
+          for row in rows:
             data.update(row)
             # transform dates if necessary
             newRow = self._transformResults(data)
@@ -1198,43 +1203,44 @@ class ParticulateDataFetcher(DBDataFetcher):
             res.append(newRow)
             data = {}
                
-        # add in dataBag
-        self._dataBag[u'PEAKS'] = res
+          # add in dataBag
+          self._dataBag[u'%s_PEAKS'%(dataname)] = res
         
         result.close()
         
-    def _fetchNuclideLines(self):
+    def _fetchNuclideLines(self,sid,dataname):
         """Get all info regarding the Nuclide Lines for a particualr sample .
          
         """
          
         # get the data from the DB
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCLIDE_LINES_INFO%(sid))
 
         rows = result.fetchall()
         
-         # add results in a list which will become a list of dicts
-        res = []
+        if len(rows) > 0:
+          # add results in a list which will become a list of dicts
+          res = []
         
-        # create a list of dicts
-        data = {}
+          # create a list of dicts
+          data = {}
 
-        for row in rows:
+          for row in rows:
             # copy row in a normal dict
             data.update(row)
             res.append(data)
             data = {}
         
-        # add in dataBag
-        self._dataBag[u'IDED_NUCLIDE_LINES'] = res
+          # add in dataBag
+          self._dataBag[u'%s_IDED_NUCLIDE_LINES'%(dataname)] = res
         
         
-    def _fetchNuclidesResults(self):
+    def _fetchNuclidesResults(self,sid,dataname):
         """ Get all info regarding the nuclides related to this sample """
          # get non quantified nuclides
         
         # to distinguish quantified and non quantified nuclide there is a table called GARDS_NUCL2QUANTIFY => static table of the nucl to treat
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCLIDES_INFO%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCLIDES_INFO%(sid))
         
         rows = result.fetchall()
         
@@ -1260,54 +1266,63 @@ class ParticulateDataFetcher(DBDataFetcher):
             data = {}
 
         # add in dataBag
-        self._dataBag[u'IDED_NUCLIDES'] = res
+        self._dataBag[u'%s_IDED_NUCLIDES'%(dataname)] = res
         
         result.close()
         
         # return all nucl2quantify this is kind of static table
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
+        #result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
         
-        rows = result.fetchall()
+        #rows = result.fetchall()
         
          # add results in a list which will become a list of dicts
-        res = []
+        #res = []
         
         # create a list of dicts
-        data = {}
+        #data = {}
 
-        for row in rows:
+        #for row in rows:
             # copy row in a normal dict
-            data.update(row)
-            res.append(data)
-            data = {}
+         #   data.update(row)
+         #   res.append(data)
+         #   data = {}
         
         # add in dataBag
-        self._dataBag[u'NUCLIDES_2_QUANTIFY'] = res
+        #self._dataBag[u'NUCLIDES_2_QUANTIFY'] = res
         
-        result.close()  
+        #result.close()  
         
     
-    def _fetchAnalysisResults(self):
-        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+    def _fetchAnalysisResults(self,aParams):
+       """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
         
+       analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
         
-        print "Getting Analysis Results for %s\n"%(self._sampleID)
+       for analysis in analyses:
         
-        # get the dataname of the current spectrum (it is the main spectrum)
-        dataname = self._dataBag.get('CURRENT_CURR','')
+          if analysis == 'PREL' :
+              continue
         
-        self._fetchCategoryResults()
+          print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
+          
+          # get the dataname of the current spectrum (it is the main spectrum)
+          dataname = self._dataBag.get('CURRENT_%s'%(analysis),'')
+          sid      = self._dataBag.get('%s_SAMPLE_ID'%(dataname))
         
-        self._fetchNuclidesResults()
+          self._fetchCategoryResults(sid,dataname)
         
-        self._fetchNuclideLines()
+          self._fetchNuclidesResults(sid,dataname)
         
-        self._fetchPeaksResults()
+          self._fetchNuclideLines(sid,dataname)
         
-        self._fetchFlags(dataname)
+          self._fetchPeaksResults(sid,dataname)
+           
+          self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
+          
+          self._fetchFlags(sid,dataname)
         
-        self._fetchParameters(dataname)
+          self._fetchParameters(sid,dataname)
         
         
     def _getMRP(self,aDataname):
@@ -1347,48 +1362,49 @@ class ParticulateDataFetcher(DBDataFetcher):
            self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
         
         
-    def _fetchFlags(self,aDataname):
+    def _fetchFlags(self,sid,aDataname):
         """ get the different flags """
         
-        self._fetchTimelinessFlags(aDataname)
+        self._fetchTimelinessFlags(sid,aDataname)
         
-        self._fetchdataQualityFlags()
+        self._fetchdataQualityFlags(sid,aDataname)
         
         # we miss event screening flags to be added
         
     
-    def _fetchdataQualityFlags(self):
+    def _fetchdataQualityFlags(self,sid,dataname):
         """ data quality flags"""
         
          # get MDA nuclides
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_DATA_QUALITY_FLAGS%(sid))
         
         rows = result.fetchall()
         
-        data = {}
+        if len(rows):
+          data = {}
         
-        res = []
+          res = []
         
-        for row in rows:
+          for row in rows:
             # copy row in a normal dict
             data.update(row)
             
             res.append(data)
             data = {}
                
-        # add in dataBag
-        self._dataBag[u'DATA_QUALITY_FLAGS'] = res
+          # add in dataBag
+          self._dataBag[u'%s_DATA_QUALITY_FLAGS'%(dataname)] = res
         
         
         
         
-    def _fetchTimelinessFlags(self,aDataname):
+    def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """
         
         # precondition check that there is COLLECT_START 
         # otherwise quit
         if (self._dataBag.get("%s_DATA_COLLECT_START"%(aDataname),None) is None) or (self._dataBag.get("%s_DATA_COLLECT_STOP"%(aDataname),None) is None):
-            print "Warnings. Cannot compute the timeliness flags missing information for %s\n"%(self._sampleID)
+            print "Warnings. Cannot compute the timeliness flags missing information for %s\n"%(sid)
             return
        
         # get the timeliness flag
@@ -1407,9 +1423,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         # between 21.6 and 26.4
         # if 0 within 24 hours
         if diff_in_sec > 95040 or diff_in_sec < 77760:
-          self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = diff_in_sec
+          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(aDataname)] = diff_in_sec
         else:
-          self._dataBag[u'TIME_FLAGS_COLLECTION_WITHIN_24'] = 0 
+          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(aDataname)] = 0 
         
         
         # check acquisition flag
@@ -1423,9 +1439,9 @@ class ParticulateDataFetcher(DBDataFetcher):
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):
-           self._dataBag[u'TIME_FLAGS_ACQUISITION_FLAG'] = diff_in_sec
+           self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = diff_in_sec
         else:
-           self._dataBag[u'TIME_FLAGS_ACQUISITION_FLAG'] = 0 
+           self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 0 
         
         # check decay flag
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
@@ -1434,25 +1450,29 @@ class ParticulateDataFetcher(DBDataFetcher):
         decay_time_in_sec   = ctbto.common.time_utils.getDifferenceInTime(collect_stop,acq_start)
         
         if (decay_time_in_sec > 24*60*60):
-            self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = decay_time_in_sec
+            self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = decay_time_in_sec
         else:
-            self._dataBag[u'TIME_FLAGS_DECAY_FLAG'] = 0
+            self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 0
             
         #  check sample_arrival_delay
-        entry_date_time      = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag['CAT_ENTRY_DATE'])
+        
+        # get cat info dict
+        cat_info = self._dataBag['%s_CAT_INFOS'%(aDataname)]
+        
+        entry_date_time      = ctbto.common.time_utils.getDateTimeFromISO8601(cat_info['CAT_ENTRY_DATE'])
         sample_arrival_delay = ctbto.common.time_utils.getDifferenceInTime(entry_date_time,collect_start)
         
         # check that sample_arrival_delay is within 72 hours or 72*60*60 seconds
         if sample_arrival_delay > (72*60*60):
-           self._dataBag[u'TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = entry_date_time
+           self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = entry_date_time
         else:
-           self._dataBag[u'TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'] = 0 
+           self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = 0 
 
         
-    def _fetchParameters(self,dataname):
+    def _fetchParameters(self,sid,dataname):
         """ get the different parameters used for the analysis """
         
-        print "Getting Analysis parameters for %s\n"%(self._sampleID)
+        print "Getting Analysis parameters for %s\n"%(sid)
         
         #print "request = %s\n"%(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
         
@@ -1461,41 +1481,45 @@ class ParticulateDataFetcher(DBDataFetcher):
         rows = result.fetchall()
         
         nbResults = len(rows)
-       
-        if nbResults is not 1:
+        
+        # do nothing if no results
+        if nbResults >0:
+          # do some sanity checkings
+          if nbResults is not 1:
             print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname),"(undefined)")))
          
-        # create a list of dicts
-        data = {}
+          # create a list of dicts
+          data = {}
         
-        
-        data.update((rows[0].items()) if len(rows) > 0 else {})
+          data.update((rows[0].items()) if len(rows) > 0 else {})
     
-        # add in dataBag
-        self._dataBag[u'PROCESSING_PARAMETERS'] = data
+          # add in dataBag
+          self._dataBag[u'%s_PROCESSING_PARAMETERS'%(dataname)] = data
         
-        result.close()  
+          result.close()  
         
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(self._sampleID))
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(sid))
         
         rows = result.fetchall()
         
         nbResults = len(rows)
-       
-        if nbResults is not 1:
+        # do nothing if no results
+        if nbResults >0:
+          # do some sanity checkings
+          if nbResults is not 1:
             if self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)] == 'FULL':
                #raise CTBTOError(-1,"Expecting to have 1 set of update parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
                print("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
             else:
                print("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
          
-        # create a list of dicts
-        data = {}
+          # create a list of dicts
+          data = {}
 
-        data.update((rows[0].items()) if len(rows) > 0 else {})
+          data.update((rows[0].items()) if len(rows) > 0 else {})
         
-        # add in dataBag
-        self._dataBag[u'UPDATE_PARAMETERS'] = data
+          # add in dataBag
+          self._dataBag[u'%s_UPDATE_PARAMETERS'%(dataname)] = data
         
     def _fetchCalibrationCoeffs(self,prefix):
         
