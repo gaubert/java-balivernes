@@ -183,10 +183,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=CURR/QC"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-20',endDate='2008-10-25',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='80')
         
         # error
-        #listOfSamplesToTest = [ "934815" ]
+        #listOfSamplesToTest = [ "921215" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)

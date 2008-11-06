@@ -1299,6 +1299,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchAnalysisResults(self,aParams):
        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
+       #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
         
        # get static info necessary for the analysis
        self._fetchNuclidesToQuantify()
@@ -1307,28 +1308,30 @@ class ParticulateDataFetcher(DBDataFetcher):
         
        for analysis in analyses:
         
+          # for the moment ignore Analysis for PREL
           if analysis == 'PREL' :
               continue
         
-          print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
-          
+          # check if there is some data regarding this type of analysis
           # get the dataname of the current spectrum (it is the main spectrum)
-          dataname = self._dataBag.get('CURRENT_%s'%(analysis),'')
-          sid      = self._dataBag.get('%s_SAMPLE_ID'%(dataname))
-        
-          self._fetchCategoryResults(sid,dataname)
-        
-          self._fetchNuclidesResults(sid,dataname)
-        
-          self._fetchNuclideLines(sid,dataname)
-        
-          self._fetchPeaksResults(sid,dataname)
-           
-          self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
+          dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
           
-          self._fetchFlags(sid,dataname)
+          if dataname is not None:
+             print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
+          
+             sid      = self._dataBag.get('%s_SAMPLE_ID'%(dataname))
         
-          self._fetchParameters(sid,dataname)
+             self._fetchCategoryResults(sid,dataname)
+        
+             self._fetchNuclidesResults(sid,dataname)
+        
+             self._fetchNuclideLines(sid,dataname)
+        
+             self._fetchPeaksResults(sid,dataname)
+          
+             self._fetchFlags(sid,dataname)
+        
+             self._fetchParameters(sid,dataname)
         
         
     def _getMRP(self,aDataname):
