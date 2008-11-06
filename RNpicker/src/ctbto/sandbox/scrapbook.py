@@ -10,6 +10,7 @@ import ctbto.common.utils
 import re
 
 from ctbto.db.rndata import RemoteFSDataSource
+from ctbto.query     import RequestParser
  
 #
 str1 = """Dallas Cowboys football practice at Valley Ranch was delayed on Wednesday
@@ -172,13 +173,15 @@ def checksumTest(str):
 
     return chksum
 
-if __name__ == '__main__':
+def parserTest():
     
-    print "checksum = %s\n"%(checksumTest("947.91448974609398-3.288769245147710.889110267162323-0.132615581154823-0.194482043385505980.25442627072334301-0.08029260486364360505"))
+    r = RequestParser()
     
-    d = {'a':1,'b':2,'c':3,'d':4}
+    r.parse("ffff")
 
-    print "hash(l)="%(hash(l))
+if __name__ == '__main__':
+    parserTest()
+   
     
     
     
