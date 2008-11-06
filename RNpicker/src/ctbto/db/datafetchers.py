@@ -1554,9 +1554,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
-        cal_id = 'EN_%s'%(checksum)
+        cal_id = 'EN-%s'%(checksum)
         
-        # add in dataBag as EN_checksumif not already in the dataBag
+        # add in dataBag as EN-checksumif not already in the dataBag
         if cal_id not in self._dataBag:
             self._dataBag[cal_id] = data
         
@@ -1583,9 +1583,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
-        cal_id = 'RE_%s'%(checksum)
+        cal_id = 'RE-%s'%(checksum)
         
-        # add in dataBag as EN_checksumif not already in the dataBag
+        # add in dataBag as EN-checksumif not already in the dataBag
         if cal_id not in self._dataBag:
             self._dataBag[cal_id] = data
         
@@ -1611,9 +1611,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
        
-        cal_id = 'EF_%s'%(checksum)
+        cal_id = 'EF-%s'%(checksum)
         
-        # add in dataBag as EN_checksumif not already in the dataBag
+        # add in dataBag as EN-checksumif not already in the dataBag
         if cal_id not in self._dataBag:
             self._dataBag[cal_id] = data
         

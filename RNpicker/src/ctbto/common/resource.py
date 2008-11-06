@@ -98,14 +98,14 @@ class Resource(object):
       
     def _getFromConf(self):
         """
-           Get from conf. To be done.
+           Try to read the info from the Configuration if possible
         """
         if (self._confGroup is not None) and (self._confProperty is not None):
             # TODO: do something with the conf 
             if Conf.can_be_instanciated():
                 return Conf.get_instance().get(self._confGroup,self._confProperty)
         
-        return False
+        return None
           
         
     def getValue(self,aRaiseException=True):
@@ -128,8 +128,8 @@ class Resource(object):
            val = self._getValueFromEnv()
            if val is None:
                val = self._getFromConf()
-               if (val is None) and ARaisException:
-                  raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf value %s\n"%(self._cliArg,self._envVar,self._confVal))
+               if (val is None) and aRaiseException:
+                  raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf Group:[%s] and Property=%s\n"%(self._cliArg,self._envVar,self._confGroup,self._confProperty))
     
        # we do have a val
        return val

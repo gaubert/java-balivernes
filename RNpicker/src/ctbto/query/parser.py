@@ -84,7 +84,7 @@ class RequestParser(object):
     
         if m is None:
             print("Warning, Cannot find the analysis=val1/val2 in param string %s\nUse default analysis=CURR"%(aRequest))
-            result.update(RequestParser.c_analysis_types)
+            result.add('CURR')
             return result
         
         values = m.group('values')

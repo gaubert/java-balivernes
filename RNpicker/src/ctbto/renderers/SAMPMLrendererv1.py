@@ -1,7 +1,6 @@
 import logging
 import re
 
-import ctbto.query.parser
 import ctbto.common.utils
 
 from ctbto.common import CTBTOError
@@ -398,7 +397,7 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get peak
-        peaks = self._fetcher.get(u'%s_PEAKS'%(id),"None")
+        peaks = self._fetcher.get(u'%s_PEAKS'%(id),{})
         
         for peak in peaks:
             #print "peak = %s"%(peak)
@@ -476,7 +475,7 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get update parameters
-        parameters = self._fetcher.get("%s_UPDATE_PARAMETERS"%(id),"None")
+        parameters = self._fetcher.get("%s_UPDATE_PARAMETERS"%(id),{})
         
         if (parameters is not None) and (len(parameters) > 0):
            dummy_template = re.sub("\${USE_MRP}",str(parameters.get('MRP_USED',"None")), template)
@@ -597,10 +596,10 @@ class ParticulateRenderer(BaseRenderer):
              # for the moment only one result
              dummy_template += template
         
-             # Add analysis identifier
-             dummy_template = re.sub("\${ANALYSISID}", self._generateAnalysisID(),dummy_template)
-        
              spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
+             
+             # Add analysis identifier => SpectrumID prefixed by AN
+             dummy_template = re.sub("\${ANALYSISID}","AN-%s"%(spectrum_id),dummy_template)
         
              dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
         
