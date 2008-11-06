@@ -9,6 +9,7 @@ import distutils.dir_util
 import ctbto.common.utils
 import re
 
+from ctbto.common    import Conf
 from ctbto.db.rndata import RemoteFSDataSource
 from ctbto.query     import RequestParser
  
@@ -175,9 +176,19 @@ def checksumTest(str):
 
 def parserTest():
     
+    # need to setup the ENV containing the the path to the conf file:
+    os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
+    
     r = RequestParser()
     
-    r.parse("ffff")
+    str = "spectrum=ALL, analysis=CURR/QC"
+    
+    print "split str = %s\n"%(str.split(','))
+    
+    d = r.parse(str)
+    
+    print "dict %s\n"%(d)
+    
 
 if __name__ == '__main__':
     parserTest()

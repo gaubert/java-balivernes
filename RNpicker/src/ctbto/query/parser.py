@@ -23,10 +23,13 @@ class RequestParser(object):
     c_analysis_types = set(['CURR','QC','PREL','BK'])
     
     # regular expression stuff for spectrum param
-    c_pattern             ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
-    c_spectrum_rex        = re.compile(c_pattern, re.IGNORECASE)
+    c_spectrum_pattern             ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
+    c_spectrum_rex        = re.compile(c_spectrum_pattern, re.IGNORECASE)
     c_analysis_pattern    ="(?P<command>\s*analysis\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
     c_analysis_rex        = re.compile(c_analysis_pattern, re.IGNORECASE)
+    
+    c_spectrum = "spectrum"
+    c_analysis = "analysis"
     
     def __init__(self,):
         """ constructor """
@@ -48,10 +51,17 @@ class RequestParser(object):
         """
         
         # for the moment we only have the spectrum part
+        # quick and dirty parser, needs to be changed
         result = {}
         
-        result[RequestParser.SPECTRUM] = self._parseSpectrumParams(aRequest)
-        result[RequestParser.ANALYSIS] = self._parseAnalysisParams(aRequest)
+        list = aRequest.split(',')
+        
+        for elem in list:  
+            if elem.lower().find(RequestParser.c_spectrum) != -1:
+                result[RequestParser.SPECTRUM] = self._parseSpectrumParams(elem)
+            
+            if elem.lower().find(RequestParser.c_analysis) != -1:
+                result[RequestParser.ANALYSIS] = self._parseAnalysisParams(elem)
         
         return result
     
