@@ -246,12 +246,12 @@ class ParticulateRenderer(BaseRenderer):
         self._populatedTemplate = re.sub("\${SPECTRUM}",finalTemplate, self._populatedTemplate)
         
      
-    def _getCategory(self):
+    def _getCategory(self,id):
         """Get the Catgeory Information from the data hashtable and render it.
            If there are no category information insert an empty tag.
         
             Args:
-               None:
+               id: to fetch the info in the dict
         
             Returns:
               
@@ -261,12 +261,15 @@ class ParticulateRenderer(BaseRenderer):
         """
         dummy_template = "" 
        
+        # first get the category info for this particular sample
+        cat_dict = self._fetcher.get(u'%s_CAT_INFOS'%(id),{})
+       
         # get the status. If it is R or Q get category otherwise it isn't defined yet
-        status = self._fetcher.get(u'CAT_STATUS',"")
+        status = cat_dict.get(u'CAT_STATUS',"")
         
         if (status == 'R') or (status == 'Q'):
-            category = self._fetcher.get(u'CAT_CATEGORY',"undefined")
-            comment  = self._fetcher.get(u'CAT_COMMENT',"No Comment")
+            category = cat_dict.get(u'CAT_CATEGORY',"undefined")
+            comment  = cat_dict.get(u'CAT_COMMENT',"No Comment")
 
             # if there is something fill the template otherwise do nothing
             if category != "undefined":
@@ -278,7 +281,7 @@ class ParticulateRenderer(BaseRenderer):
         
         return dummy_template
     
-    def _getNuclides(self):
+    def _getNuclides(self,id):
         """ fill and return the information regarding the nuclides """
         
         # first add Non Quantified Nuclides
@@ -288,8 +291,10 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         cpt = 1
         
+        print "id = %s\n"%("%s_IDED_NUCLIDES"%(id))
+        
         # get categories
-        ided_nuclides = self._fetcher.get("IDED_NUCLIDES","None")
+        ided_nuclides = self._fetcher.get("%s_IDED_NUCLIDES"%(id),[])
         
         for nuclide in ided_nuclides:
             dummy_template = re.sub("\${REPORTMDA}",( ("true") if nuclide['REPORT_MDA'] == 1 else "false"), template)
@@ -324,11 +329,11 @@ class ParticulateRenderer(BaseRenderer):
         return (aVal in self._quantifiable)
             
         
-    def _getNuclideLines(self):
+    def _getNuclideLines(self,id):
         """Get the Nuclide Lines information from the data hashtable and render it.
         
             Args:
-               None:
+               id: to fetch the info in the dict
         
             Returns:
               An XML string containing the formatted data.
@@ -353,7 +358,7 @@ class ParticulateRenderer(BaseRenderer):
         cpt = 1
         
         # get categories
-        nuclidelines = self._fetcher.get(u'IDED_NUCLIDE_LINES',"None")
+        nuclidelines = self._fetcher.get(u'%s_IDED_NUCLIDE_LINES'%(id),[])
         
         for line in nuclidelines:
             
@@ -373,12 +378,11 @@ class ParticulateRenderer(BaseRenderer):
         #add nuclide lines in global template
         return re.sub("\${NUCLIDELINES}",xml_nuclidelines, global_template)
     
-    def _getPeaks(self):
-        
+    def _getPeaks(self,id):
         """Get the peaks information from the data hashtable and render it .
 
          Args: 
-           None
+           id: to fetch the info in the dict
           
 
          Returns:
@@ -394,7 +398,7 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get peak
-        peaks = self._fetcher.get(u'PEAKS',"None")
+        peaks = self._fetcher.get(u'%s_PEAKS'%(id),"None")
         
         for peak in peaks:
             #print "peak = %s"%(peak)
@@ -421,8 +425,19 @@ class ParticulateRenderer(BaseRenderer):
                
         return xml_peaks
     
-    def _getParameters(self):
-        """ return parameters """
+    def _getParameters(self,id):
+        """Get the parameters information from the data hashtable and render it .
+
+         Args: 
+           id: to fetch the info in the dict
+          
+
+         Returns:
+           An XML String containing the formatted data.
+
+         Raises:
+          None.
+        """
         
          # first add Quantified Nuclides
         template = self._conf.get("TemplatingSystem","processingParametersTemplate")
@@ -431,7 +446,7 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get processing parameters
-        parameters = self._fetcher.get("PROCESSING_PARAMETERS",None)
+        parameters = self._fetcher.get("%s_PROCESSING_PARAMETERS"%(id),None)
         
         #print "parameters = %s"%(parameters)
         
@@ -461,7 +476,7 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get update parameters
-        parameters = self._fetcher.get("UPDATE_PARAMETERS","None")
+        parameters = self._fetcher.get("%s_UPDATE_PARAMETERS"%(id),"None")
         
         if (parameters is not None) and (len(parameters) > 0):
            dummy_template = re.sub("\${USE_MRP}",str(parameters.get('MRP_USED',"None")), template)
@@ -484,7 +499,7 @@ class ParticulateRenderer(BaseRenderer):
        
         return xml_parameters
         
-    def _getFlags(self):
+    def _getFlags(self,id):
         """create xml part with the flag info """
         
         # first add timeliness Flags
@@ -494,31 +509,31 @@ class ParticulateRenderer(BaseRenderer):
         dummy_template = ""
         dummy_template += template
           
-        param = self._fetcher.get('TIME_FLAGS_PREVIOUS_SAMPLE',False)
+        param = self._fetcher.get('%s_TIME_FLAGS_PREVIOUS_SAMPLE'%(id),False)
         if param == True:
             dummy_template = re.sub("\${PreviousSamplePresent}","true", dummy_template)
         else:
             dummy_template = re.sub("\${PreviousSamplePresent}","false", dummy_template)
         
-        param = self._fetcher.get('TIME_FLAGS_COLLECTION_WITHIN_24',0)
+        param = self._fetcher.get('%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(id),0)
         if param == 0:
             dummy_template = re.sub("\${CollectionTime}","true", dummy_template)
         else:
             dummy_template = re.sub("\${CollectionTime}","false", dummy_template)
             
-        param = self._fetcher.get('TIME_FLAGS_ACQUISITION_FLAG',0)
+        param = self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_FLAG'%(id),0)
         if param == 0:
             dummy_template = re.sub("\${AcquisitionTime}","true", dummy_template)
         else:
             dummy_template = re.sub("\${AcquisitionTime}","false", dummy_template)
         
-        param = self._fetcher.get('TIME_FLAGS_DECAY_FLAG',0)
+        param = self._fetcher.get('%s_TIME_FLAGS_DECAY_FLAG'%(id),0)
         if param == 0:
             dummy_template = re.sub("\${DecayTime}","true", dummy_template)
         else:
             dummy_template = re.sub("\${DecayTime}","false", dummy_template)
             
-        param = self._fetcher.get('TIME_FLAGS_SAMPLE_ARRIVAL_FLAG',0)
+        param = self._fetcher.get('%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(id),0)
         if param == 0:
             dummy_template = re.sub("\${SampleReceived}","true", dummy_template)
         else:
@@ -531,7 +546,7 @@ class ParticulateRenderer(BaseRenderer):
         template = self._conf.get("TemplatingSystem","dataQualityFlagsTemplate")
         
         # add Data Quality Flags
-        dataQFlags = self._fetcher.get('DATA_QUALITY_FLAGS',[])
+        dataQFlags = self._fetcher.get('%s_DATA_QUALITY_FLAGS'%(id),[])
         
         #print "DataQFlags %s\n"%(dataQFlags)
         
@@ -560,43 +575,65 @@ class ParticulateRenderer(BaseRenderer):
            
         return xml
         
-    def _fillAnalysisResults(self):
+    def _fillAnalysisResults(self,requestDict):
         """fill the analysis results for each result"""
         
-        # first get the template
-        template = self._conf.get("TemplatingSystem","particulateAnalysisTemplate")
-        dummy_template = ""
+        # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
+        requestedTypes = requestDict[RequestParser.ANALYSIS]
         
-        # for the moment only one result
-        dummy_template += template
+        all_analyses_xml = ""
+      
+        for type in requestedTypes:
+           
+           #identifier in the dict for this analysis  
+           id = self._fetcher.get("CURRENT_%s"%(type),None)
+           
+           if id is not None:
         
-        # Add analysis identifier
-        dummy_template = re.sub("\${ANALYSISID}", self._generateAnalysisID(),dummy_template)
+             # first get the template
+             template = self._conf.get("TemplatingSystem","particulateAnalysisTemplate")
+             dummy_template = ""
         
-        spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get(u'CURRENT_CURR','')),"unknown")
+             # for the moment only one result
+             dummy_template += template
         
-        dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
+             # Add analysis identifier
+             dummy_template = re.sub("\${ANALYSISID}", self._generateAnalysisID(),dummy_template)
         
-        dummy_template = re.sub("\${CATEGORY}", self._getCategory(), dummy_template)
+             spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
         
-        dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(),dummy_template)
+             dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
+        
+             dummy_template = re.sub("\${CATEGORY}", self._getCategory(id), dummy_template)
+        
+             dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(id),dummy_template)
          
-        dummy_template = re.sub("\${WITHNUCLIDELINES}",self._getNuclideLines(),dummy_template)
+             dummy_template = re.sub("\${WITHNUCLIDELINES}",self._getNuclideLines(id),dummy_template)
         
-        dummy_template = re.sub("\${PEAKS}",self._getPeaks(),dummy_template)
+             dummy_template = re.sub("\${PEAKS}",self._getPeaks(id),dummy_template)
+         
+             dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
         
-        dummy_template = re.sub("\${PARAMETERS}",self._getParameters(),dummy_template)
+             dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
+             
+             #add Calibration references
+             l = self._fetcher.get("%s_DATA_ALL_CALS"%(id))
+             if l is None :
+                raise CTBTOError(-1,"Error no calibration information for sample %s, sid: %s\n"%(type,spectrum_id))
+             else:
+               # add calibration info
+               dummy_template = re.sub("\${CAL_INFOS}",' '.join(map(str,l)),dummy_template)
         
-        dummy_template = re.sub("\${FLAGS}",self._getFlags(),dummy_template)
+             # add software method version info
+             dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
+             dummy_template = re.sub("\${METHOD}","standard", dummy_template)
+             dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
+             dummy_template = re.sub("\${SOFTCOMMENTS}","Old version", dummy_template)
+             
+             all_analyses_xml += dummy_template
         
-        # add software method version info
-        dummy_template = re.sub("\${SOFTWARE}","genie", dummy_template)
-        dummy_template = re.sub("\${METHOD}","standard", dummy_template)
-        dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
-        dummy_template = re.sub("\${SOFTCOMMENTS}","Old version", dummy_template)
-        
-         # add Category info in generated template
-        self._populatedTemplate = re.sub("\${AnalysisResults}",dummy_template, self._populatedTemplate)
+        # add all the analysis info in the global template
+        self._populatedTemplate = re.sub("\${AnalysisResults}",all_analyses_xml, self._populatedTemplate)
          
     def _fillCalibrationCoeffs(self,prefix,calibInfos):
         """ Insert the calibration information
@@ -734,7 +771,7 @@ class ParticulateRenderer(BaseRenderer):
          
        self._fillData(reqDict)
        
-       self._fillAnalysisResults()
+       self._fillAnalysisResults(reqDict)
        
        self._fillCalibration()
        
