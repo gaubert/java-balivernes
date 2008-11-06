@@ -1233,7 +1233,30 @@ class ParticulateDataFetcher(DBDataFetcher):
         
           # add in dataBag
           self._dataBag[u'%s_IDED_NUCLIDE_LINES'%(dataname)] = res
+    
+    def _fetchNuclidesToQuantify(self):
         
+        # return all nucl2quantify this is kind of static table
+        result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+         # copy row in a normal dict
+         data.update(row)
+         res.append(data)
+         data = {}
+        
+        # add in dataBag
+        self._dataBag[u'NUCLIDES_2_QUANTIFY'] = res
+        
+        result.close()     
         
     def _fetchNuclidesResults(self,sid,dataname):
         """ Get all info regarding the nuclides related to this sample """
@@ -1270,32 +1293,15 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         result.close()
         
-        # return all nucl2quantify this is kind of static table
-        #result = self._mainConnector.execute(SQL_PARTICULATE_GET_NUCL2QUANTIFY)
         
-        #rows = result.fetchall()
-        
-         # add results in a list which will become a list of dicts
-        #res = []
-        
-        # create a list of dicts
-        #data = {}
-
-        #for row in rows:
-            # copy row in a normal dict
-         #   data.update(row)
-         #   res.append(data)
-         #   data = {}
-        
-        # add in dataBag
-        #self._dataBag[u'NUCLIDES_2_QUANTIFY'] = res
-        
-        #result.close()  
         
     
     def _fetchAnalysisResults(self,aParams):
        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
+        
+       # get static info necessary for the analysis
+       self._fetchNuclidesToQuantify()
         
        analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
         
