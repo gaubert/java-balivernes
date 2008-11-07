@@ -862,8 +862,6 @@ class ParticulateDataFetcher(DBDataFetcher):
     
     c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
     
-   
-   
 
     def __init__(self):
         print "create ParticulateDataFetcher"
@@ -1097,6 +1095,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
         
+        if ('None' in spectrums):
+            # None is in there so do not include data
+            return
+        
         #fetch current spectrum
         if ('CURR' in spectrums):
            self._fetchCURRSpectrumData()
@@ -1305,6 +1307,10 @@ class ParticulateDataFetcher(DBDataFetcher):
        self._fetchNuclidesToQuantify()
         
        analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
+       
+       if ('None' in analyses):
+            # None is in there so do not include data
+            return
         
        for analysis in analyses:
         

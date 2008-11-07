@@ -19,8 +19,12 @@ class RequestParser(object):
     c_log.setLevel(logging.DEBUG)
     
     # spectrum types
-    c_spectrum_types = set(['CURR','QC','PREL','BK'])
-    c_analysis_types = set(['CURR','QC','PREL','BK'])
+    c_spectrum_types   = set(['NONE','CURR','QC','PREL','BK'])
+    c_spectrum_default = set(['CURR','QC','PREL','BK'])
+    
+    
+    c_analysis_types   = set(['NONE','CURR','QC','PREL','BK'])
+    c_analysis_default = set(['CURR','QC','PREL','BK'])
     
     # regular expression stuff for spectrum param
     c_spectrum_pattern             ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
@@ -109,7 +113,7 @@ class RequestParser(object):
           
           if dummy == 'ALL':
              #ALL superseeds everything and add all the different types
-             result.update(RequestParser.c_analysis_types)
+             result.update(RequestParser.c_analysis_default)
              # leave loop
              break
                 
@@ -166,7 +170,7 @@ class RequestParser(object):
           
           if dummy == 'ALL':
              #ALL superseeds everything and add all the different types
-             result.update(RequestParser.c_spectrum_types)
+             result.update(RequestParser.c_spectrum_default)
              # leave loop
              break
                 

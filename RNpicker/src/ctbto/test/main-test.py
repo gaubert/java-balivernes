@@ -17,7 +17,7 @@ from ctbto.db        import DatabaseConnector,DBDataFetcher
 
 #from ctbto.db        import DBDataFetcher
 
-from ctbto.renderers import ParticulateRenderer
+from ctbto.renderers import GenieParticulateRenderer
 
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
@@ -180,13 +180,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         
-        request="spectrum=ALL, analysis=CURR/QC"
+        request="spectrum=None, analysis=CURR"
         
         # get full
         listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='80')
         
         # error
-        #listOfSamplesToTest = [ "921215" ]
+        listOfSamplesToTest = [ "700637" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -209,7 +209,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch(request)
                  
-           renderer = ParticulateRenderer(fetcher)
+           renderer = GenieParticulateRenderer(fetcher)
    
            xmlStr = renderer.asXmlStr(request)
            

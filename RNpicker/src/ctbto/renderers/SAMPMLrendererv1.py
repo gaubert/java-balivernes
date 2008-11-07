@@ -115,7 +115,7 @@ class BaseRenderer(object):
         
         return self._populatedTemplate
         
-class ParticulateRenderer(BaseRenderer):
+class GenieParticulateRenderer(BaseRenderer):
     
     # Class members
     c_log = logging.getLogger("SAMPMLrendererv1.ParticulateRenderer")
@@ -124,7 +124,7 @@ class ParticulateRenderer(BaseRenderer):
       
     def __init__(self,aDataFetcher):
         
-        super(ParticulateRenderer,self).__init__(aDataFetcher)
+        super(GenieParticulateRenderer,self).__init__(aDataFetcher)
         
         # add values specific to Particulates
         dummy_dict = {  
