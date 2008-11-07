@@ -332,6 +332,10 @@ class DBDataFetcher(object):
            return (("QC_%s"%(aSampleID)).strip(),'QC')
         elif aDataType == 'D':
            return (("BK_%s"%(aSampleID)).strip(),'BK')
+        elif aDataType == 'G' and aSpectralQualifier == 'FULL':
+            return (("GSPHD_%s"%(aSampleID)).strip(),'GSPHD')
+        elif aDataType == 'G' and aSpectralQualifier == 'PREL':
+            return (("GSPHD_%s"%(aSampleID)).strip(),'PSPHD')
         else:
            raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
@@ -616,6 +620,17 @@ class DBDataFetcher(object):
         
         return (data,"0 0")
     
+    def _extractHistrogramFromFile(self,aInput):
+        
+        data = StringIO()
+        
+        data.writelines(aInput)
+        
+        # go to the beginning of the Stream
+        data.seek(0)
+        
+        return (data,"0 0")
+    
     def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='curr',aSpectrumType='CURR'):
         """read data from the main connection which is not archived.
            The data dict will be populated accordingly to the data found.
@@ -660,14 +675,41 @@ class DBDataFetcher(object):
         
         # check the message type and do the necessary.
         # here we expect a .msg or .s
+        # we can also have .h coming from noble gaz
         if ext == '.msg' or ext == '.archmsg':
            (data,limits)  =  self._extractSpectrumFromMessageFile(input)
+           input.close()
+           self._addSpectrumInDataBag(data,aSampleID,aDataname,aSpectrumType)
         # '.archs' given for an archived sample
         elif ext == '.s' or ext == '.archs':
            (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+           input.close()
+           self._addSpectrumInDataBag(data,aSampleID,aDataname,aSpectrumType)
+        # histogram type coming from noble gaz
+        elif ext =='.h' or ext == '.archhist':
+           (data,limits) = self._extractHistrogramFromFile(input)
+           input.close()
+           # create a unique id for the extract data
+           self._dataBag[u"%s_DATA_HIST_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
         # remove it for the moment
         else:
            raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
+        
+        
+    def _addSpectrumInDataBag(self,aData,aSampleID,aDataname='curr',aSpectrumType='CURR'):
+        """process and add the spectrum in the dataBag.
+        
+            Args:
+               aSampeID. sampleID to read,
+               aDataname.
+               aSpectrumType.
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
         
         tok_list = []
         
@@ -680,7 +722,7 @@ class DBDataFetcher(object):
         # [MAJ] to change
         parsedSpectrum = StringIO()
         try:
-           for line in data:
+           for line in aData:
                 
               # we might also have to add more splitting character
               # get the first column which should always be the last columns (channel span)
@@ -701,8 +743,7 @@ class DBDataFetcher(object):
               else:
                   parsedSpectrum.write("                %s"%(line))
         finally: 
-           data.close()   
-           input.close()
+           aData.close()   
            
         DBDataFetcher.c_log.debug("channel_span %s"%(channel_span))
         DBDataFetcher.c_log.debug("energy_span %s"%(energy_span))
@@ -741,10 +782,6 @@ class DBDataFetcher(object):
        pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
        pp.pprint(self._dataBag)
        
-    
-
-        
-
 ##############################################
 ### class: SaunaNobleGasDataFetcher
 ###
@@ -764,28 +801,70 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._dataBag['SAMPLE_TYPE']="SAUNA"
         
+    def _fetchSpectrumData(self,aSampleID):
+        """get the any spectrum data.
+           If the caching function is activated save the retrieved specturm on disc.
+           Try to find an extracted spectrum on OPS and Archive and if there is none of them look for the raw message (typeid)
+        
+            Args:
+               aDataname: Name of the data. This will be used to create the name in the persistent hashtable and in the data spectrum filename
+               
+            Returns: (dataname,type)
+                     where dataname = ID of the spectrum info in the data dict
+                     where type     = type of the spectrum (SPHD, PREL, QC, BK)
+        
+            Raises:
+               exception
+        """
+           
+        print "Getting Spectrum for %s\n"%(aSampleID)
+           
+        # get sample info related to this sampleID
+        (dataname,type) = self._fetchSampleInfo(aSampleID)
+        
+        print "Its name will be %s and its type is %s"%(dataname,type)
+         
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_FILES%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
+         
+        if nbResults is 0:
+            print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
+            arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(type,"")
+            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
+        elif nbResults != 3:
+            print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+        
+        for row in rows:
+            self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
+        
+        return (dataname,type)
+        
     def _fetchData(self,aParams=None):
         """ get the different raw data info """
         
+        #spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
+        
+        """if ('None' in spectrums):
+            # None is in there so do not include data
+            return
+        
+        #fetch current spectrum
+        if ('CURR' in spectrums):
+           self._fetchCURRSpectrumData()
+        
+        if ('QC' in spectrums):
+           self._fetchQCSpectrumData()
+        
+        if ('BK' in spectrums):
+           self._fetchBKSpectrumData()
+        
+        if ('PREL' in spectrums):
+          self._fetchPrelsSpectrumData()"""
+        
         # there are 3 components: histogram, beta and gamma spectrum
+        self._fetchSpectrumData(self._sampleID)
         
-        # first path information from database
-        result = self._mainConnector.execute(SQL_GETSAUNA_FILES%(self._sampleID,self._dataBag['STATION_CODE']))
-       
-        # only one row in result set
-        rows = result.fetchall()
-       
-        nbResults = len(rows)
-       
-        if nbResults is not 3:
-            raise CTBTOError(-1,"Expecting to have 3 products for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
         
-        print "data Rows = %s"%(rows)
-        
-        for row in rows:
-            self._readDataFile(row['DIR'], row['DFile'], row['PRODTYPE'],self._sampleID)
-        
-        result.close()
     
     def _fetchAnalysisResults(self):
         """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
