@@ -197,11 +197,15 @@ class RemoteFSDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID,aOffset,aSize):
+    def __init__(self, aDataPath,aID,aOffset,aSize,aHost=None):
         
        super(RemoteFSDataSource,self).__init__(aDataPath,aID,aOffset,aSize)
        
        self._remoteScript      = self._conf.get("RemoteAccess","sftpScript")
+       
+       # try to get it from the conf if not passed
+       if aHost is None:
+         self._remoteHost        = self._conf.get("RemoteAccess","accessHost","kuredu")
         
        self._getRemoteFile()
         
@@ -224,7 +228,7 @@ class RemoteFSDataSource(BaseRemoteDataSource):
             self._fd = open(destinationPath,"r")
             return
         
-        res = subprocess.call([self._remoteScript,self._remotePath,destinationPath])
+        res = subprocess.call([self._remoteScript,self._remotePath,destinationPath,self._remoteHost])
         if res != 0:
            raise CTBTOError(-1,"Error when executing sftp Script %s\n"%(self._remoteScript))
         

@@ -31,6 +31,7 @@ SQL_PARTICULATE_GET_MRP_old = "select gsd.sample_id as mrp_sample_id, to_char (g
                              and gsd.spectral_qualifier = 'FULL' \
                            order by collect_stop desc"
 
+""" ************************************ Common Part ********************************************"""
 
 """ sql used requests  """
 SQL_GETDETECTORINFO   = "select det.detector_id as detector_id, det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
@@ -43,9 +44,22 @@ SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spect
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \
                                 from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
+  
+""" ************************************ Noble Gaz Part ******************************************** """
                                 
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
-SQL_GETSAUNA_FILES    = "select prod.dir, prod.DFIle,fp.prodtype from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_GETSAUNA_FILES                   = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_GETSAUNA_RAW_FILE                = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
+""" Get information regarding all identified nuclides """
+SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
+
+""" Get information regarding all nuclides """
+SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
+
+
+
+""" ************************************* Particulate Part ********************************************* """
 
 """ get any spectrum full or prel or qc or back """
 SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
@@ -87,12 +101,6 @@ SQL_GETPARTICULATE_QC_SAMPLEID = "select * from \
                                     and gd.sample_id = gs.sample_id \
                                     and gs.status in ('V','P')) \
                                     where rownum=1"
-
-""" Get information regarding all identified nuclides """
-SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
-
-""" Get information regarding all nuclides """
-SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
 """ get particulate category """
 SQL_PARTICULATE_CATEGORY_STATUS ="select entry_date as cat_entry_date, cnf_begin_date as cat_cnf_begin_date,cnf_end_date as cat_cnf_end_date, review_date as cat_review_date, review_time as cat_review_time, analyst as cat_analyst, status as cat_status, category as cat_category, auto_category as cat_auto_category, release_date as cat_release_date from RMSMAN.GARDS_SAMPLE_STATUS where sample_id=%s"

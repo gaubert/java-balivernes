@@ -39,19 +39,10 @@ def myBasicLoggingConfig():
 
 class TestSAMPMLCreator(unittest.TestCase):
     
-    def setUp(self):
-         
-        myBasicLoggingConfig()  
-        log = logging.getLogger("ROOT")
-        log.setLevel(logging.DEBUG)
-        log.info("Start")
-   
+    def _setUpGenieParticulate(self):
+        
         activateTimer = True
         
-        # need to setup the ENV containing the the path to the conf file:
-        os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
-   
-        self.conf = Conf.get_instance()
         self.mainDatabase  = self.conf.get("MainDatabaseAccess","hostname")
         self.mainUser      = self.conf.get("MainDatabaseAccess","user")
         self.mainPassword  = self.conf.get("MainDatabaseAccess","password")
@@ -77,6 +68,42 @@ class TestSAMPMLCreator(unittest.TestCase):
         # compile xpath expressions used to check final product
         self.xpath_calIDs      = etree.XPath("//*[local-name(.)='CalibrationInformation']/*[local-name(.)='Calibration']/@ID")
         self.xpath_specalIDs   = etree.XPath("//*[local-name(.)='MeasuredInformation']/*[local-name(.)='Spectrum']/@calibrationIDs")
+    
+    
+    
+    def _setUpNobleGaz(self):
+        
+        activateTimer = True
+        
+        self.conf = Conf.get_instance()
+        self.nbDatabase  = self.conf.get("NobleGazDatabaseAccess","hostname")
+        self.nbUser      = self.conf.get("NobleGazDatabaseAccess","user")
+        self.nbPassword  = self.conf.get("NobleGazDatabaseAccess","password")
+   
+        print "NB Database=%s"%(self.mainDatabase)
+   
+        # create DB connector
+        self.nbConn = DatabaseConnector(self.nbDatabase,self.nbUser,self.nbPassword,activateTimer)
+   
+        self.nbConn.connect()
+    
+    
+    def setUp(self):
+         
+        myBasicLoggingConfig()  
+        log = logging.getLogger("ROOT")
+        log.setLevel(logging.DEBUG)
+        log.info("Start")
+        
+        # need to setup the ENV containing the the path to the conf file:
+        os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
+   
+        self.conf = Conf.get_instance()
+   
+        self._setUpGenieParticulate()
+        
+        self._setUpNobleGaz()
+        
         
     def assertIfNoTagsLeft(self,path):
         """
@@ -173,17 +200,17 @@ class TestSAMPMLCreator(unittest.TestCase):
            # check if no tags are left
            self.assertIfNoTagsLeft(path)
 
-    def testFullParticulateSamples(self):
+    def tesstFullGenieParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         
-        request="spectrum=None, analysis=CURR"
+        request="spectrum=ALL, analysis=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='80')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='8')
         
         # error
         listOfSamplesToTest = [ "700637" ]
@@ -206,6 +233,76 @@ class TestSAMPMLCreator(unittest.TestCase):
            
            # fetchnoble particulate
            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
+   
+           fetcher.fetch(request)
+                 
+           renderer = GenieParticulateRenderer(fetcher)
+   
+           xmlStr = renderer.asXmlStr(request)
+           
+           #print "Non Formatted String [%s]\n"%(xmlStr)
+           
+           f = open("/tmp/xmlStr.xml","w")
+           
+           f.write(xmlStr)
+           f.close()
+   
+           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+   
+           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           
+           # check if no tags are left
+           self.assertIfNoTagsLeft(path)
+           
+           self.assertAllCalibrationInfo(path)
+           
+           t1 = time.time()
+           
+           print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+           
+           cpt +=1
+        
+        total_t1 = time.time()
+        
+        print "****************************************************************************\n"
+        print "****************************************************************************\n"
+        print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
+        print "****************************************************************************\n"
+        print "****************************************************************************\n"
+        
+    def testFullNobleGazSamples(self):
+        
+        # another recent sample = "0889826" 
+        # tanzani 0888997
+        # list to run on production 
+        #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
+        
+        request="spectrum=ALL, analysis=ALL"
+        
+        # get full
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='8')
+        
+        # error
+        listOfSamplesToTest = [ "239529" ]
+               
+        #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
+        #intifiedlist = map(int,listOfSamplesToTest)
+        
+        #listOfSamplesToTest = map(str,intifiedlist)
+        
+        print "list Full of Sample",listOfSamplesToTest
+        
+        cpt = 0
+        total_t0 = time.time()
+        
+        for sampleID in listOfSamplesToTest:
+            
+           print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+           
+           t0 = time.time()
+           
+           # fetchnoble particulate
+           fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
            fetcher.fetch(request)
                  
