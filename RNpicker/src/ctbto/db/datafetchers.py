@@ -339,8 +339,8 @@ class DBDataFetcher(object):
         else:
            raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
-    def _fetchSampleInfo(self,aSampleID):
-       """ get sample info from sample data """ 
+    def _fetchGeneralSpectrumInfo(self,aSampleID,aPrefix=""):
+       """ get general spectrum info like acq date, sampling time ... """ 
        
        print "Getting general sample info for %s\n"%(aSampleID)
        
@@ -352,7 +352,7 @@ class DBDataFetcher(object):
        nbResults = len(rows)
        
        if nbResults is not 1:
-            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(aSampleID,nbResults,rows))
          
        # get retrieved data and transform dates
        data = {}
@@ -392,7 +392,7 @@ class DBDataFetcher(object):
        (dataname,type) = self._findDatanameAndType(aSampleID,data[u'DATA_DATA_TYPE'],data[u'DATA_SPECTRAL_QUALIFIER'])
        
        # add prefix
-       data = self._addKeyPrefix(data,dataname)
+       data = self._addKeyPrefix(data,"%s%s"%(dataname,aPrefix))
        
        # update data bag
        self._dataBag.update(data.items())
@@ -620,7 +620,7 @@ class DBDataFetcher(object):
         
         return (data,"0 0")
     
-    def _extractHistrogramFromFile(self,aInput):
+    def _extractHistrogramFromHistogramFile(self,aInput):
         
         data = StringIO()
         
@@ -647,14 +647,15 @@ class DBDataFetcher(object):
                aSpectrumType.
                
             Returns:
-               return Nothing
+               return file descriptor (fd) and the extension
         
             Raises:
                exception
         """
          # check that the file exists
-        path = "%s/%s"%(aDir,aFilename)
-        ext  = ""
+        path  = "%s/%s"%(aDir,aFilename)
+        ext   = ""
+        input = None
         
         # if config says RemoteDataSource is activated then create a remote data source
         if self._conf.getboolean("Options","remoteDataSource") is True:
@@ -673,31 +674,11 @@ class DBDataFetcher(object):
             input = open(path,"r")
             ext = os.path.splitext(aFilename)[-1] 
         
-        # check the message type and do the necessary.
-        # here we expect a .msg or .s
-        # we can also have .h coming from noble gaz
-        if ext == '.msg' or ext == '.archmsg':
-           (data,limits)  =  self._extractSpectrumFromMessageFile(input)
-           input.close()
-           self._addSpectrumInDataBag(data,aSampleID,aDataname,aSpectrumType)
-        # '.archs' given for an archived sample
-        elif ext == '.s' or ext == '.archs':
-           (data,limits) = self._extractSpectrumFromSpectrumFile(input)
-           input.close()
-           self._addSpectrumInDataBag(data,aSampleID,aDataname,aSpectrumType)
-        # histogram type coming from noble gaz
-        elif ext =='.h' or ext == '.archhist':
-           (data,limits) = self._extractHistrogramFromFile(input)
-           input.close()
-           # create a unique id for the extract data
-           self._dataBag[u"%s_DATA_HIST_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
-        # remove it for the moment
-        else:
-           raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
+        return (input,ext)
         
         
-    def _addSpectrumInDataBag(self,aData,aSampleID,aDataname='curr',aSpectrumType='CURR'):
-        """process and add the spectrum in the dataBag.
+    def _processSpectrum(self,aData,aToCompress=False):
+        """process the spectrum and retrun the data and limites.
         
             Args:
                aSampeID. sampleID to read,
@@ -716,6 +697,7 @@ class DBDataFetcher(object):
         energy_span  = 0
         channel_span = 0
         e_max        = 0
+        data         = None
         
         # store in a StringIO object
         # not very efficient as the spectrum is parsed two times
@@ -747,32 +729,18 @@ class DBDataFetcher(object):
            
         DBDataFetcher.c_log.debug("channel_span %s"%(channel_span))
         DBDataFetcher.c_log.debug("energy_span %s"%(energy_span))
-         
-        self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(aDataname)] = channel_span
-        self._dataBag[u"%s_DATA_ENERGY_SPAN"%(aDataname)]  = energy_span
-        
-        
+     
         # check in the conf if we need to compress the data
-        if self._conf.getboolean("Options","compressSpectrum") is True:
+        if aToCompress:
             try:
-              # XML need to be 64base encoded
-              self._dataBag[u"%s_DATA"%(aDataname)] = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
-            except Exception, e:
-                print "Error,%s\n"%(e)
-            
-            try:
-                # add a compressed flag in dict
-              self._dataBag[u"%s_DATA_COMPRESSED"%(aDataname)] = True
+              data = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
             except Exception, e:
                 print "Error,%s\n"%(e)
         else:
-            #add raw data in clear
-            self._dataBag[u"%s_DATA"%(aDataname)] = parsedSpectrum.getvalue()
-             # add a compressed flag in dict
-            self._dataBag[u"%s_DATA_COMPRESSED"%(aDataname)] = False
+           data = parsedSpectrum.getvalue()
+          
         
-        # create a unique id for the extract data
-        self._dataBag[u"%s_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
+        return (data,channel_span,energy_span)
         
     def get(self,aKey,aDefault=None):
         """ return one of the fetched elements """
@@ -801,8 +769,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._dataBag['SAMPLE_TYPE']="SAUNA"
         
-    def _fetchSpectrumData(self,aSampleID):
-        """get the any spectrum data.
+    def _fetchAllData(self,aSampleID):
+        """Fetch the two spectra and the histogram.
            If the caching function is activated save the retrieved specturm on disc.
            Try to find an extracted spectrum on OPS and Archive and if there is none of them look for the raw message (typeid)
         
@@ -834,7 +802,37 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
         for row in rows:
-            self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
+            input = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
+            
+            # check the message type and do the necessary.
+            # here we expect a .msg or .s
+            # we can also have .h coming from noble gaz histogram
+            if ext == '.msg' or ext == '.archmsg':
+               (data,limits)  =  self._extractSpectrumFromMessageFile(input)
+               input.close()
+               self._addSpectrumInDataBag(data,aSampleID,aDataname,aSpectrumType)
+            # '.archs' given for an archived sample
+            elif ext == '.s' or ext == '.archs':
+            
+             # check if it is a beta or gamma spectrum 
+             if aFilename.endswWith("b.s"):
+               id = "%_BETA"%(aDataname)
+             else:
+               id = "%_GAMMA"%(aDataname)
+
+             (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+             input.close()
+           
+             self._addSpectrumInDataBag(data,aSampleID,id,aSpectrumType)
+             # histogram type coming from noble gaz
+            elif ext =='.h' or ext == '.archhist':
+              (data,limits) = self._extractHistrogramFromHistogramFile(input)
+              input.close()
+              # create a unique id for the extracted data
+              self._dataBag[u"%s_HIST_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
+            # remove it for the moment
+            else:
+              raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
         
         return (dataname,type)
         
@@ -968,12 +966,13 @@ class ParticulateDataFetcher(DBDataFetcher):
         print "Getting Spectrum for %s\n"%(aSampleID)
            
         # get sample info related to this sampleID
-        (dataname,type) = self._fetchSampleInfo(aSampleID)
+        # pass the gamma prefix
+        (dataname,type) = self._fetchGeneralSpectrumInfo(aSampleID,"_G")
         
         print "Its name will be %s and its type is %s"%(dataname,type)
          
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
-         
+        
         if nbResults is 0:
             print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
             arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(type,"")
@@ -982,7 +981,39 @@ class ParticulateDataFetcher(DBDataFetcher):
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
         for row in rows:
-            self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
+           (input,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
+           
+           # check if it has to be compressed
+           compressed = self._conf.getboolean("Options","compressSpectrum")
+           id = "%s_G_DATA"%(dataname)
+                
+           # check the message type and do the necessary.
+           # here we expect a .msg or .s
+           # we can also have .h coming from noble gaz histogram
+           if ext == '.msg' or ext == '.archmsg':
+              
+              (data,limits)  =  self._extractSpectrumFromMessageFile(input)
+              
+              input.close()
+              
+              (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+           # '.archs' given for an archived sample
+           elif ext == '.s' or ext == '.archs':
+            
+             (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+             
+             input.close()
+           
+             (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+           else:
+             raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
+         
+           self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+           self._dataBag[u"%s"%(id)]                        = data
+           self._dataBag[u"%s_CHANNEL_SPAN"%(id)]   = channel_span
+           self._dataBag[u"%s_ENERGY_SPAN"%(id)]    = energy_span
+           # create a unique id for the extract data
+           self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
         
         return (dataname,type)
         
@@ -1087,7 +1118,7 @@ class ParticulateDataFetcher(DBDataFetcher):
           (dataname,type) = self._fetchSpectrumData(sid)
         
           self._dataBag[u'CURRENT_QC'] = dataname
-        
+           
           self._dataBag[u'CONTENT_PRESENT'].add('QC') 
         
         except Exception, e:
@@ -1190,7 +1221,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         if ('PREL' in spectrums):
           self._fetchPrelsSpectrumData()
-        
+          
+            
     def _addCategoryComments(self,aData):
         """ Add the comments as it was defined in the RRR """
         
@@ -1404,8 +1436,9 @@ class ParticulateDataFetcher(DBDataFetcher):
           if dataname is not None:
              print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
           
-             sid      = self._dataBag.get('%s_SAMPLE_ID'%(dataname))
-        
+             # extract id from dataname
+             [pre,sid] = dataname.split('_')
+          
              self._fetchCategoryResults(sid,dataname)
         
              self._fetchNuclidesResults(sid,dataname)
@@ -1618,8 +1651,10 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchCalibrationCoeffs(self,prefix):
         
         # get the sampleID 
-        sid = self._dataBag.get("%s_SAMPLE_ID"%(prefix),None)
-           
+        # extract id from dataname
+        
+        [pre,sid] = prefix.split('_')
+    
         if sid is None:
             raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
         
@@ -1649,7 +1684,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[cal_id] = data
         
         # prefix_ENERGY_CAL now refers to this calibration ID
-        self._dataBag[u'%s_ENERGY_CAL'%(prefix)] = cal_id
+        self._dataBag[u'%s_G_ENERGY_CAL'%(prefix)] = cal_id
         
         # add in list of calibration info for this particular sample
         calIDs_list.append(cal_id)
@@ -1678,7 +1713,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[cal_id] = data
         
         # add in dataBag
-        self._dataBag[u'%s_RESOLUTION_CAL'%(prefix)] = cal_id
+        self._dataBag[u'%s_G_RESOLUTION_CAL'%(prefix)] = cal_id
         
         # add in list of calibration info for this particular sample
         calIDs_list.append(cal_id)
@@ -1706,13 +1741,13 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[cal_id] = data
         
         # add in dataBag
-        self._dataBag[u'%s_EFFICIENCY_CAL'%(prefix)] = cal_id
+        self._dataBag[u'%s_G_EFFICIENCY_CAL'%(prefix)] = cal_id
         
         # add in list of calibration info for this particular sample
         calIDs_list.append(cal_id)
         
         # add the list of calib_infos in the bag
-        self._dataBag[u'%s_DATA_ALL_CALS'%(prefix)] = calIDs_list
+        self._dataBag[u'%s_G_DATA_ALL_CALS'%(prefix)] = calIDs_list
         
         result.close()
         

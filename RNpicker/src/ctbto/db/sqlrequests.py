@@ -39,7 +39,7 @@ SQL_GETSTATIONINFO    = "select sta.station_id as station_id, sta.station_code a
 SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
 
 
-SQL_GETSAMPLEINFO     = "select sample_id as sample_id, input_file_name as spectrum_filepath, data_type as data_data_type, geometry as data_sample_geometry, \
+SQL_GETSAMPLEINFO     = "select input_file_name as spectrum_filepath, data_type as data_data_type, geometry as data_sample_geometry, \
                                 spectral_qualifier as data_spectral_qualifier, quantity as data_sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
                                 acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \

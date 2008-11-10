@@ -192,7 +192,7 @@ class GenieParticulateRenderer(BaseRenderer):
             
             spectrumTemplate = ""
             
-            fname = "%s_DATA"%(type)
+            fname = "%s_G_DATA"%(type)
             data  = self._fetcher.get(fname,None)
             
             if data is not None:
@@ -596,7 +596,7 @@ class GenieParticulateRenderer(BaseRenderer):
              # for the moment only one result
              dummy_template += template
         
-             spectrum_id    = self._fetcher.get("%s_DATA_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
+             spectrum_id    = self._fetcher.get("%s_G_DATA_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
              
              # Add analysis identifier => SpectrumID prefixed by AN
              dummy_template = re.sub("\${ANALYSISID}","AN-%s"%(spectrum_id),dummy_template)
@@ -616,7 +616,7 @@ class GenieParticulateRenderer(BaseRenderer):
              dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
              
              #add Calibration references
-             l = self._fetcher.get("%s_DATA_ALL_CALS"%(id))
+             l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(id))
              if l is None :
                 raise CTBTOError(-1,"Error no calibration information for sample %s, sid: %s\n"%(type,spectrum_id))
              else:
@@ -654,7 +654,7 @@ class GenieParticulateRenderer(BaseRenderer):
         dummy_template = ""
         
         # get energy calibration 
-        en_id = self._fetcher.get("%s_ENERGY_CAL"%(prefix),None)
+        en_id = self._fetcher.get("%s_G_ENERGY_CAL"%(prefix),None)
         
         if (en_id is not None):
         
@@ -675,7 +675,7 @@ class GenieParticulateRenderer(BaseRenderer):
         
         template = self._conf.get("TemplatingSystem","particulateResolutionCalTemplate")
         
-        re_id = self._fetcher.get("%s_RESOLUTION_CAL"%(prefix),None)
+        re_id = self._fetcher.get("%s_G_RESOLUTION_CAL"%(prefix),None)
         
         if re_id is not None: 
           # add calib info if it isn't there already
@@ -697,7 +697,7 @@ class GenieParticulateRenderer(BaseRenderer):
         
         template = self._conf.get("TemplatingSystem","particulateEfficencyCalTemplate")
         
-        eff_id = self._fetcher.get("%s_EFFICIENCY_CAL"%(prefix),None)
+        eff_id = self._fetcher.get("%s_G_EFFICIENCY_CAL"%(prefix),None)
         
         
         
