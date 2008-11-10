@@ -191,7 +191,11 @@ def parserTest():
     
 
 if __name__ == '__main__':
-    parserTest()
+    
+    #parserTest()
+    s = "123455959b.s"
+    
+    print "ends with %s\n"%(s.endswith("b.s"))
    
     
     
