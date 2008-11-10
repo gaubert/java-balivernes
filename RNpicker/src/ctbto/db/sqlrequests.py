@@ -52,7 +52,11 @@ SQL_GETSAUNA_FILES                   = "select prod.dir, prod.DFIle,fp.prodtype,
 SQL_GETSAUNA_RAW_FILE                = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 """ Get information regarding all identified nuclides """
-SQL_SAUNA_GETIDENTIFIEDNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID and conc.NID_FLAG=1"
+SQL_SAUNA_GET_IDENTIFIED_NUCLIDES = "select lib.NAME as Nuclide, lib.HALFLIFE as halflife, conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, conc.NID_FLAG as NID_FLAG from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
+
+SQL_SAUNA_GET_ROI_CONCS = "select ROI,CONC,CONC_ERR,MDC,NID_FLAG,LC,LD from gards_BG_ROI_CONCS where sample_id=%s"
+
+SQL_SAUNA_GET_ROI_COUNTS = "select ROI,GROSS, GROSS_ERR, GAS_BKGND_GROSS, GAS_BKGND_COUNT, GAS_BKGND_COUNT_ERR, DET_BKGND_COUNT, DET_BKGND_COUNT_ERR, NET_COUNT, NET_COUNT_ERR, CRITICAL_LEV_SAMP, CRITICAL_LEV_GAS from gards_BG_ROI_counts where sample_id=%s"
 
 """ Get information regarding all nuclides """
 SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
@@ -95,6 +99,8 @@ SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      and detector_id=%s\
                                      and Spectral_qualifier='PREL'\
                                      order by  ACQUISITION_REAL_SEC asc"
+                                     
+SQL_GET_SAUNA_NUCLIDE_ACTIVITY_CONC = "select lib.name as name, c.conc as conc ,c.conc_err as err ,c.mdc as mdc ,c.nid_flag as nid_flag ,c.lc as lc ,c.ld as ld from gards_bg_isotope_concs c, gards_xe_nucl_lib lib where sample_id=103729 and c.nuclide_id=lib.nuclide_id"
 
 """ ************************************* Particulate Part ********************************************* """
 
