@@ -30,6 +30,8 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
+    c_nid_translation = {0:"nuclide not identifided by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
+    
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
@@ -862,9 +864,6 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
          
         self._dataBag['CURR_List_OF_PRELS']  =  listOfPrel
         self._dataBag[u'CONTENT_PRESENT'].add('PREL') 
-           
-        
-        result.close()
     
     def _fetchQCSpectrumData(self):
         """get the QC data.
@@ -1064,9 +1063,6 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
     def _fetchAnalysisResults(self,aParams):
        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
            
-       # get static info necessary for the analysis
-       self._fetchNuclidesToQuantify()
-        
        analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
        
        if ('None' in analyses):
@@ -1089,65 +1085,115 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
              # extract id from dataname
              [pre,sid] = dataname.split('_')
           
-             self._fetchCategoryResults(sid,dataname)
+             #self._fetchCategoryResults(sid,dataname)
         
              self._fetchNuclidesResults(sid,dataname)
+             
+             self._fetchROIResults(sid,dataname)
+                 
+             #self._fetchFlags(sid,dataname)
         
-             self._fetchNuclideLines(sid,dataname)
+             #self._fetchParameters(sid,dataname)
+   
+    def _fetchCalibration(self):  
+        """ Fetch the calibration info for all the different spectrums """
+        print "Fetch Calibration\n"
+     
+    def _fetchNuclidesResults(self,sid,dataname):
+       """fetch all the nuclides information regading the passed sampleID (sid).
+            
+                Args:
+                   sid:sample_id
+                   dataname: prefix used to store the data in the database
+                   
+                Returns:
+                   return
+            
+                Raises:
+                   exception"""
         
-             self._fetchPeaksResults(sid,dataname)
-          
-             self._fetchFlags(sid,dataname)
+       # get identified Nuclides
+       result = self._mainConnector.execute(SQL_SAUNA_GET_IDENTIFIED_NUCLIDES%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()    
         
-             self._fetchParameters(sid,dataname)
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {}
         
+       for row in rows:
+          data.update(row.items())  
+            
+          nidflag = data.get(u'NID_FLAG',None)
+
+          # check if there is NID key
+          if nidflag is not None:
+            val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
+            data[u'NID_FLAG']     = val
+            data[u'NID_FLAG_NUM'] = nidflag
+            
+          res.append(data)
+          data = {}
+
+       # add in dataBag
+       self._dataBag[u'%s_IDED_NUCLIDES'%(dataname)] = res
+            
+       result.close()
     
-    def _OldfetchAnalysisResults(self):
-        """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
-        
-        # get identified Nuclides
-        result = self._mainConnector.execute(SQL_SAUNA_GETIDENTIFIEDNUCLIDES%(self._sampleID))
-       
-        # only one row in result set
-        rows = result.fetchall()
-       
-        nbResults = len(rows)
-       
-        if nbResults is 0:
-            raise CTBTOError(-1,"Expecting to have n identified nuclides for sample_id %s but got 0"%(self._sampleID))
-        
-        # add results in a list which will become a list of dicts
-        res = {}
-        
-        for row in rows:
-            res.update(row.items())
+    def _fetchROIResults(self,sid,dataname):
+       """fetch all the nuclides information regading the passed sampleID (sid).
             
-        # add in dataBag
-        self._dataBag['AR_identifiedNuclides'] = res
-        
-        result.close()
-        
-        # get information regarding all Nuclides
-        result = self._mainConnector.execute(SQL_SAUNA_GETALLNUCLIDES%(self._sampleID))
-       
-        # only one row in result set
-        rows = result.fetchall()
-       
-        nbResults = len(rows)
-       
-        if nbResults is 0:
-            raise CTBTOError(-1,"Expecting to have n nuclides for sample_id but got 0"%(self._sampleID))
-        
-        # add results in a list which will become a list of dicts
-        res = {}
-        
-        for row in rows:
-            res.update(row.items())
+                Args:
+                   sid:sample_id
+                   dataname: prefix used to store the data in the database
+                   
+                Returns:
+                   return
             
-        # add in dataBag
-        self._dataBag['AR_AllNuclides'] = res
+                Raises:
+                   exception"""
         
-        result.close()         
+       # get ROI Concs
+       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_CONCS%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()
+   
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {}
+        
+       for row in rows:
+          data.update(row.items())  
+            
+          res.append(data)
+          data = {}
+
+       # add in dataBag
+       self._dataBag[u'%s_ROIS_CONCS'%(dataname)] = res  
+       result.close()
+       
+       # get ROI COUNTS
+       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_COUNTS%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()
+   
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {}
+        
+       for row in rows:
+          data.update(row.items())  
+            
+          res.append(data)
+          data = {}
+
+       # add in dataBag
+       self._dataBag[u'%s_ROIS_COUNTS'%(dataname)] = res  
+       result.close()
+          
 
 class SpalaxNobleGasDataFetcher(DBDataFetcher):
     """ Class for fetching SPALAX related data """
@@ -1172,8 +1218,6 @@ class ParticulateDataFetcher(DBDataFetcher):
       # Class members
     c_log = logging.getLogger("datafetchers.ParticulateDataFetcher")
     c_log.setLevel(logging.DEBUG)
-    
-    c_nid_translation = {0:"nuclide not identifided by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
     
     c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
     
@@ -1632,7 +1676,7 @@ class ParticulateDataFetcher(DBDataFetcher):
 
             # check if there is NID key
             if nidflag is not None:
-                val = ParticulateDataFetcher.c_nid_translation.get(nidflag,nidflag)
+                val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
                 data[u'NID_FLAG']     = val
                 data[u'NID_FLAG_NUM'] = nidflag
             
