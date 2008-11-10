@@ -58,6 +58,10 @@ SQL_SAUNA_GET_ROI_CONCS = "select ROI,CONC,CONC_ERR,MDC,NID_FLAG,LC,LD from gard
 
 SQL_SAUNA_GET_ROI_COUNTS = "select ROI,GROSS, GROSS_ERR, GAS_BKGND_GROSS, GAS_BKGND_COUNT, GAS_BKGND_COUNT_ERR, DET_BKGND_COUNT, DET_BKGND_COUNT_ERR, NET_COUNT, NET_COUNT_ERR, CRITICAL_LEV_SAMP, CRITICAL_LEV_GAS from gards_BG_ROI_counts where sample_id=%s"
 
+SQL_SAUNA_GET_PROCESSING_PARAMS = "select * from gards_bg_proc_params where sample_id=%s"
+
+SQL_SAUNA_GET_ROI_PARAMS = "select * from gards_bg_proc_params_roi where sample_id=%s"
+
 """ Get information regarding all nuclides """
 SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
