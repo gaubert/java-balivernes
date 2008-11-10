@@ -1059,8 +1059,48 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            self._fetchPrelsSpectrumData()
            
         # TODO Remove this
-        self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
+        #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
        
+    def _fetchAnalysisResults(self,aParams):
+       """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+           
+       # get static info necessary for the analysis
+       self._fetchNuclidesToQuantify()
+        
+       analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
+       
+       if ('None' in analyses):
+            # None is in there so do not include data
+            return
+        
+       for analysis in analyses:
+        
+          # for the moment ignore Analysis for PREL
+          if analysis == 'PREL' :
+              continue
+        
+          # check if there is some data regarding this type of analysis
+          # get the dataname of the current spectrum (it is the main spectrum)
+          dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
+          
+          if dataname is not None:
+             print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
+          
+             # extract id from dataname
+             [pre,sid] = dataname.split('_')
+          
+             self._fetchCategoryResults(sid,dataname)
+        
+             self._fetchNuclidesResults(sid,dataname)
+        
+             self._fetchNuclideLines(sid,dataname)
+        
+             self._fetchPeaksResults(sid,dataname)
+          
+             self._fetchFlags(sid,dataname)
+        
+             self._fetchParameters(sid,dataname)
+        
     
     def _OldfetchAnalysisResults(self):
         """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
