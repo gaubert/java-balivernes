@@ -1093,7 +1093,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                  
              #self._fetchFlags(sid,dataname)
         
-             #self._fetchParameters(sid,dataname)
+             self._fetchParameters(sid,dataname)
    
     def _fetchCalibration(self):  
         """ Fetch the calibration info for all the different spectrums """
@@ -1141,8 +1141,64 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
        result.close()
     
+    def _fetchParameters(self,sid,dataname):
+        """fetch all the analysis parameters for the passed sampleID (sid).
+            
+                Args:
+                   sid:sample_id
+                   dataname: prefix used to store the data in the database
+                   
+                Returns:
+                   return
+            
+                Raises:
+                   exception"""
+        
+        # get processing params and flags
+        result = self._mainConnector.execute(SQL_SAUNA_GET_PROCESSING_PARAMS%(sid))
+       
+        # only one row in result set
+        rows = result.fetchall()    
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
+        
+        for row in rows:
+          data.update(row.items())  
+          
+          res.append(data)
+          data = {}
+
+        # add in dataBag
+        self._dataBag[u'%s_PROC_PARAMS'%(dataname)] = res
+        
+        result.close()
+        
+        # get ROI params
+        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_PARAMS%(sid))
+       
+        # only one row in result set
+        rows = result.fetchall()    
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
+        
+        for row in rows:
+          data.update(row.items())  
+          
+          res.append(data)
+          data = {}
+
+        # add in dataBag
+        self._dataBag[u'%s_ROI_PARAMS'%(dataname)] = res
+        
+        result.close()
+        
+        
     def _fetchROIResults(self,sid,dataname):
-       """fetch all the nuclides information regading the passed sampleID (sid).
+       """fetch all the ROI information for the passed sampleID (sid).
             
                 Args:
                    sid:sample_id
@@ -1171,7 +1227,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           data = {}
 
        # add in dataBag
-       self._dataBag[u'%s_ROIS_CONCS'%(dataname)] = res  
+       self._dataBag[u'%s_ROI_CONCS'%(dataname)] = res  
        result.close()
        
        # get ROI COUNTS
@@ -1191,7 +1247,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           data = {}
 
        # add in dataBag
-       self._dataBag[u'%s_ROIS_COUNTS'%(dataname)] = res  
+       self._dataBag[u'%s_ROI_COUNTS'%(dataname)] = res  
        result.close()
           
 
