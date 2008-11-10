@@ -768,6 +768,174 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         super(SaunaNobleGasDataFetcher,self).__init__(aDbConnector,aSampleID)
         
         self._dataBag['SAMPLE_TYPE']="SAUNA"
+    
+    def _fetchBKSpectrumData(self):
+        """get the Background data.
+           If the caching function is activated save the retrieved spectrum on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the curr sample is a Detector background itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
+           return
+        
+        print "Getting Background Spectrum for %s\n"%(self._sampleID)
+        
+        # need to get the latest BK sample_id
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+       
+        if nbResults is 0:
+           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+           return
+       
+        if nbResults > 1:
+            print("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
+        sid = rows[0]['SAMPLE_ID']
+        
+        DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
+          
+        # now fetch the spectrum
+        try:
+           (dataname,type) = self._fetchAllData(sid)
+           
+           self._dataBag[u'CURRENT_BK'] = dataname
+           
+           self._dataBag[u'CONTENT_PRESENT'].add('BK') 
+           
+        except Exception, e:
+           print "Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e)
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+    
+    def _fetchPrelsSpectrumData(self):
+        """get the preliminary data.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the curr sample is a prel itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
+           return
+    
+        print "Getting Prels Spectrum for %s\n"%(self._sampleID)
+        
+        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        
+        # need to get the latest BK sample_id
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID']))
+        
+        if nbResults is 0:
+            print("There is no PREL spectrum for %s."%(self._sampleID))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('PREL')
+            return
+        
+        listOfPrel = []
+          
+        for row in rows:
+            sid = row['SAMPLE_ID']
+            
+            print "sid = %s\n"%(sid)
+            
+            # now fetch the spectrum with the a PREL_cpt id
+            (dataname,type) = self._fetchAllData(sid)
+            # update list of prels
+            listOfPrel.append(dataname)
+         
+        self._dataBag['CURR_List_OF_PRELS']  =  listOfPrel
+        self._dataBag[u'CONTENT_PRESENT'].add('PREL') 
+           
+        
+        result.close()
+    
+    def _fetchQCSpectrumData(self):
+        """get the QC data.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: aDataname prefix in the dict
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
+        
+        # precondition do nothing if there the curr sample is a Detector background itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
+           return
+        
+        print "Getting QC Spectrum of %s\n"%(self._sampleID)
+        
+        # need to get the latest BK sample_id
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        
+        nbResults = len(rows)
+        
+        if nbResults is 0:
+           print("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           # add in CONTENT_NOT_PRESENT this is used by the cache
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+           return
+       
+        if nbResults > 1:
+            print("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
+        sid = rows[0]['SAMPLE_ID']
+        
+        try:
+          # now fetch the spectrum
+          (dataname,type) = self._fetchAllData(sid)
+        
+          self._dataBag[u'CURRENT_QC'] = dataname
+           
+          self._dataBag[u'CONTENT_PRESENT'].add('QC') 
+        
+        except Exception, e:
+         print "Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e)
+         self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+    
+    def _fetchCURRSpectrumData(self):
+        """ fetch the current spectrum identified by the current sampleID
+        
+            Args:
+               params: aDataname
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        (dataname,type) = self._fetchAllData(self._sampleID)
+        
+        self._dataBag[u'CURRENT_CURR'] = dataname
+        
+        if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
+           self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
         
     def _fetchAllData(self,aSampleID):
         """Fetch the two spectra and the histogram.
@@ -788,7 +956,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         print "Getting Spectrum for %s\n"%(aSampleID)
            
         # get sample info related to this sampleID
-        (dataname,type) = self._fetchSampleInfo(aSampleID)
+        (dataname,type) = self._fetchGeneralSpectrumInfo(aSampleID)
         
         print "Its name will be %s and its type is %s"%(dataname,type)
          
@@ -802,46 +970,78 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
         for row in rows:
-            input = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
+            (input,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
             
-            # check the message type and do the necessary.
+            compressed = self._conf.getboolean("Options","compressSpectrum")
+            filename   = row['DFile']
+            
+             # check the message type and do the necessary.
             # here we expect a .msg or .s
             # we can also have .h coming from noble gaz histogram
-            if ext == '.msg' or ext == '.archmsg':
-               (data,limits)  =  self._extractSpectrumFromMessageFile(input)
+            if filename.endswith("b.s") or filename.endswith("b.archs"):
+               
+               id = "%s_B"%(dataname)
+               
+               (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+             
                input.close()
-               self._addSpectrumInDataBag(data,aSampleID,aDataname,aSpectrumType)
-            # '.archs' given for an archived sample
-            elif ext == '.s' or ext == '.archs':
-            
-             # check if it is a beta or gamma spectrum 
-             if aFilename.endswWith("b.s"):
-               id = "%_BETA"%(aDataname)
-             else:
-               id = "%_GAMMA"%(aDataname)
-
-             (data,limits) = self._extractSpectrumFromSpectrumFile(input)
-             input.close()
            
-             self._addSpectrumInDataBag(data,aSampleID,id,aSpectrumType)
-             # histogram type coming from noble gaz
-            elif ext =='.h' or ext == '.archhist':
-              (data,limits) = self._extractHistrogramFromHistogramFile(input)
-              input.close()
-              # create a unique id for the extracted data
-              self._dataBag[u"%s_HIST_DATA_ID"%(aDataname)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,aSpectrumType)
+               (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+               
+               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s"%(id)]                = data
+               self._dataBag[u"%s_CHANNEL_SPAN"%(id)]   = channel_span
+               self._dataBag[u"%s_ENERGY_SPAN"%(id)]    = energy_span
+               # create a unique id for the extract data
+               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+                  
+            elif filename.endswith("g.s") or filename.endswith("g.archs"):
+               id = "%s_G"%(dataname)
+               
+               (data,limits) = self._extractSpectrumFromSpectrumFile(input)
+             
+               input.close()
+           
+               (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+               
+               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s"%(id)]                = data
+               self._dataBag[u"%s_CHANNEL_SPAN"%(id)]   = channel_span
+               self._dataBag[u"%s_ENERGY_SPAN"%(id)]    = energy_span
+               # create a unique id for the extract data
+               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               
+            elif filename.endswith(".h") or filename.endswith(".archhist"):
+               id = "%s_H"%(dataname)
+               
+               (data,limits) = self._extractHistrogramFromHistogramFile(input)
+               
+               input.close()
+               
+               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s"%(id)]                = data.getvalue()
+               
+               # create a unique id for the extracted data
+               self._dataBag[u"%s_ID"%(dataname)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               
+            elif filename.endswith(".msg") or filename.endswith(".archmsg"):
+                # Here whe should extract the 3 components
+                #TO BE DONE
+                print "TO BE DONE"
+                CTBTOError(-1,"To be developed\n")
             # remove it for the moment
             else:
               raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,path,aSampleID))
         
+        # the global prefix BK_SID or CURR_SID and the type (PREL, BK, CURR)
         return (dataname,type)
         
     def _fetchData(self,aParams=None):
         """ get the different raw data info """
         
-        #spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
+        spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
         
-        """if ('None' in spectrums):
+        if ('None' in spectrums):
             # None is in there so do not include data
             return
         
@@ -850,21 +1050,19 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            self._fetchCURRSpectrumData()
         
         if ('QC' in spectrums):
-           self._fetchQCSpectrumData()
+          self._fetchQCSpectrumData()
         
         if ('BK' in spectrums):
            self._fetchBKSpectrumData()
         
         if ('PREL' in spectrums):
-          self._fetchPrelsSpectrumData()"""
-        
-        # there are 3 components: histogram, beta and gamma spectrum
-        self._fetchSpectrumData(self._sampleID)
-        
+           self._fetchPrelsSpectrumData()
+           
+        # TODO Remove this
         self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
-        
+       
     
-    def _fetchAnalysisResults(self):
+    def _OldfetchAnalysisResults(self):
         """ get the activity concentration summary for ided nuclides, the activity summary, ROINetCounts results """
         
         # get identified Nuclides
