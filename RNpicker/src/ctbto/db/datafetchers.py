@@ -796,12 +796,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
        
         if nbResults is 0:
-           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
            return
        
         if nbResults > 1:
-            print("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            print("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
@@ -992,7 +992,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if nbResults is 0:
             print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
             arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(type,"")
-            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
+            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False) 
         elif nbResults != 3:
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
@@ -1015,12 +1015,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            
                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
                
-               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
-               self._dataBag[u"%s"%(id)]                = data
-               self._dataBag[u"%s_CHANNEL_SPAN"%(id)]   = channel_span
-               self._dataBag[u"%s_ENERGY_SPAN"%(id)]    = energy_span
+               self._dataBag[u"%s_DATA_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s_DATA"%(id)]                = data
+               self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(id)]   = channel_span
+               self._dataBag[u"%s_DATA_ENERGY_SPAN"%(id)]    = energy_span
                # create a unique id for the extract data
-               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               self._dataBag[u"%s_DATA_ID"%(id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
                   
             elif filename.endswith("g.s") or filename.endswith("g.archs"):
                id = "%s_G"%(dataname)
@@ -1031,12 +1031,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            
                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
                
-               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
-               self._dataBag[u"%s"%(id)]                = data
-               self._dataBag[u"%s_CHANNEL_SPAN"%(id)]   = channel_span
-               self._dataBag[u"%s_ENERGY_SPAN"%(id)]    = energy_span
+               self._dataBag[u"%s_DATA_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s_DATA"%(id)]                = data
+               self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(id)]   = channel_span
+               self._dataBag[u"%s_DATA_ENERGY_SPAN"%(id)]    = energy_span
                # create a unique id for the extract data
-               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               self._dataBag[u"%s_DATA_ID"%(id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
                
             elif filename.endswith(".h") or filename.endswith(".archhist"):
                id = "%s_H"%(dataname)
@@ -1045,11 +1045,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                
                input.close()
                
-               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
-               self._dataBag[u"%s"%(id)]                = data.getvalue()
+               self._dataBag[u"%s_DATA_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s_DATA"%(id)]                = data.getvalue()
                
                # create a unique id for the extracted data
-               self._dataBag[u"%s_ID"%(dataname)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               self._dataBag[u"%s_DATA_ID"%(dataname)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
                
             elif filename.endswith(".msg") or filename.endswith(".archmsg"):
                 # Here whe should extract the 3 components
@@ -1326,16 +1326,33 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 
         data.update(rows[0].items())
         
-        checksum = self._getCalibrationCheckSum([data[u'BETA_COEFF1'],data[u'BETA_COEFF2'],data[u'BETA_COEFF3'],data[u'GAMMA_COEFF1'],data[u'GAMMA_COEFF2'],data[u'GAMMA_COEFF3']])
+        
+        # Beta Cal Info
+        checksum = self._getCalibrationCheckSum([data[u'BETA_COEFF1'],data[u'BETA_COEFF2'],data[u'BETA_COEFF3']])
         
         cal_id = 'EN-%s'%(checksum)
         
         # add in dataBag as EN-checksumif not already in the dataBag
         if cal_id not in self._dataBag:
-            self._dataBag[cal_id] = data
+            self._dataBag[cal_id] = {'BETA_COEFF1':data[u'BETA_COEFF1'],'BETA_COEFF2':data[u'BETA_COEFF2'],'BETA_COEFF3':data[u'BETA_COEFF3']}
         
         # prefix_ENERGY_CAL now refers to this calibration ID
-        self._dataBag[u'%s_ENERGY_CAL'%(prefix)] = cal_id
+        self._dataBag[u'%s_B_ENERGY_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        # Gamma Cal Info
+        checksum = self._getCalibrationCheckSum([data[u'GAMMA_COEFF1'],data[u'GAMMA_COEFF2'],data[u'GAMMA_COEFF3']])
+        
+        cal_id = 'EN-%s'%(checksum)
+        
+        # add in dataBag as EN-checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = {'GAMMA_COEFF1':data[u'GAMMA_COEFF1'],'GAMMA_COEFF2':data[u'GAMMA_COEFF2'],'GAMMA_COEFF3':data[u'GAMMA_COEFF3']}
+        
+        # prefix_ENERGY_CAL now refers to this calibration ID
+        self._dataBag[u'%s_G_ENERGY_CAL'%(prefix)] = cal_id
         
         # add in list of calibration info for this particular sample
         calIDs_list.append(cal_id)
