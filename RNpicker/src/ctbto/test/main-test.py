@@ -296,10 +296,15 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='8')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2007-10-24',endDate='2008-10-30',spectralQualif='FULL',nbOfElem='1000')
         
         # error
-        #listOfSamplesToTest = [ "103729" ]
+        # 103729,241116     
+        #listOfSamplesToTest = [ "141372" ]
+        
+        # remove sampleID for which data isn't available
+        if "141372" in listOfSamplesToTest:
+           listOfSamplesToTest.remove("141372")
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
