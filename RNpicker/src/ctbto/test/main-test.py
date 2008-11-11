@@ -22,6 +22,7 @@ from ctbto.renderers import GenieParticulateRenderer
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
 
+SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID,STATION_ID,SITE_DET_CODE from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
 
 def myBasicLoggingConfig():
     """
@@ -162,6 +163,21 @@ class TestSAMPMLCreator(unittest.TestCase):
        print "samples %s\n"%(sampleIDs)
       
        return sampleIDs
+   
+    def getListOfSaunaSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
+        
+       result = self.nbConn.execute(SQL_GETSAUNASAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
+        
+       sampleIDs= []
+        
+       rows = result.fetchall()
+       
+       for row in rows:
+           sampleIDs.append(row[0])
+       
+       print "sauna samples %s\n"%(sampleIDs)
+      
+       return sampleIDs
       
     def tesstPrelParticulateSamples(self):
         
@@ -280,10 +296,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full
-        #listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='8')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='8')
         
         # error
-        listOfSamplesToTest = [ "103729" ]
+        #listOfSamplesToTest = [ "103729" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)

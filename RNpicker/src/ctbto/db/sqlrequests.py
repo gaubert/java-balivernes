@@ -106,6 +106,11 @@ SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      
 SQL_GET_SAUNA_NUCLIDE_ACTIVITY_CONC = "select lib.name as name, c.conc as conc ,c.conc_err as err ,c.mdc as mdc ,c.nid_flag as nid_flag ,c.lc as lc ,c.ld as ld from gards_bg_isotope_concs c, gards_xe_nucl_lib lib where sample_id=103729 and c.nuclide_id=lib.nuclide_id"
 
+SQL_GET_AUX_SAMPLE_INFO = "select * from GARDS_SAMPLE_AUX where sample_id=%s"
+
+SQL_GET_SAUNA_ENERGY_CAL  = "select * from GARDS_BG_ENERGY_CAL where sample_id=%s"
+
+
 """ ************************************* Particulate Part ********************************************* """
 
 """ get any spectrum full or prel or qc or back """
