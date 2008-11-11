@@ -936,6 +936,32 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
            self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
         
+    def _fetchAuxiliarySampleInfo(self,aSampleID,aDataname):
+        """ Get auxiliary information
+        
+            Args:
+               aSampleID: sampleID
+               
+        """
+        print "Getting auxiliary sample info for %s\n"%(aSampleID)
+       
+        result = self._mainConnector.execute(SQL_GET_AUX_SAMPLE_INFO%(aSampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            print "Warning. No auxiliary info for sample %s\n"%(aSampleID)
+         
+        # get retrieved data and transform dates
+        data = {}
+        data.update(rows[0])
+        
+        self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
+        
+        
     def _fetchAllData(self,aSampleID):
         """Fetch the two spectra and the histogram.
            If the caching function is activated save the retrieved specturm on disc.
@@ -958,6 +984,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         (dataname,type) = self._fetchGeneralSpectrumInfo(aSampleID)
         
         print "Its name will be %s and its type is %s"%(dataname,type)
+        
+        self._fetchAuxiliarySampleInfo(aSampleID,dataname)
          
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_FILES%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
          
@@ -1095,10 +1123,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
              self._fetchParameters(sid,dataname)
    
-    def _fetchCalibration(self):  
-        """ Fetch the calibration info for all the different spectrums """
-        print "Fetch Calibration\n"
-     
+   
     def _fetchNuclidesResults(self,sid,dataname):
        """fetch all the nuclides information regading the passed sampleID (sid).
             
@@ -1249,7 +1274,76 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        # add in dataBag
        self._dataBag[u'%s_ROI_COUNTS'%(dataname)] = res  
        result.close()
+     
+    def _fetchCalibration(self):  
+        """ Fetch the calibration info for all the different spectrums """
+        
+        for present in self._dataBag.get('CONTENT_PRESENT',[]):
+            
+            # treat preliminary samples differently
+            if present == 'PREL':
+                
+                for prel in self._dataBag.get('CURR_List_OF_PRELS',[]):
+                    
+                    if prel is None:
+                       raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                    
+                    self._fetchCalibrationCoeffs(prel)
+            else:    
+            
+               prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
+               if prefix is None:
+                  raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+               
+               self._fetchCalibrationCoeffs(prefix)
           
+                        
+    def _fetchCalibrationCoeffs(self,prefix):
+        
+        # get the sampleID 
+        # extract id from dataname
+        
+        [pre,sid] = prefix.split('_')
+    
+        if sid is None:
+            raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
+        
+        calIDs_list = []
+        
+        # get energy calibration info
+        result = self._mainConnector.execute(SQL_GET_SAUNA_ENERGY_CAL%(sid))
+        
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults is not 1:
+            print "Warning no energy calibration coefficient for %s\n"%(sid)
+            return
+        
+        # create a list of dicts
+        data = {}
+
+        data.update(rows[0].items())
+        
+        checksum = self._getCalibrationCheckSum([data[u'BETA_COEFF1'],data[u'BETA_COEFF2'],data[u'BETA_COEFF3'],data[u'GAMMA_COEFF1'],data[u'GAMMA_COEFF2'],data[u'GAMMA_COEFF3']])
+        
+        cal_id = 'EN-%s'%(checksum)
+        
+        # add in dataBag as EN-checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # prefix_ENERGY_CAL now refers to this calibration ID
+        self._dataBag[u'%s_ENERGY_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        # add the list of calib_infos in the bag
+        self._dataBag[u'%s_G_DATA_ALL_CALS'%(prefix)] = calIDs_list
+        
+        result.close()     
 
 class SpalaxNobleGasDataFetcher(DBDataFetcher):
     """ Class for fetching SPALAX related data """
