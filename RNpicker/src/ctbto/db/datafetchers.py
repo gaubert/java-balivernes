@@ -678,12 +678,49 @@ class DBDataFetcher(object):
         
         return (input,ext)
         
-        
-    def _processSpectrum(self,aData,aToCompress=False):
-        """process the spectrum and retrun the data and limites.
+    def _processHistogram(self,aData,aToCompress=False):
+        """process the histogram and return the data and limites.
+           
         
             Args:
-               aSampeID. sampleID to read,
+               
+               aDataname.
+               aSpectrumType.
+               
+            Returns:
+               return the data
+        
+            Raises:
+               exception
+        """
+        data         = None
+        
+        # store in a StringIO object
+        # for the moment just add some spaces to have a nice histogram
+       
+        parsedHistogram = StringIO()
+        try:
+           for line in aData:
+                  parsedHistogram.write("                %s"%(line))
+        finally: 
+           aData.close()   
+     
+        # check in the conf if we need to compress the data
+        if aToCompress:
+            try:
+              data = base64.b64encode(zlib.compress(parsedHistogram.getvalue()))
+            except Exception, e:
+                print "Error,%s\n"%(e)
+        else:
+           data = parsedHistogram.getvalue()
+          
+        return data
+        
+    def _processSpectrum(self,aData,aToCompress=False):
+        """process the spectrum and return the data and limites.
+        
+            Args:
+               
                aDataname.
                aSpectrumType.
                
@@ -960,10 +997,9 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data.update(rows[0])
         
         self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
-        
-        
+            
     def _fetchAllData(self,aSampleID):
-        """Fetch the two spectra and the histogram.
+        """Fetch the two spectra (beta and gamma) and histogram
            If the caching function is activated save the retrieved specturm on disc.
            Try to find an extracted spectrum on OPS and Archive and if there is none of them look for the raw message (typeid)
         
@@ -978,7 +1014,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                exception
         """
            
-        print "Getting Spectrum for %s\n"%(aSampleID)
+        print "Getting Spectra and Histogram for %s\n"%(aSampleID)
            
         # get sample info related to this sampleID
         (dataname,type) = self._fetchGeneralSpectrumInfo(aSampleID)
@@ -987,7 +1023,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._fetchAuxiliarySampleInfo(aSampleID,dataname)
          
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_FILES%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_SAUNA_GET_FILES%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
          
         if nbResults is 0:
             print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
@@ -995,6 +1031,9 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False) 
         elif nbResults != 3:
             print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+            
+        data = {}
+        
         
         for row in rows:
             (input,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
@@ -1007,7 +1046,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             # we can also have .h coming from noble gaz histogram
             if filename.endswith("b.s") or filename.endswith("b.archs"):
                
-               id = "%s_B"%(dataname)
+               id = "%s_DATA_B"%(dataname)
                
                (data,limits) = self._extractSpectrumFromSpectrumFile(input)
              
@@ -1015,15 +1054,13 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            
                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
                
-               self._dataBag[u"%s_DATA_COMPRESSED"%(id)]     = compressed
-               self._dataBag[u"%s_DATA"%(id)]                = data
-               self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(id)]   = channel_span
-               self._dataBag[u"%s_DATA_ENERGY_SPAN"%(id)]    = energy_span
+               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s"%(id)]                = data
                # create a unique id for the extract data
-               self._dataBag[u"%s_DATA_ID"%(id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
                   
             elif filename.endswith("g.s") or filename.endswith("g.archs"):
-               id = "%s_G"%(dataname)
+               id = "%s_DATA_G"%(dataname)
                
                (data,limits) = self._extractSpectrumFromSpectrumFile(input)
              
@@ -1031,25 +1068,35 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            
                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
                
-               self._dataBag[u"%s_DATA_COMPRESSED"%(id)]     = compressed
-               self._dataBag[u"%s_DATA"%(id)]                = data
-               self._dataBag[u"%s_DATA_CHANNEL_SPAN"%(id)]   = channel_span
-               self._dataBag[u"%s_DATA_ENERGY_SPAN"%(id)]    = energy_span
+               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s"%(id)]                = data
                # create a unique id for the extract data
-               self._dataBag[u"%s_DATA_ID"%(id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
                
             elif filename.endswith(".h") or filename.endswith(".archhist"):
-               id = "%s_H"%(dataname)
+               id = "%s_DATA_H"%(dataname)
                
                (data,limits) = self._extractHistrogramFromHistogramFile(input)
                
                input.close()
                
-               self._dataBag[u"%s_DATA_COMPRESSED"%(id)]     = compressed
-               self._dataBag[u"%s_DATA"%(id)]                = data.getvalue()
+               data = self._processHistogram(data,compressed)
+               
+               self._dataBag[u"%s_COMPRESSED"%(id)]     = compressed
+               self._dataBag[u"%s"%(id)]                = data
+               
+               (r,n,foundOnArchive) = self.execute(SQL_SAUNA_GET_HISTOGRAM_INFO%(aSampleID),aTryOnArchive=True,aRaiseExceptionOnError=False)
+               if nbResults is 0:
+                   print("WARNING: Cannot find histogram information for sample_id %s in the database.\n"%(aSampleID))
+               else:
+                  # get energy and channel span from the table
+                  self._dataBag[u"%s_DATA_G_CHANNEL_SPAN"%(dataname)] = r[0]['G_CHANNELS']
+                  self._dataBag[u"%s_DATA_G_ENERGY_SPAN"%(dataname)]  = r[0]['G_ENERGY_SPAN']
+                  self._dataBag[u"%s_DATA_B_CHANNEL_SPAN"%(dataname)] = r[0]['B_CHANNELS']
+                  self._dataBag[u"%s_DATA_B_ENERGY_SPAN"%(dataname)]  = r[0]['B_ENERGY_SPAN']
                
                # create a unique id for the extracted data
-               self._dataBag[u"%s_DATA_ID"%(dataname)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
+               self._dataBag[u"%s_ID"%(id)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,type)
                
             elif filename.endswith(".msg") or filename.endswith(".archmsg"):
                 # Here whe should extract the 3 components
@@ -1330,7 +1377,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # Beta Cal Info
         checksum = self._getCalibrationCheckSum([data[u'BETA_COEFF1'],data[u'BETA_COEFF2'],data[u'BETA_COEFF3']])
         
-        cal_id = 'EN-%s'%(checksum)
+        cal_id = 'EN-B-%s'%(checksum)
         
         # add in dataBag as EN-checksumif not already in the dataBag
         if cal_id not in self._dataBag:
@@ -1345,7 +1392,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # Gamma Cal Info
         checksum = self._getCalibrationCheckSum([data[u'GAMMA_COEFF1'],data[u'GAMMA_COEFF2'],data[u'GAMMA_COEFF3']])
         
-        cal_id = 'EN-%s'%(checksum)
+        cal_id = 'EN-G-%s'%(checksum)
         
         # add in dataBag as EN-checksumif not already in the dataBag
         if cal_id not in self._dataBag:

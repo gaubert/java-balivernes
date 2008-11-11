@@ -48,8 +48,10 @@ SQL_GETSAMPLEINFO     = "select input_file_name as spectrum_filepath, data_type 
 """ ************************************ Noble Gaz Part ******************************************** """
                                 
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
-SQL_GETSAUNA_FILES                   = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
-SQL_GETSAUNA_RAW_FILE                = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_SAUNA_GET_FILES                   = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_SAUNA_GET_RAW_FILE                = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+
+SQL_SAUNA_GET_HISTOGRAM_INFO          = "select G_CHANNELS, B_CHANNELS, G_ENERGY_SPAN, B_ENERGY_SPAN from rmsman.gards_histogram where sample_id=%s"
 
 """ Get information regarding all identified nuclides """
 SQL_SAUNA_GET_IDENTIFIED_NUCLIDES = "select lib.NAME as Nuclide, lib.HALFLIFE as halflife, conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, conc.NID_FLAG as NID_FLAG from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
