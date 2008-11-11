@@ -18,6 +18,7 @@ from ctbto.db        import DatabaseConnector,DBDataFetcher
 #from ctbto.db        import DBDataFetcher
 
 from ctbto.renderers import GenieParticulateRenderer
+from ctbto.renderers import SaunaRenderer
 
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
@@ -300,8 +301,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # error
         # 103729,241116     
-        #listOfSamplesToTest = [ "141372" ]
+        listOfSamplesToTest = [ "134293" ]
         
+        #print "list of samples %s\n"%(listOfSamplesToTest)
+              
         # remove sampleID for which data isn't available
         if "141372" in listOfSamplesToTest:
            listOfSamplesToTest.remove("141372")
@@ -327,9 +330,9 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch(request)
                  
-           #renderer = GenieParticulateRenderer(fetcher)
+           renderer = SaunaRenderer(fetcher)
    
-           #xmlStr = renderer.asXmlStr(request)
+           xmlStr = renderer.asXmlStr(request)
            
            #print "Non Formatted String [%s]\n"%(xmlStr)
            
@@ -338,9 +341,9 @@ class TestSAMPMLCreator(unittest.TestCase):
            #f.write(xmlStr)
            #f.close()
    
-           #path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    
-           #ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
            # check if no tags are left
            #self.assertIfNoTagsLeft(path)
