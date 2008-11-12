@@ -988,7 +988,32 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data.update(rows[0])
         
         self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
-            
+           
+    def _fetchNuclidesToQuantify(self):
+        
+        
+        # return all gards_XE_NUCL_LIB
+        result = self._mainConnector.execute(SQL_GET_SAUNA_XE_NUCL_LIB)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+         # copy row in a normal dict
+         data.update(row)
+         res.append(data)
+         data = {}
+        
+        # add in dataBag
+        self._dataBag[u'XE_NUCL_LIB'] = res
+        
+        result.close()      
+        
     def _fetchAllData(self,aSampleID):
         """Fetch the two spectra (beta and gamma) and histogram
            If the caching function is activated save the retrieved specturm on disc.
@@ -1122,6 +1147,9 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            
     def _fetchAnalysisResults(self,aParams):
        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+        
+       # get static info necessary for the analysis
+       self._fetchNuclidesToQuantify()
            
        analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
        
@@ -1252,8 +1280,34 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         self._dataBag[u'%s_ROI_PARAMS'%(dataname)] = res
         
         result.close()
+      
+      
+    def _fetchNuclideNamePerROI(self,sid):
+       """fetch the nuclide names for a given ROI.
+            
+                Args:
+                   sid:sample_id
+                   
+                Returns:
+                   return
+            
+                Raises:
+                   exception
+        """ 
+       # get ROI Concs
+       result = self._mainConnector.execute(SQL_SAUNA_GET_NUCLIDE_FOR_ROI%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()
+   
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {}
+       for row in rows:
+          data[row['ROI']] = row['NAME']
         
-        
+       return data
+           
     def _fetchROIResults(self,sid,dataname):
        """fetch all the ROI information for the passed sampleID (sid).
             
@@ -1265,7 +1319,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                    return
             
                 Raises:
-                   exception"""
+                   exception
+       """
+       
+       # first game the Nuclide for the corresponding ROI
+       ROI_2_Nuclides = self._fetchNuclideNamePerROI(sid)
         
        # get ROI Concs
        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_CONCS%(sid))
@@ -1305,6 +1363,26 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 
        # add in dataBag
        self._dataBag[u'%s_ROI_COUNTS'%(dataname)] = res  
+       result.close()
+       # GET ROI INFO
+       # get ROI Concs
+       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_INFO%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()
+   
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {}
+        
+       for row in rows:
+          data.update(row.items())  
+            
+          res.append(data)
+          data = {}
+
+       # add in dataBag
+       self._dataBag[u'%s_ROI_INFO'%(dataname)] = res  
        result.close()
      
     def _fetchCalibration(self):  
