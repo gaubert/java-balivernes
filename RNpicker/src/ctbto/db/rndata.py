@@ -286,7 +286,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         elif aRemotePath.find("SPECTHIST") != -1:
             return "archs"
         else:
-            print "Warning cannot find the archived file type for %s. Guess it is a message\n"%(aRemotePath)
+            RemoteArchiveDataSource.c_log.warning("Warning cannot find the archived file type for %s. Guess it is a message\n"%(aRemotePath))
             return "archmsg"
         
     

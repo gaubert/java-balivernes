@@ -33,10 +33,16 @@ def myBasicLoggingConfig():
     """
     if len(logging.root.handlers) == 0:
         hdlr = logging.handlers.RotatingFileHandler("/tmp/logging.log", "a", 5000000, 4)
-        # fmt = logging.Formatter(logging.BASIC_FORMAT)
+        console = logging.StreamHandler()
         fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         hdlr.setFormatter(fmt)
+        console.setFormatter(fmt)
         logging.root.addHandler(hdlr)
+        logging.root.addHandler(console)
+        
+        log = logging.getLogger("ROOT")
+        log.setLevel(logging.DEBUG)
+        log.info("Start")
 
 
 class TestSAMPMLCreator(unittest.TestCase):
@@ -93,9 +99,6 @@ class TestSAMPMLCreator(unittest.TestCase):
     def setUp(self):
          
         myBasicLoggingConfig()  
-        log = logging.getLogger("ROOT")
-        log.setLevel(logging.DEBUG)
-        log.info("Start")
         
         # need to setup the ENV containing the the path to the conf file:
         os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
@@ -301,7 +304,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # error
         # 103729,241116     
-        listOfSamplesToTest = [ "134293" ]
+        listOfSamplesToTest = [ "206975" ]
         
         #print "list of samples %s\n"%(listOfSamplesToTest)
               

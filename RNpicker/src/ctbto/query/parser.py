@@ -97,7 +97,7 @@ class RequestParser(object):
         m = RequestParser.c_analysis_rex.match(aRequest)
     
         if m is None:
-            print("Warning, Cannot find the analysis=val1/val2 in param string %s\nUse default analysis=CURR"%(aRequest))
+            RequestParser.c_log.warning("Warning, Cannot find the analysis=val1/val2 in param string %s\nUse default analysis=CURR"%(aRequest))
             result.add('CURR')
             return result
         
@@ -154,7 +154,7 @@ class RequestParser(object):
     
     
         if m is None:
-            print("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aRequest))
+            RequestParser.c_log.warning("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aRequest))
             result.update(RequestParser.c_spectrum_types)
             return result
         
