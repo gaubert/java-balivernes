@@ -1305,6 +1305,9 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        data = {}
        for row in rows:
           data[row['ROI']] = row['NAME']
+       
+       # region 1 always PB-214
+       data[1] = "PB-214"
         
        return data
            
@@ -1324,48 +1327,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        
        # first game the Nuclide for the corresponding ROI
        ROI_2_Nuclides = self._fetchNuclideNamePerROI(sid)
-        
-       # get ROI Concs
-       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_CONCS%(sid))
-       
-       # only one row in result set
-       rows = result.fetchall()
-   
-       # add results in a list which will become a list of dicts
-       res = []
-       data = {}
-        
-       for row in rows:
-          data.update(row.items())  
-            
-          res.append(data)
-          data = {}
-
-       # add in dataBag
-       self._dataBag[u'%s_ROI_CONCS'%(dataname)] = res  
-       result.close()
-       
-       # get ROI COUNTS
-       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_COUNTS%(sid))
-       
-       # only one row in result set
-       rows = result.fetchall()
-   
-       # add results in a list which will become a list of dicts
-       res = []
-       data = {}
-        
-       for row in rows:
-          data.update(row.items())  
-            
-          res.append(data)
-          data = {}
-
-       # add in dataBag
-       self._dataBag[u'%s_ROI_COUNTS'%(dataname)] = res  
-       result.close()
+    
        # GET ROI INFO
-       # get ROI Concs
        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_INFO%(sid))
        
        # only one row in result set
@@ -1376,7 +1339,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        data = {}
         
        for row in rows:
-          data.update(row.items())  
+          data.update(row.items()) 
+          
+          # add related nuclide
+          data[u'Nuclide'] = ROI_2_Nuclides.get(data['ROI'],"NoName")
             
           res.append(data)
           data = {}
