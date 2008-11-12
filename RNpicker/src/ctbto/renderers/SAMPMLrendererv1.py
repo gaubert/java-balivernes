@@ -293,7 +293,7 @@ class SaunaRenderer(BaseRenderer):
         return xml_nuclides
 
     def _getROIInfo(self,id):
-        """ fill and return the information regarding the Regoin of Interest (ROI) """
+        """ fill and return the information regarding the Region of Interest (ROI) """
         
         # first add Non Quantified Nuclides
         template = self._conf.get("SaunaTemplatingSystem","saunaRoiTemplate")
@@ -302,7 +302,7 @@ class SaunaRenderer(BaseRenderer):
         dummy_template = ""
         cpt = 1
     
-        # get categories
+        # get rois info
         rois = self._fetcher.get("%s_ROI_INFO"%(id),[])
         
         for roi in rois:
@@ -314,6 +314,36 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${LC}","%s"%(str(roi['LC'])), dummy_template)
             dummy_template = re.sub("\${LD}","%s"%(str(roi['LD'])), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(roi['MDC'])), dummy_template)
+            
+            # add generated xml in final container
+            xml_nuclides += dummy_template
+             
+        return xml_nuclides
+    
+    def _getCategory(self,id):
+        """ return Categorization for the passed sample_id. Do nothing for the moment """
+        return ""
+    
+    def _getROIBoundaries(self,id):
+        """ fill and return the information regarding the Region of Interest (ROI) Boundaries"""
+        
+        # first add Non Quantified Nuclides
+        template = self._conf.get("SaunaTemplatingSystem","saunaRoiBoundariesTemplate")
+        
+        xml_nuclides = ""
+        dummy_template = ""
+        cpt = 1
+    
+        # get boundaries info
+        boundaries = self._fetcher.get("%s_ROI_BOUNDARIES"%(id),[])
+        
+        for bound in boundaries:
+            dummy_template = re.sub("\${ROINB}",str(bound[u'ROI']), template)
+            dummy_template = re.sub("\${GAMMA_LOW}","%s"%(str(bound[u'G_ENERGY_START'])),dummy_template)
+            dummy_template = re.sub("\${GAMMA_HIGH}","%s"%(str(bound[u'G_ENERGY_STOP'])),dummy_template)
+            dummy_template = re.sub("\${BETA_LOW}","%s"%(str(bound[u'B_ENERGY_START'])),dummy_template)
+            dummy_template = re.sub("\${BETA_HIGH}","%s"%(str(bound[u'B_ENERGY_STOP'])),dummy_template)
+          
             
             # add generated xml in final container
             xml_nuclides += dummy_template
@@ -349,12 +379,14 @@ class SaunaRenderer(BaseRenderer):
         
              dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
         
-             #dummy_template = re.sub("\${CATEGORY}", self._getCategory(id), dummy_template)
+             dummy_template = re.sub("\${CATEGORY}", self._getCategory(id), dummy_template)
         
              dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(id),dummy_template)
              
              dummy_template = re.sub("\${ROIINFO}",self._getROIInfo(id),dummy_template)
-         
+             
+             dummy_template = re.sub("\${ROIBOUNDARIES}",self._getROIBoundaries(id),dummy_template)
+             
              #dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
         
              #dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)

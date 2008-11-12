@@ -1350,6 +1350,26 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        # add in dataBag
        self._dataBag[u'%s_ROI_INFO'%(dataname)] = res  
        result.close()
+       
+       # get ROI Boundaries
+       # GET ROI INFO
+       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_BOUNDARIES%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()
+   
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {}
+        
+       for row in rows:
+          data.update(row.items()) 
+          res.append(data)
+          data = {}
+
+       # add in dataBag
+       self._dataBag[u'%s_ROI_BOUNDARIES'%(dataname)] = res  
+       result.close()
      
     def _fetchCalibration(self):  
         """ Fetch the calibration info for all the different spectrums """
