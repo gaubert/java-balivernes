@@ -2,6 +2,7 @@
 *.class
 *.pyc
 *.log
+.classpath
 bin-groovy
 bin-python
 bin
