@@ -176,7 +176,7 @@ class DBDataFetcher(object):
     
     def _fetchStationInfo(self):
        """ get station info. same treatment for all sample types """ 
-       print "In fetch Station Info "
+       DBDataFetcher.c_log.info("In fetch Station Info")
        result = self._mainConnector.execute(SQL_GETSTATIONINFO%(self._sampleID))
        
        # only one row in result set
@@ -190,13 +190,13 @@ class DBDataFetcher(object):
        # update data bag
        self._dataBag.update(rows[0].items())
        
-       #print "dataBag= %s"%(self._dataBag)
-       
        result.close()
        
     def _fetchDetectorInfo(self):
        """ get station info. same treatment for all sample types """ 
-       print "In fetch Detector Info "
+       
+       DBDataFetcher.c_log.info("In fetch Detector Info ")
+       
        result = self._mainConnector.execute(SQL_GETDETECTORINFO%(self._sampleID))
        
        # only one row in result set
@@ -344,7 +344,7 @@ class DBDataFetcher(object):
     def _fetchGeneralSpectrumInfo(self,aSampleID,aPrefix=""):
        """ get general spectrum info like acq date, sampling time ... """ 
        
-       print "Getting general sample info for %s\n"%(aSampleID)
+       DBDataFetcher.c_log.info("Getting general sample info for %s\n"%(aSampleID))
        
        result = self._mainConnector.execute(SQL_GETSAMPLEINFO%(aSampleID))
        
@@ -470,13 +470,13 @@ class DBDataFetcher(object):
         
         if self.activateCaching() and os.path.exists(cachingFilename):
             
-            print "Loading cache data from file %s for sampleID %s.\n"%(cachingFilename,self._sampleID)
+            DBDataFetcher.c_log.info("Loading cache data from file %s for sampleID %s.\n"%(cachingFilename,self._sampleID))
             
             f = open(cachingFilename,"r")
             
             self._dataBag = pickle.load(f)
             
-            print "Checking cache consistency\n"
+            DBDataFetcher.c_log.info("Checking cache consistency\n")
             
             # cache checking : Checks that the request doesn't contain more spectrum than asked
             reqDict = self._parser.parse(aParams)
@@ -513,7 +513,7 @@ class DBDataFetcher(object):
           accessDatabase = True
          
         if accessDatabase:
-          print "Read missing sample data from the database for %s.\n"%(self._sampleID)
+          DBDataFetcher.c_log.info("Read missing sample data from the database for %s.\n"%(self._sampleID))
           
           #get refID
           self._fetchSampleRefId()
@@ -534,7 +534,7 @@ class DBDataFetcher(object):
           
           self._cache()
         else:
-          print "Entirely rely on the cache for %s\n"%(self._sampleID)
+          DBDataFetcher.c_log.info("Entirely rely on the cache for %s\n"%(self._sampleID))
           
         # create human readable Hash in /tmp if option activated
         if self._conf.getboolean("Options","writeHumanReadableData") is True:
@@ -588,8 +588,6 @@ class DBDataFetcher(object):
             
         # get the next line
         limits = aInput.next()
-        
-        print "read limits %s"%(limits)
         
         # read the spectrum in a StringIO
         data = StringIO()
@@ -710,7 +708,7 @@ class DBDataFetcher(object):
             try:
               data = base64.b64encode(zlib.compress(parsedHistogram.getvalue()))
             except Exception, e:
-                print "Error,%s\n"%(e)
+                DBDataFetcher.c_log.error("Error,%s\n"%(e))
         else:
            data = parsedHistogram.getvalue()
           
@@ -765,16 +763,13 @@ class DBDataFetcher(object):
                   parsedSpectrum.write("                %s"%(line))
         finally: 
            aData.close()   
-           
-        DBDataFetcher.c_log.debug("channel_span %s"%(channel_span))
-        DBDataFetcher.c_log.debug("energy_span %s"%(energy_span))
      
         # check in the conf if we need to compress the data
         if aToCompress:
             try:
               data = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
             except Exception, e:
-                print "Error,%s\n"%(e)
+                DBDataFetcher.c_log.error("Error,%s\n"%(e))
         else:
            data = parsedSpectrum.getvalue()
           
@@ -827,18 +822,18 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
            return
         
-        print "Getting Background Spectrum for %s\n"%(self._sampleID)
+        SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
        
         if nbResults is 0:
-           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
            return
        
         if nbResults > 1:
-            print("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
@@ -853,7 +848,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
            self._dataBag[u'CONTENT_PRESENT'].add('BK') 
            
         except Exception, e:
-           print "Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e)
+           SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
     
     def _fetchPrelsSpectrumData(self):
@@ -875,15 +870,13 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
            return
     
-        print "Getting Prels Spectrum for %s\n"%(self._sampleID)
-        
-        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
-        
+        SaunaNobleGasDataFetcher.c_log.info("Getting Prels Spectrum for %s\n"%(self._sampleID))
+         
         # need to get the latest BK sample_id
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID']))
         
         if nbResults is 0:
-            print("There is no PREL spectrum for %s."%(self._sampleID))
+            SaunaNobleGasDataFetcher.c_log.info("There is no PREL spectrum for %s."%(self._sampleID))
             self._dataBag[u'CONTENT_NOT_PRESENT'].add('PREL')
             return
         
@@ -891,9 +884,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
         for row in rows:
             sid = row['SAMPLE_ID']
-            
-            print "sid = %s\n"%(sid)
-            
+             
             # now fetch the spectrum with the a PREL_cpt id
             (dataname,type) = self._fetchAllData(sid)
             # update list of prels
@@ -923,7 +914,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
            return
         
-        print "Getting QC Spectrum of %s\n"%(self._sampleID)
+        SaunaNobleGasDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
@@ -931,13 +922,13 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
         
         if nbResults is 0:
-           print("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
            # add in CONTENT_NOT_PRESENT this is used by the cache
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
            return
        
         if nbResults > 1:
-            print("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            SaunaNobleGasDataFetcher.c_log.info("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
@@ -950,7 +941,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           self._dataBag[u'CONTENT_PRESENT'].add('QC') 
         
         except Exception, e:
-         print "Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e)
+         SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e))
          self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
     
     def _fetchCURRSpectrumData(self):
@@ -980,7 +971,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                aSampleID: sampleID
                
         """
-        print "Getting auxiliary sample info for %s\n"%(aSampleID)
+        SaunaNobleGasDataFetcher.c_log.info("Getting auxiliary sample info for %s\n"%(aSampleID))
        
         result = self._mainConnector.execute(SQL_GET_AUX_SAMPLE_INFO%(aSampleID))
        
@@ -990,7 +981,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print "Warning. No auxiliary info for sample %s\n"%(aSampleID)
+            SaunaNobleGasDataFetcher.c_log.info("Warning. No auxiliary info for sample %s\n"%(aSampleID))
          
         # get retrieved data and transform dates
         data = {}
@@ -1014,23 +1005,21 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                exception
         """
            
-        print "Getting Spectra and Histogram for %s\n"%(aSampleID)
+        SaunaNobleGasDataFetcher.c_log.info("Getting Spectra and Histogram for %s\n"%(aSampleID))
            
         # get sample info related to this sampleID
         (dataname,type) = self._fetchGeneralSpectrumInfo(aSampleID)
-        
-        print "Its name will be %s and its type is %s"%(dataname,type)
-        
+           
         self._fetchAuxiliarySampleInfo(aSampleID,dataname)
          
         (rows,nbResults,foundOnArchive) = self.execute(SQL_SAUNA_GET_FILES%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
          
         if nbResults is 0:
-            print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
+            SaunaNobleGasDataFetcher.c_log.warning("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
             arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(type,"")
-            (rows,nbResults,foundOnArchive) = self.execute(SQL_GETSAUNA_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False) 
+            (rows,nbResults,foundOnArchive) = self.execute(SQL_SAUNA_GET_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False) 
         elif nbResults != 3:
-            print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+            SaunaNobleGasDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
             
         data = {}
         
@@ -1087,7 +1076,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                
                (r,n,foundOnArchive) = self.execute(SQL_SAUNA_GET_HISTOGRAM_INFO%(aSampleID),aTryOnArchive=True,aRaiseExceptionOnError=False)
                if nbResults is 0:
-                   print("WARNING: Cannot find histogram information for sample_id %s in the database.\n"%(aSampleID))
+                   SaunaNobleGasDataFetcher.c_log.warning("WARNING: Cannot find histogram information for sample_id %s in the database.\n"%(aSampleID))
                else:
                   # get energy and channel span from the table
                   self._dataBag[u"%s_DATA_G_CHANNEL_SPAN"%(dataname)] = r[0]['G_CHANNELS']
@@ -1101,7 +1090,6 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             elif filename.endswith(".msg") or filename.endswith(".archmsg"):
                 # Here whe should extract the 3 components
                 #TO BE DONE
-                print "TO BE DONE"
                 CTBTOError(-1,"To be developed\n")
             # remove it for the moment
             else:
@@ -1132,9 +1120,6 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if ('PREL' in spectrums):
            self._fetchPrelsSpectrumData()
            
-        # TODO Remove this
-        #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
-       
     def _fetchAnalysisResults(self,aParams):
        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
            
@@ -1155,7 +1140,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
           
           if dataname is not None:
-             print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
+             DBDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
              # extract id from dataname
              [pre,sid] = dataname.split('_')
@@ -1365,7 +1350,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is not 1:
-            print "Warning no energy calibration coefficient for %s\n"%(sid)
+            DBDataFetcher.c_log.warning("Warning no energy calibration coefficient for %s\n"%(sid))
             return
         
         # create a list of dicts
@@ -1419,8 +1404,6 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
 
     def __init__(self):
         
-        print "create SpalaxNobleGasDataFetcher"
-        
         super(SpalaxNobleGasDataFetcher,self).__init__(aDbConnector,aSampleID)
        
         self._dataBag['SAMPLE_TYPE']="SPALAX"
@@ -1436,9 +1419,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
     
 
-    def __init__(self):
-        print "create ParticulateDataFetcher"
-        
+    def __init__(self):   
         super(ParticulateDataFetcher,self).__init__(aDbConnector,aSampleID)
        
         self._dataBag['SAMPLE_TYPE']="PARTICULATE"
@@ -1459,22 +1440,22 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
            
-        print "Getting Spectrum for %s\n"%(aSampleID)
+        ParticulateDataFetcher.c_log.info("Getting Spectrum for %s\n"%(aSampleID))
            
         # get sample info related to this sampleID
         # pass the gamma prefix
         (dataname,type) = self._fetchGeneralSpectrumInfo(aSampleID,"_G")
         
-        print "Its name will be %s and its type is %s"%(dataname,type)
+        ParticulateDataFetcher.c_log.info("Its name will be %s and its type is %s"%(dataname,type))
          
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
         
         if nbResults is 0:
-            print("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
+            ParticulateDataFetcher.c_log.warning("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
             arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(type,"")
             (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_RAW_SPECTRUM%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
         elif nbResults > 1:
-            print("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+            ParticulateDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
         for row in rows:
            (input,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,type)
@@ -1533,7 +1514,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
            return
         
-        print "Getting Background Spectrum for %s\n"%(self._sampleID)
+        ParticulateDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
         result = self._mainConnector.execute(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
@@ -1544,12 +1525,12 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is 0:
-           print("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           ParticulateDataFetcher.c_log.warning("There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
            return
        
         if nbResults > 1:
-            print("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            ParticulateDataFetcher.c_log.warning("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
@@ -1566,7 +1547,7 @@ class ParticulateDataFetcher(DBDataFetcher):
            self._dataBag[u'CONTENT_PRESENT'].add('BK') 
            
         except Exception, e:
-           print "Warning. No Data File found for background %s\n"%(sid)
+           ParticulateDataFetcher.c_log.warning("Warning. No Data File found for background %s\n"%(sid))
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
             
     
@@ -1582,16 +1563,13 @@ class ParticulateDataFetcher(DBDataFetcher):
         
             Raises:
                exception
-        """
-        
-        #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
-        
+        """  
         # precondition do nothing if there the curr sample is a Detector background itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
            return
         
-        print "Getting QC Spectrum of %s\n"%(self._sampleID)
+        ParticulateDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
         (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
@@ -1599,13 +1577,13 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
         
         if nbResults is 0:
-           print("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+           ParticulateDataFetcher.c_log.warning("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
            # add in CONTENT_NOT_PRESENT this is used by the cache
            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
            return
        
         if nbResults > 1:
-            print("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            ParticulateDataFetcher.c_log.warning("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
@@ -1618,7 +1596,7 @@ class ParticulateDataFetcher(DBDataFetcher):
           self._dataBag[u'CONTENT_PRESENT'].add('QC') 
         
         except Exception, e:
-         print "Warning. No Data File found for QC %s\n"%(sid)
+         ParticulateDataFetcher.c_log.warning("Warning. No Data File found for QC %s\n"%(sid))
          self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
         
     def _fetchPrelsSpectrumData(self):
@@ -1640,9 +1618,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
            return
     
-        print "Getting Prels Spectrum for %s\n"%(self._sampleID)
-        
-        #print "request %s\n"%(SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'DETECTOR_ID']))
+        ParticulateDataFetcher.c_log.info("Getting Prels Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
         result = self._mainConnector.execute(SQL_GETPARTICULATE_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID']))
@@ -1653,7 +1629,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults is 0:
-            print("There is no PREL spectrum for %s."%(self._sampleID))
+            ParticulateDataFetcher.c_log.warning("There is no PREL spectrum for %s."%(self._sampleID))
             self._dataBag[u'CONTENT_NOT_PRESENT'].add('PREL')
             return
         
@@ -1661,9 +1637,7 @@ class ParticulateDataFetcher(DBDataFetcher):
           
         for row in rows:
             sid = row['SAMPLE_ID']
-            
-            print "sid = %s\n"%(sid)
-            
+             
             # now fetch the spectrum with the a PREL_cpt id
             (dataname,type) = self._fetchSpectrumData(sid)
             # update list of prels
@@ -1786,8 +1760,6 @@ class ParticulateDataFetcher(DBDataFetcher):
           # update data bag
           self._dataBag[u'%s_CATEGORIES'%(dataname)] = res
         
-        #print "res = %s"%(self._dataBag[u'CATEGORIES'])
-       
         result.close()
         
     def _fetchPeaksResults(self,sid,dataname):
@@ -1907,9 +1879,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     
     def _fetchAnalysisResults(self,aParams):
        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
-        
-       #self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
-        
+           
        # get static info necessary for the analysis
        self._fetchNuclidesToQuantify()
         
@@ -1930,7 +1900,7 @@ class ParticulateDataFetcher(DBDataFetcher):
           dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
           
           if dataname is not None:
-             print "Getting Analysis Results for CURRENT_%s\n"%(analysis)
+             ParticulateDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
              # extract id from dataname
              [pre,sid] = dataname.split('_')
@@ -1970,7 +1940,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             
             row = rows[0]
             
-            print "There is a mrp and it is %d\n"%(mrp_sid)
+            ParticulateDataFetcher.c_log.info("There is a mrp and it is %d\n"%(mrp_sid))
             
             mrp_sid   = row['mrp_sample_id']
             hoursDiff = row['mrp_collect_stop_diff']*24 
@@ -1981,7 +1951,7 @@ class ParticulateDataFetcher(DBDataFetcher):
              
         else:
             
-           print "No MRP found\n"
+           ParticulateDataFetcher.c_log.info("No MRP found\n")
            self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
         
         
@@ -2018,16 +1988,13 @@ class ParticulateDataFetcher(DBDataFetcher):
           # add in dataBag
           self._dataBag[u'%s_DATA_QUALITY_FLAGS'%(dataname)] = res
         
-        
-        
-        
     def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """
         
         # precondition check that there is COLLECT_START 
         # otherwise quit
         if (self._dataBag.get("%s_DATA_COLLECT_START"%(aDataname),None) is None) or (self._dataBag.get("%s_DATA_COLLECT_STOP"%(aDataname),None) is None):
-            print "Warnings. Cannot compute the timeliness flags missing information for %s\n"%(sid)
+            ParticulateDataFetcher.c_log.warning("Warnings. Cannot compute the timeliness flags missing information for %s\n"%(sid))
             return
        
         # get the timeliness flag
@@ -2095,10 +2062,8 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchParameters(self,sid,dataname):
         """ get the different parameters used for the analysis """
         
-        print "Getting Analysis parameters for %s\n"%(sid)
-        
-        #print "request = %s\n"%(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
-        
+        ParticulateDataFetcher.c_log.info("Getting Analysis parameters for %s\n"%(sid))
+         
         result = self._mainConnector.execute(SQL_PARTICULATE_GET_PROCESSING_PARAMETERS%(self._sampleID))
         
         rows = result.fetchall()
@@ -2109,7 +2074,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults >0:
           # do some sanity checkings
           if nbResults is not 1:
-            print("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname),"(undefined)")))
+            ParticulateDataFetcher.c_log.warning("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname),"(undefined)")))
          
           # create a list of dicts
           data = {}
@@ -2130,11 +2095,8 @@ class ParticulateDataFetcher(DBDataFetcher):
         if nbResults >0:
           # do some sanity checkings
           if nbResults is not 1:
-            if self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)] == 'FULL':
-               #raise CTBTOError(-1,"Expecting to have 1 set of update parameters for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-               print("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
-            else:
-               print("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
+            ParticulateDataFetcher.c_log.warning("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
+            
          
           # create a list of dicts
           data = {}

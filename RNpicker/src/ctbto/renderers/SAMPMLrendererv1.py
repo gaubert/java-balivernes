@@ -52,12 +52,6 @@ class BaseRenderer(object):
         """
         
         self._readTemplateMainTemplateFromFile()
-        
-        #self._template = self._conf.get("TemplatingSystem","particulateSAMPMLTemplate")
-        
-        #print "template [%s]\n"%(self._template)
-        
-        #self._populatedTemplate = self._template
        
     def _sortSpectrumsSet(self,aSpectrums):
         
@@ -224,7 +218,7 @@ class SaunaRenderer(BaseRenderer):
             # add the id in the set of existing infos
             calibInfos.add(en_id)
         else:
-            print "Warning. Could not find any energy calibration info for sample %s\n"%(prefix)
+            GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n"%(prefix))
         
          # get energy calibration 
         en_id = self._fetcher.get("%s_G_ENERGY_CAL"%(prefix),None)
@@ -247,7 +241,7 @@ class SaunaRenderer(BaseRenderer):
             # add the id in the set of existing infos
             calibInfos.add(en_id)
         else:
-            print "Warning. Could not find any energy calibration info for sample %s\n"%(prefix)
+            GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n"%(prefix))
         
         return xml
         
@@ -592,7 +586,7 @@ class GenieParticulateRenderer(BaseRenderer):
         dummy_template = ""
         cpt = 1
         
-        print "id = %s\n"%("%s_IDED_NUCLIDES"%(id))
+        GenieParticulateRenderer.c_log.debug("id = %s\n"%("%s_IDED_NUCLIDES"%(id)))
         
         # get categories
         ided_nuclides = self._fetcher.get("%s_IDED_NUCLIDES"%(id),[])
@@ -611,9 +605,7 @@ class GenieParticulateRenderer(BaseRenderer):
             
             # add generated xml in final container
             xml_nuclides += dummy_template
-            
-        #print "xml_nuclides = %s"%(xml_nuclides)
-        
+             
         return xml_nuclides
     
     def _isQuantifiable(self,aVal):
@@ -645,7 +637,7 @@ class GenieParticulateRenderer(BaseRenderer):
         
         # check if we need nuclidelines otherwise quit
         if self._conf.getboolean("Options","addNuclideLines") is False:
-            print "Configuration says no nuclide lines\n"
+            SaunaRenderer.c_log.info("Configuration says no nuclide lines")
             return ""
         
         # get the global template
@@ -702,7 +694,6 @@ class GenieParticulateRenderer(BaseRenderer):
         peaks = self._fetcher.get(u'%s_PEAKS'%(id),{})
         
         for peak in peaks:
-            #print "peak = %s"%(peak)
             dummy_template = re.sub("\${ENERGY}","%s %s"%(str(peak['ENERGY']),str(peak['ENERGY_ERR'])), peak_template)
             dummy_template = re.sub("\${PEAKID}","%s"%(str(peak['PEAK_ID'])), dummy_template)
             dummy_template = re.sub("\${CENTROID}","%s %s"%(str(peak['CENTROID']),str(peak['CENTROID_ERR'])), dummy_template)
@@ -748,8 +739,6 @@ class GenieParticulateRenderer(BaseRenderer):
         
         # get processing parameters
         parameters = self._fetcher.get("%s_PROCESSING_PARAMETERS"%(id),None)
-        
-        #print "parameters = %s"%(parameters)
         
         if (parameters is not None) and (len(parameters) > 0) :
            dummy_template = re.sub("\${THRESHOLD}",parameters.get('THRESHOLD',"None"), template)
@@ -848,8 +837,6 @@ class GenieParticulateRenderer(BaseRenderer):
         
         # add Data Quality Flags
         dataQFlags = self._fetcher.get('%s_DATA_QUALITY_FLAGS'%(id),[])
-        
-        #print "DataQFlags %s\n"%(dataQFlags)
         
         # list of all flags found
         dq_xml = ""
@@ -973,7 +960,7 @@ class GenieParticulateRenderer(BaseRenderer):
             # add the id in the set of existing infos
             calibInfos.add(en_id)
         else:
-            print "Warning. Could not find any energy calibration info for sample %s\n"%(prefix)
+            GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n"%(prefix))
         
         template = self._conf.get("TemplatingSystem","particulateResolutionCalTemplate")
         
@@ -995,7 +982,7 @@ class GenieParticulateRenderer(BaseRenderer):
             # add the id in the set of existing infos
             calibInfos.add(re_id)
         else:
-           print "Warning. Could not find any resolution calibration info for sample %s\n"%(prefix) 
+           GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n"%(prefix))
         
         template = self._conf.get("TemplatingSystem","particulateEfficencyCalTemplate")
         

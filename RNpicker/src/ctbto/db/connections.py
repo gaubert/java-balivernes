@@ -99,7 +99,6 @@ class DatabaseConnector:
 
         for c in tableMetadata.columns:
             desc = {}
-            #print "C = %s"%dir(c)
             desc['name']     = c.name
             desc['type']     = c.type
             desc['nullable'] = c.nullable
@@ -119,7 +118,7 @@ class DatabaseConnector:
         else:
            result = []
            func = self._conn.execute
-           print "Time: %s secs \nDatabase: %s\nRequest: %s\n"%(ftimer(func,[sql],{},result,number=1),self._database,aSql)
+           DatabaseConnector.c_log.info("\nTime: %s secs \nDatabase: %s\nRequest: %s\n"%(ftimer(func,[sql],{},result,number=1),self._database,aSql))
            return result[0]
         
         
