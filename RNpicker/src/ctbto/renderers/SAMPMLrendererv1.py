@@ -136,6 +136,8 @@ class SaunaRenderer(BaseRenderer):
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
+        
+        self._xe_lib = set()
     
     def _readTemplateMainTemplateFromFile(self):
         """ Read the template from a file. Old method now everything is read from the conf """
@@ -181,6 +183,18 @@ class SaunaRenderer(BaseRenderer):
        
        return self._populatedTemplate
    
+    def _isQuantifiable(self,aVal):
+        """ true if quantifiable, false otherwise """
+        xe_lib = self._fetcher.get("XE_NUCL_LIB")
+     
+        # if set hasn't been populated do it
+        if len(self._xe_lib) == 0:
+          # create a set containing all quantifiable elements
+          for elem in xe_lib:
+              [(key,val)] = elem.items()
+              self._xe_lib.add(val)
+        
+        return (aVal in self._xe_lib)
    
     def _fillCalibrationCoeffs(self,prefix,calibInfos):
         """ Insert the calibration information
@@ -245,6 +259,122 @@ class SaunaRenderer(BaseRenderer):
         
         return xml
         
+    def _getNuclides(self,id):
+        """ fill and return the information regarding the nuclides """
+        
+        # first add Non Quantified Nuclides
+        template = self._conf.get("SaunaTemplatingSystem","saunaNuclideTemplate")
+        
+        xml_nuclides = ""
+        dummy_template = ""
+        cpt = 1
+        
+        SaunaRenderer.c_log.debug("id = %s\n"%("%s_IDED_NUCLIDES"%(id)))
+        
+        # get categories
+        ided_nuclides = self._fetcher.get("%s_IDED_NUCLIDES"%(id),[])
+        
+        for nuclide in ided_nuclides:
+            dummy_template = re.sub("\${NAME}",nuclide[u'NAME'], template)
+            dummy_template = re.sub("\${QUANTIFIABLE}",str(self._isQuantifiable(nuclide['NAME'])).lower(),dummy_template)
+            dummy_template = re.sub("\${TYPE}",str(nuclide['TYPE']), dummy_template)
+            dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION}",str(nuclide['CONC']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION_ERROR}",str(nuclide['CONC_ERR']), dummy_template)
+            dummy_template = re.sub("\${MDC}","%s"%(str(nuclide['MDC'])), dummy_template)
+            dummy_template = re.sub("\${LC}","%s"%(str(nuclide['LC'])), dummy_template)
+            dummy_template = re.sub("\${LD}","%s"%(str(nuclide['LD'])), dummy_template)
+            dummy_template = re.sub("\${IDENTIFICATION_INDICATOR}",str(nuclide['NID_FLAG']), dummy_template)
+            dummy_template = re.sub("\${IDENTIFICATION_NUM}",str(nuclide['NID_FLAG_NUM']), dummy_template)
+            
+            # add generated xml in final container
+            xml_nuclides += dummy_template
+             
+        return xml_nuclides
+
+    def _getROIInfo(self,id):
+        """ fill and return the information regarding the Regoin of Interest (ROI) """
+        
+        # first add Non Quantified Nuclides
+        template = self._conf.get("SaunaTemplatingSystem","saunaRoiTemplate")
+        
+        xml_nuclides = ""
+        dummy_template = ""
+        cpt = 1
+    
+        # get categories
+        rois = self._fetcher.get("%s_ROI_INFO"%(id),[])
+        
+        for roi in rois:
+            dummy_template = re.sub("\${ROINB}",str(roi[u'ROI']), template)
+            dummy_template = re.sub("\${NAME}","%s"%(roi[u'NAME']),dummy_template)
+            dummy_template = re.sub("\${NETCOUNTS}","%s %s"%(str(roi[u'NET_COUNT']),str(roi[u'NET_COUNT_ERR'])),dummy_template)
+            dummy_template = re.sub("\${DETNETCOUNTS}","%s %s"%(str(roi[u'DET_BKGND_COUNT']),str(roi[u'DET_BKGND_COUNT'])),dummy_template)
+            dummy_template = re.sub("\${GASNETCOUNTS}","%s %s"%(str(roi[u'GAS_BKGND_COUNT']),str(roi[u'GAS_BKGND_COUNT'])),dummy_template)
+            dummy_template = re.sub("\${ABUNDANCE}","%s"%(str(roi['ABUNDANCE'])), dummy_template)
+            # add generated xml in final container
+            xml_nuclides += dummy_template
+             
+        return xml_nuclides
+    
+    def _fillAnalysisResults(self,requestDict):
+        """fill the analysis results for each result"""
+        
+        # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
+        requestedTypes = requestDict[RequestParser.ANALYSIS]
+        
+        all_analyses_xml = ""
+      
+        for type in requestedTypes:
+           
+           #identifier in the dict for this analysis  
+           id = self._fetcher.get("CURRENT_%s"%(type),None)
+           
+           if id is not None:
+        
+             # first get the template
+             template = self._conf.get("SaunaTemplatingSystem","saunaAnalysisTemplate")
+             dummy_template = ""
+        
+             # for the moment only one result
+             dummy_template += template
+    
+             spectrum_id    = self._fetcher.get("%s_DATA_G_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
+             
+             # Add analysis identifier => SpectrumID prefixed by AN
+             dummy_template = re.sub("\${ANALYSISID}","AN-%s"%(spectrum_id),dummy_template)
+        
+             dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
+        
+             #dummy_template = re.sub("\${CATEGORY}", self._getCategory(id), dummy_template)
+        
+             dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(id),dummy_template)
+             
+             dummy_template = re.sub("\${ROIINFO}",self._getROIInfo(id),dummy_template)
+         
+             #dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
+        
+             #dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
+             
+             #add Calibration references
+             l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(id))
+             if l is None :
+                raise CTBTOError(-1,"Error no calibration information for sample %s, sid: %s\n"%(type,spectrum_id))
+             else:
+               # add calibration info
+               dummy_template = re.sub("\${CAL_INFOS}",' '.join(map(str,l)),dummy_template)
+        
+             # add software method version info
+             dummy_template = re.sub("\${SOFTWARE}","bg_analyse", dummy_template)
+             dummy_template = re.sub("\${METHOD}","standard", dummy_template)
+             dummy_template = re.sub("\${VERSION}","1.0", dummy_template)
+             dummy_template = re.sub("\${SOFTCOMMENTS}","Old version", dummy_template)
+             
+             all_analyses_xml += dummy_template
+        
+        # add all the analysis info in the global template
+        self._populatedTemplate = re.sub("\${AnalysisResults}",all_analyses_xml, self._populatedTemplate)
+         
     def _fillCalibration(self):
         """ Add the calibration parameters for each of the spectrum"""
         
@@ -271,11 +401,6 @@ class SaunaRenderer(BaseRenderer):
         # out of the loop
         self._populatedTemplate = re.sub("\${CALIBRATION}",xml, self._populatedTemplate)
        
-   
-   
-   
-    def _fillAnalysisResults(self,requestDict):
-        """fill the analysis results for each result"""
         
     def _fillData(self,requestDict):
        """ Insert the spectrum data expected as defined in the initial passed request

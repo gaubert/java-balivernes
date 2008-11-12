@@ -54,18 +54,28 @@ SQL_SAUNA_GET_RAW_FILE                = "select prod.dir, prod.DFIle,fp.prodtype
 SQL_SAUNA_GET_HISTOGRAM_INFO          = "select G_CHANNELS, B_CHANNELS, G_ENERGY_SPAN, B_ENERGY_SPAN from rmsman.gards_histogram where sample_id=%s"
 
 """ Get information regarding all identified nuclides """
-SQL_SAUNA_GET_IDENTIFIED_NUCLIDES = "select lib.NAME as Nuclide, lib.HALFLIFE as halflife, conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, conc.NID_FLAG as NID_FLAG from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
+SQL_SAUNA_GET_IDENTIFIED_NUCLIDES = "select lib.NAME as NAME, lib.HALFLIFE as halflife, lib.type as type, conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, conc.NID_FLAG as NID_FLAG from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
 SQL_SAUNA_GET_ROI_CONCS = "select ROI,CONC,CONC_ERR,MDC,NID_FLAG,LC,LD from gards_BG_ROI_CONCS where sample_id=%s"
 
 SQL_SAUNA_GET_ROI_COUNTS = "select ROI,GROSS, GROSS_ERR, GAS_BKGND_GROSS, GAS_BKGND_COUNT, GAS_BKGND_COUNT_ERR, DET_BKGND_COUNT, DET_BKGND_COUNT_ERR, NET_COUNT, NET_COUNT_ERR, CRITICAL_LEV_SAMP, CRITICAL_LEV_GAS from gards_BG_ROI_counts where sample_id=%s"
+
+SQL_SAUNA_GET_NUCLIDE_FOR_ROI ="select lib.name, p.roi from gards_bg_proc_params_roi p,  GARDS_XE_NUCL_LIB lib where p.sample_id=%s  and p.nuclide_id=lib.nuclide_id order by roi" 
+
+SQL_SAUNA_GET_ROI_INFO = "c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as GROSS_ERR, c.GAS_BKGND_GROSS as GAS_BKGND_GROSS, c.GAS_BKGND_COUNT as GAS_BKGND_COUNT, \
+                          c.GAS_BKGND_COUNT_ERR as GAS_BKGND_COUNT_ERR, c.DET_BKGND_COUNT as DET_BKGND_COUNT, c.DET_BKGND_COUNT_ERR as DET_BKGND_COUNT_ERR, \
+                          c.NET_COUNT as NET_COUNT, c.NET_COUNT_ERR as NET_COUNT_ERR, c.CRITICAL_LEV_SAMP as CRITICAL_LEV_SAMP, c.CRITICAL_LEV_GAS as CRITICAL_LEV_GAS,\
+                          p.abundance as ABUNDANCE, p.HALFLIFE_SEC as HALFLIFE_SEC, p.nuclide_id as NUCLIDE_ID \
+                          cc.CONC as CONC, cc.CONC_ERR as CONC_ERR, cc.MDC as MDC, cc.NID_FLAG as NID_FLAG, cc.LC as LC, cc.LD as LD\
+                          from gards_BG_ROI_counts c, gards_BG_ROI_CONCS cc where c.sample_id=%s and c.roi = cc.roi order by c.roi"
+#SQL_SAUNA_GET_ROI_INFO = "select lib.name as NAME, c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as GROSS_ERR, c.GAS_BKGND_GROSS as GAS_BKGND_GROSS, c.GAS_BKGND_COUNT as GAS_BKGND_COUNT, c.GAS_BKGND_COUNT_ERR as GAS_BKGND_COUNT_ERR, c.DET_BKGND_COUNT as DET_BKGND_COUNT, c.DET_BKGND_COUNT_ERR as DET_BKGND_COUNT_ERR, c.NET_COUNT as NET_COUNT, c.NET_COUNT_ERR as NET_COUNT_ERR, c.CRITICAL_LEV_SAMP as CRITICAL_LEV_SAMP, c.CRITICAL_LEV_GAS as CRITICAL_LEV_GAS, p.abundance as ABUNDANCE, p.HALFLIFE_SEC as HALFLIFE_SEC, p.nuclide_id as NUCLIDE_ID  from  gards_BG_ROI_counts c, gards_bg_proc_params_roi p,  GARDS_XE_NUCL_LIB lib where c.sample_id=%s and p.roi=c.roi and p.sample_id=c.sample_id and p.nuclide_id=lib.nuclide_id order by roi" 
 
 SQL_SAUNA_GET_PROCESSING_PARAMS = "select * from gards_bg_proc_params where sample_id=%s"
 
 SQL_SAUNA_GET_ROI_PARAMS = "select * from gards_bg_proc_params_roi where sample_id=%s"
 
 """ Get information regarding all nuclides """
-SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Nuclide, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
+SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Name, lib.type as Type, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
 SQL_GET_SAUNA_BK_SAMPLEID   = "select * from \
                                     (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
@@ -105,12 +115,12 @@ SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      and detector_id=%s\
                                      and Spectral_qualifier='PREL'\
                                      order by  ACQUISITION_REAL_SEC asc"
-                                     
-SQL_GET_SAUNA_NUCLIDE_ACTIVITY_CONC = "select lib.name as name, c.conc as conc ,c.conc_err as err ,c.mdc as mdc ,c.nid_flag as nid_flag ,c.lc as lc ,c.ld as ld from gards_bg_isotope_concs c, gards_xe_nucl_lib lib where sample_id=103729 and c.nuclide_id=lib.nuclide_id"
-
+                                    
 SQL_GET_AUX_SAMPLE_INFO = "select * from GARDS_SAMPLE_AUX where sample_id=%s"
 
 SQL_GET_SAUNA_ENERGY_CAL  = "select * from GARDS_BG_ENERGY_CAL where sample_id=%s"
+
+SQL_GET_SAUNA_XE_NUCL_LIB = "select NAME from GARDS_XE_NUCL_LIB"
 
 
 """ ************************************* Particulate Part ********************************************* """
