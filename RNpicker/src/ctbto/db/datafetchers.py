@@ -1179,7 +1179,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
              
              self._fetchROIResults(sid,dataname)
                  
-             #self._fetchFlags(sid,dataname)
+             self._fetchFlags(sid,dataname)
         
              self._fetchParameters(sid,dataname)
    
@@ -1226,6 +1226,101 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
        result.close()
     
+    def _fetchFlags(self,sid,aDataname):
+        """ get the different flags """
+        
+        self._fetchTimelinessFlags(sid,aDataname)
+        
+        self._fetchdataQualityFlags(sid,aDataname)
+        
+    def _fetchdataQualityFlags(self,sid,aDataname):
+        """ Check Volume Flags """
+        
+        # check Xenon Volume
+        volMin = 0.1
+        volMax = 100
+        
+        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(aDataname),None)
+        
+        if aux is not None:
+            vol     = aux[u'XE_VOLUME']
+            vol_err = aux[u'XE_VOLUME_ERR']
+            
+            # check that vol + err < vol max and vol - err > volMin
+            if (vol - vol_err) < volMin and (vol + vol_err) > volMax:
+               #NOK
+               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = vol
+            else:
+               # OK
+               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 0
+    
+    def _fetchTimelinessFlags(self,sid,aDataname):
+        """ prepare timeliness checking info """
+        
+        # precondition check that there is COLLECT_START 
+        # otherwise quit
+        if (self._dataBag.get("%s_DATA_COLLECT_START"%(aDataname),None) is None) or (self._dataBag.get("%s_DATA_COLLECT_STOP"%(aDataname),None) is None):
+            SaunaNobleGasDataFetcher.c_log.warning("Warnings. Cannot compute the timeliness flags missing information for %s\n"%(sid))
+            return
+       
+        # check collection flag
+        # check that collection time with CollMin = 0.1 H < Collection Stop - Collection Start < CollMax = 25H
+        # min is 0.1 H = 360 seconds and max is 25 h = 90 000 seconds
+        coll_min  = 360
+        coll_max  = 90000
+        collect_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_START"%(aDataname)])
+        collect_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_STOP"%(aDataname)])
+    
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start, collect_stop)
+        
+        # check time collection within 24 hours +/- 10 % => 3hrs
+        # between 21.6 and 26.4
+        # if 0 within 24 hours
+        if diff_in_sec < coll_min or diff_in_sec > coll_max:
+          # not ok add the diff
+          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = diff_in_sec
+        else:
+          # ok
+          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 0 
+        
+        
+        # check decay flag
+        # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
+        # check that acq time with PauseMin = 0.1 H (360) < Acq Start - Coll Stop < CollMax = 24H (86 400 sec)
+        pause_min  = 360
+        pause_max  = 86400
+        
+        acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_START"%(aDataname)])
+        
+        acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_STOP"%(aDataname)])
+    
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_stop,acq_start)
+          
+        # check pause time or decay time
+        if diff_in_sec > pause_max or diff_in_sec < pause_min:
+           # NOK
+           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = diff_in_sec
+        else:
+           # OK
+           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 0 
+        
+       
+        # check acquisition flag
+        # acqMin = 1 H (3600 s) < Acquisition Time < acqMax 25H (90000 s)
+        acq_min = 3600
+        acq_max = 90000
+        
+        diff_in_sec   = ctbto.common.time_utils.getDifferenceInTime(acq_start,acq_stop)
+        
+        if diff_in_sec > acq_max and diff_in_sec < acq_min:
+            # NOK
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = diff_in_sec
+        else:
+            # OK
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 0
+        
+    
+           
     def _fetchParameters(self,sid,dataname):
         """fetch all the analysis parameters for the passed sampleID (sid).
             
@@ -2026,8 +2121,6 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         self._fetchdataQualityFlags(sid,aDataname)
         
-        # we miss event screening flags to be added
-        
     
     def _fetchdataQualityFlags(self,sid,dataname):
         """ data quality flags"""
@@ -2089,7 +2182,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_START"%(aDataname)])
         acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_STOP"%(aDataname)])
     
-        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start, collect_stop)
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(acq_start, acq_stop)
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):

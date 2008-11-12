@@ -324,6 +324,10 @@ class SaunaRenderer(BaseRenderer):
         """ return Categorization for the passed sample_id. Do nothing for the moment """
         return ""
     
+    def _getParameters(self,id):
+        """ return Categorization for the passed sample_id. Do nothing for the moment """
+        return ""
+    
     def _getROIBoundaries(self,id):
         """ fill and return the information regarding the Region of Interest (ROI) Boundaries"""
         
@@ -349,6 +353,51 @@ class SaunaRenderer(BaseRenderer):
             xml_nuclides += dummy_template
              
         return xml_nuclides
+
+    def _getFlags(self,id):
+        """create xml part with the flag info """
+        
+        # first add timeliness Flags
+        template = self._conf.get("SaunaTemplatingSystem","saunaTimelinessFlagsTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        dummy_template += template
+          
+        param = self._fetcher.get('%s_TIME_FLAGS_COLLECTION_FLAG'%(id),0)
+        if param == 0:
+            dummy_template = re.sub("\${CollectionTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${CollectionTime}","false", dummy_template)
+            
+        param = self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_FLAG'%(id),0)
+        if param == 0:
+            dummy_template = re.sub("\${AcquisitionTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${AcquisitionTime}","false", dummy_template)
+        
+        param = self._fetcher.get('%s_TIME_FLAGS_DECAY_FLAG'%(id),0)
+        if param == 0:
+            dummy_template = re.sub("\${DecayTime}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${DecayTime}","false", dummy_template)
+        
+        xml += dummy_template
+            
+         # first add timeliness Flags
+        template = self._conf.get("SaunaTemplatingSystem","saunaDataQualityFlagsTemplate")    
+        dummy_template = template
+            
+        param = self._fetcher.get('%s_VOLUME_FLAG'%(id),0)
+        if param == 0:
+            dummy_template = re.sub("\${XeVolume}","true", dummy_template)
+        else:
+            dummy_template = re.sub("\${XeVolume}","false", dummy_template)
+       
+        # add generated xml in final container
+        xml += dummy_template
+        
+        return xml
     
     def _fillAnalysisResults(self,requestDict):
         """fill the analysis results for each result"""
@@ -387,9 +436,9 @@ class SaunaRenderer(BaseRenderer):
              
              dummy_template = re.sub("\${ROIBOUNDARIES}",self._getROIBoundaries(id),dummy_template)
              
-             #dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
+             dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
         
-             #dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
+             dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
              
              #add Calibration references
              l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(id))
@@ -572,9 +621,6 @@ class SaunaRenderer(BaseRenderer):
                      
                 # add fill spectrum template in global template 
                 finalTemplate += spectrumTemplate      
-        
-              
-          
         
        self._populatedTemplate = re.sub("\${DATA}",finalTemplate, self._populatedTemplate)
     
