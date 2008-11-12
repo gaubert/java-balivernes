@@ -62,12 +62,12 @@ SQL_SAUNA_GET_ROI_COUNTS = "select ROI,GROSS, GROSS_ERR, GAS_BKGND_GROSS, GAS_BK
 
 SQL_SAUNA_GET_NUCLIDE_FOR_ROI ="select lib.name, p.roi from gards_bg_proc_params_roi p,  GARDS_XE_NUCL_LIB lib where p.sample_id=%s  and p.nuclide_id=lib.nuclide_id order by roi" 
 
-SQL_SAUNA_GET_ROI_INFO = "c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as GROSS_ERR, c.GAS_BKGND_GROSS as GAS_BKGND_GROSS, c.GAS_BKGND_COUNT as GAS_BKGND_COUNT, \
-                          c.GAS_BKGND_COUNT_ERR as GAS_BKGND_COUNT_ERR, c.DET_BKGND_COUNT as DET_BKGND_COUNT, c.DET_BKGND_COUNT_ERR as DET_BKGND_COUNT_ERR, \
-                          c.NET_COUNT as NET_COUNT, c.NET_COUNT_ERR as NET_COUNT_ERR, c.CRITICAL_LEV_SAMP as CRITICAL_LEV_SAMP, c.CRITICAL_LEV_GAS as CRITICAL_LEV_GAS,\
-                          p.abundance as ABUNDANCE, p.HALFLIFE_SEC as HALFLIFE_SEC, p.nuclide_id as NUCLIDE_ID \
-                          cc.CONC as CONC, cc.CONC_ERR as CONC_ERR, cc.MDC as MDC, cc.NID_FLAG as NID_FLAG, cc.LC as LC, cc.LD as LD\
-                          from gards_BG_ROI_counts c, gards_BG_ROI_CONCS cc where c.sample_id=%s and c.roi = cc.roi order by c.roi"
+SQL_SAUNA_GET_ROI_INFO = "select c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as GROSS_ERR, c.GAS_BKGND_GROSS as GAS_BKGND_GROSS,\
+                                 c.GAS_BKGND_COUNT as GAS_BKGND_COUNT, c.GAS_BKGND_COUNT_ERR as GAS_BKGND_COUNT_ERR, c.DET_BKGND_COUNT as DET_BKGND_COUNT,\
+                                 c.DET_BKGND_COUNT_ERR as DET_BKGND_COUNT_ERR,c.NET_COUNT as NET_COUNT, c.NET_COUNT_ERR as NET_COUNT_ERR, c.CRITICAL_LEV_SAMP as CRITICAL_LEV_SAMP,\
+                                 c.CRITICAL_LEV_GAS as CRITICAL_LEV_GAS,conc.CONC as CONC, conc.CONC_ERR as CONC_ERR, conc.MDC as MDC,\
+                                 conc.NID_FLAG as NID_FLAG, conc.LC as LC, conc.LD as LD from gards_BG_ROI_counts c, gards_BG_ROI_CONCS conc \
+                                 where c.sample_id=%s and c.sample_id = conc.sample_id and c.roi = conc.roi order by c.roi"
 #SQL_SAUNA_GET_ROI_INFO = "select lib.name as NAME, c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as GROSS_ERR, c.GAS_BKGND_GROSS as GAS_BKGND_GROSS, c.GAS_BKGND_COUNT as GAS_BKGND_COUNT, c.GAS_BKGND_COUNT_ERR as GAS_BKGND_COUNT_ERR, c.DET_BKGND_COUNT as DET_BKGND_COUNT, c.DET_BKGND_COUNT_ERR as DET_BKGND_COUNT_ERR, c.NET_COUNT as NET_COUNT, c.NET_COUNT_ERR as NET_COUNT_ERR, c.CRITICAL_LEV_SAMP as CRITICAL_LEV_SAMP, c.CRITICAL_LEV_GAS as CRITICAL_LEV_GAS, p.abundance as ABUNDANCE, p.HALFLIFE_SEC as HALFLIFE_SEC, p.nuclide_id as NUCLIDE_ID  from  gards_BG_ROI_counts c, gards_bg_proc_params_roi p,  GARDS_XE_NUCL_LIB lib where c.sample_id=%s and p.roi=c.roi and p.sample_id=c.sample_id and p.nuclide_id=lib.nuclide_id order by roi" 
 
 SQL_SAUNA_GET_PROCESSING_PARAMS = "select * from gards_bg_proc_params where sample_id=%s"

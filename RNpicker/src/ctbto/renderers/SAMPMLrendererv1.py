@@ -307,11 +307,14 @@ class SaunaRenderer(BaseRenderer):
         
         for roi in rois:
             dummy_template = re.sub("\${ROINB}",str(roi[u'ROI']), template)
-            dummy_template = re.sub("\${NAME}","%s"%(roi[u'NAME']),dummy_template)
+            dummy_template = re.sub("\${NAME}","%s"%(roi[u'Nuclide']),dummy_template)
             dummy_template = re.sub("\${NETCOUNTS}","%s %s"%(str(roi[u'NET_COUNT']),str(roi[u'NET_COUNT_ERR'])),dummy_template)
             dummy_template = re.sub("\${DETNETCOUNTS}","%s %s"%(str(roi[u'DET_BKGND_COUNT']),str(roi[u'DET_BKGND_COUNT'])),dummy_template)
             dummy_template = re.sub("\${GASNETCOUNTS}","%s %s"%(str(roi[u'GAS_BKGND_COUNT']),str(roi[u'GAS_BKGND_COUNT'])),dummy_template)
-            dummy_template = re.sub("\${ABUNDANCE}","%s"%(str(roi['ABUNDANCE'])), dummy_template)
+            dummy_template = re.sub("\${LC}","%s"%(str(roi['LC'])), dummy_template)
+            dummy_template = re.sub("\${LD}","%s"%(str(roi['LD'])), dummy_template)
+            dummy_template = re.sub("\${MDC}","%s"%(str(roi['MDC'])), dummy_template)
+            
             # add generated xml in final container
             xml_nuclides += dummy_template
              
