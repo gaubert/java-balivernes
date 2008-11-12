@@ -343,11 +343,11 @@ class SaunaRenderer(BaseRenderer):
               
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))
                 if l is None:
-                   if type.startswith("PREL"):
-                       l = []
-                   else:
-                       raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
-             
+                  SaunaRenderer.c_log.warning("No calibration information for sample %s"%(type))
+                  l = []
+                  #raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
+
+
                 # add calibration info
                 spectrumTemplate = re.sub("\${CAL_INFOS}",' '.join(map(str,l)), spectrumTemplate)
               
@@ -397,10 +397,9 @@ class SaunaRenderer(BaseRenderer):
               
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))
                 if l is None:
-                   if type.startswith("PREL"):
-                       l = []
-                   else:
-                       raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
+                  SaunaRenderer.c_log.warning("No calibration information for sample %s"%(type))
+                  l = []
+                  #raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
              
                 # add calibration info
                 spectrumTemplate = re.sub("\${CAL_INFOS}",' '.join(map(str,l)), spectrumTemplate)
