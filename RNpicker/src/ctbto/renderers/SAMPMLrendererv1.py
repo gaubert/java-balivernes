@@ -232,7 +232,7 @@ class SaunaRenderer(BaseRenderer):
             # add the id in the set of existing infos
             calibInfos.add(en_id)
         else:
-            GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n"%(prefix))
+            SaunaRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n"%(prefix))
         
          # get energy calibration 
         en_id = self._fetcher.get("%s_G_ENERGY_CAL"%(prefix),None)
@@ -443,7 +443,8 @@ class SaunaRenderer(BaseRenderer):
              #add Calibration references
              l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(id))
              if l is None :
-                raise CTBTOError(-1,"Error no calibration information for sample %s, sid: %s\n"%(type,spectrum_id))
+                SaunaRenderer.c_log.warning("No calibration information for sample %s"%(type))
+                l = []
              else:
                # add calibration info
                dummy_template = re.sub("\${CAL_INFOS}",' '.join(map(str,l)),dummy_template)
@@ -533,22 +534,21 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_CHANNEL_SPAN"%(fname))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_ENERGY_SPAN"%(fname))), spectrumTemplate)
             
-                # get the date information
-                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_COLLECT_START"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_COLLECT_STOP"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_ACQ_START"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_ACQ_STOP"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_SAMPLING_TIME"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_ACQ_REAL_SEC"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_ACQ_LIVE_SEC"%(fname))), spectrumTemplate)
+                # get the date information (for the moment it is repeated for each data (beta and gamma spectra and histogram)
+                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_DATA_COLLECT_START"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_DATA_COLLECT_STOP"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_DATA_ACQ_START"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_DATA_ACQ_STOP"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(type))), spectrumTemplate)
               
-                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DECAY_TIME"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_SPECTRAL_QUALIFIER"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_TYPE"%(fname))), spectrumTemplate)
-              
+                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(type))), spectrumTemplate)
                 # add quantity and geometry
-                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_SAMPLE_QUANTITY"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_SAMPLE_GEOMETRY"%(fname))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(type))), spectrumTemplate)
               
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))
                 if l is None:
@@ -588,21 +588,21 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${H_B_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_DATA_B_ENERGY_SPAN"%(type))), spectrumTemplate)
             
                 # get the date information
-                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_COLLECT_START"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_COLLECT_STOP"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_ACQ_START"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_ACQ_STOP"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_SAMPLING_TIME"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_ACQ_REAL_SEC"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_ACQ_LIVE_SEC"%(fname))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_DATA_COLLECT_START"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_DATA_COLLECT_STOP"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_DATA_ACQ_START"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_DATA_ACQ_STOP"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(type))), spectrumTemplate)
               
-                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DECAY_TIME"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_SPECTRAL_QUALIFIER"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_TYPE"%(fname))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(type))), spectrumTemplate)
               
                 # add quantity and geometry
-                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_SAMPLE_QUANTITY"%(fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_SAMPLE_GEOMETRY"%(fname))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(type))), spectrumTemplate)
               
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))
                 if l is None:
@@ -698,7 +698,7 @@ class GenieParticulateRenderer(BaseRenderer):
             
                if data is not None:
                
-                 spectrumTemplate = self._conf.get("TemplatingSystem","particulateSpectrumTemplate")
+                 spectrumTemplate = self._conf.get("ParticulateTemplatingSystem","particulateSpectrumTemplate")
               
                  # insert data
                  spectrumTemplate = re.sub("\${SPECTRUM_DATA}",data, spectrumTemplate)
@@ -774,7 +774,7 @@ class GenieParticulateRenderer(BaseRenderer):
             # if there is something fill the template otherwise do nothing
             if category != "undefined":
               # xml filler 
-              cat_template = self._conf.get("TemplatingSystem","particulateCategoryTemplate")
+              cat_template = self._conf.get("ParticulateTemplatingSystem","particulateCategoryTemplate")
         
               dummy_template = re.sub("\${CATEGORY}",str(category), cat_template)
               dummy_template = re.sub("\${CATEGORY_COMMENT}",comment, dummy_template)
@@ -785,7 +785,7 @@ class GenieParticulateRenderer(BaseRenderer):
         """ fill and return the information regarding the nuclides """
         
         # first add Non Quantified Nuclides
-        template = self._conf.get("TemplatingSystem","particulateNuclideTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","particulateNuclideTemplate")
         
         xml_nuclides = ""
         dummy_template = ""
@@ -846,10 +846,10 @@ class GenieParticulateRenderer(BaseRenderer):
             return ""
         
         # get the global template
-        global_template = self._conf.get("TemplatingSystem","particulateNuclideLinesTemplate")
+        global_template = self._conf.get("ParticulateTemplatingSystem","particulateNuclideLinesTemplate")
         
         # first get Nuclide Lines template
-        template = self._conf.get("TemplatingSystem","particulateOneNuclideLineTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","particulateOneNuclideLineTemplate")
         
         xml_nuclidelines   = ""
         dummy_template = ""
@@ -890,7 +890,7 @@ class GenieParticulateRenderer(BaseRenderer):
           None.
         """
   
-        peak_template = self._conf.get("TemplatingSystem","peaksTemplate")
+        peak_template = self._conf.get("ParticulateTemplatingSystem","peaksTemplate")
         
         xml_peaks = ""
         dummy_template = ""
@@ -937,7 +937,7 @@ class GenieParticulateRenderer(BaseRenderer):
         """
         
          # first add Quantified Nuclides
-        template = self._conf.get("TemplatingSystem","processingParametersTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","processingParametersTemplate")
         
         xml_parameters = ""
         dummy_template = ""
@@ -967,7 +967,7 @@ class GenieParticulateRenderer(BaseRenderer):
        
         # add Update parameters
         # first add Quantified Nuclides
-        template = self._conf.get("TemplatingSystem","updateParametersTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","updateParametersTemplate")
         dummy_template = ""
         
         # get update parameters
@@ -998,7 +998,7 @@ class GenieParticulateRenderer(BaseRenderer):
         """create xml part with the flag info """
         
         # first add timeliness Flags
-        template = self._conf.get("TemplatingSystem","timelinessFlagsTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","timelinessFlagsTemplate")
         
         xml = ""
         dummy_template = ""
@@ -1038,7 +1038,7 @@ class GenieParticulateRenderer(BaseRenderer):
         xml += dummy_template
         
         # get Data Quality Flags
-        template = self._conf.get("TemplatingSystem","dataQualityFlagsTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","dataQualityFlagsTemplate")
         
         # add Data Quality Flags
         dataQFlags = self._fetcher.get('%s_DATA_QUALITY_FLAGS'%(id),[])
@@ -1052,7 +1052,7 @@ class GenieParticulateRenderer(BaseRenderer):
               
               # check if it has a template if not ignore.
               
-              dummy_template = self._conf.get("TemplatingSystem","dataQFlags_%s_Template"%(name),None)
+              dummy_template = self._conf.get("ParticulateTemplatingSystem","dataQFlags_%s_Template"%(name),None)
               if dummy_template != None:
                  dummy_template = re.sub("\${%s_VAL}"%(name),str(flag['DQ_VALUE']), dummy_template)
                  dummy_template = re.sub("\${%s_PASS}"%(name),str(flag['DQ_RESULT']), dummy_template)
@@ -1084,7 +1084,7 @@ class GenieParticulateRenderer(BaseRenderer):
            if id is not None:
         
              # first get the template
-             template = self._conf.get("TemplatingSystem","particulateAnalysisTemplate")
+             template = self._conf.get("ParticulateTemplatingSystem","particulateAnalysisTemplate")
              dummy_template = ""
         
              # for the moment only one result
@@ -1142,7 +1142,7 @@ class GenieParticulateRenderer(BaseRenderer):
         """
         
         # first add Energy Cal
-        template = self._conf.get("TemplatingSystem","particulateEnergyCalTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","particulateEnergyCalTemplate")
         
         xml = ""
         dummy_template = ""
@@ -1167,7 +1167,7 @@ class GenieParticulateRenderer(BaseRenderer):
         else:
             GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n"%(prefix))
         
-        template = self._conf.get("TemplatingSystem","particulateResolutionCalTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","particulateResolutionCalTemplate")
         
         re_id = self._fetcher.get("%s_G_RESOLUTION_CAL"%(prefix),None)
         
@@ -1189,7 +1189,7 @@ class GenieParticulateRenderer(BaseRenderer):
         else:
            GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n"%(prefix))
         
-        template = self._conf.get("TemplatingSystem","particulateEfficencyCalTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem","particulateEfficencyCalTemplate")
         
         eff_id = self._fetcher.get("%s_G_EFFICIENCY_CAL"%(prefix),None)
         
