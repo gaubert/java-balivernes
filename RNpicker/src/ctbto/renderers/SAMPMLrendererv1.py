@@ -643,22 +643,6 @@ class GenieParticulateRenderer(BaseRenderer):
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
-    
-    def _readTemplateMainTemplateFromFile(self):
-        """ Read the template from a file. Old method now everything is read from the conf """
-        
-        # get template path from conf
-        path = self._conf.get("ParticulateTemplatingSystem","particulateBaseTemplate")
-        
-        # assert that the file exists
-        ctbto.common.utils.file_exits(path)
-        
-        # read the full template in a string buffer
-        f = open(path,"r") 
-        
-        self._template = f.read()
-        
-        self._populatedTemplate = self._template
       
     def _fillData(self,requestDict):
         """ Insert the spectrum data expected as defined in the initial passed request
