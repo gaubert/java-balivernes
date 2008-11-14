@@ -9,9 +9,12 @@ import distutils.dir_util
 import ctbto.common.utils
 import re
 
-from ctbto.common    import Conf
-from ctbto.db.rndata import RemoteFSDataSource
-from ctbto.query     import RequestParser
+
+
+from ctbto.common     import Conf
+from ctbto.db.rndata  import RemoteFSDataSource
+from ctbto.query      import RequestParser
+from ctbto.transformer import XML2HTMLRenderer
  
 #
 str1 = """Dallas Cowboys football practice at Valley Ranch was delayed on Wednesday
@@ -174,6 +177,34 @@ def checksumTest(str):
 
     return chksum
 
+
+def jinja2Test():
+    
+    filename='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/arr.txt'
+    
+    # read the full template in a string buffer
+    f = open(filename,"r") 
+        
+    tStr = f.read()
+    
+    from jinja2 import Template
+    from jinja2 import Environment, FileSystemLoader, Undefined
+    env = Environment(loader=FileSystemLoader('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates'))
+    
+    template = env.get_template('ArrHtml.html')
+    
+    n_list = [{'name':'xenon-133','half_life':134,'conc':23,'conc_err':2.2},{'name':'xenon-135','half_life':135,'conc':28,'conc_err':2.3}]
+
+    #template = Template(tStr)
+    print template.render(nuclides=n_list, nid="12345")
+    
+
+def testXml2Html():
+    
+    r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
+    
+    r.render('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/sampml-889826.xml')
+
 def parserTest():
     
     # need to setup the ENV containing the the path to the conf file:
@@ -192,10 +223,7 @@ def parserTest():
 
 if __name__ == '__main__':
     
-    #parserTest()
-    s = "123455959b.s"
-    
-    print "ends with %s\n"%(s.endswith("b.s"))
+    testXml2Html()
    
     
     
