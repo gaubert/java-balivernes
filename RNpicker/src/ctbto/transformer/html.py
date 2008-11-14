@@ -48,7 +48,22 @@ class XML2HTMLRenderer(object):
            self._context['station_code'] = res[0].text
        else:
            self._context['station_code'] = UNDEFINED
+    
+       # get station location
+       res = root.xpath(expr, name = "StationLocation")
+       if len(res) > 0:
+           self._context['station_location'] = res[0].text
+       else:
+           self._context['station_location'] = UNDEFINED
        
-       print "res = %s \n"%(res)
+       # get detector description
+       res = root.xpath(expr, name = "DetectorDescription")
+       if len(res) > 0:
+           self._context['detector_description'] = res[0].text
+       else:
+           self._context['detector_description'] = UNDEFINED
+       
+       
+       self._context['arrival_date'] = 1
        
        self._context['creation_date'] = 'now'
