@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>ArrHtml</title>
+  <meta name="generator" content="Amaya, see http://www.w3.org/Amaya/" />
+</head>
+
+<body>
+<style type="text/css">
+  hr { 
+       color: #f00;
+       background-color: #000;
+       height: 3px;
+       width: 80%;
+     }   </style>
+</body>
+<body>
+<h3 style="text-align:center;"><span style="font-size: 24pt"><span
+style="font-size: 16pt">IDC Generated Report</span></span></h3>
+
+<h1 style="text-align:center;"><span style="font-size: 36pt"><span
+style="font-size: 44pt"><span style="font-size: 26pt">Automated Radionuclide
+Report</span></span></span></h1>
+
+<h4 style="text-align:center;"><strong><span style="font-size: 24pt"><span
+style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
+
+<p></p>
+
+<p style="text-align:center;">Creation Date: {{creation_date}}</p>
+
+<p style="text-align:center;">Sample Arrival Time: {{arrival_date}}</p>
+
+<p></p>
+
+<p></p>
+
+<h2>Sample Information</h2>
+
+<table border="0" style="width: 80%">
+  <caption></caption>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td style="text-align:justify;">Station ID: {{station_code}}</td>
+      <td>Detector ID: {{detector_id}}</td>
+    </tr>
+    <tr>
+      <td>Authenticated: No </td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p>Station Location: {{station_location}}</p>
+
+<p>Detector Description: {{detector_description}}</p>
+
+<table border="0" style="width: 80%">
+  <caption></caption>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Sample ID: {{sample_id}}</td>
+      <td>Sample Geometry: {{sample_geometry}}</td>
+    </tr>
+    <tr>
+      <td>Sample Quantity: {{sample_quantity}}</td>
+      <td>Sample Type: {{sample_type}}</td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td>Collection Start: {{collection_start}}</td>
+      <td>Sampling Time: {{sampling_time}}</td>
+    </tr>
+    <tr>
+      <td>Collection Stop: {{collection_stop}}</td>
+      <td>Decay Time: {{decay_time}}</td>
+    </tr>
+    <tr>
+      <td>Acquisition Start: {{acquisition_start}}</td>
+      <td>Acquisition Time: {{acquisition_time}}</td>
+    </tr>
+    <tr>
+      <td>Acquisition Stop: {{acquisition_stop}}</td>
+      <td>Avg Flow Rate: {{avg_flow_rate}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+
+<p>Collection Start Comments:</p>
+
+<p>{{collection_comments}}</p>
+
+<p></p>
+
+<p></p>
+
+<div class="hr">
+<hr />
+</div>
+
+<h2>Activity Concentration Summary</h2>
+
+<p></p>
+
+<h4>Nuclide Quantified:</h4>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th>Nuclide</th>
+      <th>Half-Life</th>
+      <th>Conc(uBq/m3)</th>
+      <th>%RelErr</th>
+    </tr>
+    {% for item in nuclides %}
+    <tr>
+      <td style="text-align:center;">{{ item.name }}</td>
+      <td style="text-align:center;">{{ item.half_life }}</td>
+      <td style="text-align:center;">{{ item.conc }}</td>
+      <td style="text-align:center;">{{ item.conc_err }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p></p>
+
+<h4>MDCs for nuclides not quantified:</h4>
+
+<p></p>
+
+<table border="1" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th style="text-align:center;">Nuclide</th>
+      <th style="text-align:center;">MDC (uBq/m3)</th>
+      <th style="text-align:center;">NID-Flag</th>
+    </tr>
+    <tr>
+      <td>{{nonquantified_nuclide}}</td>
+      <td>{{mdc}}</td>
+      <td>{{nid}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<p></p>
+<div class="hr">
+<hr />
+</div>
+</body>
+</html>
