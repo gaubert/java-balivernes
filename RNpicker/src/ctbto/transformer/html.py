@@ -15,7 +15,7 @@ class XML2HTMLRenderer(object):
     c_log = logging.getLogger("html.XML2HTMLRenderer")
     c_log.setLevel(logging.DEBUG)
     
-    
+    c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.5'}
     
     def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates',TemplateName='ArrHtml.html'):
         
@@ -28,6 +28,8 @@ class XML2HTMLRenderer(object):
     def render(self,aXmlPath):
         
        self._fill_values(aXmlPath)
+       
+       print "context = %s\n"%(self._context)
          
        print self._template.render(self._context)
        
@@ -56,6 +58,13 @@ class XML2HTMLRenderer(object):
        else:
            self._context['station_location'] = UNDEFINED
        
+       # get Detector Code
+       res = root.xpath(expr, name = "DetectorDescription")
+       if len(res) > 0:
+           self._context['detector_code'] = res[0].text
+       else:
+           self._context['detector_code'] = UNDEFINED
+       
        # get detector description
        res = root.xpath(expr, name = "DetectorDescription")
        if len(res) > 0:
@@ -64,6 +73,85 @@ class XML2HTMLRenderer(object):
            self._context['detector_description'] = UNDEFINED
        
        
-       self._context['arrival_date'] = 1
+       # for the dates, a prefix is needed
+       # for the moment always take SPHD-G but it has to be configurable
+       #dateExpr = "//*[local-name() = \"Spectrum\" and ends-with(@id,\"SPHD-G\")]"
+       # no ends-with in xpath 1.0 use contains instead substring('','') as it is simpler
+       # and it does the trick
+       dateExpr         = "//*[local-name() = $name and contains(@id,$suffix)]"
+       curr_spectrum_id = None
        
-       self._context['creation_date'] = 'now'
+       # res is Element Spectrum 
+       res = root.xpath(dateExpr,suffix = 'SPHD-G',name   = 'Spectrum')
+       if len(res) > 0:
+           elem = res[0]
+           # get attribute id
+           spectrum_id = elem.get('id')
+           self._context['sample_id'] = curr_spectrum_id
+           
+           # get geometry
+           res = elem.xpath(expr,name = "Geometry")
+           if len(res) == 0:
+               self._context['sample_geometry'] = UNDEFINED
+           else:
+               self._context['sample_geometry'] = res[0].text
+           
+           # get quantity
+           res = elem.xpath(expr,name = "Quantity")
+           if len(res) == 0:
+               self._context['sample_quantity']      = UNDEFINED
+               self._context['sample_quantity_unit'] = UNDEFINED 
+           else:
+               self._context['sample_quantity']      = res[0].text
+               self._context['sample_quantity_unit'] = res[0].get('unit') 
+           
+           # all timing information
+           c_start = elem.xpath(expr,name = "CollectionStart")[0].text
+           c_stop  = elem.xpath(expr,name = "CollectionStop")[0].text
+           
+           a_start = elem.xpath(expr,name = "AcquisitionStart")[0].text
+           a_stop  = elem.xpath(expr,name = "AcquisitionStop")[0].text
+           
+           a_time  = elem.xpath(expr,name = "RealAcquisitionTime")[0].text
+           
+           sampling_time = elem.xpath(expr,name = "SamplingTime")[0].text
+           decay_time    = elem.xpath(expr,name = "DecayTime")[0].text
+           
+           # to be added
+           flow_rate      = UNDEFINED
+           
+           self._context['collection_start']  = c_start
+           self._context['collection_stop']   = c_stop
+           self._context['acquisition_start'] = a_start
+           self._context['acquisition_stop']  = a_stop
+           self._context['acquisition_time']  = a_time
+           self._context['sampling_time']     = sampling_time
+           self._context['decay_time']        = decay_time
+           self._context['flow_rate']         = flow_rate      
+        
+       else:
+           self._context['sample_id']       = UNDEFINED
+           self._context['sample_geometry'] = UNDEFINED
+           
+       # add Activity Concentration for Nuclides
+       #concNuclideExpr = "//*[local-name() = $name and contains(@spectrumIDs,'NOX49-239646-SPHD-G')]"
+       concNuclideExpr = "//*[local-name() = $name and contains(@spectrumIDs,$spectrum_id)]"
+       res = root.xpath(concNuclideExpr,name = "Analysis",spectrum_id=curr_spectrum_id )
+       if len(res) > 0:
+           # get all nuclides
+           res = elem.xpath("//*[local-name() = 'IdedNuclides']/*[local-name() = 'Nuclide' and contains(@quantifiable,'true')]")
+           nuclides = []
+           for nuclide in res:
+              d = {}
+              # get Name, 
+              d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['half_life'] = nuclide.find('{%s}HalfLife'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['conc']      = nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['conc_err']  = nuclide.find('{%s}ConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              
+              nuclides.append(d)
+           
+           self._context['nuclides'] = nuclides       
+           
+       
+       
