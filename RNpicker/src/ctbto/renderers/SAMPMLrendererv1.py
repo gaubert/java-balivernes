@@ -316,6 +316,8 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${LC}","%s"%(str(roi['LC'])), dummy_template)
             dummy_template = re.sub("\${LD}","%s"%(str(roi['LD'])), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(roi['MDC'])), dummy_template)
+            dummy_template = re.sub("\${EFF}","%s"%(str(roi.get(u'Efficiency','N/A'))), dummy_template)
+            dummy_template = re.sub("\${EFF_ERR}","%s"%(str(roi.get(u'Efficiency_Error','N/A'))), dummy_template)
             
             # add generated xml in final container
             xml_nuclides += dummy_template
@@ -350,7 +352,6 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${BETA_LOW}","%s"%(str(bound[u'B_ENERGY_START'])),dummy_template)
             dummy_template = re.sub("\${BETA_HIGH}","%s"%(str(bound[u'B_ENERGY_STOP'])),dummy_template)
           
-            
             # add generated xml in final container
             xml_nuclides += dummy_template
              
@@ -366,35 +367,58 @@ class SaunaRenderer(BaseRenderer):
         dummy_template = ""
         dummy_template += template
           
-        param = self._fetcher.get('%s_TIME_FLAGS_COLLECTION_FLAG'%(id),0)
-        if param == 0:
-            dummy_template = re.sub("\${CollectionTime}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${CollectionTime}","false", dummy_template)
-            
-        param = self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_FLAG'%(id),0)
-        if param == 0:
-            dummy_template = re.sub("\${AcquisitionTime}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${AcquisitionTime}","false", dummy_template)
+        # Collection flags or sampling flags
+        dummy_template = re.sub("\${CollectionTimeFlag}",self._fetcher.get('%s_TIME_FLAGS_COLLECTION_FLAG'%(id),'N/A'), dummy_template)
         
-        param = self._fetcher.get('%s_TIME_FLAGS_DECAY_FLAG'%(id),0)
-        if param == 0:
-            dummy_template = re.sub("\${DecayTime}","true", dummy_template)
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_COLLECTION_VAL'%(id),-1)
+        if v != -1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
         else:
-            dummy_template = re.sub("\${DecayTime}","false", dummy_template)
+            hr = 'N/A'
+            
+        dummy_template = re.sub("\${CollectionTimeValueUnit}",'h', dummy_template)
+        dummy_template = re.sub("\${CollectionTimeValue}",str(hr), dummy_template)
+        dummy_template = re.sub("\${CollectionTimeTest}",self._fetcher.get('%s_TIME_FLAGS_COLLECTION_TEST'%(id),'N/A'), dummy_template)
+        
+        # Acquisition flags or sampling flags
+        dummy_template = re.sub("\${AcquisitionTimeFlag}",self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_FLAG'%(id),'N/A'), dummy_template)
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_VAL'%(id),-1)
+        if v != -1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
+        else:
+            hr = 'N/A'
+        
+        dummy_template = re.sub("\${AcquisitionTimeValueUnit}",'h', dummy_template)
+        dummy_template = re.sub("\${AcquisitionTimeValue}",str(hr), dummy_template)
+        dummy_template = re.sub("\${AcquisitionTimeTest}",self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_TEST'%(id),'N/A'), dummy_template)
+        
+        # Decay flags
+        dummy_template = re.sub("\${DecayTimeFlag}",self._fetcher.get('%s_TIME_FLAGS_DECAY_FLAG'%(id),'N/A'), dummy_template)
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_DECAY_VAL'%(id),-1)
+        if v != -1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
+        else:
+            hr = 'N/A'
+        
+        # uniti is hour
+        dummy_template = re.sub("\${DecayTimeValueUnit}",'h', dummy_template)
+        dummy_template = re.sub("\${DecayTimeValue}",str(hr), dummy_template)
+        dummy_template = re.sub("\${DecayTimeTest}",self._fetcher.get('%s_TIME_FLAGS_DECAY_TEST'%(id),'N/A'), dummy_template)
         
         xml += dummy_template
             
-         # first add timeliness Flags
+        # Data Quality Flags
         template = self._conf.get("SaunaTemplatingSystem","saunaDataQualityFlagsTemplate")    
         dummy_template = template
-            
-        param = self._fetcher.get('%s_VOLUME_FLAG'%(id),0)
-        if param == 0:
-            dummy_template = re.sub("\${XeVolume}","true", dummy_template)
-        else:
-            dummy_template = re.sub("\${XeVolume}","false", dummy_template)
+        
+        # Xenon Vol Flag
+        dummy_template = re.sub("\${XeVolumeFlag}",self._fetcher.get('%s_VOLUME_FLAG'%(id),'N/A'), dummy_template)
+        dummy_template = re.sub("\${XeVolumeValueUnit}",'ml', dummy_template)
+        dummy_template = re.sub("\${XeVolumeValue}",str(self._fetcher.get('%s_VOLUME_VAL'%(id),'N/A')), dummy_template)
+        dummy_template = re.sub("\${XeVolumeTest}",self._fetcher.get('%s_VOLUME_TEST'%(id),'N/A'), dummy_template)
        
         # add generated xml in final container
         xml += dummy_template

@@ -70,6 +70,8 @@ SQL_SAUNA_GET_ROI_INFO = "select c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as G
                                  conc.NID_FLAG as NID_FLAG, conc.LC as LC, conc.LD as LD from gards_BG_ROI_counts c, gards_BG_ROI_CONCS conc \
                                  where c.sample_id=%s and c.sample_id = conc.sample_id and c.roi = conc.roi order by c.roi"
 
+SQL_SAUNA_GET_ROI_EFFICIENCY = "select ROI, BG_EFFICIENCY, BG_EFFIC_ERROR from GARDS_BG_EFFICIENCY_PAIRS where sample_id=%s"
+
 SQL_SAUNA_GET_ROI_BOUNDARIES = "select roi,B_ENERGY_START,B_ENERGY_STOP,G_ENERGY_START, G_ENERGY_STOP from GARDS_ROI_LIMITS where sample_id=%s order by roi"
 
 SQL_SAUNA_GET_PROCESSING_PARAMS = "select * from gards_bg_proc_params where sample_id=%s"

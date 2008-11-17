@@ -1258,10 +1258,14 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             # check that vol + err < vol max and vol - err > volMin
             if (vol - vol_err) < volMin and (vol + vol_err) > volMax:
                #NOK
-               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = vol
+               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Fail'
+               
             else:
                # OK
-               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 0
+               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
+            
+            self._dataBag[u'%s_VOLUME_VAL'%(aDataname)]  = vol
+            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x between 0.1 ml and 100ml' 
     
     def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """
@@ -1287,11 +1291,14 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # if 0 within 24 hours
         if diff_in_sec < coll_min or diff_in_sec > coll_max:
           # not ok add the diff
-          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = diff_in_sec
+          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Fail'
+          
         else:
           # ok
-          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 0 
+          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Pass'
         
+        self._dataBag[u'%s_TIME_FLAGS_COLLECTION_VAL'%(aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_COLLECTION_TEST'%(aDataname)] = 'x between 0.1h and 25h'
         
         # check decay flag
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
@@ -1308,10 +1315,13 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # check pause time or decay time
         if diff_in_sec > pause_max or diff_in_sec < pause_min:
            # NOK
-           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = diff_in_sec
+           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Fail'
         else:
            # OK
-           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 0 
+           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Pass' 
+        
+        self._dataBag[u'%s_TIME_FLAGS_DECAY_VAL'%(aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_DECAY_TEST'%(aDataname)]  = 'x between 0.1h and 24h'
         
        
         # check acquisition flag
@@ -1323,10 +1333,13 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         if diff_in_sec > acq_max and diff_in_sec < acq_min:
             # NOK
-            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = diff_in_sec
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 'Fail'
         else:
             # OK
-            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 0
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 'Pass'
+        
+        self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_VAL'%(aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_TEST'%(aDataname)]  = 'x between 1h and 25h'
         
     
            
@@ -1414,6 +1427,33 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        data[1] = "PB-214"
         
        return data
+   
+    def _fetchROIEfficiency(self,sid):
+       """fetch all the ROI Efficiency info.
+            
+                Args:
+                   sid:sample_id
+                   
+                Returns:
+                   return a dict where the key is the ROI number and the value is (efficiency,efficiency_err)
+            
+                Raises:
+                   exception
+       """ 
+       # GET ROI INFO
+       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_EFFICIENCY%(sid))
+       
+       # only one row in result set
+       rows = result.fetchall()
+   
+       # add results in a list which will become a list of dicts
+       res = []
+       data = {} 
+       
+       for row in rows:
+           data[row['ROI']]=(row['BG_EFFICIENCY'],row['BG_EFFIC_ERROR'])
+    
+       return data
            
     def _fetchROIResults(self,sid,dataname):
        """fetch all the ROI information for the passed sampleID (sid).
@@ -1431,6 +1471,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        
        # first game the Nuclide for the corresponding ROI
        ROI_2_Nuclides = self._fetchNuclideNamePerROI(sid)
+       
+       efficiency = self._fetchROIEfficiency(sid)
     
        # GET ROI INFO
        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_INFO%(sid))
@@ -1447,6 +1489,14 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
           # add related nuclide
           data[u'Nuclide'] = ROI_2_Nuclides.get(data['ROI'],"NoName")
+          
+          # add efficiency
+          eff = efficiency.get(data['ROI'],None)
+          if eff != None:
+              (e,e_err) = eff
+              data[u'Efficiency'] = e
+              data[u'Efficiency_Error'] = e_err
+              
             
           res.append(data)
           data = {}

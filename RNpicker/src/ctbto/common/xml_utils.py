@@ -6,6 +6,10 @@ from ctbto.common import Conf
 def pretty_print_xml(aFDescriptor,aOutput):
    """ xml pretty printing from a stream. Take a file descriptor (fd or StringIO for example """
    
+   #str = aFDescriptor.read()
+   
+   #print " Result = %s\n"%(str)
+   
    tree = etree.parse(aFDescriptor)
    
    # get xslt stylesheet doing the transformation

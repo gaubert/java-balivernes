@@ -12,6 +12,11 @@ def getOracleDateFromISO8601(aISOStr):
     """
     return aISOStr.replace("T"," ")
 
+def getISO8601fromDateTime(aDateTime):
+    
+    s = str(aDateTime).split('.')
+    return s[0].replace(" ","T")
+
 def getDifferenceInTime(aStart,aStop):
     """ return in seconds the difference between the two passed dates doing (aStop - aStart)"""
     
@@ -21,3 +26,7 @@ def getDifferenceInTime(aStart,aStop):
     sec_stop  = time.mktime(aStop.timetuple())
     
     return sec_stop - sec_start
+
+def getSecondsInHours(aSec):
+    
+    return float(aSec)/float(3600)

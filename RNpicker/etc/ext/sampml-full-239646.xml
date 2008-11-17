@@ -498,6 +498,8 @@
             <MDC unit="uBq">0.0</MDC>
             <DetBackgroundCounts>491.0 491.0</DetBackgroundCounts>
             <GasBackgroundCounts>-5.90856298985 -5.90856298985</GasBackgroundCounts>
+            <Efficiency>N/A</Efficiency>
+            <EfficiencyError>N/A</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>2</RoiNumber>
@@ -508,6 +510,8 @@
             <MDC unit="uBq">0.541218480829</MDC>
             <DetBackgroundCounts>620.0 620.0</DetBackgroundCounts>
             <GasBackgroundCounts>2.14804673379 2.14804673379</GasBackgroundCounts>
+            <Efficiency>0.620000004768</Efficiency>
+            <EfficiencyError>0.0619999989867</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>3</RoiNumber>
@@ -518,6 +522,8 @@
             <MDC unit="uBq">0.265301944121</MDC>
             <DetBackgroundCounts>249.0 249.0</DetBackgroundCounts>
             <GasBackgroundCounts>2.50461876889 2.50461876889</GasBackgroundCounts>
+            <Efficiency>0.660000026226</Efficiency>
+            <EfficiencyError>0.0109999999404</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>4</RoiNumber>
@@ -528,6 +534,8 @@
             <MDC unit="uBq">0.176667504171</MDC>
             <DetBackgroundCounts>209.0 209.0</DetBackgroundCounts>
             <GasBackgroundCounts>5.68861575381 5.68861575381</GasBackgroundCounts>
+            <Efficiency>0.740000009537</Efficiency>
+            <EfficiencyError>0.0120000001043</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>5</RoiNumber>
@@ -538,6 +546,8 @@
             <MDC unit="uBq">0.0696097194042</MDC>
             <DetBackgroundCounts>36.0 36.0</DetBackgroundCounts>
             <GasBackgroundCounts>0.434402713575 0.434402713575</GasBackgroundCounts>
+            <Efficiency>0.740000009537</Efficiency>
+            <EfficiencyError>0.0370000004768</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>6</RoiNumber>
@@ -548,6 +558,8 @@
             <MDC unit="uBq">0.0830063789837</MDC>
             <DetBackgroundCounts>30.0 30.0</DetBackgroundCounts>
             <GasBackgroundCounts>2.36200226131 2.36200226131</GasBackgroundCounts>
+            <Efficiency>0.740000009537</Efficiency>
+            <EfficiencyError>0.0370000004768</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>7</RoiNumber>
@@ -558,6 +570,8 @@
             <MDC unit="uBq">0.414890845869</MDC>
             <DetBackgroundCounts>95.0 95.0</DetBackgroundCounts>
             <GasBackgroundCounts>2.31300716082 2.31300716082</GasBackgroundCounts>
+            <Efficiency>0.219999998808</Efficiency>
+            <EfficiencyError>0.00400000018999</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>8</RoiNumber>
@@ -568,6 +582,8 @@
             <MDC unit="uBq">1.12139643115</MDC>
             <DetBackgroundCounts>40.0 40.0</DetBackgroundCounts>
             <GasBackgroundCounts>1.81600301508 1.81600301508</GasBackgroundCounts>
+            <Efficiency>0.0590000003576</Efficiency>
+            <EfficiencyError>0.0010000000475</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>9</RoiNumber>
@@ -578,6 +594,8 @@
             <MDC unit="uBq">0.375135191224</MDC>
             <DetBackgroundCounts>71.0 71.0</DetBackgroundCounts>
             <GasBackgroundCounts>4.02340535177 4.02340535177</GasBackgroundCounts>
+            <Efficiency>0.230000004172</Efficiency>
+            <EfficiencyError>0.00400000018999</EfficiencyError>
           </RoiNetCount>
           <RoiNetCount>
             <RoiNumber>10</RoiNumber>
@@ -588,6 +606,8 @@
             <MDC unit="uBq">0.213006690007</MDC>
             <DetBackgroundCounts>134.0 134.0</DetBackgroundCounts>
             <GasBackgroundCounts>2.28361010053 2.28361010053</GasBackgroundCounts>
+            <Efficiency>0.490000009537</Efficiency>
+            <EfficiencyError>0.00899999961257</EfficiencyError>
           </RoiNetCount>
           <RoiBoundaries>
             <RoiNumber>1</RoiNumber>
@@ -663,18 +683,34 @@
         <Parameters/>
         <Flags>
           <TimelinessAndAvailabilityFlags>
-            <CollectionTimeFlag>true</CollectionTimeFlag>
-            <AcquisitionTimeFlag>true</AcquisitionTimeFlag>
-            <DecayTimeFlag>true</DecayTimeFlag>
+            <CollectionTime>
+              <Flag>Pass</Flag>
+              <Value unit="h">12.0</Value>
+              <Test>x between 0.1h and 25h</Test>
+            </CollectionTime>
+            <AcquisitionTime>
+              <Flag>Pass</Flag>
+              <Value unit="h">11.1666666667</Value>
+              <Test>x between 1h and 25h</Test>
+            </AcquisitionTime>
+            <DecayTime>
+              <Flag>Pass</Flag>
+              <Value unit="h">8.06</Value>
+              <Test>x between 0.1h and 24h</Test>
+            </DecayTime>
           </TimelinessAndAvailabilityFlags>
           <DataQualityFlags>
-            <XeVolumeFlag>true</XeVolumeFlag>
+            <XeVolume>
+              <Flag>Pass</Flag>
+              <Value unit="ml">1.14309000969</Value>
+              <Test>x between 0.1 ml and 100ml</Test>
+            </XeVolume>
           </DataQualityFlags>
         </Flags>
       </Analysis>
     </Analyses>
     <CalibrationInformation>
-      <Calibration Type="Beta EnergyToChannels" EnergyUnits="keV" ID="EN-B-616628706">
+      <Calibration Type="Beta Energy To Channels" EnergyUnits="keV" ID="EN-B-616628706">
         <Remark>Beta Energy to Channel Calibration equation</Remark>
         <CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
         <Equation Model="Polynomial" Form="E(c)= Term0 + Term1 * c + Term2 * C^2">
@@ -682,7 +718,7 @@
           <Coefficients>-2.58687116849 0.351971813876 3.23162436522e-06</Coefficients>
         </Equation>
       </Calibration>
-      <Calibration Type="Gamma EnergyToChannels" EnergyUnits="keV" ID="EN-G-639371485">
+      <Calibration Type="Gamma Energy To Channels" EnergyUnits="keV" ID="EN-G-639371485">
         <Remark>Gamma Energy to Channel Calibration equation</Remark>
         <CalibrationCreationDate>2007-11-24T12:09:53.89</CalibrationCreationDate>
         <Equation Model="Polynomial" Form="E(c)= Term0 + Term1 * c + Term2 * C^2">

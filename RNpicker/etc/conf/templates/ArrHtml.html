@@ -208,6 +208,120 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
 <hr />
 </div>
 
+<h2>Processing Specific Parameters and Results:</h2>
+
+<h3>Method 1 (Net Count Calculation)</h3>
+
+<h4> ROI Net Count Results </h4>
+<p></p>
+
+<table border="0" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th style="text-align:center;">ROI</th>
+      <th style="text-align:center;">Nuclide</th>
+      <th style="text-align:center;">NetCounts</th>
+      <th style="text-align:center;">NetError</th>
+      <th style="text-align:center;">LC</th>
+      <th style="text-align:center;">Efficiency</th>
+      <th style="text-align:center;">Efficiency Error</th>
+      <th> </th>
+    </tr>
+   {% for r_item in roi_results %}
+    <tr>
+      <td style="text-align:center;">{{ r_item.roi_number }}</td>
+      <td style="text-align:center;">{{ r_item.name }}</td>
+      <td style="text-align:center;">{{ r_item.net_counts }}</td>
+      <td style="text-align:center;">{{ r_item.net_counts_err }}</td>
+      <td style="text-align:center;">{{ r_item.lc }}</td>
+      <td style="text-align:center;">{{ r_item.efficiency }}</td>
+      <td style="text-align:center;">{{ r_item.efficiency_error }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+
+<h4> ROI Boundaries </h4>
+<p></p>
+
+<table border="0" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th style="text-align:center;">ROI</th>
+      <th style="text-align:center;">GammaLow (keV)</th>
+      <th style="text-align:center;">GammaHigh (keV)</th>
+      <th style="text-align:center;">BetaLow (keV)</th>
+      <th style="text-align:center;">BetaHigh (keV)</th>
+      <th> </th>
+    </tr>
+   {% for rb_item in roi_boundaries %}
+    <tr>
+      <td style="text-align:center;">{{ rb_item.roi_number }}</td>
+      <td style="text-align:center;">{{ rb_item.gammalow }}</td>
+      <td style="text-align:center;">{{ rb_item.gammahigh }}</td>
+      <td style="text-align:center;">{{ rb_item.betalow }}</td>
+      <td style="text-align:center;">{{ rb_item.betahigh }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+
+<p></p>
+<div class="hr">
+<hr />
+</div>
+
+<h2> Timeliness and Data Quality Flags </h2>
+<p></p>
+
+<table border="0" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th style="text-align:center;">Name</th>
+      <th style="text-align:center;">Pass/Fail</th>
+      <th style="text-align:center;">Value</th>
+      <th style="text-align:center;">Test</th>
+      <th> </th>
+    </tr>
+   {% for flag in flags %}
+    <tr>
+      <td style="text-align:center;">{{ flag.name}}</td>
+      <td style="text-align:center;">{{ flag.result }}</td>
+      <td style="text-align:center;">{{ flag.value }}</td>
+      <td style="text-align:center;">{{ flag.test }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+
+<p></p>
+<div class="hr">
+<hr />
+</div>
+
+<h2> Calibration Equations </h2>
+
+{% for calibration in calibrations %}
+   <h4>{{ calibration.type }} : {{ calibration.form }}</h4>
+   {% for c in calibration.coeffs %}
+   <p>{{ c.name }} : {{ c.val }}</p>
+   {% endfor %}
+{% endfor %}
+
+
+
 
 </body>
 </html>
