@@ -31,8 +31,9 @@ class XML2HTMLRenderer(object):
        
        print "context = %s\n"%(self._context)
          
-       print self._template.render(self._context)
-       
+       #print self._template.render(self._context)
+       str = self._template.render(self._context)
+       ctbto.common.utils.printInFile(str,"/tmp/Transformed.html")
        
       
     
@@ -140,18 +141,43 @@ class XML2HTMLRenderer(object):
        if len(res) > 0:
            # get all nuclides
            res = elem.xpath("//*[local-name() = 'IdedNuclides']/*[local-name() = 'Nuclide' and contains(@quantifiable,'true')]")
-           nuclides = []
+           q_nuclides  = []
+           nq_nuclides = []
+           a_nuclides  = []
            for nuclide in res:
-              d = {}
-              # get Name, 
-              d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-              d['half_life'] = nuclide.find('{%s}HalfLife'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-              d['conc']      = nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-              d['conc_err']  = nuclide.find('{%s}ConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
               
-              nuclides.append(d)
+              # check that nid_flag is 1 to go in quantified_nuclides otherwise goes into non_quantified_nuclides
+              nid_flag = nuclide.find('{%s}NuclideIdentificationIndicator'%(XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
+              if nid_flag == '1':
+                d = {}
+                # get Name, 
+                d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['half_life'] = nuclide.find('{%s}HalfLife'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['conc']      = nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['conc_err']  = nuclide.find('{%s}ConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              
+                q_nuclides.append(d)
+              else:
+                d = {}
+                # get Name, 
+                d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['mdc']       = nuclide.find('{%s}MDC'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                # get numeric val for the moment but can put some text there
+                d['nid_flag']  = nuclide.find('{%s}NuclideIdentificationIndicator'%(XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
+                nq_nuclides.append(d)
+                
+              # in any cases fill Activity results dict
+              d = {}
+              d['name']          = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['activity']      = nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['activity_err']  = nuclide.find('{%s}ConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['lc']            = nuclide.find('{%s}LC'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['ld']            = nuclide.find('{%s}LD'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              a_nuclides.append(d)
            
-           self._context['nuclides'] = nuclides       
+           self._context['non_quantified_nuclides'] = nq_nuclides
+           self._context['quantified_nuclides']     = q_nuclides 
+           self._context['activities_nuclides']     = a_nuclides     
            
        
        

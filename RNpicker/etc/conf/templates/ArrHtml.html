@@ -115,7 +115,7 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
 
 <h4>Nuclide Quantified:</h4>
 
-<table border="1" style="width: 100%">
+<table border="0" style="width: 100%">
   <caption></caption>
   <col />
   <col />
@@ -128,12 +128,12 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
       <th>Conc(uBq/m3)</th>
       <th>%RelErr</th>
     </tr>
-    {% for item in nuclides %}
+    {% for q_item in quantified_nuclides %}
     <tr>
-      <td style="text-align:center;">{{ item.name }}</td>
-      <td style="text-align:center;">{{ item.half_life }}</td>
-      <td style="text-align:center;">{{ item.conc }}</td>
-      <td style="text-align:center;">{{ item.conc_err }}</td>
+      <td style="text-align:center;">{{ q_item.name }}</td>
+      <td style="text-align:center;">{{ q_item.half_life }}</td>
+      <td style="text-align:center;">{{ q_item.conc }}</td>
+      <td style="text-align:center;">{{ q_item.conc_err }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -145,7 +145,7 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
 
 <p></p>
 
-<table border="1" style="width: 100%">
+<table border="0" style="width: 100%">
   <caption></caption>
   <col />
   <col />
@@ -155,17 +155,16 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
       <th style="text-align:center;">Nuclide</th>
       <th style="text-align:center;">MDC (uBq/m3)</th>
       <th style="text-align:center;">NID-Flag</th>
+      <th> </th>
     </tr>
+   {% for nq_item in non_quantified_nuclides %}
     <tr>
-      <td>{{nonquantified_nuclide}}</td>
-      <td>{{mdc}}</td>
-      <td>{{nid}}</td>
+      <td style="text-align:center;">{{ nq_item.name }}</td>
+      <td style="text-align:center;">{{ nq_item.mdc }}</td>
+      <td style="text-align:center;">{{ nq_item.nid_flag }}</td>
+      <td style="text-align:center;">						</td>
     </tr>
-    <tr>
-      <td></td>
-      <td></td>
-      <td></td>
-    </tr>
+   {% endfor %}
   </tbody>
 </table>
 
@@ -173,5 +172,42 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
 <div class="hr">
 <hr />
 </div>
+
+<h2>Sample Activity Results:</h2>
+
+<p>Sample activities are not decay corrected. They give the number of detected decays divided by the measurment time</p>
+
+<table border="0" style="width: 100%">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th style="text-align:center;">Nuclide</th>
+      <th style="text-align:center;">Activity (Bq)</th>
+      <th style="text-align:center;">Error (Bq)</th>
+      <th style="text-align:center;">Critical Limit (Bq/m3)</th>
+      <th style="text-align:center;">Detection Limit (Bq/m3)</th>
+      <th> </th>
+    </tr>
+   {% for a_item in activities_nuclides %}
+    <tr>
+      <td style="text-align:center;">{{ a_item.name }}</td>
+      <td style="text-align:center;">{{ a_item.activity }}</td>
+      <td style="text-align:center;">{{ a_item.activity_err }}</td>
+      <td style="text-align:center;">{{ a_item.lc }}</td>
+      <td style="text-align:center;">{{ a_item.ld }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+
+<p></p>
+<div class="hr">
+<hr />
+</div>
+
+
 </body>
 </html>
