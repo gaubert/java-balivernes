@@ -223,6 +223,8 @@ def parserTest():
 
 if __name__ == '__main__':
     
+    #print "40200/3600 = %s\n"%((float(40200)/float(3600)))
+    
     testXml2Html()
    
     

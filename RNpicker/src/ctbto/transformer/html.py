@@ -1,12 +1,16 @@
-from jinja2 import Template
-from jinja2 import Environment, FileSystemLoader
-from lxml import etree
+from jinja2   import Template
+from jinja2   import Environment
+from jinja2   import FileSystemLoader
+from lxml     import etree
+from datetime import datetime
+
 import logging
 import ctbto.common.utils
+import ctbto.common.time_utils as time_utils
 from ctbto.common import CTBTOError
 from ctbto.common import Conf
 
-UNDEFINED="undefined"
+UNDEFINED="N/A"
 
 class XML2HTMLRenderer(object):
     """ Base Class used to transform the fetcher content into XML """
@@ -72,7 +76,17 @@ class XML2HTMLRenderer(object):
            self._context['detector_description'] = res[0].text
        else:
            self._context['detector_description'] = UNDEFINED
+           
+       # get sample type
+       res = root.xpath(expr, name = "SampleType")
+       if len(res) > 0:
+           self._context['sample_type'] = res[0].text
+       else:
+           self._context['sample_type']     = UNDEFINED
+           
+       self._context['arrival_date']        = UNDEFINED
        
+       self._context['collection_comments'] = UNDEFINED
        
        # for the dates, a prefix is needed
        # for the moment always take SPHD-G but it has to be configurable
@@ -87,7 +101,7 @@ class XML2HTMLRenderer(object):
        if len(res) > 0:
            elem = res[0]
            # get attribute id
-           spectrum_id = elem.get('id')
+           curr_spectrum_id = elem.get('id')
            self._context['sample_id'] = curr_spectrum_id
            
            # get geometry
@@ -139,11 +153,13 @@ class XML2HTMLRenderer(object):
        concNuclideExpr = "//*[local-name() = $name and contains(@spectrumIDs,$spectrum_id)]"
        res = root.xpath(concNuclideExpr,name = "Analysis",spectrum_id=curr_spectrum_id )
        if len(res) > 0:
-           # get all nuclides
-           res = elem.xpath("//*[local-name() = 'IdedNuclides']/*[local-name() = 'Nuclide' and contains(@quantifiable,'true')]")
+           analysis_elem = res[0]
+           # get all ided nuclides
+           res = analysis_elem.find("{%s}IdedNuclides"%(XML2HTMLRenderer.c_namespaces['sml']))
            q_nuclides  = []
            nq_nuclides = []
            a_nuclides  = []
+           # iterate over the children of ided nuclides => the nuclides
            for nuclide in res:
               
               # check that nid_flag is 1 to go in quantified_nuclides otherwise goes into non_quantified_nuclides
@@ -177,7 +193,150 @@ class XML2HTMLRenderer(object):
            
            self._context['non_quantified_nuclides'] = nq_nuclides
            self._context['quantified_nuclides']     = q_nuclides 
-           self._context['activities_nuclides']     = a_nuclides     
+           self._context['activities_nuclides']     = a_nuclides 
+        
+           # Add ROI results
+           # get ROIInfo
+           res = analysis_elem.find("{%s}ROIInfo"%(XML2HTMLRenderer.c_namespaces['sml']))    
            
-       
-       
+           # iterate over RoiNetCount
+           roi_results    = []
+           roi_boundaries = []
+           
+           for roi in res:
+               
+               if roi.tag.find('RoiNetCount') != -1:
+                 # if it is RoiNetCount 
+                 d = {}
+                 d['roi_number']       =  roi.find('{%s}RoiNumber'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                 d['name']             =  roi.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+               
+                 n_counts              =  roi.find('{%s}NetCounts'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                 if n_counts is not None:
+                   (n_c,n_c_err) = n_counts.split(' ')
+                   d['net_counts']     = n_c
+                   d['net_counts_err'] = n_c_err
+                 else:
+                   d['net_counts']     = "N/A"
+                   d['net_counts_err'] = "N/A"
+            
+               
+                   
+                 d['lc']               =  roi.find('{%s}LC'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                 d['efficiency']       =  roi.find('{%s}Efficiency'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                 d['efficiency_error'] =  roi.find('{%s}EfficiencyError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+           
+                 roi_results.append(d)
+                 
+               elif roi.tag.find('RoiBoundaries') != -1:
+                   # Boundaries
+                   d = {}
+                   d['roi_number']       =  roi.find('{%s}RoiNumber'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                   d['gammalow']         =  roi.find('{%s}GammaLow'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                   d['gammahigh']        =  roi.find('{%s}GammaHigh'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                   d['betalow']          =  roi.find('{%s}BetaLow'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                   d['betahigh']         =  roi.find('{%s}BetaHigh'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                   
+                   roi_boundaries.append(d)
+               else:
+                   XML2HTMLRenderer.c_log.error("No ROI info for %s"%(self._context['sample_id'])) 
+                  
+           self._context['roi_results']    = roi_results
+           self._context['roi_boundaries'] = roi_boundaries
+           
+           # Add Flags
+           
+           # timeliness flags
+           res = analysis_elem.find("{%s}Flags/{%s}TimelinessAndAvailabilityFlags"%(XML2HTMLRenderer.c_namespaces['sml'],XML2HTMLRenderer.c_namespaces['sml']))  
+           flags = []
+           
+           for timeflag in res:
+               d = {}
+               
+               if timeflag.tag.find('CollectionTime') != -1:
+                   
+                  d['name']  = 'Sampling Time'
+                   
+               elif timeflag.tag.find('AcquisitionTime') != -1:
+                  
+                  d['name']  = 'AcquisitionTime'
+                   
+               elif timeflag.tag.find('DecayTime') != -1:
+               
+                  d['name']  = 'Processing Time'
+               else:
+                  XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
+                  d['name']  = timeflag.tag
+               
+               d['result'] = timeflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+               d['value']  = timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+               d['test']  = timeflag.find('{%s}Test'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+            
+               flags.append(d)
+            
+           # data quality flags
+           res = analysis_elem.find("{%s}Flags/{%s}DataQualityFlags"%(XML2HTMLRenderer.c_namespaces['sml'],XML2HTMLRenderer.c_namespaces['sml']))  
+           
+           for dqflag in res:
+               d = {}
+               
+               if dqflag.tag.find('XeVolume') != -1:
+                   
+                  d['name']  = 'Stable Xenon Volume'
+               else:
+                  XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
+                  d['name']  = dqflag.tag
+               
+               d['result'] = dqflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+               d['value']  = dqflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+               d['test']   = dqflag.find('{%s}Test'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+            
+               flags.append(d)
+            
+           self._context['flags'] = flags
+           
+           res = root.xpath("//*[local-name() = $name]",name = "CalibrationInformation")
+           if len(res) > 0:
+             
+             # add calibration 
+             res = res[0]
+             
+             #res = analysis_elem.find("{%s}CalibrationInformation"%(XML2HTMLRenderer.c_namespaces['sml']))  
+             calibrations = []
+           
+             for calibration in res:
+               
+                 d   = {}
+                 d['type'] = calibration.get('Type','N/A')
+               
+                 equation  = calibration.find("{%s}Equation"%(XML2HTMLRenderer.c_namespaces['sml']))
+                 if equation is not None:
+                    d['form']  = equation.get('Form','N/A')
+                  
+                    # get coefficients
+                    coefficients = equation.find("{%s}Coefficients"%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                    if coefficients is None:
+                      d['coeffs'] = []
+                    else:
+                      c_list = []
+                      cpt    = 0
+                      for coeff in coefficients.split(' '):
+                        c_list.append({'name':'E%s'%(cpt),'val':coeff})
+                        cpt +=1
+                      
+                      d['coeffs'] = c_list  
+                 else:
+                    d['form']  = 'N/A'
+                
+                 calibrations.append(d)
+               
+             self._context['calibrations'] = calibrations  
+             
+             
+             # add creation time
+             self._context['creation_date'] = time_utils.getISO8601fromDateTime(datetime.now())
+
+                  
+              
+               
+                  
