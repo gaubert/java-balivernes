@@ -169,8 +169,8 @@ class XML2HTMLRenderer(object):
               # in any cases fill Activity results dict
               d = {}
               d['name']          = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-              d['activity']      = nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-              d['activity_err']  = nuclide.find('{%s}ConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['activity']      = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['activity_err']  = nuclide.find('{%s}ActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
               d['lc']            = nuclide.find('{%s}LC'%(XML2HTMLRenderer.c_namespaces['sml'])).text
               d['ld']            = nuclide.find('{%s}LD'%(XML2HTMLRenderer.c_namespaces['sml'])).text
               a_nuclides.append(d)

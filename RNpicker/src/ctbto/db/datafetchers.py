@@ -1201,7 +1201,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        result = self._mainConnector.execute(SQL_SAUNA_GET_IDENTIFIED_NUCLIDES%(sid))
        
        # only one row in result set
-       rows = result.fetchall()    
+       rows = result.fetchall()   
+       
+       # get the volume to comp[ute activity from concentration
+       # it is in m3
+       volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
         
        # add results in a list which will become a list of dicts
        res = []
@@ -1217,6 +1221,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
             data[u'NID_FLAG']     = val
             data[u'NID_FLAG_NUM'] = nidflag
+        
+          
+          # get activity. If no volume or no activity results are 0
+          data[u'ACTIVITY'] = data.get(u'CONC',0)*volume  
+          data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume    
             
           res.append(data)
           data = {}

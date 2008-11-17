@@ -281,6 +281,8 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
             dummy_template = re.sub("\${CONCENTRATION}",str(nuclide['CONC']), dummy_template)
             dummy_template = re.sub("\${CONCENTRATION_ERROR}",str(nuclide['CONC_ERR']), dummy_template)
+            dummy_template = re.sub("\${ACTIVITY}",str(nuclide['ACTIVITY']), dummy_template)
+            dummy_template = re.sub("\${ACTIVITY_ERROR}",str(nuclide['ACTIVITY_ERR']), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(nuclide['MDC'])), dummy_template)
             dummy_template = re.sub("\${LC}","%s"%(str(nuclide['LC'])), dummy_template)
             dummy_template = re.sub("\${LD}","%s"%(str(nuclide['LD'])), dummy_template)
