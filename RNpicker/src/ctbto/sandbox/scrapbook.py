@@ -201,9 +201,9 @@ def jinja2Test():
 
 def testXml2Html():
     
-    r = XML2HTMLRenderer('/home/aubert/projects/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
+    r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
     
-    r.render('/home/aubert/projects/java-balivernes/RNpicker/etc/ext/sampml-full-239646.xml')
+    r.render('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/sampml-full-239646.xml')
 
 def parserTest():
     

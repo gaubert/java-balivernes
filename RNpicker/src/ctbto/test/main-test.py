@@ -300,11 +300,11 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=CURR, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-11',endDate='2008-11-12',spectralQualif='FULL',nbOfElem='1000')
+        #listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-11',endDate='2008-11-12',spectralQualif='FULL',nbOfElem='1000')
         
         # error
         # 103729,241116     
-        listOfSamplesToTest = [ "241116" ]
+        listOfSamplesToTest = [ "239909" ]
         
         #print "list of samples %s\n"%(listOfSamplesToTest)
               
