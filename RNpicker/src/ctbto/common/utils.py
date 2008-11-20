@@ -22,6 +22,44 @@ class curry:
             kw = kwargs or self.kwargs
         return self.fun(*(self.pending + args), **kw)
 
+def round_as_string(aFloat,aNbDigits):
+    """ Round a float number up to aNbDigits after the .
+        printf is used to do that.
+    
+        Args:
+           aFloat:    the float to round
+           aNbDigits: the nb of digits to round after 
+           
+        Returns:
+           a string representation of the rounded number
+    
+        Raises:
+           exception
+    """
+    assert aNbDigits > 0
+    
+    # create string in two steps. There is surely a better way to do it in one step
+    formatting_str = '%sf'%(aNbDigits)
+    formatting_str = '%.' + '%sf'%(aNbDigits)
+    
+    return formatting_str%(float(aFloat))
+
+def round(aFloat,aNbDigits):
+    """ Round a float number up to aNbDigits after the .
+        printf is used to do that.
+    
+        Args:
+           aFloat:    the float to round
+           aNbDigits: the nb of digits to round after 
+           
+        Returns:
+           a rounded nb a a float
+    
+        Raises:
+           exception
+    """
+    return float(round_as_string(aFloat, aNbDigits))
+
 def checksum(aString):
     """checksum the passed string. This is a 32 bits checksum
     
@@ -119,6 +157,7 @@ def printDict(di, format="%-25s %s"):
 def dump(aData,aIostream=None):
     pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
     pp.pprint(self._dataBag)
+    
 
 def printInFile(aStr,aPath):
     #check if it is a path or a file
@@ -153,6 +192,9 @@ def prettyFormatElem(elem,level=0):
     else:
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
+
+
+
             
 if __name__ == "__main__":
 

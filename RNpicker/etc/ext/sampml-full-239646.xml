@@ -16,10 +16,12 @@
       <Spectrum id="USX74-239909-SPHD-G" calibrationIDs="EN-B-616628706 EN-G-639371485">
         <Geometry>GEOMETRY</Geometry>
         <Quantity unit="m3">14.9320001602</Quantity>
+        <FlowRate unit="m3/h">1.24433334668</FlowRate>
         <CollectionStart>2008-11-06T09:52:00</CollectionStart>
         <CollectionStop>2008-11-06T21:52:00</CollectionStop>
         <AcquisitionStart>2008-11-07T05:55:36</AcquisitionStart>
         <AcquisitionStop>2008-11-07T17:05:36</AcquisitionStop>
+        <ArrivalDate>2008-11-07T17:10:42</ArrivalDate>
         <RealAcquisitionTime>PT40200S</RealAcquisitionTime>
         <LiveAcquisitionTime>PT40200S</LiveAcquisitionTime>
         <SamplingTime>PT43200S</SamplingTime>
@@ -85,10 +87,12 @@
       <Spectrum id="USX74-239909-SPHD-B" calibrationIDs="EN-B-616628706 EN-G-639371485">
         <Geometry>GEOMETRY</Geometry>
         <Quantity unit="m3">14.9320001602</Quantity>
+        <FlowRate unit="m3/h">1.24433334668</FlowRate>
         <CollectionStart>2008-11-06T09:52:00</CollectionStart>
         <CollectionStop>2008-11-06T21:52:00</CollectionStop>
         <AcquisitionStart>2008-11-07T05:55:36</AcquisitionStart>
         <AcquisitionStop>2008-11-07T17:05:36</AcquisitionStop>
+        <ArrivalDate>2008-11-07T17:10:42</ArrivalDate>
         <RealAcquisitionTime>PT40200S</RealAcquisitionTime>
         <LiveAcquisitionTime>PT40200S</LiveAcquisitionTime>
         <SamplingTime>PT43200S</SamplingTime>
@@ -446,6 +450,8 @@
             <MDC unit="uBq">0.0696097194042</MDC>
             <LC unit="uBq/m3">0.0280463513533</LC>
             <LD unit="uBq/m3">0.0696097194042</LD>
+            <LCActivity unit="Bq">0.4187881229</LCActivity>
+            <LDActivity unit="Bq">1.0394123413</LDActivity>
             <NuclideIdentificationIndicator numericVal="1">nuclide identified by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
           <Nuclide quantifiable="true">
@@ -459,6 +465,8 @@
             <MDC unit="uBq">0.0830063789837</MDC>
             <LC unit="uBq/m3">0.0334773885809</LC>
             <LD unit="uBq/m3">0.0830063789837</LD>
+            <LCActivity unit="Bq">0.499884371654</LCActivity>
+            <LDActivity unit="Bq">1.23945126428</LDActivity>
             <NuclideIdentificationIndicator numericVal="0">nuclide not identifided by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
           <Nuclide quantifiable="true">
@@ -472,6 +480,8 @@
             <MDC unit="uBq">0.191860369153</MDC>
             <LC unit="uBq/m3">0.0856040929915</LC>
             <LD unit="uBq/m3">0.191860369153</LD>
+            <LCActivity unit="Bq">1.27824033026</LCActivity>
+            <LDActivity unit="Bq">2.86485906294</LDActivity>
             <NuclideIdentificationIndicator numericVal="0">nuclide not identifided by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
           <Nuclide quantifiable="true">
@@ -485,6 +495,8 @@
             <MDC unit="uBq">0.541218480829</MDC>
             <LC unit="uBq/m3">0.251552839465</LC>
             <LD unit="uBq/m3">0.541218480829</LD>
+            <LCActivity unit="Bq">3.75618703919</LCActivity>
+            <LDActivity unit="Bq">8.08147444246</LDActivity>
             <NuclideIdentificationIndicator numericVal="0">nuclide not identifided by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
         </IdedNuclides>
