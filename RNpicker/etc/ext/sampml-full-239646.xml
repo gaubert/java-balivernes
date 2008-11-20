@@ -444,7 +444,8 @@
             <Type>FISSION (G)</Type>
             <HalfLife>11.900 D</HalfLife>
             <Concentration unit="uBq/m3">0.0450242041564</Concentration>
-            <ConcentrationError unit="percentage">0.0227079167058</ConcentrationError>
+            <AbsoluteConcentrationError unit="uBq/m3">0.0227079167058</AbsoluteConcentrationError>
+            <RelativeConcentrationError unit="percentage">50.4349096918</RelativeConcentrationError>
             <Activity unit="uBq/m3">0.672301423677</Activity>
             <ActivityError unit="percentage">0.339074615889</ActivityError>
             <MDC unit="uBq">0.0696097194042</MDC>
@@ -459,7 +460,8 @@
             <Type>FISSION (G)</Type>
             <HalfLife>2.190 D</HalfLife>
             <Concentration unit="uBq/m3">0.0139173321555</Concentration>
-            <ConcentrationError unit="percentage">0.0222885235899</ConcentrationError>
+            <AbsoluteConcentrationError unit="uBq/m3">0.0222885235899</AbsoluteConcentrationError>
+            <RelativeConcentrationError unit="percentage">160.149397462</RelativeConcentrationError>
             <Activity unit="uBq/m3">0.207813605976</Activity>
             <ActivityError unit="percentage">0.332812237816</ActivityError>
             <MDC unit="uBq">0.0830063789837</MDC>
@@ -474,7 +476,8 @@
             <Type>FISSION (G)</Type>
             <HalfLife>5.243 D</HalfLife>
             <Concentration unit="uBq/m3">0.0270960104459</Concentration>
-            <ConcentrationError unit="percentage">0.053045702325</ConcentrationError>
+            <AbsoluteConcentrationError unit="uBq/m3">0.053045702325</AbsoluteConcentrationError>
+            <RelativeConcentrationError unit="percentage">195.76941938</RelativeConcentrationError>
             <Activity unit="uBq/m3">0.404597632319</Activity>
             <ActivityError unit="percentage">0.792078435615</ActivityError>
             <MDC unit="uBq">0.191860369153</MDC>
@@ -489,7 +492,8 @@
             <Type>FISSION (G)</Type>
             <HalfLife>9.140 H</HalfLife>
             <Concentration unit="uBq/m3">0.0603448200397</Concentration>
-            <ConcentrationError unit="percentage">0.155683303136</ConcentrationError>
+            <AbsoluteConcentrationError unit="uBq/m3">0.155683303136</AbsoluteConcentrationError>
+            <RelativeConcentrationError unit="percentage">257.989506032</RelativeConcentrationError>
             <Activity unit="uBq/m3">0.901068862501</Activity>
             <ActivityError unit="percentage">2.32466310737</ActivityError>
             <MDC unit="uBq">0.541218480829</MDC>

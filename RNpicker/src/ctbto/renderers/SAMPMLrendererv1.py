@@ -245,9 +245,9 @@ class SaunaRenderer(BaseRenderer):
           # add calib info if it isn't there already
           if en_id not in calibInfos:
             energy = self._fetcher.get(en_id,{})
-            dummy_template = re.sub("\${TERM0}",str(energy.get(u'GAMMA_COEFF1',"None")), template)
-            dummy_template = re.sub("\${TERM1}",str(energy.get(u'GAMMA_COEFF2',"None")), dummy_template)
-            dummy_template = re.sub("\${TERM2}",str(energy.get(u'GAMMA_COEFF3',"None")), dummy_template)
+            dummy_template = re.sub("\${TERM0}",str(energy.get(u'GAMMA_COEFF1','N/A')), template)
+            dummy_template = re.sub("\${TERM1}",str(energy.get(u'GAMMA_COEFF2','N/A')), dummy_template)
+            dummy_template = re.sub("\${TERM2}",str(energy.get(u'GAMMA_COEFF3','N/A')), dummy_template)
             dummy_template = re.sub("\${EN_ID}",en_id, dummy_template)
             dummy_template = re.sub("\${EN_TYPE}","Gamma", dummy_template)
             # add generated xml in final container
@@ -281,6 +281,7 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${HALFLIFE}",str(nuclide['HALFLIFE']), dummy_template)
             dummy_template = re.sub("\${CONCENTRATION}",str(nuclide['CONC']), dummy_template)
             dummy_template = re.sub("\${CONCENTRATION_ERROR}",str(nuclide['CONC_ERR']), dummy_template)
+            dummy_template = re.sub("\${CONCENTRATION_ERROR_PERC}",str(nuclide.get('CONC_ERR_PERC','N/A')), dummy_template)
             dummy_template = re.sub("\${ACTIVITY}",str(nuclide['ACTIVITY']), dummy_template)
             dummy_template = re.sub("\${ACTIVITY_ERROR}",str(nuclide['ACTIVITY_ERR']), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(nuclide['MDC'])), dummy_template)
