@@ -127,7 +127,7 @@ class XML2HTMLRenderer(object):
                self._context['sample_quantity']      = UNDEFINED
                self._context['sample_quantity_unit'] = UNDEFINED 
            else:
-               self._context['sample_quantity']      = res[0].text
+               self._context['sample_quantity']      = utils.round_as_string(res[0].text,3)
                self._context['sample_quantity_unit'] = res[0].get('unit') 
            
            # all timing information

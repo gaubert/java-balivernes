@@ -333,11 +333,11 @@ class DBDataFetcher(object):
         elif aDataType == 'Q':
            return (("QC_%s"%(aSampleID)).strip(),'QC')
         elif aDataType == 'D':
-           return (("BK_%s"%(aSampleID)).strip(),'BK')
+           return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
         elif aDataType == 'G' and aSpectralQualifier == 'FULL':
-            return (("GSPHD_%s"%(aSampleID)).strip(),'GSPHD')
-        elif aDataType == 'G' and aSpectralQualifier == 'PREL':
-            return (("GSPHD_%s"%(aSampleID)).strip(),'PSPHD')
+            return (("GASBK_%s"%(aSampleID)).strip(),'GASBK')
+       # elif aDataType == 'G' and aSpectralQualifier == 'PREL':
+       #     return (("GSPHD_%s"%(aSampleID)).strip(),'PSPHD')
         else:
            raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
@@ -803,7 +803,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._dataBag['SAMPLE_TYPE']="SAUNA"
     
-    def _fetchBKSpectrumData(self):
+    def _fetchDETBKSpectrumData(self):
         """get the Background data.
            If the caching function is activated save the retrieved spectrum on disc.
         
@@ -825,15 +825,15 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
        
         if nbResults is 0:
-           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
            return
        
         if nbResults > 1:
-            SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
         sid = rows[0]['SAMPLE_ID']
         
@@ -843,13 +843,61 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         try:
            (dataname,type) = self._fetchAllData(sid)
            
-           self._dataBag[u'CURRENT_BK'] = dataname
+           self._dataBag[u'CURRENT_DETBK'] = dataname
            
-           self._dataBag[u'CONTENT_PRESENT'].add('BK') 
+           self._dataBag[u'CONTENT_PRESENT'].add('DETBK') 
            
         except Exception, e:
            SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
+    
+    def _fetchGASBKSpectrumData(self):
+        """get the Background data.
+           If the caching function is activated save the retrieved spectrum on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the curr sample is a Detector background itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'G':
+           return
+        
+        SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
+        
+        # need to get the latest BK sample_id
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+       
+        if nbResults is 0:
+           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
+           return
+       
+        if nbResults > 1:
+            SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
+        sid = rows[0]['SAMPLE_ID']
+        
+        DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
+          
+        # now fetch the spectrum
+        try:
+           (dataname,type) = self._fetchAllData(sid)
+           
+           self._dataBag[u'CURRENT_GASBK'] = dataname
+           
+           self._dataBag[u'CONTENT_PRESENT'].add('GASBK') 
+           
+        except Exception, e:
+           SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
+           self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
     
     def _fetchPrelsSpectrumData(self):
         """get the preliminary data.
@@ -1126,7 +1174,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
     def _fetchData(self,aParams=None):
         """ get the different raw data info """
         
-        spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
+        spectrums = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.SPECTRUM,set())
         
         if ('None' in spectrums):
             # None is in there so do not include data
@@ -1139,8 +1187,15 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if ('QC' in spectrums):
           self._fetchQCSpectrumData()
         
-        if ('BK' in spectrums):
-           self._fetchBKSpectrumData()
+        # this is detector BK
+        # to be changed in DETBK
+        if ('DETBK' in spectrums):
+           self._fetchDETBKSpectrumData()
+           
+        # get Gas BK
+        # to be change in GASBK
+        if ('GASBK' in spectrums):
+           self._fetchGASBKSpectrumData()
         
         if ('PREL' in spectrums):
            self._fetchPrelsSpectrumData()
@@ -1151,7 +1206,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        # get static info necessary for the analysis
        self._fetchNuclidesToQuantify()
            
-       analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
+       analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
        
        if ('None' in analyses):
             # None is in there so do not include data
@@ -1900,7 +1955,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     def _fetchData(self,aParams=""):
         """ get the different raw data info """
         
-        spectrums = self._parser.parse(aParams).get(RequestParser.SPECTRUM,set())
+        spectrums = self._parser.parse(aParams,RequestParser.PAR).get(RequestParser.SPECTRUM,set())
         
         if ('None' in spectrums):
             # None is in there so do not include data
@@ -2110,7 +2165,7 @@ class ParticulateDataFetcher(DBDataFetcher):
        # get static info necessary for the analysis
        self._fetchNuclidesToQuantify()
         
-       analyses = self._parser.parse(aParams).get(RequestParser.ANALYSIS,set())
+       analyses = self._parser.parse(aParams,RequestParser.PAR).get(RequestParser.ANALYSIS,set())
        
        if ('None' in analyses):
             # None is in there so do not include data

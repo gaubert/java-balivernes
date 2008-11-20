@@ -81,12 +81,24 @@ SQL_SAUNA_GET_ROI_PARAMS = "select * from gards_bg_proc_params_roi where sample_
 """ Get information regarding all nuclides """
 SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Name, lib.type as Type, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
-SQL_GET_SAUNA_BK_SAMPLEID   = "select * from \
+SQL_GET_SAUNA_DETBK_SAMPLEID   = "select * from \
                                     (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
                                     where gd.station_id=%s \
                                     and gd.DETECTOR_ID=%s \
                                     and gd.SPECTRAL_QUALIFIER='FULL' \
                                     and gd.data_type='D' \
+                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                                                 and detector_id=%s) \
+                                    and gd.sample_id = gs.sample_id \
+                                    and gs.status in ('V','P')) \
+                                    where rownum=1"
+
+SQL_GET_SAUNA_GASBK_SAMPLEID   = "select * from \
+                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                    where gd.station_id=%s \
+                                    and gd.DETECTOR_ID=%s \
+                                    and gd.SPECTRAL_QUALIFIER='FULL' \
+                                    and gd.data_type='G' \
                                     and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
                                                                  and detector_id=%s) \
                                     and gd.sample_id = gs.sample_id \

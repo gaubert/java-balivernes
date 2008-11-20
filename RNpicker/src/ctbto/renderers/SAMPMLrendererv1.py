@@ -61,9 +61,13 @@ class BaseRenderer(object):
             results.append(self._fetcher.get(u'CURRENT_CURR',None))
             aSpectrums.remove('CURR')
         
-        if 'BK' in aSpectrums:
-            results.append(self._fetcher.get(u'CURRENT_BK',None))
-            aSpectrums.remove('BK')
+        if 'DETBK' in aSpectrums:
+            results.append(self._fetcher.get(u'CURRENT_DETBK',None))
+            aSpectrums.remove('DETBK')
+        
+        if 'GASBK' in aSpectrums:
+            results.append(self._fetcher.get(u'CURRENT_GASBK',None))
+            aSpectrums.remove('GASBK')
         
         if 'QC' in aSpectrums:
             results.append(self._fetcher.get(u'CURRENT_QC',None))
@@ -170,7 +174,7 @@ class SaunaRenderer(BaseRenderer):
        
        # parse request to know what need to be added in the product
        # [Parsing could be done for once and shared between fetcher and renderer]
-       reqDict = self._parser.parse(aRequest)
+       reqDict = self._parser.parse(aRequest,RequestParser.GAS)
          
        self._fillData(reqDict)
        
@@ -1278,7 +1282,7 @@ class GenieParticulateRenderer(BaseRenderer):
        
        # parse request to know what need to be added in the product
        # [Parsing could be done for once and shared between fetcher and renderer]
-       reqDict = self._parser.parse(aRequest)
+       reqDict = self._parser.parse(aRequest,RequestParser.PAR)
          
        self._fillData(reqDict)
        
