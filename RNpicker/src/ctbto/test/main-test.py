@@ -297,14 +297,15 @@ class TestSAMPMLCreator(unittest.TestCase):
         # list to run on production 
         #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
         
-        request="spectrum=CURR, analysis=CURR"
+        request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
         #listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-11',endDate='2008-11-12',spectralQualif='FULL',nbOfElem='1000')
         
         # error
         # 103729,241116     
-        listOfSamplesToTest = [ "239909" ]
+        #listOfSamplesToTest = [ "239909" ]
+        listOfSamplesToTest = ['174188']
         
         #print "list of samples %s\n"%(listOfSamplesToTest)
               

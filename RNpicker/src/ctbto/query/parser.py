@@ -13,18 +13,25 @@ class RequestParser(object):
     
     SPECTRUM = 'spectrum'
     ANALYSIS = 'analysis'
+    GAS      = 'GAS'
+    PAR      = 'PAR'
     
     # Class members
     c_log = logging.getLogger("query.RequestParser")
     c_log.setLevel(logging.DEBUG)
     
     # spectrum types
-    c_spectrum_types   = set(['NONE','CURR','QC','PREL','BK'])
-    c_spectrum_default = set(['CURR','QC','PREL','BK'])
+    c_spectrum_particulate_types   = set(['NONE','CURR','QC','PREL','BK'])
+    c_spectrum_particulate_default = set(['CURR','QC','PREL','BK'])
     
+    c_analysis_particulate_types   = set(['NONE','CURR','QC','PREL','BK'])
+    c_analysis_particulate_default = set(['CURR','QC','PREL','BK'])
     
-    c_analysis_types   = set(['NONE','CURR','QC','PREL','BK'])
-    c_analysis_default = set(['CURR','QC','PREL','BK'])
+    c_spectrum_gas_types           = set(['NONE','CURR','QC','PREL','DETBK','GASBK'])
+    c_spectrum_gas_default         = set(['CURR','QC','PREL','GASBK','DETBK'])
+    
+    c_analysis_gas_types           = set(['NONE','CURR','QC','PREL','BK'])
+    c_analysis_gas_default         = set(['CURR','QC','PREL','BK'])
     
     # regular expression stuff for spectrum param
     c_spectrum_pattern             ="(?P<command>\s*spectrum\s*=\s*)(?P<values>[\w+\s*/\s*]*\w)\s*"
@@ -40,11 +47,12 @@ class RequestParser(object):
         # get reference to the conf object
         self._conf              = Conf.get_instance()
         
-    
-    def parse(self,aRequest):
+        
+    def parse(self,aRequest,aTechnType):
         """ parse the query request.
         
             Args:
+               aTechType: Technology Type : GAS or PAR
                aRequest: Request to parse as a string
                
             Returns:
@@ -62,14 +70,20 @@ class RequestParser(object):
         
         for elem in list:  
             if elem.lower().find(RequestParser.c_spectrum) != -1:
-                result[RequestParser.SPECTRUM] = self._parseSpectrumParams(elem)
+                if aTechnType == RequestParser.GAS:
+                   result[RequestParser.SPECTRUM] = self._parseSpectrumParams(elem,RequestParser.c_spectrum_gas_types,RequestParser.c_spectrum_gas_default)
+                elif aTechType == RequestParser.PAR:
+                   result[RequestParser.SPECTRUM] = self._parseSpectrumParams(elem,RequestParser.c_spectrum_particulate_types,RequestParser.c_spectrum_particulate_default)
             
             if elem.lower().find(RequestParser.c_analysis) != -1:
-                result[RequestParser.ANALYSIS] = self._parseAnalysisParams(elem)
+                if aTechnType == RequestParser.GAS:
+                   result[RequestParser.ANALYSIS] = self._parseAnalysisParams(elem,RequestParser.c_analysis_gas_types,RequestParser.c_analysis_gas_default)
+                elif aTechType == RequestParser.PAR:
+                   result[RequestParser.ANALYSIS] = self._parseAnalysisParams(elem,RequestParser.c_analysis_particulate_types,RequestParser.c_analysis_particulate_default)
         
         return result
     
-    def _parseAnalysisParams(self,aRequest=""):
+    def _parseAnalysisParams(self,aRequest,aAnalysisTypes,aAnalysisTypesDefault):
        
         """ parse the analysis part of the params string. It should be something like analysis=CURR/QC/BK/PREL.
             This is used to specify which of the spectra related to the current spectrum must be retrieved
@@ -113,19 +127,19 @@ class RequestParser(object):
           
           if dummy == 'ALL':
              #ALL superseeds everything and add all the different types
-             result.update(RequestParser.c_analysis_default)
+             result.update(aAnalysisTypesDefault)
              # leave loop
              break
                 
-          if dummy not in RequestParser.c_analysis_types:
-              raise CTBTOError(-1,"Unknown analysis type %s. The analysis type can only be one of the following %s"%(dummy,RequestParser.c_analysis_types))
+          if dummy not in aAnalysisTypes:
+              raise CTBTOError(-1,"Unknown analysis type %s. The analysis type can only be one of the following %s"%(dummy,aAnalysisTypes))
           
           result.add(dummy)
           
         return result  
     
      
-    def _parseSpectrumParams(self,aRequest=""):
+    def _parseSpectrumParams(self,aRequest,aSpectrumTypes,aSpectrumTypeDefault):
        
         """ parse the spectrum part of the params string. It should be something like spectrum=CURR/QC/BK.
             This is used to specify which of the spectra related to the current spectrum must be retrieved
@@ -155,7 +169,7 @@ class RequestParser(object):
     
         if m is None:
             RequestParser.c_log.warning("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aRequest))
-            result.update(RequestParser.c_spectrum_types)
+            result.update(aSpectrumTypes)
             return result
         
         values = m.group('values')
@@ -170,12 +184,12 @@ class RequestParser(object):
           
           if dummy == 'ALL':
              #ALL superseeds everything and add all the different types
-             result.update(RequestParser.c_spectrum_default)
+             result.update(aSpectrumTypeDefault)
              # leave loop
              break
                 
-          if dummy not in RequestParser.c_spectrum_types:
-              raise CTBTOError(-1,"Unknown spectrum type %s. The spectrum type can only be one of the following %s"%(dummy,RequestParser.c_spectrum_types))
+          if dummy not in aSpectrumTypes:
+              raise CTBTOError(-1,"Unknown spectrum type %s. The spectrum type can only be one of the following %s"%(dummy,aSpectrumTypes))
           
           result.add(dummy)
           
