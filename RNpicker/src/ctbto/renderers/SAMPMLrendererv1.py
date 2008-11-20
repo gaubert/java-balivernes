@@ -284,8 +284,12 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${ACTIVITY}",str(nuclide['ACTIVITY']), dummy_template)
             dummy_template = re.sub("\${ACTIVITY_ERROR}",str(nuclide['ACTIVITY_ERR']), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(nuclide['MDC'])), dummy_template)
+            # LC and LD in concentration
             dummy_template = re.sub("\${LC}","%s"%(str(nuclide['LC'])), dummy_template)
             dummy_template = re.sub("\${LD}","%s"%(str(nuclide['LD'])), dummy_template)
+            # LC and LD in activity
+            dummy_template = re.sub("\${LC_ACTIVITY}",str(nuclide['LC_ACTIVITY']), dummy_template)
+            dummy_template = re.sub("\${LD_ACTIVITY}",str(nuclide['LD_ACTIVITY']), dummy_template)
             dummy_template = re.sub("\${IDENTIFICATION_INDICATOR}",str(nuclide['NID_FLAG']), dummy_template)
             dummy_template = re.sub("\${IDENTIFICATION_NUM}",str(nuclide['NID_FLAG_NUM']), dummy_template)
             
@@ -568,12 +572,15 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(type))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(type))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ARRIVAL_DATE}",str(self._fetcher.get("%s_DATA_TRANSMIT_DTG"%(type))), spectrumTemplate)
               
                 spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(type))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(type))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(type))), spectrumTemplate)
                 # add quantity and geometry
                 spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${FLOW_RATE}",str(self._fetcher.get("%s_DATA_FLOW_RATE"%(type))), spectrumTemplate)
+                
                 spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(type))), spectrumTemplate)
               
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))

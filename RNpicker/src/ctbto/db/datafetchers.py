@@ -1225,7 +1225,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
           # get activity. If no volume or no activity results are 0
           data[u'ACTIVITY'] = data.get(u'CONC',0)*volume  
-          data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume    
+          data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
+          
+          data[u'LC_ACTIVITY'] = data.get(u'LC',0)*volume  
+          data[u'LD_ACTIVITY'] = data.get(u'LD',0)*volume      
             
           res.append(data)
           data = {}

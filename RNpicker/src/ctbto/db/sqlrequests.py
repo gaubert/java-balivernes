@@ -47,8 +47,8 @@ SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIO
 SQL_GETSAMPLEINFO     = "select input_file_name as spectrum_filepath, data_type as data_data_type, geometry as data_sample_geometry, \
                                 spectral_qualifier as data_spectral_qualifier, quantity as data_sample_quantity, transmit_dtg as data_transmit_dtg , \
                                 collect_start as data_collect_start, collect_stop as data_collect_stop, acquisition_start as data_acq_start, \
-                                acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec \
-                                from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
+                                acquisition_stop as data_acq_stop, acquisition_live_sec as data_acq_live_sec, acquisition_real_sec as data_acq_real_sec, \
+                                quantity/(86400*(collect_stop  - collect_start )/3600) as data_flow_rate from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
   
 """ ************************************ Noble Gaz Part ******************************************** """
                                 

@@ -13,9 +13,22 @@
        background-color: #000;
        height: 3px;
        width: 80%;
-     }   </style>
-</body>
-<body>
+     }  
+     
+  #centerDoc 
+  {
+      position: absolute;
+
+      padding: 0 0 20px 0; /*top right bottom left*/
+
+      margin-top: 5px;
+
+      margin-left: 50px;
+      margin-right: 50px;
+
+  } 
+</style>
+<div id="centerDoc">
 <h3 style="text-align:center;"><span style="font-size: 24pt"><span
 style="font-size: 16pt">IDC Generated Report</span></span></h3>
 
@@ -30,7 +43,7 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
 
 <p style="text-align:center;">Creation Date: {{creation_date}}</p>
 
-<p style="text-align:center;">Sample Arrival Time: {{arrival_date}}</p>
+<p style="text-align:center;">Sample Arrival Date: {{arrival_date}}</p>
 
 <p></p>
 
@@ -90,7 +103,7 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
     </tr>
     <tr>
       <td>Acquisition Stop: {{acquisition_stop}}</td>
-      <td>Avg Flow Rate: {{avg_flow_rate}}</td>
+      <td>Avg Flow Rate (m3/h): {{avg_flow_rate}}</td>
     </tr>
   </tbody>
 </table>
@@ -104,6 +117,8 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
 <p></p>
 
 <p></p>
+
+
 
 <div class="hr">
 <hr />
@@ -187,8 +202,8 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
       <th style="text-align:center;">Nuclide</th>
       <th style="text-align:center;">Activity (Bq)</th>
       <th style="text-align:center;">Error (Bq)</th>
-      <th style="text-align:center;">Critical Limit (Bq/m3)</th>
-      <th style="text-align:center;">Detection Limit (Bq/m3)</th>
+      <th style="text-align:center;">Critical Limit (Bq)</th>
+      <th style="text-align:center;">Detection Limit (Bq)</th>
       <th> </th>
     </tr>
    {% for a_item in activities_nuclides %}
@@ -320,7 +335,7 @@ style="font-size: 16pt">Noble Gas Version</span></span></strong></h4>
    {% endfor %}
 {% endfor %}
 
-
+</div>
 
 
 </body>

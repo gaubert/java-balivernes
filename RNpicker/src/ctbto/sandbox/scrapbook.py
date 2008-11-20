@@ -7,6 +7,7 @@ import os
 import zlib
 import distutils.dir_util
 import ctbto.common.utils
+import ctbto.common.time_utils as time_utils
 import re
 
 
@@ -224,6 +225,19 @@ def parserTest():
 if __name__ == '__main__':
     
     #print "40200/3600 = %s\n"%((float(40200)/float(3600)))
+    #a = 0.0830063789837
+    #b = 713.23333
+    #print "Unrounded: %f\nRounded: %.5f" % (a, a)
+    #print "Unrounded: %f\nRounded: %.5f" % (b, b)
+
+    #c = ctbto.common.utils.round(b,1)
+    #print "Unrounded: %f\nRounded: %.1f" % (b, c)
+    
+    #s = 29016
+    #print "%d secs = %s\n"%(s,time_utils.getSecondsInFormattedTime(s))
+    
+    #pr = "PT29016S"
+    #print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
     
     testXml2Html()
    
