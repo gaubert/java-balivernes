@@ -250,7 +250,7 @@ class XML2HTMLRenderer(object):
                elif roi.tag.find('RoiBoundaries') != -1:
                    # Boundaries
                    d = {}
-                   d['roi_number']       =  utils.round_as_string(roi.find('{%s}RoiNumber'%(XML2HTMLRenderer.c_namespaces['sml'])).text,BGDIGITS)
+                   d['roi_number']       =  roi.find('{%s}RoiNumber'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                    d['gammalow']         =  utils.round_as_string(roi.find('{%s}GammaLow'%(XML2HTMLRenderer.c_namespaces['sml'])).text,BGDIGITS)
                    d['gammahigh']        =  utils.round_as_string(roi.find('{%s}GammaHigh'%(XML2HTMLRenderer.c_namespaces['sml'])).text,BGDIGITS)
                    d['betalow']          =  utils.round_as_string(roi.find('{%s}BetaLow'%(XML2HTMLRenderer.c_namespaces['sml'])).text,BGDIGITS)
