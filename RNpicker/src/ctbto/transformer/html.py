@@ -179,7 +179,8 @@ class XML2HTMLRenderer(object):
                 d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 d['half_life'] = nuclide.find('{%s}HalfLife'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 d['conc']      = utils.round_as_string(nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['conc_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+                d['conc_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+                d['conc_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
               
                 q_nuclides.append(d)
               else:
@@ -195,7 +196,7 @@ class XML2HTMLRenderer(object):
               d = {}
               d['name']          = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
               d['activity']      = utils.round_as_string(nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-              d['activity_err']  = utils.round_as_string(nuclide.find('{%s}ActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+              d['activity_abs_err']  = utils.round_as_string(nuclide.find('{%s}ActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
               d['lc']            = utils.round_as_string(nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
               d['ld']            = utils.round_as_string(nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
               a_nuclides.append(d)
