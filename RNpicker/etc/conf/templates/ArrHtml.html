@@ -120,22 +120,34 @@
 	   padding: 0; 
 	}
 	
-	.invisible 
+	/* this is used to make some text dynamically appear on the page when the user hover over the <a>
+	   <span class="metalink"><a class="liketext1" href="#">conc_abs_err<span> = conc_rel_err</span></a></span>
+	   
+	   here conc_rel_err will appear
+	   
+	.metalink a span 
 	{
        display: none;
+       z-index: 10;
     }
     
-    a.text { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: none; color: #000;}
-    a.text:active { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;}
-    a.text:hover { font-family : verdana,arial,sans-serif; font-size: 14px; display: inline; color: #000; }
-    
-    
-    
-    .invisible :hover
+    .liketext1
     {
-       display: inline;
+      text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;
     }
-   
+
+    .metalink a:hover > span 
+    {
+      display: inline;
+      z-index: 10;
+    }
+    */
+
+    .text           { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;}
+    .text a:active  { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000; cursor: default;}
+    .text a:visited { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000; cursor: default;}
+    .text a:hover   { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000; cursor: default;}
+    
 	h1
 	{
 	  font-size : 24px;
@@ -298,7 +310,7 @@
 </style>
 <h3 style="text-align:center;">IDC Generated Report</h3>
 
-<h1 class="h1"><a class="text" href="#">How does it work</a>Automated Radionuclide Report</h1>
+<h1 class="h1">Automated Radionuclide Report</h1>
 
 <h3 style="text-align:center;">Noble Gas Version</h3>
 
@@ -323,12 +335,24 @@
       </td>
       </td>
     </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td>Station Location: {{station_location}}</td>
+      <td>Station Coordinates: <a href="{{station_gmaps}}">Lat={{station_lat}}, Lon={{station_lon}}, H={{station_height}}</a></td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td colspan="2">Detector Description: {{detector_description}}</td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
   </tbody>
 </table>
-
-<p>Station Location: {{station_location}}</p>
-
-<p>Detector Description: {{detector_description}}</p>
 
 <table class="std1">
   <tbody>
@@ -384,7 +408,7 @@
       <td class="centre">{{ q_item.name }}</td>
       <td class="centre">{{ q_item.half_life }}</td>
       <td class="centre">{{ q_item.conc }}</td>
-      <td class="centre">{{ q_item.conc_abs_err }}<span class="metalink">{{ q_item.conc_rel_err }}</span></td>
+      <td class="centre"><a class="text" title="Rel Error: {{ q_item.conc_rel_err }}%" href="#">{{ q_item.conc_abs_err }}</a></td>
     </tr>
     {% endfor %}
   </tbody>
@@ -436,7 +460,7 @@
     <tr>
       <td class="centre">{{ a_item.name }}</td>
       <td class="centre">{{ a_item.activity }}</td>
-      <td class="centre">{{ a_item.activity_abs_err }}</td>
+      <td class="centre"><a class="text" title="Rel Error: {{ a_item.activity_rel_err }}%" href="#">{{ a_item.activity_abs_err }}</td>
       <td class="centre">{{ a_item.lc }}</td>
       <td class="centre">{{ a_item.ld }}</td>
     </tr>
@@ -474,7 +498,7 @@
       <td class="centre">{{ r_item.net_counts_err }}</td>
       <td class="centre">{{ r_item.lc }}</td>
       <td class="centre">{{ r_item.efficiency }}</td>
-      <td class="centre">{{ r_item.efficiency_error }}</td>
+      <td class="centre" title="Rel Error: {{ r_item.efficiency_rel_error }}%">{{ r_item.efficiency_abs_error }}</td>
     </tr>
    {% endfor %}
   </tbody>

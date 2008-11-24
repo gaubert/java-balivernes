@@ -66,6 +66,25 @@ class XML2HTMLRenderer(object):
            self._context['station_location'] = res[0].text
        else:
            self._context['station_location'] = UNDEFINED
+           
+       # get station coordinates
+       res = root.xpath(expr, name = "Coordinates")
+       if len(res) > 0:
+            dummy_str = res[0].text
+            (lat,lon,height) = dummy_str.split(' ')
+            self._context['station_lat'] = lat
+            self._context['station_lon'] = lon
+            self._context['station_height'] = height
+            self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=5"%(lat,lon,self._context['station_code'])
+       else:
+           self._context['station_lat']    = UNDEFINED
+           self._context['station_lon']    = UNDEFINED
+           self._context['station_height'] = UNDEFINED
+           self._context['station_gmaps']  = "#"
+       
+           
+           
+       # http://maps.google.com/maps?q=-12.4,+130.7+(This%20is%20my%20station%20here)&iwloc=A&hl=en&z=5
        
        # get Detector Code
        res = root.xpath(expr, name = "DetectorCode")
@@ -194,11 +213,12 @@ class XML2HTMLRenderer(object):
                 
               # in any cases fill Activity results dict
               d = {}
-              d['name']          = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-              d['activity']      = utils.round_as_string(nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-              d['activity_abs_err']  = utils.round_as_string(nuclide.find('{%s}ActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-              d['lc']            = utils.round_as_string(nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-              d['ld']            = utils.round_as_string(nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+              d['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+              d['activity']          = utils.round_as_string(nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+              d['activity_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+              d['activity_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+              d['lc']                = utils.round_as_string(nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+              d['ld']                = utils.round_as_string(nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
               a_nuclides.append(d)
            
            self._context['non_quantified_nuclides'] = nq_nuclides
@@ -240,12 +260,18 @@ class XML2HTMLRenderer(object):
                     
                  d['efficiency']       =  val
                  
-                 val = roi.find('{%s}EfficiencyError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                 val = roi.find('{%s}AbsoluteEfficiencyError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                  if val != UNDEFINED:
                     val = utils.round_as_string(val,RDIGITS)
                     
-                 d['efficiency_error'] =  val
+                 d['efficiency_abs_error'] =  val
+                 
+                 val = roi.find('{%s}RelativeEfficiencyError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                 if val != UNDEFINED:
+                    val = utils.round_as_string(val,RDIGITS)
            
+                 d['efficiency_rel_error'] =  val
+                 
                  roi_results.append(d)
                  
                elif roi.tag.find('RoiBoundaries') != -1:

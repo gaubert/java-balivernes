@@ -288,6 +288,7 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${CONCENTRATION_ERROR_PERC}",str(nuclide.get('CONC_ERR_PERC','N/A')), dummy_template)
             dummy_template = re.sub("\${ACTIVITY}",str(nuclide['ACTIVITY']), dummy_template)
             dummy_template = re.sub("\${ACTIVITY_ERROR}",str(nuclide['ACTIVITY_ERR']), dummy_template)
+            dummy_template = re.sub("\${ACTIVITY_ERROR_PERC}",str(nuclide.get('ACTIVITY_ERR_PERC','N/A')), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(nuclide['MDC'])), dummy_template)
             # LC and LD in concentration
             dummy_template = re.sub("\${LC}","%s"%(str(nuclide['LC'])), dummy_template)
@@ -325,8 +326,9 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${LC}","%s"%(str(roi['LC'])), dummy_template)
             dummy_template = re.sub("\${LD}","%s"%(str(roi['LD'])), dummy_template)
             dummy_template = re.sub("\${MDC}","%s"%(str(roi['MDC'])), dummy_template)
-            dummy_template = re.sub("\${EFF}","%s"%(str(roi.get(u'Efficiency','N/A'))), dummy_template)
-            dummy_template = re.sub("\${EFF_ERR}","%s"%(str(roi.get(u'Efficiency_Error','N/A'))), dummy_template)
+            dummy_template = re.sub("\${EFF}","%s"%(str(roi.get(u'EFFICIENCY','N/A'))), dummy_template)
+            dummy_template = re.sub("\${EFF_ERR}","%s"%(str(roi.get(u'EFFICIENCY_ERROR','N/A'))), dummy_template)
+            dummy_template = re.sub("\${EFF_ERR_PERC}","%s"%(str(roi.get(u'EFFICIENCY_ERROR_PERC','N/A'))), dummy_template)
             
             # add generated xml in final container
             xml_nuclides += dummy_template
