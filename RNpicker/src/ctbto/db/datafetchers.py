@@ -1282,6 +1282,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           data[u'ACTIVITY'] = data.get(u'CONC',0)*volume
           data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
           
+          # to avoid div by 0 check that quotient is not nul
+          if data[u'ACTIVITY'] != 0:
+             data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
+          
           # add concentration error in percent
           if data.get(u'CONC',0) != 0:
              data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
@@ -1558,8 +1562,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           eff = efficiency.get(data['ROI'],None)
           if eff != None:
               (e,e_err) = eff
-              data[u'Efficiency'] = e
-              data[u'Efficiency_Error'] = e_err
+              data[u'EFFICIENCY'] = e
+              data[u'EFFICIENCY_ERROR'] = e_err
+              
+              # get relative error
+              if e != 0:
+                  data[u'EFFICIENCY_ERROR_PERC'] = (e_err*100)/e
               
             
           res.append(data)
