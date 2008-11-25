@@ -68,10 +68,6 @@
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
-  
-    /* page break */
-	.page-break { display:none; }  
-	
 	table.std2
     {
        width: 100%;
@@ -98,6 +94,14 @@
        border-collapse: separate;
        empty-cells: show 
     }
+    
+    .rule 
+    {
+      border-top: 2pt solid #000;
+      width: 90%;
+      height: 3pt;
+      text-align: center;
+    } 
 	
   }
   
@@ -142,12 +146,21 @@
       z-index: 10;
     }
     */
-
-    .text           { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;}
-    .text a:active  { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000; cursor: default;}
-    .text a:visited { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000; cursor: default;}
-    .text a:hover   { text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000; cursor: default;}
     
+    .liketext
+    {
+      text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;
+    }
+    
+    /* page break like a rule on screen */
+	.page-break 
+	{
+	  border-top: 2pt solid #000;
+      width: 90%;
+      height: 3pt;
+      text-align: center;
+	}  
+
 	h1
 	{
 	  font-size : 24px;
@@ -186,13 +199,7 @@
  	  margin:0 0 12px 0; 
  	}  
     
-    .rule 
-    {
-      border-top: 2pt solid #000;
-      width: 90%;
-      height: 3pt;
-      text-align: center;
-    } 
+    
     
     th
     {
@@ -303,6 +310,11 @@
 	   text-align: justify;
 	}
 	
+	a
+	{
+      text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;
+    }
+	
 	/* page break */
 	.page-break { display:block; page-break-before:always; }  
   }
@@ -339,8 +351,10 @@
       <td colspan="2"></td>
     </tr>
     <tr>
-      <td>Station Location: {{station_location}}</td>
-      <td>Station Coordinates: <a href="{{station_gmaps}}">Lat={{station_lat}}, Lon={{station_lon}}, H={{station_height}}</a></td>
+      <td colspan="2">Station Location: {{station_location}}</td>
+    </tr>
+    <tr>
+      <td colspan="2">Station Coordinates:<a href="{{station_gmaps}}">[lat={{station_lat}},lon={{station_lon}},h={{station_height}}]</a></td>
     </tr>
     <tr>
       <td colspan="2"></td>
@@ -408,7 +422,7 @@
       <td class="centre">{{ q_item.name }}</td>
       <td class="centre">{{ q_item.half_life }}</td>
       <td class="centre">{{ q_item.conc }}</td>
-      <td class="centre"><a class="text" title="Rel Error: {{ q_item.conc_rel_err }}%" href="#">{{ q_item.conc_abs_err }}</a></td>
+      <td class="centre" title="Rel Error: {{ q_item.conc_rel_err }}%">{{ q_item.conc_abs_err }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -460,7 +474,7 @@
     <tr>
       <td class="centre">{{ a_item.name }}</td>
       <td class="centre">{{ a_item.activity }}</td>
-      <td class="centre"><a class="text" title="Rel Error: {{ a_item.activity_rel_err }}%" href="#">{{ a_item.activity_abs_err }}</td>
+      <td class="centre" title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
       <td class="centre">{{ a_item.lc }}</td>
       <td class="centre">{{ a_item.ld }}</td>
     </tr>
@@ -558,8 +572,8 @@
   </tbody>
 </table>
 <p></p>
-<div class="rule"></div>
 
+<div class="page-break"></div>
 <h2> Calibration Equations </h2>
 
 {% for calibration in calibrations %}

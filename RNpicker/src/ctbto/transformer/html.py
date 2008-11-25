@@ -75,7 +75,7 @@ class XML2HTMLRenderer(object):
             self._context['station_lat'] = lat
             self._context['station_lon'] = lon
             self._context['station_height'] = height
-            self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=5"%(lat,lon,self._context['station_code'])
+            self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=5&source=embed"%(lat,lon,self._context['station_code'])
        else:
            self._context['station_lat']    = UNDEFINED
            self._context['station_lon']    = UNDEFINED
