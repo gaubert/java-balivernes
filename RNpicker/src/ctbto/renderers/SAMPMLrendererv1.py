@@ -419,6 +419,19 @@ class SaunaRenderer(BaseRenderer):
         dummy_template = re.sub("\${DecayTimeValue}",str(hr), dummy_template)
         dummy_template = re.sub("\${DecayTimeTest}",self._fetcher.get('%s_TIME_FLAGS_DECAY_TEST'%(id),'N/A'), dummy_template)
         
+        # respondTimeFlag
+        dummy_template = re.sub("\${RespondTimeFlag}",self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_FLAG'%(id),'N/A'), dummy_template)
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_VAL'%(id),-1)
+        if v != -1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
+        else:
+            hr = 'N/A'
+            
+        dummy_template = re.sub("\${RespondTimeValueUnit}",'h', dummy_template)
+        dummy_template = re.sub("\${RespondTimeValue}",str(hr), dummy_template)
+        dummy_template = re.sub("\${RespondTimeTest}",self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_TEST'%(id),'N/A'), dummy_template)
+        
         xml += dummy_template
             
         # Data Quality Flags

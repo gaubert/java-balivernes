@@ -122,8 +122,9 @@ class XML2HTMLRenderer(object):
        #dateExpr = "//*[local-name() = \"Spectrum\" and ends-with(@id,\"SPHD-G\")]"
        # no ends-with in xpath 1.0 use contains instead substring('','') as it is simpler
        # and it does the trick
-       dateExpr         = "//*[local-name() = $name and contains(@id,$suffix)]"
-       curr_spectrum_id = None
+       dateExpr             = "//*[local-name() = $name and contains(@id,$suffix)]"
+       curr_spectrum_id     = None
+       curr_calibration_ids = None
        
        # res is Element Spectrum 
        res = root.xpath(dateExpr,suffix = 'SPHD-G',name   = 'Spectrum')
@@ -133,6 +134,9 @@ class XML2HTMLRenderer(object):
            curr_spectrum_id = elem.get('id')
            l = curr_spectrum_id.split('-')
            self._context['sample_id'] = '%s-%s'%(l[0],l[1])
+           
+           # get calibrationIDs
+           self._context['calibration_ids'] = elem.get('calibrationIDs').split(' ')
            
            # get geometry
            res = elem.xpath(expr,name = "Geometry")
@@ -208,8 +212,10 @@ class XML2HTMLRenderer(object):
                 # get Name, 
                 d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 d['mdc']       = utils.round_as_string(nuclide.find('{%s}MDC'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+               
                 # get numeric val for the moment but can put some text there
-                d['nid_flag']  = nuclide.find('{%s}NuclideIdentificationIndicator'%(XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
+                # remove as asked by Matthias
+                #d['nid_flag']  = nuclide.find('{%s}NuclideIdentificationIndicator'%(XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
                 nq_nuclides.append(d)
                 
               # in any cases fill Activity results dict
@@ -310,7 +316,11 @@ class XML2HTMLRenderer(object):
                    
                elif timeflag.tag.find('DecayTime') != -1:
                
-                  d['name']  = 'Processing Time'
+                  d['name']  = 'Decay Time'
+               
+               elif timeflag.tag.find('ResponseTime') != -1:
+               
+                  d['name']  = 'Response Time'
                else:
                   XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
                   d['name']  = timeflag.tag
@@ -328,7 +338,6 @@ class XML2HTMLRenderer(object):
                d = {}
                
                if dqflag.tag.find('XeVolume') != -1:
-                   
                   d['name']  = 'Stable Xenon Volume'
                else:
                   XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
@@ -348,11 +357,13 @@ class XML2HTMLRenderer(object):
              # add calibration 
              res = res[0]
              
-             #res = analysis_elem.find("{%s}CalibrationInformation"%(XML2HTMLRenderer.c_namespaces['sml']))  
              calibrations = []
            
              for calibration in res:
                
+               # if calibration is related to the displayed spectrum
+               id = calibration.get('ID')
+               if id in self._context['calibration_ids']:
                  d   = {}
                  d['type'] = calibration.get('Type','N/A')
                

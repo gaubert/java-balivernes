@@ -6,6 +6,12 @@
 </head>
 
 <body>
+<script type="text/javascript">
+function show(){
+var oIfr = document.getElementById('mapiframe');
+oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
+}
+</script>
 <style type="text/css">
   
   @media all
@@ -101,8 +107,7 @@
       width: 90%;
       height: 3pt;
       text-align: center;
-    } 
-	
+    }
   }
   
   /* screen syle */
@@ -160,21 +165,43 @@
       height: 3pt;
       text-align: center;
 	}  
+	
+	/* hide button */
+	.hide-button
+	{
+	  z-index:97;
+	  color: white; 
+	  background-color: black;
+	  height:95%;
+	  width:300px; 
+	  font-size: 9px;
+	  font-weight : bold; 
+	}
 
 	h1
 	{
 	  font-size : 24px;
 	  text-align: center;
+	  margin-top: 8px;
+	  margin-bottom: 8px;
 	}
 	
 	h2
 	{
 	  font-size : 17px;
+	  padding: 0;
+	  margin-top: 8px;
+	  margin-bottom: 8px;
+	  margin-right: 0px;
+	  margin-left: 0px;
 	}
 	
 	h3
 	{
 	  font-size : 16px;
+	  padding: 0;
+	  margin-top: 8px;
+	  margin-bottom: 8px;
 	}
 	
 	h4
@@ -182,6 +209,9 @@
 	  font-size   : 14px;
 	  font-weight : bold;
 	  font-style  : italic;
+	  padding: 0;
+	  margin-top: 8px;
+	  margin-bottom: 8px;
  	}
 
     hr 
@@ -197,7 +227,18 @@
  	{ 
  	  font-size:14px; 
  	  margin:0 0 12px 0; 
- 	}  
+ 	} 
+ 	
+ 	.preview
+ 	{
+ 	  font-style  : italic;
+ 	  font-size   : 12px;
+ 	}
+ 	
+ 	.coord
+ 	{
+ 	  font-size   : 12px; 
+ 	} 
     
     
     
@@ -242,25 +283,33 @@
 	   /*font-family:times new roman, serif;*/
 	   margin-top: 10pt;
 	   margin-bottom: 10pt;
-	   margin-right: 20pt;
-	   margin-left: 20pt;
+	   margin-right: 10pt;
+	   margin-left: 10pt;
 	   padding: 0; 
 	}
 	
-	#h1
+	h1
 	{
 	  font-size : 20pt;
-	  text-align: centre;
+	  margin-top: 4pt;
+	  margin-bottom: 4pt;
+	  padding: 0;
 	}
 	
 	h2
 	{
 	  font-size : 14pt;
+	  margin-top: 4pt;
+	  margin-bottom: 4pt;
+	  padding: 0;
 	}
 	
 	h3
 	{
 	  font-size : 12pt;
+	  margin-top: 4pt;
+	  margin-bottom: 4pt;
+	  padding: 0;
 	}
 	
 	h4
@@ -268,6 +317,9 @@
 	  font-size   : 10pt;
 	  font-weight : bold;
 	  font-style  : italic;
+	  margin-top: 4pt;
+	  margin-bottom: 4pt;
+	  padding: 0;
  	}
  	
  	p       
@@ -314,15 +366,28 @@
 	{
       text-decoration: none; font-family : verdana,arial,sans-serif; font-size: 14px; display: block; color: #000;
     }
+    
+    .coord
+ 	{
+ 	  font-size   : 10pt; 
+ 	  display     : inline;
+ 	} 
+    
 	
 	/* page break */
 	.page-break { display:block; page-break-before:always; }  
+	
+	
+	.preview 
+	{
+	  display:none;
+	}
   }
    
 </style>
 <h3 style="text-align:center;">IDC Generated Report</h3>
 
-<h1 class="h1">Automated Radionuclide Report</h1>
+<h1 style="text-align:center;">Automated Radionuclide Report</h1>
 
 <h3 style="text-align:center;">Noble Gas Version</h3>
 
@@ -332,7 +397,7 @@
 
 <h2>Sample Information</h2>
 
-<table class="std1">
+<table class="std2">
   <caption></caption>
   <col />
   <col />
@@ -354,7 +419,8 @@
       <td colspan="2">Station Location: {{station_location}}</td>
     </tr>
     <tr>
-      <td colspan="2">Coordinates:<a href="{{station_gmaps}}">[lat={{station_lat}},lon={{station_lon}},h={{station_height}}]</a></td>
+      <td colspan="2">Coordinates: <a class="coord" href="{{station_gmaps}}">[lat={{station_lat}},lon={{station_lon}},h={{station_height}}]</a> <span class="preview" onclick="show()"> (prev/hide) </span> 
+      </td>
     </tr>
     <tr>
       <td colspan="2"></td>
@@ -367,7 +433,11 @@
     </tr>
   </tbody>
 </table>
-
+<!-- div containing the map -->
+ <div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
+         <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
+         <div onclick="show()" class="hide-button">click to hide</div>
+</div>
 <table class="std1">
   <tbody>
     <tr>
@@ -439,13 +509,13 @@
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">MDC (uBq/m3)</th>
-      <th class="centre">NID-Flag</th>
+      <!--<th class="centre">NID-Flag</th>-->
     </tr>
    {% for nq_item in non_quantified_nuclides %}
     <tr>
       <td class="centre">{{ nq_item.name }}</td>
       <td class="centre">{{ nq_item.mdc }}</td>
-      <td class="centre">{{ nq_item.nid_flag }}</td>
+      <!--<td class="centre">{{ nq_item.nid_flag }}</td>-->
     </tr>
    {% endfor %}
   </tbody>
@@ -481,6 +551,7 @@
    {% endfor %}
   </tbody>
 </table>
+<p></p>
 <div class="page-break"></div> 
 
 <h2>Processing Specific Parameters and Results:</h2>

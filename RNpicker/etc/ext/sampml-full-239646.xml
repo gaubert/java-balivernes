@@ -1961,24 +1961,29 @@
             <CollectionTime>
               <Flag>Pass</Flag>
               <Value unit="h">12.0</Value>
-              <Test>x between 0.1h and 25h</Test>
+              <Test>x between 4h and 25h</Test>
             </CollectionTime>
             <AcquisitionTime>
               <Flag>Pass</Flag>
               <Value unit="h">11.1672222222</Value>
-              <Test>x between 1h and 25h</Test>
+              <Test>x between 4h and 25h</Test>
             </AcquisitionTime>
             <DecayTime>
               <Flag>Pass</Flag>
               <Value unit="h">7.06888888889</Value>
               <Test>x between 0.1h and 24h</Test>
             </DecayTime>
+            <ResponseTime>
+              <Flag>Pass</Flag>
+              <Value unit="h">30.2688888889</Value>
+              <Test>no more than 84h</Test>
+            </ResponseTime>
           </TimelinessAndAvailabilityFlags>
           <DataQualityFlags>
             <XeVolume>
               <Flag>Pass</Flag>
               <Value unit="ml">1.14629995823</Value>
-              <Test>x between 0.1 ml and 100ml</Test>
+              <Test>x &gt;= 0.43 ml</Test>
             </XeVolume>
           </DataQualityFlags>
         </Flags>

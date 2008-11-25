@@ -1314,8 +1314,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         """ Check Volume Flags """
         
         # check Xenon Volume
-        volMin = 0.1
-        volMax = 100
+        volMin = 0.43
         
         aux = self._dataBag.get('%s_AUXILIARY_INFO'%(aDataname),None)
         
@@ -1323,8 +1322,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             vol     = aux[u'XE_VOLUME']
             vol_err = aux[u'XE_VOLUME_ERR']
             
-            # check that vol + err < vol max and vol - err > volMin
-            if (vol - vol_err) < volMin and (vol + vol_err) > volMax:
+            # check that vol + err > VolMin
+            if (vol + vol_err) < volMin:
                #NOK
                self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Fail'
                
@@ -1333,7 +1332,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
             
             self._dataBag[u'%s_VOLUME_VAL'%(aDataname)]  = vol
-            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x between 0.1 ml and 100ml' 
+            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x >= 0.43 ml' 
     
     def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """
@@ -1346,17 +1345,16 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
        
         # check collection flag
         # check that collection time with CollMin = 0.1 H < Collection Stop - Collection Start < CollMax = 25H
-        # min is 0.1 H = 360 seconds and max is 25 h = 90 000 seconds
-        coll_min  = 360
+        # min is 4 H = 14400 seconds and max is 25 h = 90 000 seconds
+        coll_min  = 14400
         coll_max  = 90000
         collect_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_START"%(aDataname)])
         collect_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_COLLECT_STOP"%(aDataname)])
     
         diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start, collect_stop)
         
-        # check time collection within 24 hours +/- 10 % => 3hrs
-        # between 21.6 and 26.4
-        # if 0 within 24 hours
+        # check time collection 
+        # if 4 within 24 hours
         if diff_in_sec < coll_min or diff_in_sec > coll_max:
           # not ok add the diff
           self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Fail'
@@ -1366,7 +1364,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Pass'
         
         self._dataBag[u'%s_TIME_FLAGS_COLLECTION_VAL'%(aDataname)]   = diff_in_sec
-        self._dataBag[u'%s_TIME_FLAGS_COLLECTION_TEST'%(aDataname)] = 'x between 0.1h and 25h'
+        self._dataBag[u'%s_TIME_FLAGS_COLLECTION_TEST'%(aDataname)] = 'x between 4h and 25h'
         
         # check decay flag
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
@@ -1393,8 +1391,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
        
         # check acquisition flag
-        # acqMin = 1 H (3600 s) < Acquisition Time < acqMax 25H (90000 s)
-        acq_min = 3600
+        # acqMin = 4 H (14400 s) < Acquisition Time < acqMax 25H (90000 s)
+        acq_min = 14400
         acq_max = 90000
         
         diff_in_sec   = ctbto.common.time_utils.getDifferenceInTime(acq_start,acq_stop)
@@ -1407,8 +1405,20 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 'Pass'
         
         self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_VAL'%(aDataname)]   = diff_in_sec
-        self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_TEST'%(aDataname)]  = 'x between 1h and 25h'
+        self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_TEST'%(aDataname)]  = 'x between 4h and 25h'
         
+        # response time 84 h (302400 sec) tramsit_dtg - collect_start
+        max_respond_time = 302400
+        transmit_time = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag[u'%s_DATA_TRANSMIT_DTG'%(aDataname)])
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start,transmit_time)
+        
+        if diff_in_sec > max_respond_time:
+            self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_FLAG'%(aDataname)] = 'Fail'
+        else:
+            self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_FLAG'%(aDataname)] = 'Pass'
+        
+        self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_VAL'%(aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_TEST'%(aDataname)]  = 'no more than 84h'
     
            
     def _fetchParameters(self,sid,dataname):
@@ -2345,7 +2355,7 @@ class ParticulateDataFetcher(DBDataFetcher):
            self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = entry_date_time
         else:
            self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = 0 
-
+           
         
     def _fetchParameters(self,sid,dataname):
         """ get the different parameters used for the analysis """
