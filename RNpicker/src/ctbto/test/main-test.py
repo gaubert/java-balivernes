@@ -306,6 +306,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         # 103729,241116     
         #listOfSamplesToTest = [ "239909" ]
         listOfSamplesToTest = ['174188']
+        #listOfSamplesToTest = ['239646']
         
         #print "list of samples %s\n"%(listOfSamplesToTest)
               
