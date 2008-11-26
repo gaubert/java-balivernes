@@ -9,7 +9,7 @@ import StringIO
 import re
 from lxml import etree
 
-import ctbto.common.utils
+import ctbto.common.utils as utils
 import ctbto.common.xml_utils
 
 from ctbto.common    import Conf
@@ -19,6 +19,7 @@ from ctbto.db        import DatabaseConnector,DBDataFetcher
 
 from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer
+from ctbto.transformer import XML2HTMLRenderer
 
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
@@ -290,7 +291,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "****************************************************************************\n"
         print "****************************************************************************\n"
         
-    def testFullNobleGazSamples(self):
+    def tesstFullNobleGazSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -362,6 +363,72 @@ class TestSAMPMLCreator(unittest.TestCase):
            cpt +=1
         
         total_t1 = time.time()
+        
+        print "****************************************************************************\n"
+        print "****************************************************************************\n"
+        print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
+        print "****************************************************************************\n"
+        print "****************************************************************************\n"
+    
+    def testGenerateNobleGasARR(self):
+        """ Generate a Noble Gaz ARR """
+        
+        request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
+        
+        # get full
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-11',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='50')
+        
+        #listOfSamplesToTest = ['174188']
+        #listOfSamplesToTest = ['239646']
+        
+        #print "list of samples %s\n"%(listOfSamplesToTest)
+              
+        # remove sampleID for which data isn't available
+        if "141372" in listOfSamplesToTest:
+           listOfSamplesToTest.remove("141372")
+               
+        print "list Full of Sample",listOfSamplesToTest
+        
+        cpt = 1
+        total_t0 = time.time()
+        
+        for sampleID in listOfSamplesToTest:
+            
+           print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+           
+           t0 = time.time()
+           
+           # fetchnoble particulate
+           fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
+   
+           fetcher.fetch(request)
+                 
+           renderer = SaunaRenderer(fetcher)
+   
+           xmlStr = renderer.asXmlStr(request)
+           
+           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+   
+           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           
+           # check if no tags are left
+           self.assertIfNoTagsLeft(path)
+           
+           self.assertAllCalibrationInfo(path)
+           
+           t1 = time.time()
+           
+           print "Fetch sample nb %d with SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+           
+           cpt +=1
+        
+           r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
+    
+           result = r.render(path)
+    
+           utils.printInFile(result,"/tmp/ARR-%s.html"%(sampleID))
+           
+           total_t1 = time.time()
         
         print "****************************************************************************\n"
         print "****************************************************************************\n"

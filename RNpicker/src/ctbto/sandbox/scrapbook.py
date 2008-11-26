@@ -204,7 +204,9 @@ def testXml2Html():
     
     r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
     
-    r.render('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/sampml-full-239646.xml')
+    result = r.render('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/sampml-full-239646.xml')
+    
+    utils.printInFile(result,"/tmp/Transformed.html")
 
 def parserTest():
     

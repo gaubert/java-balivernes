@@ -41,8 +41,8 @@ class XML2HTMLRenderer(object):
          
        #print self._template.render(self._context)
        str = self._template.render(self._context)
-       utils.printInFile(str,"/tmp/Transformed.html")
        
+       return str       
       
     
     def _fill_values(self,aXmlPath):
@@ -76,7 +76,7 @@ class XML2HTMLRenderer(object):
             self._context['station_lon'] = lon
             self._context['station_height'] = height
             self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=3"%(lat,lon,self._context['station_code'])
-            self._context['station_static_gmaps'] = "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=-12.4,130.7,greens"%(lat,lon)
+            self._context['station_static_gmaps'] = "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=%s,%s,greens"%(lat,lon,lat,lon)
        else:
            self._context['station_lat']    = UNDEFINED
            self._context['station_lon']    = UNDEFINED
