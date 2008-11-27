@@ -238,10 +238,10 @@ if __name__ == '__main__':
     #s = 29016
     #print "%d secs = %s\n"%(s,time_utils.getSecondsInFormattedTime(s))
     
-    #pr = "PT29016S"
-    #print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
+    pr = "PT29016S"
+    print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
     
-    testXml2Html()
+    #testXml2Html()
    
     
     

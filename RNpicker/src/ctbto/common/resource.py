@@ -7,6 +7,8 @@
 import sys
 import os
 
+import conf_helper
+
 class ResourceError(Exception):
     """Base class for ressource exceptions"""
 
@@ -101,9 +103,8 @@ class Resource(object):
            Try to read the info from the Configuration if possible
         """
         if (self._confGroup is not None) and (self._confProperty is not None):
-            # TODO: do something with the conf 
-            if Conf.can_be_instanciated():
-                return Conf.get_instance().get(self._confGroup,self._confProperty)
+            if conf_helper.Conf.can_be_instanciated():
+                return conf_helper.Conf.get_instance().get(self._confGroup,self._confProperty)
         
         return None
           
@@ -213,7 +214,7 @@ def tests():
   
   r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
   
-  print "Get Boolean Value =%s. return res of (r.getValueAsBoolean) == True : %s \n"%(r.getValueAsBoolean(),(r.getValueAsBoolean() == True))
+  print "Get Boolean Value =%s. return res of (r.getValueAsBoolean) == True : %s \n"%(r.getValueAsBoolean(),(r.getValueAsBoolean() is True))
   
   os.environ["MYENVVAR"]="4"
   

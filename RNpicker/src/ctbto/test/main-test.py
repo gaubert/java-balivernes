@@ -377,7 +377,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='10')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='1')
         
         #listOfSamplesToTest = ['174188']
         #listOfSamplesToTest = ['141372']

@@ -29,20 +29,16 @@ class DatabaseConnector:
     def _createUrl(self):
         
         if self._database is None:
-            raise CTBTOError("Need a database hostname to make the connection url\n")
+            raise CTBTOError(-1,"Need a database hostname to make the connection url\n")
         
         if self._user is None:
-            raise CTBTOError("Need a user to connect to the database\n")
+            raise CTBTOError(-1,"Need a user to connect to the database\n")
         
         if self._password is None:
-            raise CTBTOError("Need a password to connect to the database\n")
+            raise CTBTOError(-1,"Need a password to connect to the database\n")
         
+        # TODO Add support for other databases
         self._url = "oracle://%s:%s@%s"%(self._user,self._password,self._database)
-        
-        
-    def __repr__(self):
-        return "<DatabaseConnector instance. id = %s, length = %d>" %(self._id,self._length)
-
 
     def hostname(self):
         return self._database

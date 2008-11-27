@@ -3,6 +3,8 @@ import ConfigParser
 import resource
 import os
 
+import exceptions
+
 class Conf(object):
     """ 
        Configuration Singleton Class used to access configuration information
@@ -17,11 +19,13 @@ class Conf(object):
     #class member
     _instance = None
     
+    @classmethod
     def get_instance(cls):
-        if Conf._instance == None:
-            Conf._instance = Conf()
-        return Conf._instance
+        if cls._instance == None:
+            cls._instance = Conf()
+        return cls._instance
     
+    @classmethod
     def can_be_instanciated(cls):
         """Class method used by the Resource to check that the Conf can be instantiated.
            This two objects have a special contract as they are strongly coupled:
@@ -34,7 +38,7 @@ class Conf(object):
                exception
         """
         #No conf info passed to the resource so the Resource will not look into the conf (to avoid recursive search)
-        r = resource.Resource(Conf._CLINAME,Conf._ENVNAME)
+        r = resource.Resource(cls._CLINAME,cls._ENVNAME)
         
         filepath = r.getValue(aRaiseException=False)
         
@@ -63,7 +67,7 @@ class Conf(object):
              aFile = self._confResource.getValue() 
              
             if aFile is None:
-                raise CTBTOError("Conf. Error, need a configuration file path\n")
+                raise exceptions.CTBTOError("Conf. Error, need a configuration file path\n")
                 
             self._conf.read(aFile)
         except Exception, e:
@@ -73,9 +77,6 @@ class Conf(object):
             
             #raise ContextError(-1,"Can't read the config file %s"%(aFile))
 
-    get_instance          = classmethod(get_instance)
-    can_be_instanciated   = classmethod(can_be_instanciated)
-    
     def sections(self):
         """Return a list of section names, excluding [DEFAULT]"""
         
@@ -130,7 +131,7 @@ class Conf(object):
         """ get with a default """
         try:
           return self._conf.get(section, option, raw, vars)
-        except ConfigParser.NoOptionError, nOE:
+        except ConfigParser.NoOptionError:
             # no elements found return the default
             return default
         
