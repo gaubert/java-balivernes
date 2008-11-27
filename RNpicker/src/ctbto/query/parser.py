@@ -66,19 +66,19 @@ class RequestParser(object):
         # quick and dirty parser, needs to be changed
         result = {}
         
-        list = aRequest.split(',')
+        l = aRequest.split(',')
         
-        for elem in list:  
+        for elem in l:  
             if elem.lower().find(RequestParser.c_spectrum) != -1:
                 if aTechnType == RequestParser.GAS:
                    result[RequestParser.SPECTRUM] = self._parseSpectrumParams(elem,RequestParser.c_spectrum_gas_types,RequestParser.c_spectrum_gas_default)
-                elif aTechType == RequestParser.PAR:
+                elif aTechnType == RequestParser.PAR:
                    result[RequestParser.SPECTRUM] = self._parseSpectrumParams(elem,RequestParser.c_spectrum_particulate_types,RequestParser.c_spectrum_particulate_default)
             
             if elem.lower().find(RequestParser.c_analysis) != -1:
                 if aTechnType == RequestParser.GAS:
                    result[RequestParser.ANALYSIS] = self._parseAnalysisParams(elem,RequestParser.c_analysis_gas_types,RequestParser.c_analysis_gas_default)
-                elif aTechType == RequestParser.PAR:
+                elif aTechnType == RequestParser.PAR:
                    result[RequestParser.ANALYSIS] = self._parseAnalysisParams(elem,RequestParser.c_analysis_particulate_types,RequestParser.c_analysis_particulate_default)
         
         return result

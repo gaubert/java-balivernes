@@ -2,6 +2,7 @@ import os
 import time
 import itertools
 import gc
+import pprint
 
 
 class curry:
@@ -133,7 +134,6 @@ def ftimer(func, args, kwargs, result = [], number=1, timer=time.time):
        if gc_saved:
           gc.enable()
         
-    t = t1-t0 
     return t1 - t0
       
 
@@ -156,7 +156,7 @@ def printDict(di, format="%-25s %s"):
 ################################### 
 def dump(aData,aIostream=None):
     pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
-    pp.pprint(self._dataBag)
+    pp.pprint(aData)
     
 
 def printInFile(aStr,aPath):
