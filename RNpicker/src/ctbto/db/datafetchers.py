@@ -30,7 +30,7 @@ class DBDataFetcher(object):
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
     c_log.setLevel(logging.DEBUG)
     
-    c_nid_translation = {0:"nuclide not identifided by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
+    c_nid_translation = {0:"nuclide not identified by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
     
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
        """ Factory method returning the right DBFetcher \

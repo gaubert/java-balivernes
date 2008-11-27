@@ -228,10 +228,19 @@ class RemoteFSDataSource(BaseRemoteDataSource):
             self._fd = open(destinationPath,"r")
             return
         
-        res = subprocess.call([self._remoteScript,self._remotePath,destinationPath,self._remoteHost])
-        if res != 0:
-           raise CTBTOError(-1,"Error when executing sftp Script %s\n"%(self._remoteScript))
+        # try 3 times before to fail
+        tries = 1
         
+        while tries < 4:
+           res = subprocess.call([self._remoteScript,self._remotePath,destinationPath,self._remoteHost])
+           if res != 0:
+              if tries >= 3:
+                raise CTBTOError(-1,"Error when executing sftp Script %s. Error code = %d\n"%(self._remoteScript,res))
+              else:
+                tries += 1
+           else:
+             tries += 4
+              
         self._fd = open(destinationPath,"r")
     
        
