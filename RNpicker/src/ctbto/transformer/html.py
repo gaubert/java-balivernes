@@ -39,10 +39,7 @@ class XML2HTMLRenderer(object):
        
        print "context = %s\n"%(self._context)
          
-       #print self._template.render(self._context)
-       str = self._template.render(self._context)
-       
-       return str       
+       return self._template.render(self._context)    
       
     
     def _fill_values(self,aXmlPath):
@@ -124,8 +121,7 @@ class XML2HTMLRenderer(object):
        # and it does the trick
        dateExpr             = "//*[local-name() = $name and contains(@id,$suffix)]"
        curr_spectrum_id     = None
-       curr_calibration_ids = None
-       
+ 
        # res is Element Spectrum 
        res = root.xpath(dateExpr,suffix = 'SPHD-G',name   = 'Spectrum')
        if len(res) > 0:
@@ -362,8 +358,8 @@ class XML2HTMLRenderer(object):
              for calibration in res:
                
                # if calibration is related to the displayed spectrum
-               id = calibration.get('ID')
-               if id in self._context['calibration_ids']:
+               cid = calibration.get('ID')
+               if cid in self._context['calibration_ids']:
                  d   = {}
                  d['type'] = calibration.get('Type','N/A')
                
