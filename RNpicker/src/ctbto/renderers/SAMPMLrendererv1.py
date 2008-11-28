@@ -51,7 +51,7 @@ class BaseRenderer(object):
             When open(...) is used, the encoding is read properly
         """
         
-        self._readTemplateMainTemplateFromFile()
+        #self._readTemplateMainTemplateFromFile()
        
     def _sortSpectrumsSet(self,aSpectrums):
         
@@ -143,7 +143,7 @@ class SaunaRenderer(BaseRenderer):
         
         self._xe_lib = set()
     
-    def _readTemplateMainTemplateFromFile(self):
+    def _createTemplate(self):
         """ Read the template from a file. Old method now everything is read from the conf """
         
         # get template path from conf
@@ -271,7 +271,6 @@ class SaunaRenderer(BaseRenderer):
         
         xml_nuclides = ""
         dummy_template = ""
-        cpt = 1
         
         SaunaRenderer.c_log.debug("id = %s\n"%("%s_IDED_NUCLIDES"%(id)))
         
@@ -312,8 +311,7 @@ class SaunaRenderer(BaseRenderer):
         
         xml_nuclides = ""
         dummy_template = ""
-        cpt = 1
-    
+        
         # get rois info
         rois = self._fetcher.get("%s_ROI_INFO"%(id),[])
         
@@ -351,7 +349,6 @@ class SaunaRenderer(BaseRenderer):
         
         xml_nuclides = ""
         dummy_template = ""
-        cpt = 1
     
         # get boundaries info
         boundaries = self._fetcher.get("%s_ROI_BOUNDARIES"%(id),[])
@@ -457,12 +454,12 @@ class SaunaRenderer(BaseRenderer):
         
         all_analyses_xml = ""
       
-        for type in requestedTypes:
+        for ty in requestedTypes:
            
            #identifier in the dict for this analysis  
-           id = self._fetcher.get("CURRENT_%s"%(type),None)
+           sindict_id = self._fetcher.get("CURRENT_%s"%(ty),None)
            
-           if id is not None:
+           if sindict_id is not None:
         
              # first get the template
              template = self._conf.get("SaunaTemplatingSystem","saunaAnalysisTemplate")
@@ -471,29 +468,29 @@ class SaunaRenderer(BaseRenderer):
              # for the moment only one result
              dummy_template += template
     
-             spectrum_id    = self._fetcher.get("%s_DATA_G_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
+             spectrum_id    = self._fetcher.get("%s_DATA_G_ID"%(self._fetcher.get("CURRENT_%s"%(ty),'')),"unknown")
              
              # Add analysis identifier => SpectrumID prefixed by AN
              dummy_template = re.sub("\${ANALYSISID}","AN-%s"%(spectrum_id),dummy_template)
         
              dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
         
-             dummy_template = re.sub("\${CATEGORY}", self._getCategory(id), dummy_template)
+             dummy_template = re.sub("\${CATEGORY}", self._getCategory(sindict_id), dummy_template)
         
-             dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(id),dummy_template)
+             dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(sindict_id),dummy_template)
              
-             dummy_template = re.sub("\${ROIINFO}",self._getROIInfo(id),dummy_template)
+             dummy_template = re.sub("\${ROIINFO}",self._getROIInfo(sindict_id),dummy_template)
              
-             dummy_template = re.sub("\${ROIBOUNDARIES}",self._getROIBoundaries(id),dummy_template)
+             dummy_template = re.sub("\${ROIBOUNDARIES}",self._getROIBoundaries(sindict_id),dummy_template)
              
-             dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
+             dummy_template = re.sub("\${PARAMETERS}",self._getParameters(sindict_id),dummy_template)
         
-             dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
+             dummy_template = re.sub("\${FLAGS}",self._getFlags(sindict_id),dummy_template)
              
              #add Calibration references
-             l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(id))
+             l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(sindict_id))
              if l is None :
-                SaunaRenderer.c_log.warning("No calibration information for sample %s"%(type))
+                SaunaRenderer.c_log.warning("No calibration information for sample %s"%(ty))
                 l = []
              else:
                # add calibration info
@@ -517,17 +514,17 @@ class SaunaRenderer(BaseRenderer):
         # list of ids added in the xml document
         addedCalibrationIDs= set()
         
-        for type in self._fetcher.get('CONTENT_PRESENT',[]):
+        for ty in self._fetcher.get('CONTENT_PRESENT',[]):
             
            # treat preliminary samples differently as there is another indirection
-           if type == 'PREL':
+           if ty == 'PREL':
               for prefix in self._fetcher.get('CURR_List_OF_PRELS',[]):
                   if prefix is None:
                     raise CTBTOError(-1,"Error when filling Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(prefix,prefix))
                 
                   xml += self._fillCalibrationCoeffs(prefix,addedCalibrationIDs)    
            else:
-                prefix = self._fetcher.get(u'CURRENT_%s'%(type),None)
+                prefix = self._fetcher.get(u'CURRENT_%s'%(ty),None)
                 if prefix is None:
                   raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(prefix,prefix))
                
@@ -562,12 +559,12 @@ class SaunaRenderer(BaseRenderer):
         
        finalTemplate = ""
     
-       for type in spectrums:
+       for ty in spectrums:
             
            spectrumTemplate = ""
             
            # get Gamma and Beta Spectrum
-           l = ["%s_DATA_G"%(type), "%s_DATA_B"%(type)]
+           l = ["%s_DATA_G"%(ty), "%s_DATA_B"%(ty)]
            for fname in l:
               data  = self._fetcher.get(fname,None)
               if data is not None:
@@ -585,36 +582,36 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_ENERGY_SPAN"%(fname))), spectrumTemplate)
             
                 # get the date information (for the moment it is repeated for each data (beta and gamma spectra and histogram)
-                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_DATA_COLLECT_START"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_DATA_COLLECT_STOP"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_DATA_ACQ_START"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_DATA_ACQ_STOP"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ARRIVAL_DATE}",str(self._fetcher.get("%s_DATA_TRANSMIT_DTG"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_DATA_COLLECT_START"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_DATA_COLLECT_STOP"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_DATA_ACQ_START"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_DATA_ACQ_STOP"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ARRIVAL_DATE}",str(self._fetcher.get("%s_DATA_TRANSMIT_DTG"%(ty))), spectrumTemplate)
               
-                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(ty))), spectrumTemplate)
                 # add quantity and geometry
-                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${FLOW_RATE}",str(self._fetcher.get("%s_DATA_FLOW_RATE"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${FLOW_RATE}",str(self._fetcher.get("%s_DATA_FLOW_RATE"%(ty))), spectrumTemplate)
                 
-                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(ty))), spectrumTemplate)
               
-                l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))
+                l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(ty))
                 if l is None:
-                  SaunaRenderer.c_log.warning("No calibration information for sample %s"%(type))
+                  SaunaRenderer.c_log.warning("No calibration information for sample %s"%(ty))
                   l = []
-                  #raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
+                  #raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(ty))
 
 
                 # add calibration info
                 spectrumTemplate = re.sub("\${CAL_INFOS}",' '.join(map(str,l)), spectrumTemplate)
               
                 # TODO to remove just there for testing, deal with the compression flag
-                if self._fetcher.get("%s_COMPRESSED"%(fname),False) == True :
+                if self._fetcher.get("%s_COMPRESSED"%(fname),False):
                    spectrumTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",spectrumTemplate)
                 else:
                    spectrumTemplate = re.sub("\${COMPRESS}","",spectrumTemplate)
@@ -623,7 +620,7 @@ class SaunaRenderer(BaseRenderer):
                 finalTemplate += spectrumTemplate
               
            # Get histogram data 
-           fname =  "%s_DATA_H"%(type)
+           fname =  "%s_DATA_H"%(ty)
            data  = self._fetcher.get(fname,None)
            if data is not None:
                 spectrumTemplate = self._conf.get("SaunaTemplatingSystem","saunaHistogramTemplate")
@@ -635,39 +632,39 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${H_ID}",self._fetcher.get("%s_ID"%(fname)), spectrumTemplate)
             
                 # insert energy and channel span for beta and gamma
-                spectrumTemplate = re.sub("\${H_G_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_DATA_G_CHANNEL_SPAN"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${H_G_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_DATA_G_ENERGY_SPAN"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${H_B_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_DATA_B_CHANNEL_SPAN"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${H_B_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_DATA_B_ENERGY_SPAN"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${H_G_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_DATA_G_CHANNEL_SPAN"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${H_G_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_DATA_G_ENERGY_SPAN"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${H_B_DATA_CHANNEL_SPAN}",str(self._fetcher.get("%s_DATA_B_CHANNEL_SPAN"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${H_B_DATA_ENERGY_SPAN}",str(self._fetcher.get("%s_DATA_B_ENERGY_SPAN"%(ty))), spectrumTemplate)
             
                 # get the date information
-                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_DATA_COLLECT_START"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_DATA_COLLECT_STOP"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_DATA_ACQ_START"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_DATA_ACQ_STOP"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_START}",str(self._fetcher.get("%s_DATA_COLLECT_START"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${COL_STOP}",str(self._fetcher.get("%s_DATA_COLLECT_STOP"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_START}",str(self._fetcher.get("%s_DATA_ACQ_START"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ACQ_STOP}",str(self._fetcher.get("%s_DATA_ACQ_STOP"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLING_TIME}",str(self._fetcher.get("%s_DATA_SAMPLING_TIME"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${REAL_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}",str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC"%(ty))), spectrumTemplate)
               
-                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${DECAY_TIME}",str(self._fetcher.get("%s_DATA_DECAY_TIME"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SAMPLE_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE"%(ty))), spectrumTemplate)
               
                 # add quantity and geometry
-                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(type))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(type))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${QUANTITY}",str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY"%(ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${GEOMETRY}",str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY"%(ty))), spectrumTemplate)
               
-                l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(type))
+                l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(ty))
                 if l is None:
-                  SaunaRenderer.c_log.warning("No calibration information for sample %s"%(type))
+                  SaunaRenderer.c_log.warning("No calibration information for sample %s"%(ty))
                   l = []
-                  #raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
+                  #raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(ty))
              
                 # add calibration info
                 spectrumTemplate = re.sub("\${CAL_INFOS}",' '.join(map(str,l)), spectrumTemplate)
               
                 # TODO to remove just there for testing, deal with the compression flag
-                if self._fetcher.get("%s_COMPRESSED"%(fname),False) == True :
+                if self._fetcher.get("%s_COMPRESSED"%(fname),False):
                    spectrumTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",spectrumTemplate)
                 else:
                    spectrumTemplate = re.sub("\${COMPRESS}","",spectrumTemplate)
@@ -696,6 +693,22 @@ class GenieParticulateRenderer(BaseRenderer):
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
+    
+    def _createTemplate(self):
+        """ Read the template from a file. Old method now everything is read from the conf """
+        
+        # get template path from conf
+        path = self._conf.get("ParticulateTemplatingSystem","ParticulateBaseTemplate")
+        
+        # assert that the file exists
+        ctbto.common.utils.file_exits(path)
+        
+        # read the full template in a string buffer
+        f = open(path,"r") 
+        
+        self._template = f.read()
+        
+        self._populatedTemplate = self._template
       
     def _fillData(self,requestDict):
         """ Insert the spectrum data expected as defined in the initial passed request
@@ -724,12 +737,12 @@ class GenieParticulateRenderer(BaseRenderer):
         finalTemplate = ""
         
       
-        for type in spectrums:
+        for ty in spectrums:
             
                spectrumTemplate = ""
             
                # add Spectrum
-               fname = "%s_G"%(type)
+               fname = "%s_G"%(ty)
               
                data  = self._fetcher.get(fname,None)
             
@@ -766,13 +779,13 @@ class GenieParticulateRenderer(BaseRenderer):
               
                  l = self._fetcher.get("%s_ALL_CALS"%(fname))
                  if l is None:
-                    raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(type))
+                    raise CTBTOError(-1,"Error no calibration information for sample %s\n"%(ty))
              
                  # add calibration info
                  spectrumTemplate = re.sub("\${CAL_INFOS}",' '.join(map(str,l)), spectrumTemplate)
               
                  # TODO to remove just there for testing, deal with the compression flag
-                 if self._fetcher.get("%s_COMPRESSED"%(fname),False) == True :
+                 if self._fetcher.get("%s_COMPRESSED"%(fname),False):
                     spectrumTemplate = re.sub("\${COMPRESS}","compress=\"base64,zip\"",spectrumTemplate)
                  else:
                     spectrumTemplate = re.sub("\${COMPRESS}","",spectrumTemplate)
@@ -826,8 +839,7 @@ class GenieParticulateRenderer(BaseRenderer):
         
         xml_nuclides = ""
         dummy_template = ""
-        cpt = 1
-        
+       
         GenieParticulateRenderer.c_log.debug("id = %s\n"%("%s_IDED_NUCLIDES"%(id)))
         
         # get categories
@@ -890,7 +902,6 @@ class GenieParticulateRenderer(BaseRenderer):
         
         xml_nuclidelines   = ""
         dummy_template = ""
-        cpt = 1
         
         # get categories
         nuclidelines = self._fetcher.get(u'%s_IDED_NUCLIDE_LINES'%(id),[])
@@ -1042,7 +1053,7 @@ class GenieParticulateRenderer(BaseRenderer):
         dummy_template += template
           
         param = self._fetcher.get('%s_TIME_FLAGS_PREVIOUS_SAMPLE'%(id),False)
-        if param == True:
+        if param:
             dummy_template = re.sub("\${PreviousSamplePresent}","true", dummy_template)
         else:
             dummy_template = re.sub("\${PreviousSamplePresent}","false", dummy_template)
@@ -1113,12 +1124,12 @@ class GenieParticulateRenderer(BaseRenderer):
         
         all_analyses_xml = ""
       
-        for type in requestedTypes:
+        for ty in requestedTypes:
            
            #identifier in the dict for this analysis  
-           id = self._fetcher.get("CURRENT_%s"%(type),None)
+           sindict_id = self._fetcher.get("CURRENT_%s"%(ty),None)
            
-           if id is not None:
+           if sindict_id is not None:
         
              # first get the template
              template = self._conf.get("ParticulateTemplatingSystem","particulateAnalysisTemplate")
@@ -1127,29 +1138,29 @@ class GenieParticulateRenderer(BaseRenderer):
              # for the moment only one result
              dummy_template += template
         
-             spectrum_id    = self._fetcher.get("%s_G_DATA_ID"%(self._fetcher.get("CURRENT_%s"%(type),'')),"unknown")
+             spectrum_id    = self._fetcher.get("%s_G_DATA_ID"%(self._fetcher.get("CURRENT_%s"%(ty),'')),"unknown")
              
              # Add analysis identifier => SpectrumID prefixed by AN
              dummy_template = re.sub("\${ANALYSISID}","AN-%s"%(spectrum_id),dummy_template)
         
              dummy_template = re.sub("\${SPECTRUM_ID}",spectrum_id,dummy_template)
         
-             dummy_template = re.sub("\${CATEGORY}", self._getCategory(id), dummy_template)
+             dummy_template = re.sub("\${CATEGORY}", self._getCategory(sindict_id), dummy_template)
         
-             dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(id),dummy_template)
+             dummy_template = re.sub("\${NUCLIDES}",self._getNuclides(sindict_id),dummy_template)
          
-             dummy_template = re.sub("\${WITHNUCLIDELINES}",self._getNuclideLines(id),dummy_template)
+             dummy_template = re.sub("\${WITHNUCLIDELINES}",self._getNuclideLines(sindict_id),dummy_template)
         
-             dummy_template = re.sub("\${PEAKS}",self._getPeaks(id),dummy_template)
+             dummy_template = re.sub("\${PEAKS}",self._getPeaks(sindict_id),dummy_template)
          
-             dummy_template = re.sub("\${PARAMETERS}",self._getParameters(id),dummy_template)
+             dummy_template = re.sub("\${PARAMETERS}",self._getParameters(sindict_id),dummy_template)
         
-             dummy_template = re.sub("\${FLAGS}",self._getFlags(id),dummy_template)
+             dummy_template = re.sub("\${FLAGS}",self._getFlags(sindict_id),dummy_template)
              
              #add Calibration references
-             l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(id))
+             l = self._fetcher.get("%s_G_DATA_ALL_CALS"%(sindict_id))
              if l is None :
-                raise CTBTOError(-1,"Error no calibration information for sample %s, sid: %s\n"%(type,spectrum_id))
+                raise CTBTOError(-1,"Error no calibration information for sample %s, sid: %s\n"%(ty,spectrum_id))
              else:
                # add calibration info
                dummy_template = re.sub("\${CAL_INFOS}",' '.join(map(str,l)),dummy_template)
@@ -1262,17 +1273,17 @@ class GenieParticulateRenderer(BaseRenderer):
         # list of ids added in the xml document
         addedCalibrationIDs= set()
         
-        for type in self._fetcher.get('CONTENT_PRESENT',[]):
+        for ty in self._fetcher.get('CONTENT_PRESENT',[]):
             
            # treat preliminary samples differently as there is another indirection
-           if type == 'PREL':
+           if ty == 'PREL':
               for prefix in self._fetcher.get('CURR_List_OF_PRELS',[]):
                   if prefix is None:
                     raise CTBTOError(-1,"Error when filling Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(prefix,prefix))
                 
                   xml += self._fillCalibrationCoeffs(prefix,addedCalibrationIDs)    
            else:
-                prefix = self._fetcher.get(u'CURRENT_%s'%(type),None)
+                prefix = self._fetcher.get(u'CURRENT_%s'%(ty),None)
                 if prefix is None:
                   raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(prefix,prefix))
                
