@@ -3,7 +3,7 @@ import ConfigParser
 import resource
 import os
 
-import exceptions
+from  exceptions import CTBTOError
 
 class Conf(object):
     """ 
@@ -53,6 +53,9 @@ class Conf(object):
         # create resource for the conf file
         self._confResource = resource.Resource(Conf._CLINAME,Conf._ENVNAME)
         
+        # init ConfigParser Object to None (Pylint convention)
+        self._conf = None
+        
         # create config object        
         self._load_config()
 
@@ -64,10 +67,10 @@ class Conf(object):
             
             # get it from a Resource if not files are passed
             if aFile is None:
-             aFile = self._confResource.getValue() 
+                aFile = self._confResource.getValue() 
              
             if aFile is None:
-                raise exceptions.CTBTOError("Conf. Error, need a configuration file path\n")
+                raise CTBTOError("Conf. Error, need a configuration file path\n")
                 
             self._conf.read(aFile)
         except Exception, e:
@@ -127,10 +130,10 @@ class Conf(object):
         """
         self._conf.readfp(fp,filename)
 
-    def get(self, section, option, default=None, raw=False, vars=None):
+    def get(self, section, option, default=None, raw=False, variables=None):
         """ get with a default """
         try:
-          return self._conf.get(section, option, raw, vars)
+            return self._conf.get(section, option, raw, variables)
         except ConfigParser.NoOptionError:
             # no elements found return the default
             return default
@@ -143,7 +146,7 @@ class Conf(object):
     def getint(self, section, option,default=None):
         
         try:
-          return self._conf.getint(section, option)
+            return self._conf.getint(section, option)
         except ConfigParser.NoOptionError, nOE :
             # no elements found return the default if not None otherwise propagate exception
             if default is None:
@@ -154,7 +157,7 @@ class Conf(object):
     def getfloat(self, section, option,default=None):
        
         try:
-          return self._conf.getfloat(section, option)
+            return self._conf.getfloat(section, option)
         except ConfigParser.NoOptionError, nOE :
             # no elements found return the default if not None otherwise propagate exception
             if default is None:
@@ -165,7 +168,7 @@ class Conf(object):
     def getboolean(self, section, option,default=None):
        
         try:
-          return self._conf.getboolean(section, option)
+            return self._conf.getboolean(section, option)
         except ConfigParser.NoOptionError, nOE :
             # no elements found return the default if not None otherwise propagate exception
             if default is None:
@@ -190,7 +193,7 @@ class Conf(object):
 
     def remove_option(self, section, option):
         """Remove an option."""
-        self._conf.remove(section,option)
+        self._conf.remove_option(section,option)
 
     def remove_section(self, section):
         """Remove a file section."""
