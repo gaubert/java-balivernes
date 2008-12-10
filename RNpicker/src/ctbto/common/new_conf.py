@@ -25,6 +25,13 @@ class NoOptionError(Error):
         self.option = option
         self.section = section
 
+class NoSectionError(Error):
+    """Raised when no section matches a requested option."""
+
+    def __init__(self, section):
+        Error.__init__(self, 'No section: %r' % (section,))
+        self.section = section
+
 class PowerConf(object):
     """ 
        Configuration Object with a several features:
@@ -127,44 +134,47 @@ class PowerConf(object):
             self._get_defaults(default,fail_if_missing)
 
     def items(self, section):
-        return self._conf.items(section)
-
-
-    def getint(self, section, option,default=None):
+        """ return all items from a section. Items is a list of tuples (option,value)
+            
+            Args:
+               section. The section where to find the option
+               
+            Returns: a list of tuples (option,value)
         
+            Raises:
+               exception NoSectionError if the section cannot be found
+        """
         try:
-            return self._conf.getint(section, option)
-        except ConfigParser.NoOptionError, nOE :
-            # no elements found return the default if not None otherwise propagate exception
-            if default is None:
-                raise nOE
-            else:
-                return default
+            d2 = self._sections[section]
+            # make a copy
+            d = d2.copy()
+            # remove __name__ from d
+            if "__name__" in d:
+                del d["__name__"]
+                
+            return d.items()
+        
+        except KeyError:
+            raise NoSectionError(section)
+        
+    def _get(self, section, conv, option, default,fail_if_missing):
+        return conv(self.get(section, option,default,fail_if_missing))
 
-    def getfloat(self, section, option,default=None):
-       
-        try:
-            return self._conf.getfloat(section, option)
-        except ConfigParser.NoOptionError, nOE :
-            # no elements found return the default if not None otherwise propagate exception
-            if default is None:
-                raise nOE
-            else:
-                return default
+    def getint(self, section, option, default=None,fail_if_missing=False):
+        return self._get(section, int, option, default,fail_if_missing)
 
-    def getboolean(self, section, option,default=None):
-       
-        try:
-            return self._conf.getboolean(section, option)
-        except ConfigParser.NoOptionError, nOE :
-            # no elements found return the default if not None otherwise propagate exception
-            if default is None:
-                raise nOE
-            else:
-                return default
-    
-    
-    
+    def getfloat(self, section, option, default=None,fail_if_missing=False):
+        return self._get(section, float, option, default,fail_if_missing)
+
+    _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
+                       '0': False, 'no': False, 'false': False, 'off': False}
+
+    def getboolean(self, section, option, default=None,fail_if_missing=False):
+        v = self.get(section, option, default,fail_if_missing)
+        if v.lower() not in self._boolean_states:
+            raise ValueError, 'Not a boolean: %s' % v
+        return self._boolean_states[v.lower()]
+        
     def optionxform(self, optionstr):
         return optionstr.lower()
     
@@ -262,8 +272,14 @@ class PowerConf(object):
 
 if __name__ == '__main__':
     
-    c = PowerConf()
+    conf = PowerConf()
     
     fp = open("/home/aubert/projects/java-balivernes/RNpicker/etc/conf/rnpicker.config")
     
-    c._read(fp,"the file")
+    conf._read(fp,"the file")
+    
+    print "conf.get(\"MainDatabaseAccess\",\"driverClassName\") = %s"%(conf.get("MainDatabaseAccess","driverClassName"))
+    
+    print "conf.items(\"MainDatabaseAccess\") = %s"%(conf.items("MainDatabaseAccess"))
+    
+    print "True or False = conf.getboolean(\"Options\",\"removeChannelIndex\") = %s"%(conf.getboolean("Options","removeChannelIndex"))
