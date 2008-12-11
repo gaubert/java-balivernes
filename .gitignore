@@ -10,3 +10,4 @@ build
 tools
 RNpicker/dist/RNPicker.egg-info/
 RNpicker/dist/RNPicker.egg-info/*
+.coverage

@@ -16,8 +16,6 @@ import ctbto.common.xml_utils
 from ctbto.common    import Conf
 from ctbto.db        import DatabaseConnector,DBDataFetcher
 
-#from ctbto.db        import DBDataFetcher
-
 from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer
 from ctbto.transformer import XML2HTMLRenderer
@@ -335,7 +333,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            # fetchnoble particulate
            fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
-           fetcher.fetch(request)
+           fetcher.fetch(request,'PAR')
                  
            renderer = SaunaRenderer(fetcher)
    
@@ -380,7 +378,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='1')
         
         #listOfSamplesToTest = ['174188']
-        #listOfSamplesToTest = ['141372']
+        #listOfSamplesToTest = [141372]
         #listOfSamplesToTest = '141238, 139969, 141830, 139546, 140675, 141372, 141501, 139677, 141691, 142128, 140977, 139167, 142561, 140252, 140543, 142276, 141110, 140399, 141988, 139425, 140837, 139826, 139296, 140113, 143970, 144955, 145169, 145252, 144283, 145587, 145754, 143122, 145414, 144510, 142690, 144635, 145851, 145996, 144401, 142992, 143501, 143378, 143251, 143690, 143821, 142843, 144785, 144129, 147392, 146697, 147571, 148103, 146935, 147055, 147285, 148230, 147693, 147973, 148355, 146437, 146824, 148466, 146446, 146448, 148587, 147845, 146570, 147169'.split(',')
         #listOfSamplesToTest = map(string.strip,listOfSamplesToTest)
         
@@ -388,7 +386,7 @@ class TestSAMPMLCreator(unittest.TestCase):
               
         # remove sampleID for which data isn't available
         # 206975: No Calibration Available
-        toRemove = ['141372','206975']
+        toRemove = [141372,206975]
         
         for id in toRemove:
           if id in listOfSamplesToTest:
@@ -409,7 +407,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            # fetchnoble particulate
            fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
-           fetcher.fetch(request)
+           fetcher.fetch(request,'GAS')
                  
            renderer = SaunaRenderer(fetcher)
    
@@ -446,4 +444,22 @@ class TestSAMPMLCreator(unittest.TestCase):
         
 
 if __name__ == '__main__':
+    
+    import coverage
+    import ctbto
+    coverage.erase()
+    
+    coverage.start()
+   
+    print "HEllo \n"
     unittest.main()
+    
+    coverage.stop()
+    
+    coverage.analysis()
+    
+    f = open("/tmp/toto.report","w")
+    
+    print "Report %s\n"%(coverage.report(file=f))
+    
+    
