@@ -203,6 +203,55 @@ def parserTest():
     
     print "dict %s\n"%(d)
     
+def get_closing_bracket_index(index,s):
+    
+    tolook = s[index+2:]
+   
+    openingBrack = 1
+    closing_brack_index = index+2
+    for c in tolook:
+        if c == ')':
+            if openingBrack == 1:
+                return closing_brack_index
+            else:
+                openingBrack -= 1
+     
+        elif c == '(':
+            if tolook[c-1] == '%':
+                openingBrack +=1
+        
+        # inc index
+        closing_brack_index +=1
+    
+    return closing_brack_index
+    
+def replace_vars(a_str):
+     
+    index = a_str.find("%(")
+    
+    reg = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
+    
+    if index >= 0:
+        # look for closing brackets while counting openings one
+        closing_brack_index = get_closing_bracket_index(index,a_str)
+        
+      
+        print "closing bracket %d"%(closing_brack_index)
+        
+        var = a_str[index:closing_brack_index+1]
+        
+        m = reg.match(var)
+        
+        print "m.group.('group') = %s"%(m.group('group'))
+        print "m.group.('option') = %s"%(m.group('option'))
+        
+        
+        
+    else:
+       
+       return a_str 
+        
+    
 
 if __name__ == '__main__':
     
@@ -223,9 +272,32 @@ if __name__ == '__main__':
     
     print "Hello\n"
     
+    replace_vars("/toto/titi/%(Hello[one])")
+    
     #testXml2Html()
     
-    parserTest()
+    #parserTest()
+    
+    #reg = re.compile(r"%\(([^)]*)\)s|.")
+    #reg = re.compile(r"%\((?P<group>\w*)\[(?P<option>\w*)\]\)")
+    reg = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
+    # "%\(\w*)"
+    
+    #m = reg.match("%(Hello[one])")
+    
+    #print "m.group.('group') = %s"%(m.group('group'))
+    #print "m.group.('option') = %s"%(m.group('option'))
+    
+    #m = reg.match("%(Hello[%(Bye[one])])")
+    
+    #print "m.group.('group') = %s"%(m.group('group'))
+    #print "m.group.('option') = %s"%(m.group('option'))
+    
+    #m = reg.match("%(Hello[one])")
+    
+    #print "m.group.('group') = %s"%(m.group('group'))
+    #print "m.group.('option') = %s"%(m.group('option'))
+
    
     
     
