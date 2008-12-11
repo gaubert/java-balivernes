@@ -1,5 +1,3 @@
-
-
 import os
 import re
 
@@ -31,6 +29,44 @@ class NoSectionError(Error):
     def __init__(self, section):
         Error.__init__(self, 'No section: %r' % (section,))
         self.section = section
+
+class InterpolationError(Error):
+    """Base class for interpolation-related exceptions."""
+
+    def __init__(self, option, section, msg):
+        Error.__init__(self, msg)
+        self.option = option
+        self.section = section
+
+class InterpolationMissingOptionError(InterpolationError):
+    """A string substitution required a setting which was not available."""
+
+    def __init__(self, option, section, rawval, reference):
+        msg = ("Bad value substitution:\n"
+               "\tsection: [%s]\n"
+               "\toption : %s\n"
+               "\tkey    : %s\n"
+               "\trawval : %s\n"
+               % (section, option, reference, rawval))
+        InterpolationError.__init__(self, option, section, msg)
+        self.reference = reference
+
+class InterpolationSyntaxError(InterpolationError):
+    """Raised when the source text into which substitutions are made
+    does not conform to the required syntax."""
+
+class InterpolationDepthError(InterpolationError):
+    """Raised when substitutions are nested too deeply."""
+
+    def __init__(self, option, section, rawval):
+        msg = ("Value interpolation too deeply recursive:\n"
+               "\tsection: [%s]\n"
+               "\toption : %s\n"
+               "\trawval : %s\n"
+               % (section, option, rawval))
+        InterpolationError.__init__(self, option, section, msg)
+
+MAX_INTERPOLATION_DEPTH = 10 
 
 class PowerConf(object):
     """ 
@@ -106,7 +142,7 @@ class PowerConf(object):
         if fail_if_missing:
             raise NoOptionError(option,section)  
         else:
-            return default
+            return str(default)
     
     def get(self, section, option, default=None,fail_if_missing=False):
         """ get one option from a section.
@@ -127,11 +163,11 @@ class PowerConf(object):
         opt = self.optionxform(option)
         
         if section not in self._sections:
-            self._get_defaults(default,fail_if_missing)
+            return self._get_defaults(default,fail_if_missing)
         elif opt in self._sections[section]:
-            return self._sections[section][opt]
+            return self._substitute_vars(section, option, self._sections[section][opt])
         else:
-            self._get_defaults(default,fail_if_missing)
+            return self._get_defaults(default,fail_if_missing)
 
     def items(self, section):
         """ return all items from a section. Items is a list of tuples (option,value)
@@ -156,6 +192,40 @@ class PowerConf(object):
         
         except KeyError:
             raise NoSectionError(section)
+
+    _VARSRE = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
+
+    def _substitute_vars(self, section, option, rawval):
+        # substitute variables if present
+        value = rawval
+        depth = MAX_INTERPOLATION_DEPTH
+        while depth:                    # Loop through this until it's done
+            depth -= 1
+            if "%(" in value:
+                
+                # try to match expression
+                m = reg.match(value)
+                
+                value = self._KEYCRE.sub(self._interpolation_replace, value)
+                try:
+                    value = value % vars
+                except KeyError, e:
+                    raise InterpolationMissingOptionError(
+                        option, section, rawval, e[0])
+            else:
+                break
+        if "%(" in value:
+            raise InterpolationDepthError(option, section, rawval)
+        return value
+
+    _KEYCRE = re.compile(r"%\(([^)]*)\)s|.")
+
+    def _interpolation_replace(self, match):
+        s = match.group(1)
+        if s is None:
+            return match.group()
+        else:
+            return "%%(%s)s" % self.optionxform(s)
         
     def _get(self, section, conv, option, default,fail_if_missing):
         return conv(self.get(section, option,default,fail_if_missing))
@@ -170,6 +240,7 @@ class PowerConf(object):
                        '0': False, 'no': False, 'false': False, 'off': False}
 
     def getboolean(self, section, option, default=None,fail_if_missing=False):
+         
         v = self.get(section, option, default,fail_if_missing)
         if v.lower() not in self._boolean_states:
             raise ValueError, 'Not a boolean: %s' % v
@@ -270,13 +341,89 @@ class PowerConf(object):
         if e:
             raise e
 
+# unit tests part
+import unittest
+class TestConf(unittest.TestCase):
+    
+    def setUp(self):
+         
+        self.conf = PowerConf()
+    
+        fp = open("/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/tests/test.config")
+    
+        self.conf._read(fp,"the file")
+    
+    
+    def testGetObjects(self):
+        
+        # get simple string
+        astring = self.conf.get("GroupTest1","astring")
+        
+        self.assertEqual(astring,"oracle.jdbc.driver.OracleDriver")
+        
+        # get an int
+        aint = self.conf.getint("GroupTest1","aint")
+        
+        self.assertEqual(aint,10)
+        
+        # get float
+        afloat = self.conf.getfloat("GroupTest1","afloat")
+        
+        self.assertEqual(afloat,5.24)
+        
+        # get different booleans form
+        abool1 = self.conf.getboolean("GroupTest1","abool1")
+        
+        self.assertEqual(abool1,True)
+        
+        abool2 = self.conf.getboolean("GroupTest1","abool2")
+        
+        self.assertEqual(abool2,False)
+        
+        abool3 = self.conf.getboolean("GroupTest1","abool3")
+        
+        self.assertEqual(abool3,True)
+        
+        abool4 = self.conf.getboolean("GroupTest1","abool4")
+        
+        self.assertEqual(abool4,False)
+        
+        
+        
+    
+    def testGetDefaults(self):
+        
+         # get all defaults
+        astring = self.conf.get("GroupTest","astring","astring")
+        
+        self.assertEqual(astring,"astring")
+        
+        # get an default for int
+        aint = self.conf.getint("GroupTest","aint",2)
+        
+        self.assertEqual(aint,2)
+        
+         # get float
+        afloat = self.conf.getfloat("GroupTest","afloat",10.541)
+        
+        self.assertEqual(afloat,10.541)
+        
+        abool1 = self.conf.getboolean("GroupTest","abool1",True)
+        
+        self.assertEqual(abool1,True)
+        
+        abool2 = self.conf.getboolean("GroupTest","abool2",False)
+        
+        self.assertEqual(abool2,False)
+        
+        # existing group no option
+        abool5 = self.conf.getboolean("GroupTest1","abool32",False)
+        
+        self.assertEqual(abool5,False)
+        
+        
+
 if __name__ == '__main__':
-    
-    conf = PowerConf()
-    
-    fp = open("/home/aubert/projects/java-balivernes/RNpicker/etc/conf/rnpicker.config")
-    
-    conf._read(fp,"the file")
     
     print "conf.get(\"MainDatabaseAccess\",\"driverClassName\") = %s"%(conf.get("MainDatabaseAccess","driverClassName"))
     
