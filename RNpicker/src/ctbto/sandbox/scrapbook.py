@@ -9,6 +9,8 @@ import distutils.dir_util
 import ctbto.common.utils
 import ctbto.common.time_utils as time_utils
 import re
+ 
+import coverage
 
 
 
@@ -219,7 +221,7 @@ def parserTest():
     
     print "split str = %s\n"%(str.split(','))
     
-    d = r.parse(str)
+    d = r.parse(str,'PAR')
     
     print "dict %s\n"%(d)
     
@@ -238,8 +240,13 @@ if __name__ == '__main__':
     #s = 29016
     #print "%d secs = %s\n"%(s,time_utils.getSecondsInFormattedTime(s))
     
+    parserTest()
+
+    
     pr = "PT29016S"
     print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
+    
+    print "Hello\n"
     
     #testXml2Html()
    

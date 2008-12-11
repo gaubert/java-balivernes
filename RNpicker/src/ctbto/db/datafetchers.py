@@ -443,11 +443,12 @@ class DBDataFetcher(object):
             f.close()
         
         
-    def fetch(self,aParams=""):
+    def fetch(self,aParams="",aType=""):
         """pickle the retrieved data in a file for a future usage
         
             Args:
                aParams: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk")
+               aType: GAS or PAR for particulate or gas
             
             Returns: Nothing
               
@@ -475,7 +476,7 @@ class DBDataFetcher(object):
             DBDataFetcher.c_log.info("Checking cache consistency\n")
             
             # cache checking : Checks that the request doesn't contain more spectrum than asked
-            reqDict = self._parser.parse(aParams)
+            reqDict = self._parser.parse(aParams,aType)
             
             spectra = reqDict[RequestParser.SPECTRUM]
             
