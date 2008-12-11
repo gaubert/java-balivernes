@@ -1,13 +1,12 @@
-from StringIO import StringIO
-import operator
-import string
+#from StringIO import StringIO
+#import operator
+#import string
 import subprocess
 import base64
 import os
 import zlib
-import distutils.dir_util
 import ctbto.common.utils
-import ctbto.common.time_utils as time_utils
+#import ctbto.common.time_utils as time_utils
 import re
  
 import coverage
@@ -18,7 +17,7 @@ from ctbto.common     import Conf
 from ctbto.db.rndata  import RemoteFSDataSource
 from ctbto.query      import RequestParser
 from ctbto.transformer import XML2HTMLRenderer
- 
+
 #
 str1 = """Dallas Cowboys football practice at Valley Ranch was delayed on Wednesday
 #
@@ -66,13 +65,11 @@ class curry:
 
 def testCurrying():
     
-   double = curry(string.ljust,width=20)
+    double = curry(string.ljust,width=20)
 
-   res = double("totototo")
+    res = double("totototo")
    
-   print "Res [%s]\n"%(res)
-   
-   list = ['4          ', '6          ', '3          ', '2          ', '5          ']
+    print "Res [%s]\n"%(res)
 
 def testsubProcess():
     
@@ -84,15 +81,17 @@ def testsubProcess():
 
 def testCompress():
     
-   zstr1 = zlib.compress(str1)
+    zstr1 = zlib.compress(str1)
  
-   print "Length of zipped str1 =", len(zstr1)
+    print "Length of zipped str1 =", len(zstr1)
    
-   uncompressed = zlib.decompress(zstr1)
+    uncompressed = zlib.decompress(zstr1)
    
-   print "Lenght of unzipped str1 = ",len(uncompressed)
+    print "Lenght of unzipped str1 = ",len(uncompressed)
    
-   s = base64.b64encode("ADDDDDD")
+    s = base64.b64encode("ADDDDDD")
+    
+    print "S=%s\n"%(s)
 
 def testRemoteDataSource():
     
@@ -146,20 +145,20 @@ def testParseSpectrumInfo():
     m = reSpec.match(strToParse)
     
     if m is not None:
-      #print "Matooch =[%s],matched=%s\n"%(len(res),res)
-      print "command = %s\n"%(m.group('command'))
+        #print "Matooch =[%s],matched=%s\n"%(len(res),res)
+        print "command = %s\n"%(m.group('command'))
       
-      values = m.group('values')
+        values = m.group('values')
       
-      print "vakues = %s\n"%(values)
+        print "vakues = %s\n"%(values)
       
-      vals = values.split('/')
+        vals = values.split('/')
       
-      if len(vals) == 0:
-          print "There is a problem\n"
+        if len(vals) == 0:
+            print "There is a problem\n"
         
-      for val in vals:
-          print "val = %s\n"%(val.strip().upper())
+        for val in vals:
+            print "val = %s\n"%(val.strip().upper())
 
 def checksumTest(str):
 
@@ -180,28 +179,6 @@ def checksumTest(str):
 
     return chksum
 
-
-def jinja2Test():
-    
-    filename='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/arr.txt'
-    
-    # read the full template in a string buffer
-    f = open(filename,"r") 
-        
-    tStr = f.read()
-    
-    from jinja2 import Template
-    from jinja2 import Environment, FileSystemLoader, Undefined
-    env = Environment(loader=FileSystemLoader('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates'))
-    
-    template = env.get_template('ArrHtml.html')
-    
-    n_list = [{'name':'xenon-133','half_life':134,'conc':23,'conc_err':2.2},{'name':'xenon-135','half_life':135,'conc':28,'conc_err':2.3}]
-
-    #template = Template(tStr)
-    print template.render(nuclides=n_list, nid="12345")
-    
-
 def testXml2Html():
     
     r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
@@ -213,15 +190,16 @@ def testXml2Html():
 def parserTest():
     
     # need to setup the ENV containing the the path to the conf file:
+    #IGNORE:W0212
     os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
     
     r = RequestParser()
     
-    str = "spectrum=ALL, analysis=CURR/QC"
+    lStr = "spectrum=ALL, analysis=CURR/QC"
     
-    print "split str = %s\n"%(str.split(','))
+    print "split str = %s\n"%(lStr.split(','))
     
-    d = r.parse(str,'PAR')
+    d = r.parse(lStr,'PAR')
     
     print "dict %s\n"%(d)
     
@@ -240,15 +218,14 @@ if __name__ == '__main__':
     #s = 29016
     #print "%d secs = %s\n"%(s,time_utils.getSecondsInFormattedTime(s))
     
-    parserTest()
-
-    
-    pr = "PT29016S"
-    print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
+    #pr = "PT29016S"
+    #print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
     
     print "Hello\n"
     
     #testXml2Html()
+    
+    parserTest()
    
     
     
