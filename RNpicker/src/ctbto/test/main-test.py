@@ -218,7 +218,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            # check if no tags are left
            self.assertIfNoTagsLeft(path)
 
-    def tesstFullGenieParticulateSamples(self):
+    def testFullGenieParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -228,7 +228,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='3')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -373,14 +373,14 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2003-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='50')
         
         #listOfSamplesToTest = ['174188']
         #listOfSamplesToTest = [141372]
         #listOfSamplesToTest = '141238, 139969, 141830, 139546, 140675, 141372, 141501, 139677, 141691, 142128, 140977, 139167, 142561, 140252, 140543, 142276, 141110, 140399, 141988, 139425, 140837, 139826, 139296, 140113, 143970, 144955, 145169, 145252, 144283, 145587, 145754, 143122, 145414, 144510, 142690, 144635, 145851, 145996, 144401, 142992, 143501, 143378, 143251, 143690, 143821, 142843, 144785, 144129, 147392, 146697, 147571, 148103, 146935, 147055, 147285, 148230, 147693, 147973, 148355, 146437, 146824, 148466, 146446, 146448, 148587, 147845, 146570, 147169'.split(',')
         #listOfSamplesToTest = map(string.strip,listOfSamplesToTest)
         
-        #print "list of samples %s\n"%(listOfSamplesToTest)
+        print "list of samples %s\n"%(listOfSamplesToTest)
               
         # remove sampleID for which data isn't available
         # 206975: No Calibration Available
@@ -443,18 +443,18 @@ class TestSAMPMLCreator(unittest.TestCase):
 
 if __name__ == '__main__':
     
-    import coverage
-    import ctbto
-    coverage.erase()
+    #import coverage
+    #import ctbto
+    #coverage.erase()
     
-    coverage.start()
+    #coverage.start()
    
     print "HEllo \n"
     unittest.main()
     
-    coverage.stop()
+    #coverage.stop()
     
-    coverage.analysis()
+    #coverage.analysis()
     
     f = open("/tmp/toto.report","w")
     

@@ -224,6 +224,15 @@ class Conf(object):
         except KeyError:
             raise NoSectionError(section)
 
+    def has_option(self, section, option):
+        """Check for the existence of a given option in a given section."""
+        
+        if section not in self._sections:
+            return False
+        else:
+            option = self.optionxform(option)
+            return (option in self._sections[section])
+    
     def _get_closing_bracket_index(self,index,s,group,option):
         """ private method used by _replace_vars to count the closing brackets.
             
