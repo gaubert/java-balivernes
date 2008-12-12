@@ -37,19 +37,6 @@ class SubstitutionError(Error):
         Error.__init__(self, msg)
         self.option = option
         self.section = section
-        
-class InterpolationDepthError(SubstitutionError):
-    """Raised when substitutions are nested too deeply."""
-
-    def __init__(self, option, section, rawval):
-        msg = ("Value interpolation too deeply recursive:\n"
-               "\tsection: [%s]\n"
-               "\toption : %s\n"
-               "\trawval : %s\n"
-               % (section, option, rawval))
-        InterpolationError.__init__(self, option, section, msg)
-
-MAX_SUBSTITUTION_DEPTH = 10 
 
 class PowerConf(object):
     """ 
@@ -221,6 +208,7 @@ class PowerConf(object):
         """ private replacing all variables. A variable will be in the from of %(group[option]).
             Multiple variables are supported, ex /foo/%(group1[opt1])/%(group2[opt2])/bar
             Nested variables are also supported, ex /foo/%(group[%(group1[opt1]].
+            Note that the group part cannot be substituted, only the option can. This is because of the Regular Expression _SUBSGROUPRE that accepts only words as values.
             
             Args:
                index. The index from where to look for a closing bracket
@@ -247,7 +235,7 @@ class PowerConf(object):
             m = self._SUBSGROUPRE.match(var)
         
             if m == None:
-                raise SubstitutionError(group,option,"Error. Cannot match a %(group[option]) in %s but found an opening bracket %(. Probably malformated expression"%(var))
+                raise SubstitutionError(group,option,"Error. Cannot match a group[option] in %s but found an opening bracket (. Malformated expression "%(var))
             else:
             
                 # recursive calls
@@ -393,7 +381,6 @@ class TestConf(unittest.TestCase):
     
         self.conf._read(fp,"the file")
     
-    
     def testGetObjects(self):
         
         # get simple string
@@ -460,10 +447,22 @@ class TestConf(unittest.TestCase):
         
     def testVarSubstitution(self):
         
-        # get all defaults
+        # simple substitution
         apath = self.conf.get("GroupTestVars","path")
         
         self.assertEqual(apath,"/foo/bar//tmp/foo/bar/bar/foo")
+        
+        # multiple substitution
+        apath = self.conf.get("GroupTestVars","path1")
+        
+        self.assertEqual(apath,"/foo//tmp/foo/bar//foo/bar//tmp/foo/bar/bar/foo/bar")
+        
+        # nested substitution
+        apath = self.conf.get("GroupTestVars","nested")
+        
+        print "apath = %s"%(apath)
+        
+        
         
         
 
