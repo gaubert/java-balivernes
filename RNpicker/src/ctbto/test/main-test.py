@@ -77,8 +77,6 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.xpath_calIDs      = etree.XPath("//*[local-name(.)='CalibrationInformation']/*[local-name(.)='Calibration']/@ID")
         self.xpath_specalIDs   = etree.XPath("//*[local-name(.)='MeasuredInformation']/*[local-name(.)='Spectrum']/@calibrationIDs")
     
-    
-    
     def _setUpNobleGaz(self):
         
         activateTimer = True
@@ -101,7 +99,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         myBasicLoggingConfig()  
         
         # need to setup the ENV containing the the path to the conf file:
-        os.environ[Conf._ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
+        os.environ[Conf.ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
    
         self.conf = Conf.get_instance()
    
