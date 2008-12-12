@@ -30,32 +30,15 @@ class NoSectionError(Error):
         Error.__init__(self, 'No section: %r' % (section,))
         self.section = section
 
-class InterpolationError(Error):
+class SubstitutionError(Error):
     """Base class for interpolation-related exceptions."""
 
-    def __init__(self, option, section, msg):
+    def __init__(self, section,option, msg):
         Error.__init__(self, msg)
         self.option = option
         self.section = section
-
-class InterpolationMissingOptionError(InterpolationError):
-    """A string substitution required a setting which was not available."""
-
-    def __init__(self, option, section, rawval, reference):
-        msg = ("Bad value substitution:\n"
-               "\tsection: [%s]\n"
-               "\toption : %s\n"
-               "\tkey    : %s\n"
-               "\trawval : %s\n"
-               % (section, option, reference, rawval))
-        InterpolationError.__init__(self, option, section, msg)
-        self.reference = reference
-
-class InterpolationSyntaxError(InterpolationError):
-    """Raised when the source text into which substitutions are made
-    does not conform to the required syntax."""
-
-class InterpolationDepthError(InterpolationError):
+        
+class InterpolationDepthError(SubstitutionError):
     """Raised when substitutions are nested too deeply."""
 
     def __init__(self, option, section, rawval):
@@ -66,7 +49,7 @@ class InterpolationDepthError(InterpolationError):
                % (section, option, rawval))
         InterpolationError.__init__(self, option, section, msg)
 
-MAX_INTERPOLATION_DEPTH = 10 
+MAX_SUBSTITUTION_DEPTH = 10 
 
 class PowerConf(object):
     """ 
@@ -165,7 +148,7 @@ class PowerConf(object):
         if section not in self._sections:
             return self._get_defaults(default,fail_if_missing)
         elif opt in self._sections[section]:
-            return self._substitute_vars(section, option, self._sections[section][opt])
+            return self._replace_vars(self._sections[section][opt],section, option)
         else:
             return self._get_defaults(default,fail_if_missing)
 
@@ -193,40 +176,97 @@ class PowerConf(object):
         except KeyError:
             raise NoSectionError(section)
 
-    _VARSRE = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
-
-    def _substitute_vars(self, section, option, rawval):
-        # substitute variables if present
-        value = rawval
-        depth = MAX_INTERPOLATION_DEPTH
-        while depth:                    # Loop through this until it's done
-            depth -= 1
-            if "%(" in value:
-                
-                # try to match expression
-                m = reg.match(value)
-                
-                value = self._KEYCRE.sub(self._interpolation_replace, value)
-                try:
-                    value = value % vars
-                except KeyError, e:
-                    raise InterpolationMissingOptionError(
-                        option, section, rawval, e[0])
-            else:
-                break
-        if "%(" in value:
-            raise InterpolationDepthError(option, section, rawval)
-        return value
-
-    _KEYCRE = re.compile(r"%\(([^)]*)\)s|.")
-
-    def _interpolation_replace(self, match):
-        s = match.group(1)
-        if s is None:
-            return match.group()
-        else:
-            return "%%(%s)s" % self.optionxform(s)
+    def _get_closing_bracket_index(self,index,s,group,option):
+        """ private method used by _replace_vars to count the closing brackets.
+            
+            Args:
+               index. The index from where to look for a closing bracket
+               s. The string to parse
+               group. group and options that are substituted. Mainly used to create a nice exception message
+               option. option that is substituted. Mainly used to create a nice exception message
+               
+            Returns: the index of the found closing bracket
         
+            Raises:
+               exception NoSectionError if the section cannot be found
+        """
+        
+        tolook = s[index+2:]
+   
+        openingBrack = 1
+        closing_brack_index = index+2
+    
+        i = 0
+        for c in tolook:
+            if c == ')':
+                if openingBrack == 1:
+                    return closing_brack_index
+                else:
+                    openingBrack -= 1
+     
+            elif c == '(':
+                if tolook[i-1] == '%':
+                    openingBrack +=1
+        
+            # inc index
+            closing_brack_index +=1
+            i += 1
+    
+        raise SubstitutionSyntaxError(group,option,"SyntaxError. Missing a closing bracket in %s"%(tolook))
+
+    # very permissive regex
+    _SUBSGROUPRE = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
+    
+    def _replace_vars(self,a_str,group,option):
+        """ private replacing all variables. A variable will be in the from of %(group[option]).
+            Multiple variables are supported, ex /foo/%(group1[opt1])/%(group2[opt2])/bar
+            Nested variables are also supported, ex /foo/%(group[%(group1[opt1]].
+            
+            Args:
+               index. The index from where to look for a closing bracket
+               s. The string to parse
+               
+            Returns: the final string with the replacements
+        
+            Raises:
+               exception NoSectionError if the section cannot be found
+        """
+ 
+        toparse = a_str
+    
+        index = toparse.find("%(")
+    
+        # if found opening %( look for end bracket)
+        if index >= 0:
+            # look for closing brackets while counting openings one
+            closing_brack_index = self._get_closing_bracket_index(index,a_str,group,option)
+        
+            #print "closing bracket %d"%(closing_brack_index)
+            var = toparse[index:closing_brack_index+1]
+            
+            m = self._SUBSGROUPRE.match(var)
+        
+            if m == None:
+                raise SubstitutionError(group,option,"Error. Cannot match a %(group[option]) in %s but found an opening bracket %(. Probably malformated expression"%(var))
+            else:
+            
+                # recursive calls
+                g = self._replace_vars(m.group('group'),group,option)
+                o = self._replace_vars(m.group('option'),group,option)
+            
+                try:
+                    dummy = self._sections[g][o]
+                except KeyError, ke: #IGNORE:W0612
+                    raise SubstitutionError(group,option,"Error, property %s[%s] doesn't exist in this configuration file \n"%(g,o))
+            
+            
+            toparse = toparse.replace(var,dummy)
+            
+            return replace_vars(toparse)    
+        else:   
+            return toparse 
+
+
     def _get(self, section, conv, option, default,fail_if_missing):
         return conv(self.get(section, option,default,fail_if_missing))
 
@@ -339,7 +379,7 @@ class PowerConf(object):
                         e.append(lineno, repr(line))
         # if any parsing errors occurred, raise an exception
         if e:
-            raise e
+            raise e #IGNORE:E0702
 
 # unit tests part
 import unittest
@@ -388,9 +428,6 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(abool4,False)
         
-        
-        
-    
     def testGetDefaults(self):
         
          # get all defaults
@@ -421,12 +458,15 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(abool5,False)
         
+    def testVarSubstitution(self):
+        
+        # get all defaults
+        apath = self.conf.get("GroupTestVars","path")
+        
+        self.assertEqual(astring,"astring")
+        
         
 
 if __name__ == '__main__':
     
-    print "conf.get(\"MainDatabaseAccess\",\"driverClassName\") = %s"%(conf.get("MainDatabaseAccess","driverClassName"))
-    
-    print "conf.items(\"MainDatabaseAccess\") = %s"%(conf.items("MainDatabaseAccess"))
-    
-    print "True or False = conf.getboolean(\"Options\",\"removeChannelIndex\") = %s"%(conf.getboolean("Options","removeChannelIndex"))
+   unittest.main()

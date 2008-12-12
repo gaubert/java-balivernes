@@ -203,12 +203,14 @@ def parserTest():
     
     print "dict %s\n"%(d)
     
-def get_closing_bracket_index(index,s):
+def _get_closing_bracket_index(index,s):
     
     tolook = s[index+2:]
    
     openingBrack = 1
     closing_brack_index = index+2
+    
+    i = 0
     for c in tolook:
         if c == ')':
             if openingBrack == 1:
@@ -217,39 +219,55 @@ def get_closing_bracket_index(index,s):
                 openingBrack -= 1
      
         elif c == '(':
-            if tolook[c-1] == '%':
+            if tolook[i-1] == '%':
                 openingBrack +=1
         
         # inc index
         closing_brack_index +=1
+        i += 1
     
     return closing_brack_index
     
 def replace_vars(a_str):
+    
+    data = {'Hello':{'one':'1','two':'2'},'Bye':{'trois':'one','quatre':'4'}}
      
-    index = a_str.find("%(")
+    toparse = a_str
+    
+    index = toparse.find("%(")
     
     reg = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
-    
+    # if found opening %( look for end bracket)
     if index >= 0:
         # look for closing brackets while counting openings one
-        closing_brack_index = get_closing_bracket_index(index,a_str)
+        closing_brack_index = _get_closing_bracket_index(index,a_str)
         
-      
         print "closing bracket %d"%(closing_brack_index)
-        
-        var = a_str[index:closing_brack_index+1]
-        
+        var = toparse[index:closing_brack_index+1]
         m = reg.match(var)
         
-        print "m.group.('group') = %s"%(m.group('group'))
-        print "m.group.('option') = %s"%(m.group('option'))
-        
-        
-        
-    else:
-       
-       return a_str 
+        if m == None:
+            print "Error. Cannot match a %(group[option]) in %s but found an opening bracket %(. Probably malformated expression"%(var)
+        else:
+            
+            print "found %s[%s]\n"%(m.group('group'),m.group('option'))
+            
+            g = replace_vars(m.group('group'))
+            o = replace_vars(m.group('option'))
+            
+            try:
+                dummy = data[g][o]
+            except KeyError, ke: #IGNORE:W0612
+                print "Error, property %s[%s] doesn't exist in this configuration file \n"%(g,o)
+                return None
+            
+            
+            toparse = toparse.replace(var,dummy)
+            
+            return replace_vars(toparse)
+             
+    else:   
+        return toparse 
         
     
 
@@ -272,7 +290,7 @@ if __name__ == '__main__':
     
     print "Hello\n"
     
-    replace_vars("/toto/titi/%(Hello[one])")
+    print "Test 1: Result = %s\n"%(replace_vars("/toto/%(Bye[trois])/titi/%(Hello[one])/blshlbah/%(Hello[two])"))
     
     #testXml2Html()
     
