@@ -255,14 +255,14 @@ class PowerConf(object):
                 o = self._replace_vars(m.group('option'),group,option)
             
                 try:
-                    dummy = self._sections[g][o]
+                    dummy = self._sections[g][self.optionxform(o)]
                 except KeyError, ke: #IGNORE:W0612
                     raise SubstitutionError(group,option,"Error, property %s[%s] doesn't exist in this configuration file \n"%(g,o))
             
             
             toparse = toparse.replace(var,dummy)
             
-            return replace_vars(toparse)    
+            return self._replace_vars(toparse,group,option)    
         else:   
             return toparse 
 
@@ -463,7 +463,7 @@ class TestConf(unittest.TestCase):
         # get all defaults
         apath = self.conf.get("GroupTestVars","path")
         
-        self.assertEqual(astring,"astring")
+        self.assertEqual(apath,"/foo/bar//tmp/foo/bar/bar/foo")
         
         
 
