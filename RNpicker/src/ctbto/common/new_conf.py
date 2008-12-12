@@ -37,6 +37,41 @@ class SubstitutionError(Error):
         Error.__init__(self, msg)
         self.option = option
         self.section = section
+        
+class IncludeError(Error):
+    """ Raised when an include command is incorrect """
+    
+    def __init__(self, msg, origin):
+        Error.__init__(self,msg)
+        self.origin = origin
+        self.errors = []
+
+
+class ParsingError(Error):
+    """Raised when a configuration file does not follow legal syntax."""
+
+    def __init__(self, filename):
+        Error.__init__(self, 'File contains parsing errors: %s' % filename)
+        self.filename = filename
+        self.errors = []
+
+    def append(self, lineno, line):
+        self.errors.append((lineno, line))
+        self.message += '\n\t[line %2d]: %s' % (lineno, line)
+        
+class MissingSectionHeaderError(ParsingError):
+    """Raised when a key-value pair is found before any section header."""
+
+    def __init__(self, filename, lineno, line):
+        ParsingError.__init__(
+            self,
+            'File contains no section headers.\nfile: %s, line: %d\n%r' %
+            (filename, lineno, line))
+        self.filename = filename
+        self.lineno = lineno
+        self.line = line
+
+MAX_INCLUDE_DEPTH = 10
 
 class PowerConf(object):
     """ 
@@ -294,7 +329,26 @@ class PowerConf(object):
         r'(?P<value>.*)$'                     # everything up to eol
         )
 
-    def _read(self, fp, fpname):
+    def _read_include(self,line,origin,depth):
+        
+        # Error if depth is MAX_INCLUDE_DEPTH 
+        if depth >= MAX_INCLUDE_DEPTH:
+            raise IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes"%(MAX_INCLUDE_DEPTH))
+        
+        # remove %include from the path and we should have a path
+        i = line.find('%include')
+        
+        path = line[i+8:].strip()   
+        
+        # check if file exits
+        if not os.path.exists(path):
+            raise IncludeError("the config file to include %s does not exits"%(path),origin)
+        else:
+            fp = open(path,'r')
+            # add include file and populate the section hash
+            self._read(fp,path,depth+1)
+
+    def _read(self, fp, fpname,depth=0):
         """Parse a sectioned setup file.
 
         The sections in setup file contains a title line at the top,
@@ -303,6 +357,7 @@ class PowerConf(object):
         Continuations are represented by an embedded newline then
         leading whitespace.  Blank lines, lines beginning with a '#',
         and just about everything else are ignored.
+        Depth for avoiding looping in the includes
         """
         cursect = None                            # None, or a dictionary
         optname = None
@@ -313,6 +368,10 @@ class PowerConf(object):
             if not line:
                 break
             lineno = lineno + 1
+            # include in this form %include
+            if line.startswith('%include'):
+                self._read_include(line,fpname,depth)
+                continue
             # comment or blank line?
             if line.strip() == '' or line[0] in '#;':
                 continue
@@ -458,14 +517,17 @@ class TestConf(unittest.TestCase):
         self.assertEqual(apath,"/foo//tmp/foo/bar//foo/bar//tmp/foo/bar/bar/foo/bar")
         
         # nested substitution
-        apath = self.conf.get("GroupTestVars","nested")
+        nested = self.conf.get("GroupTestVars","nested")
         
-        print "apath = %s"%(apath)
+        self.assertEqual(nested,"this is done")  
+        
+    def testInclude(self):
+        
+        val = self.conf.get("IncludedGroup","hello")
+        
+        self.assertEqual(val,'foo')
         
         
-        
-        
-
 if __name__ == '__main__':
     
    unittest.main()
