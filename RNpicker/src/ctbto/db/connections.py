@@ -19,11 +19,15 @@ class DatabaseConnector:
         self._user          = aUser
         self._password      = aPassword
         self._activateTimer = aTimeReqs
-        self._connected     = False;
+        
+        self._connected     = False; #IGNORE:W0104
         
         self._url = None
         
         self._createUrl()
+        
+        self._engine = None
+        self._conn   = None
         
     
     def _createUrl(self):
@@ -37,7 +41,7 @@ class DatabaseConnector:
         if self._password is None:
             raise CTBTOError(-1,"Need a password to connect to the database\n")
         
-        # TODO Add support for other databases
+        # Add support for other databases
         self._url = "oracle://%s:%s@%s"%(self._user,self._password,self._database)
 
     def hostname(self):
@@ -109,13 +113,14 @@ class DatabaseConnector:
         sql = sqlalchemy.text(aSql)
         
         if not self._activateTimer:
-           result = self._conn.execute(sql)
-           return result
+            result = self._conn.execute(sql)
+            return result
         else:
-           result = []
-           func = self._conn.execute
-           DatabaseConnector.c_log.info("\nTime: %s secs \nDatabase: %s\nRequest: %s\n"%(ftimer(func,[sql],{},result,number=1),self._database,aSql))
-           return result[0]
+            result = []
+            func = self._conn.execute
+            t= ftimer(func,[sql],{},result,number=1)
+            DatabaseConnector.c_log.info("\nTime: %s secs \nDatabase: %s\nRequest: %s\n"%(t,self._database,aSql))
+            return result[0]
         
         
         

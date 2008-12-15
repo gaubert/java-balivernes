@@ -571,7 +571,7 @@ class TestConf(unittest.TestCase):
         
         s = self.conf.get("MainDatabaseAccess","driverClassName")
         
-        print "s = %s\n"%(s)
+        self.assertEqual(s,'oracle.jdbc.driver.OracleDriver')
    
         
         

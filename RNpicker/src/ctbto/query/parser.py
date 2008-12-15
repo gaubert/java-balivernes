@@ -62,6 +62,10 @@ class RequestParser(object):
                exception CTBTOError if the syntax of the aString string is incorrect
         """
         
+        # preconditions
+        if aTechnType == None or aTechnType == "":
+            raise CTBTOError(-1,"Error. No technology type passed to the parser %s\n"%(aTechnType))
+        
         # for the moment we only have the spectrum part
         # quick and dirty parser, needs to be changed
         result = {}
