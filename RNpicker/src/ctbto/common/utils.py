@@ -2,8 +2,6 @@ import os
 import time
 import itertools
 import gc
-import pprint
-
 
 class curry:
     """ Class used to implement the currification (functional programming technic) :
@@ -148,16 +146,6 @@ def printDict(di, format="%-25s %s"):
     for (key, val) in di.items():
         print format % (str(key)+':', val)
         
-
-#####################################
-#
-#  dump data structure in a stream
-#
-################################### 
-def dump(aData,aIostream=None):
-    pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
-    pp.pprint(aData)
-    
 
 def printInFile(aStr,aPath):
     #check if it is a path or a file

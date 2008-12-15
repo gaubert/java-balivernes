@@ -205,8 +205,6 @@ class TestSAMPMLCreator(unittest.TestCase):
    
            fetcher.fetch()
            
-           #fetcher.printContent(open("/tmp/sample_%s_extract.data"%(sampleID),"w"))
-       
            renderer = ParticulateRenderer(fetcher)
    
            xmlStr = renderer.asXmlStr()
@@ -228,7 +226,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='3')
+        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='6')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -252,7 +250,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            # fetchnoble particulate
            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
-           fetcher.fetch(request)
+           fetcher.fetch(request,'PAR')
                  
            renderer = GenieParticulateRenderer(fetcher)
    
@@ -331,7 +329,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            # fetchnoble particulate
            fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
-           fetcher.fetch(request,'PAR')
+           fetcher.fetch(request,'GAS')
                  
            renderer = SaunaRenderer(fetcher)
    
@@ -367,7 +365,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "****************************************************************************\n"
         print "****************************************************************************\n"
     
-    def testGenerateNobleGasARR(self):
+    def tesstGenerateNobleGasARR(self):
         """ Generate a Noble Gaz ARR """
         
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
@@ -443,21 +441,6 @@ class TestSAMPMLCreator(unittest.TestCase):
 
 if __name__ == '__main__':
     
-    #import coverage
-    #import ctbto
-    #coverage.erase()
-    
-    #coverage.start()
-   
-    print "HEllo \n"
     unittest.main()
-    
-    #coverage.stop()
-    
-    #coverage.analysis()
-    
-    f = open("/tmp/toto.report","w")
-    
-    print "Report %s\n"%(coverage.report(file=f))
     
     

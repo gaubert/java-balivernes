@@ -29,46 +29,46 @@ class DBDataFetcher(object):
     c_nid_translation = {0:"nuclide not identified by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
     
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
-       """ Factory method returning the right DBFetcher \
+        """ Factory method returning the right DBFetcher \
            First it gets the sample type in order to instantiate the right DBFetcher => Particulate or NobleGas
-       """
+           """
        
-       # check preconditions
-       if aMainDbConnector is None: raise CTBTOError(-1,"passed argument aMainDbConnector is null")
+        # check preconditions
+        if aMainDbConnector is None: raise CTBTOError(-1,"passed argument aMainDbConnector is null")
        
-       if aArchiveDbConnector is None: raise CTBTOError(-1,"passed argument aArchiveDbConnector is null")
+        if aArchiveDbConnector is None: raise CTBTOError(-1,"passed argument aArchiveDbConnector is null")
        
-       if aSampleID is None : raise CTBTOError(-1,"passed argument aSampleID is null")
+        if aSampleID is None : raise CTBTOError(-1,"passed argument aSampleID is null")
        
-       # get sampleID type (ARIX or SAUNA or SPALAX or Particulate)
-       result = aMainDbConnector.execute(SQL_GETSAMPLETYPE%(aSampleID))
+        # get sampleID type (ARIX or SAUNA or SPALAX or Particulate)
+        result = aMainDbConnector.execute(SQL_GETSAMPLETYPE%(aSampleID))
         
-       rows = result.fetchall()
+        rows = result.fetchall()
        
-       nbResults = len(rows)
+        nbResults = len(rows)
        
-       if nbResults != 1:
+        if nbResults != 1:
             raise CTBTOError(-1,"Error, Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(aSampleID,nbResults,rows))
         
-       cls.c_log.debug("sampleID=%s,Type = %s"%(aSampleID,rows[0]['SAMPLE_TYPE']))
+        cls.c_log.debug("sampleID=%s,Type = %s"%(aSampleID,rows[0]['SAMPLE_TYPE']))
        
-       cls.c_log.debug("Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']]))
+        cls.c_log.debug("Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']]))
        
        
-       # create object and update its internal dictionary
-       inst = object.__new__(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']])
+        # create object and update its internal dictionary
+        inst = object.__new__(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']])
        
-       ty = rows[0]['SAMPLE_TYPE']
-       if ty is None: 
-           ty = "Particulate"
+        ty = rows[0]['SAMPLE_TYPE']
+        if ty is None: 
+            ty = "Particulate"
        
-       conf = Conf.get_instance()
+        conf = Conf.get_instance()
        
-       inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_parser':RequestParser(),'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':ty},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
+        inst.__dict__.update({'_sampleID':aSampleID,'_mainConnector':aMainDbConnector,'_archiveConnector':aArchiveDbConnector,'_parser':RequestParser(),'_dataBag':{u'CONTENT_NOT_PRESENT':set(),u'CONTENT_PRESENT':set(),u'SAMPLE_TYPE':ty},'_conf':conf,'_activateCaching':(True) if conf.get("Options","activateCaching","false") == "true" else False}) 
     
-       result.close()
+        result.close()
        
-       return inst
+        return inst
        
     #class method binding
     getDataFetcher = classmethod(getDataFetcher)
@@ -90,7 +90,7 @@ class DBDataFetcher(object):
         self._dataBag[u'CONTENT_NOT_PRESENT'] = set()
         
         # get reference to the conf object
-        self._conf              = ctbto.common.utils.Conf.get_instance()
+        self._conf              = ctbto.common.utils.Conf.get_instance() #IGNORE:E1101
         
         # create query parser 
         self._parser            = RequestParser()
@@ -99,7 +99,7 @@ class DBDataFetcher(object):
         self._activateCaching = (True) if self._conf.get("Options","activateCaching","false") == "true" else False
     
     def execute(self,aRequest,aTryOnArchive=False,aRaiseExceptionOnError=True):
-       """execute a sql request on the main connection and on the archive connection if necessary.
+        """execute a sql request on the main connection and on the archive connection if necessary.
        
            Args:
               aTryOnArchive: boolean for looking on the archive if no data has been retrieved
@@ -110,32 +110,32 @@ class DBDataFetcher(object):
        
            Raises:
               exception CTBTOError if the aRaiseExceptionOnError flag is activated
-       """
-       # on main connection
-       # try on the main connection
-       result = self._mainConnector.execute(aRequest)
+        """
+        # on main connection
+        # try on the main connection
+        result = self._mainConnector.execute(aRequest)
        
-       # fetch all rows and check if there is a least one
-       rows = result.fetchall()
-       nbResults = len(rows)
+        # fetch all rows and check if there is a least one
+        rows = result.fetchall()
+        nbResults = len(rows)
        
-       if nbResults <= 0:
-           #no results found so if flag is activated look into archive
-           if aTryOnArchive:
-              result.close()
-              result = self._archiveConnector.execute(aRequest)
+        if nbResults <= 0:
+            #no results found so if flag is activated look into archive
+            if aTryOnArchive:
+                result.close()
+                result = self._archiveConnector.execute(aRequest)
               
-              rows = result.fetchall()
-              nbResults = len(rows)
+                rows = result.fetchall()
+                nbResults = len(rows)
               
-              if nbResults == 0 and aRaiseExceptionOnError is True:
-                  result.close()
-                  raise CTBTOError(-1,"Error in Execute().Expecting to have one result for request %s but got %d either None or more than one. %s"%(aRequest,nbResults,rows))
-              else:
-                  return (rows,nbResults,True)
+                if nbResults == 0 and aRaiseExceptionOnError is True:
+                    result.close()
+                    raise CTBTOError(-1,"Error in Execute().Expecting to have one result for request %s but got %d either None or more than one. %s"%(aRequest,nbResults,rows))
+                else:
+                    return (rows,nbResults,True)
               
-       result.close()
-       return (rows,nbResults,False)
+        result.close()
+        return (rows,nbResults,False)
            
     
     def getMainConnector(self):
@@ -171,63 +171,63 @@ class DBDataFetcher(object):
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
     def _fetchStationInfo(self):
-       """ get station info. same treatment for all sample types """ 
-       DBDataFetcher.c_log.info("In fetch Station Info")
-       result = self._mainConnector.execute(SQL_GETSTATIONINFO%(self._sampleID))
+        """ get station info. same treatment for all sample types """ 
+        DBDataFetcher.c_log.info("In fetch Station Info")
+        result = self._mainConnector.execute(SQL_GETSTATIONINFO%(self._sampleID))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
        
-       nbResults = len(rows)
+        nbResults = len(rows)
        
-       if nbResults != 1:
+        if nbResults != 1:
             raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
-       # update data bag
-       self._dataBag.update(rows[0].items())
+        # update data bag
+        self._dataBag.update(rows[0].items())
        
-       result.close()
+        result.close()
        
     def _fetchDetectorInfo(self):
-       """ get station info. same treatment for all sample types """ 
+        """ get station info. same treatment for all sample types """ 
        
-       DBDataFetcher.c_log.info("In fetch Detector Info ")
+        DBDataFetcher.c_log.info("In fetch Detector Info ")
        
-       result = self._mainConnector.execute(SQL_GETDETECTORINFO%(self._sampleID))
+        result = self._mainConnector.execute(SQL_GETDETECTORINFO%(self._sampleID))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
        
-       nbResults = len(rows)
+        nbResults = len(rows)
        
-       if nbResults != 1:
+        if nbResults != 1:
             raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
-       # update data bag
-       self._dataBag.update(rows[0].items())
+        # update data bag
+        self._dataBag.update(rows[0].items())
        
-       result.close()
+        result.close()
        
     def _formatHalfLife(self,aHalfLife):
         """ transform halflife from the database given in days in an 8601 iso formatted period in seconds """
         
         try:
             
-          pattern = "(?P<year>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*Y|(?P<month>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*M|(?P<day>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*D|(?P<hour>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*H|(?P<minute>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*M|(?P<second>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*S"
+            pattern = "(?P<year>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*Y|(?P<month>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*M|(?P<day>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*D|(?P<hour>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*H|(?P<minute>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*M|(?P<second>[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)(\s)*S"
           
-          result = re.match(pattern,aHalfLife)
+            result = re.match(pattern,aHalfLife)
           
-          if result.group('year') != None:
-              return float(result.group('year')) 
-          elif result.group('month') != None:
-              return float(result.group('month'))
-          elif result.group('day') != None:
-              return float(result.group('day')) 
-          elif result.group('hour') != None:
-              return float(result.group('hour')) 
-          elif result.group('second') != None:
-              return float(result.group('second'))  
-          return float(aHalfLife)
+            if result.group('year') != None:
+                return float(result.group('year')) 
+            elif result.group('month') != None:
+                return float(result.group('month'))
+            elif result.group('day') != None:
+                return float(result.group('day')) 
+            elif result.group('hour') != None:
+                return float(result.group('hour')) 
+            elif result.group('second') != None:
+                return float(result.group('second'))  
+            return float(aHalfLife)
           
         except Exception, ex:
             raise CTBTOError(-1,"Error when parsing halflife value %s for sample_id %s. Exception %s"%(aHalfLife,self._sampleID,ex))
@@ -238,8 +238,8 @@ class DBDataFetcher(object):
         
         # transform date information
         for (key,value) in aDataDict.items():
-          if str(value.__class__) == "<type 'datetime.datetime'>" :
-              aDataDict[key]= value.isoformat()
+            if str(value.__class__) == "<type 'datetime.datetime'>" :
+                aDataDict[key]= value.isoformat() 
               
         return aDataDict
     
@@ -277,7 +277,7 @@ class DBDataFetcher(object):
                exception
         """
         
-        coeffsStr = ''.join(map(str,aCoeffs))
+        coeffsStr = ''.join(map(str,aCoeffs)) #IGNORE:W0141
         
         return ctbto.common.utils.checksum(coeffsStr)
         
@@ -323,81 +323,81 @@ class DBDataFetcher(object):
         
         # strip the retruned dataname as the database name can contain some funny characters
         if aDataType == 'S' and aSpectralQualifier == 'PREL':
-           return (("PREL_%s"%(aSampleID)).strip(),'PREL')
+            return (("PREL_%s"%(aSampleID)).strip(),'PREL')
         elif aDataType == 'S' and aSpectralQualifier == 'FULL':
-           return (("SPHD_%s"%(aSampleID)).strip(),'SPHD')
+            return (("SPHD_%s"%(aSampleID)).strip(),'SPHD')
         elif aDataType == 'Q':
-           return (("QC_%s"%(aSampleID)).strip(),'QC')
+            return (("QC_%s"%(aSampleID)).strip(),'QC')
         elif aDataType == 'D':
-           return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
+            return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
         elif aDataType == 'G' and aSpectralQualifier == 'FULL':
             return (("GASBK_%s"%(aSampleID)).strip(),'GASBK')
        # elif aDataType == 'G' and aSpectralQualifier == 'PREL':
        #     return (("GSPHD_%s"%(aSampleID)).strip(),'PSPHD')
         else:
-           raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
+            raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
     def _fetchGeneralSpectrumInfo(self,aSampleID,aPrefix=""):
-       """ get general spectrum info like acq date, sampling time ... """ 
+        """ get general spectrum info like acq date, sampling time ... """ 
        
-       DBDataFetcher.c_log.info("Getting general sample info for %s\n"%(aSampleID))
+        DBDataFetcher.c_log.info("Getting general sample info for %s\n"%(aSampleID))
        
-       result = self._mainConnector.execute(SQL_GETSAMPLEINFO%(aSampleID))
+        result = self._mainConnector.execute(SQL_GETSAMPLEINFO%(aSampleID))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
         
-       nbResults = len(rows)
+        nbResults = len(rows)
        
-       if nbResults != 1:
+        if nbResults != 1:
             raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(aSampleID,nbResults,rows))
          
-       # get retrieved data and transform dates
-       data = {}
-       data.update(rows[0])
+        # get retrieved data and transform dates
+        data = {}
+        data.update(rows[0])
        
-       # transform dates in data
-       self._transformResults(data)
+        # transform dates in data
+        self._transformResults(data)
        
-       # Work on dates and time
-       # add decay time => Acq_Start - Coll_Stop
+        # Work on dates and time
+        # add decay time => Acq_Start - Coll_Stop
        
-       #take the two operands
+        #take the two operands
        
-       a = rows[0]['DATA_ACQ_START']
-       b = rows[0]['DATA_COLLECT_STOP']
+        a = rows[0]['DATA_ACQ_START']
+        b = rows[0]['DATA_COLLECT_STOP']
        
-       if a is None or b is None:
-         data[u'DATA_DECAY_TIME'] = "Unknown"
-       else:   
-         # retrun difference in seconds
-         dc = ctbto.common.time_utils.getDifferenceInTime(b,a)
-         data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
+        if a is None or b is None:
+            data[u'DATA_DECAY_TIME'] = "Unknown"
+        else:   
+            # retrun difference in seconds
+            dc = ctbto.common.time_utils.getDifferenceInTime(b,a)
+            data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
        
-       a = rows[0][u'DATA_COLLECT_STOP']
-       b = rows[0]['DATA_COLLECT_START']
+        a = rows[0][u'DATA_COLLECT_STOP']
+        b = rows[0]['DATA_COLLECT_START']
        
-       if a is None or b is None:
-         data[u'DATA_SAMPLING_TIME'] = "Unknown"
-       else:
-         # sampling time in secondds
-         dc =  ctbto.common.time_utils.getDifferenceInTime(b,a)
-         data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
+        if a is None or b is None:
+            data[u'DATA_SAMPLING_TIME'] = "Unknown"
+        else:
+            # sampling time in secondds
+            dc =  ctbto.common.time_utils.getDifferenceInTime(b,a)
+            data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
        
-       data[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(data['DATA_ACQ_LIVE_SEC']) if data['DATA_ACQ_LIVE_SEC'] is not None else ""
-       data[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(data['DATA_ACQ_REAL_SEC']) if data['DATA_ACQ_REAL_SEC'] is not None else ""
+        data[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(data['DATA_ACQ_LIVE_SEC']) if data['DATA_ACQ_LIVE_SEC'] is not None else ""
+        data[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(data['DATA_ACQ_REAL_SEC']) if data['DATA_ACQ_REAL_SEC'] is not None else ""
        
-       (dataname,ty) = self._findDatanameAndType(aSampleID,data[u'DATA_DATA_TYPE'],data[u'DATA_SPECTRAL_QUALIFIER'])
+        (dataname,ty) = self._findDatanameAndType(aSampleID,data[u'DATA_DATA_TYPE'],data[u'DATA_SPECTRAL_QUALIFIER'])
        
-       # add prefix
-       data = self._addKeyPrefix(data,"%s%s"%(dataname,aPrefix))
+        # add prefix
+        data = self._addKeyPrefix(data,"%s%s"%(dataname,aPrefix))
        
-       # update data bag
-       self._dataBag.update(data.items())
+        # update data bag
+        self._dataBag.update(data.items())
         
-       result.close()
+        result.close()
        
-       return (dataname,ty)
+        return (dataname,ty)
        
     def _createCachingFile(self,aSampleID):
         """Build a caching file from the config caching dir and the given sampleID.
@@ -489,49 +489,49 @@ class DBDataFetcher(object):
                 # So we can use the cache otherwise launch a retrieval for what is missing
                 rest = rest.difference(self._dataBag[u'CONTENT_NOT_PRESENT'])
                 if len(rest) > 0:
-                 # something needs to be looked for: it is in rest
-                 # rebuild a spectrum param
-                 params         = "spectrum="
-                 accessDatabase = True
-                 cpt = 1
-                 for elem in rest:
-                   if cpt != len(rest):
-                     params += "%s/"%(elem)  
-                   else:
-                     params += "%s"%(elem) 
+                    # something needs to be looked for: it is in rest
+                    # rebuild a spectrum param
+                    params         = "spectrum="
+                    accessDatabase = True
+                    cpt = 1
+                    for elem in rest:
+                        if cpt != len(rest):
+                            params += "%s/"%(elem)  
+                        else:
+                            params += "%s"%(elem) 
                    
-                   cpt += 1          
+                        cpt += 1          
         else:
-          params = aParams 
-          accessDatabase = True
+            params = aParams 
+            accessDatabase = True
          
         if accessDatabase:
-          DBDataFetcher.c_log.info("Read missing sample data from the database for %s.\n"%(self._sampleID))
+            DBDataFetcher.c_log.info("Read missing sample data from the database for %s.\n"%(self._sampleID))
           
-          #get refID
-          self._fetchSampleRefId()
+            #get refID
+            self._fetchSampleRefId()
           
-          # get station info
-          self._fetchStationInfo()
+            # get station info
+            self._fetchStationInfo()
         
-          # get detector info
-          self._fetchDetectorInfo()
+            # get detector info
+            self._fetchDetectorInfo()
           
-          # get Data Files
-          self._fetchData(params)
+            # get Data Files
+            self._fetchData(params)
 
-          # get analysis results
-          self._fetchAnalysisResults(params)
+            # get analysis results
+            self._fetchAnalysisResults(params)
         
-          self._fetchCalibration()
+            self._fetchCalibration()
           
-          self._cache()
+            self._cache()
         else:
-          DBDataFetcher.c_log.info("Entirely rely on the cache for %s\n"%(self._sampleID))
+            DBDataFetcher.c_log.info("Entirely rely on the cache for %s\n"%(self._sampleID))
           
         # create human readable Hash in /tmp if option activated
         if self._conf.getboolean("Options","writeHumanReadableData") is True:
-           self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
+            self.printContent(open("/tmp/sample_%s_extract.data"%(self._sampleID),"w"))
     
     def _removeChannelSpan(self,aLine):
         """remove the first column of the matrix of values.
@@ -548,7 +548,7 @@ class DBDataFetcher(object):
         justify = ctbto.common.utils.curry(string.ljust,width=11)
         
         # justify all elements in the list
-        l = map(justify,aLine.split()[1:])
+        l = map(justify,aLine.split()[1:]) #IGNORE:W0141
         
         # join all that to have a unique string 
         # need to join on an empty string. Strange interface for the join method
@@ -571,10 +571,10 @@ class DBDataFetcher(object):
         
         # look for #g_Spectrum
         for line in aInput:
-             if line.find('#g_Spectrum') >= 0:
-                 # quit the loop
-                 hasFoundSpectrum = True
-                 break
+            if line.find('#g_Spectrum') >= 0:
+                # quit the loop
+                hasFoundSpectrum = True
+                break
         
         if hasFoundSpectrum is False:
             raise CTBTOError(-1,"No spectrum tag #g_Spectrum found in file "%(aInput))
@@ -624,7 +624,7 @@ class DBDataFetcher(object):
         
         return (data,"0 0")
     
-    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='curr',aSpectrumType='CURR'):
+    def _readDataFile(self,aFoundOnArchive,aDir,aFilename,aProdType,aOffset,aSize,aSampleID,aDataname='curr',aSpectrumType='CURR'):  #IGNORE:W0613
         """read data from the main connection which is not archived.
            The data dict will be populated accordingly to the data found.
         
@@ -652,17 +652,17 @@ class DBDataFetcher(object):
         
         # if config says RemoteDataSource is activated then create a remote data source
         if self._conf.getboolean("Options","remoteDataSource") is True:
-           # to be changed as a factory should be used
-           if aFoundOnArchive is True:
-              theInput = ctbto.db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
-              ext   = os.path.splitext(theInput.getLocalFilename())[-1]
-           else: 
-              theInput = ctbto.db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
-              ext   = os.path.splitext(theInput.getLocalFilename())[-1]
+            # to be changed as a factory should be used
+            if aFoundOnArchive is True:
+                theInput = ctbto.db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize)
+                ext   = os.path.splitext(theInput.getLocalFilename())[-1]
+            else: 
+                theInput = ctbto.db.rndata.RemoteFSDataSource(path,aSampleID,aOffset,aSize)
+                ext   = os.path.splitext(theInput.getLocalFilename())[-1]
         else:
             # this is a local path so check if it exits and open fd
             if not os.path.exists(path):
-               raise CTBTOError(-1,"the file %s does not exits"%(path))
+                raise CTBTOError(-1,"the file %s does not exits"%(path))
            
             theInput = open(path,"r")
             ext = os.path.splitext(aFilename)[-1] 
@@ -691,19 +691,19 @@ class DBDataFetcher(object):
        
         parsedHistogram = StringIO()
         try:
-           for line in aData:
-                  parsedHistogram.write("                %s"%(line))
+            for line in aData:
+                parsedHistogram.write("                %s"%(line))
         finally: 
-           aData.close()   
+            aData.close()   
      
         # check in the conf if we need to compress the data
         if aToCompress:
             try:
-              data = base64.b64encode(zlib.compress(parsedHistogram.getvalue()))
+                data = base64.b64encode(zlib.compress(parsedHistogram.getvalue()))
             except Exception, e:
                 DBDataFetcher.c_log.error("Error,%s\n"%(e))
         else:
-           data = parsedHistogram.getvalue()
+            data = parsedHistogram.getvalue()
           
         return data
         
@@ -731,38 +731,38 @@ class DBDataFetcher(object):
         # [MAJ] to change
         parsedSpectrum = StringIO()
         try:
-           for line in aData:
+            for line in aData:
                 
-              # we might also have to add more splitting character
-              # get the first column which should always be the last columns (channel span)
-              # get also max of value of other columns (energy span)
-              #use int instread of atoi
-              l = map(int,line.split())
+                # we might also have to add more splitting character
+                # get the first column which should always be the last columns (channel span)
+                # get also max of value of other columns (energy span)
+                #use int instread of atoi
+                l = map(int,line.split()) #IGNORE:W0141
               
-              if l[0] > channel_span:
-                 channel_span = l[0]
+                if l[0] > channel_span:
+                    channel_span = l[0]
                  
-              e_max = max(l[1:]) 
+                e_max = max(l[1:]) 
               
-              if energy_span < e_max:
-                  energy_span = e_max
+                if energy_span < e_max:
+                    energy_span = e_max
               
-              # add 16 spaces char for formatting purposes
-              if self._conf.getboolean("Options","removeChannelIndex") is True:
-                  parsedSpectrum.write("                %s"%(self._removeChannelSpan(line)))
-              else:
-                  parsedSpectrum.write("                %s"%(line))
+                # add 16 spaces char for formatting purposes
+                if self._conf.getboolean("Options","removeChannelIndex") is True:
+                    parsedSpectrum.write("                %s"%(self._removeChannelSpan(line)))
+                else:
+                    parsedSpectrum.write("                %s"%(line))
         finally: 
-           aData.close()   
+            aData.close()   
      
         # check in the conf if we need to compress the data
         if aToCompress:
             try:
-              data = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
+                data = base64.b64encode(zlib.compress(parsedSpectrum.getvalue()))
             except Exception, e:
                 DBDataFetcher.c_log.error("Error,%s\n"%(e))
         else:
-           data = parsedSpectrum.getvalue()
+            data = parsedSpectrum.getvalue()
           
         
         return (data,channel_span,energy_span)
@@ -772,8 +772,9 @@ class DBDataFetcher(object):
         return self._dataBag.get(aKey,aDefault)
     
     def printContent(self,aIostream = None):
-       pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
-       pp.pprint(self._dataBag)
+        
+        pp = pprint.PrettyPrinter(indent=4,stream=aIostream)
+        pp.pprint(self._dataBag)
        
 ##############################################
 ### class: SaunaNobleGasDataFetcher
@@ -811,17 +812,17 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a Detector background itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
-           return
+            return
         
         SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
        
         if nbResults == 0:
-           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
-           return
+            SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
+            return
        
         if nbResults > 1:
             SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -832,15 +833,15 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
         # now fetch the spectrum
         try:
-           (dataname,ty) = self._fetchAllData(sid)
+            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
            
-           self._dataBag[u'CURRENT_DETBK'] = dataname
+            self._dataBag[u'CURRENT_DETBK'] = dataname
            
-           self._dataBag[u'CONTENT_PRESENT'].add('DETBK') 
+            self._dataBag[u'CONTENT_PRESENT'].add('DETBK') 
            
         except Exception, e:
-           SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
+            SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
     
     def _fetchGASBKSpectrumData(self):
         """get the Background data.
@@ -859,17 +860,17 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a Detector background itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'G':
-           return
+            return
         
         SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
        
         if nbResults == 0:
-           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
-           return
+            SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
+            return
        
         if nbResults > 1:
             SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -880,15 +881,15 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
         # now fetch the spectrum
         try:
-           (dataname,ty) = self._fetchAllData(sid)
+            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
            
-           self._dataBag[u'CURRENT_GASBK'] = dataname
+            self._dataBag[u'CURRENT_GASBK'] = dataname
            
-           self._dataBag[u'CONTENT_PRESENT'].add('GASBK') 
+            self._dataBag[u'CONTENT_PRESENT'].add('GASBK') 
            
         except Exception, e:
-           SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
+            SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
     
     def _fetchPrelsSpectrumData(self):
         """get the preliminary data.
@@ -907,12 +908,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a prel itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
-           return
+            return
     
         SaunaNobleGasDataFetcher.c_log.info("Getting Prels Spectrum for %s\n"%(self._sampleID))
          
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID']))
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
         
         if nbResults == 0:
             SaunaNobleGasDataFetcher.c_log.info("There is no PREL spectrum for %s."%(self._sampleID))
@@ -925,7 +926,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             sid = row['SAMPLE_ID']
              
             # now fetch the spectrum with the a PREL_cpt id
-            (dataname,ty) = self._fetchAllData(sid)
+            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
             # update list of prels
             listOfPrel.append(dataname)
          
@@ -951,20 +952,20 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a Detector background itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
-           return
+            return
         
         SaunaNobleGasDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
         
         nbResults = len(rows)
         
         if nbResults == 0:
-           SaunaNobleGasDataFetcher.c_log.info("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
-           # add in CONTENT_NOT_PRESENT this is used by the cache
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
-           return
+            SaunaNobleGasDataFetcher.c_log.info("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+            # add in CONTENT_NOT_PRESENT this is used by the cache
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+            return
        
         if nbResults > 1:
             SaunaNobleGasDataFetcher.c_log.info("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -972,16 +973,16 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         sid = rows[0]['SAMPLE_ID']
         
         try:
-          # now fetch the spectrum
-          (dataname,ty) = self._fetchAllData(sid)
+            # now fetch the spectrum
+            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
         
-          self._dataBag[u'CURRENT_QC'] = dataname
+            self._dataBag[u'CURRENT_QC'] = dataname
            
-          self._dataBag[u'CONTENT_PRESENT'].add('QC') 
+            self._dataBag[u'CONTENT_PRESENT'].add('QC') 
         
         except Exception, e:
-         SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e))
-         self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+            SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
     
     def _fetchCURRSpectrumData(self):
         """ fetch the current spectrum identified by the current sampleID
@@ -996,12 +997,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                exception
         """
         
-        (dataname,ty) = self._fetchAllData(self._sampleID)
+        (dataname,ty) = self._fetchAllData(self._sampleID) #IGNORE:W0612
         
         self._dataBag[u'CURRENT_CURR'] = dataname
         
         if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
-           self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
+            self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
         
     def _fetchAuxiliarySampleInfo(self,aSampleID,aDataname):
         """ Get auxiliary information
@@ -1043,10 +1044,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
 
         for row in rows:
-         # copy row in a normal dict
-         data.update(row)
-         res.append(data)
-         data = {}
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
         
         # add in dataBag
         self._dataBag[u'XE_NUCL_LIB'] = res
@@ -1099,57 +1100,57 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             # we can also have .h coming from noble gaz histogram
             if filename.endswith("b.s") or filename.endswith("b.archs"):
                
-               spec_id = "%s_DATA_B"%(dataname)
+                spec_id = "%s_DATA_B"%(dataname)
                
-               (data,limits) = self._extractSpectrumFromSpectrumFile(theInput)
+                (data,limits) = self._extractSpectrumFromSpectrumFile(theInput) #IGNORE:W0612
              
-               theInput.close()
+                theInput.close()
            
-               (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+                (data,channel_span,energy_span) = self._processSpectrum(data,compressed) #IGNORE:W0612
                
-               self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
-               self._dataBag[u"%s"%(spec_id)]                = data
-               # create a unique id for the extract data
-               self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
+                self._dataBag[u"%s"%(spec_id)]                = data
+                # create a unique id for the extract data
+                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
                   
             elif filename.endswith("g.s") or filename.endswith("g.archs"):
-               spec_id = "%s_DATA_G"%(dataname)
+                spec_id = "%s_DATA_G"%(dataname)
                
-               (data,limits) = self._extractSpectrumFromSpectrumFile(theInput)
+                (data,limits) = self._extractSpectrumFromSpectrumFile(theInput)
              
-               theInput.close()
+                theInput.close()
            
-               (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
                
-               self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
-               self._dataBag[u"%s"%(spec_id)]                = data
-               # create a unique id for the extract data
-               self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
+                self._dataBag[u"%s"%(spec_id)]                = data
+                # create a unique id for the extract data
+                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
                
             elif filename.endswith(".h") or filename.endswith(".archhist"):
-               spec_id = "%s_DATA_H"%(dataname)
+                spec_id = "%s_DATA_H"%(dataname)
                
-               (data,limits) = self._extractHistrogramFromHistogramFile(theInput)
+                (data,limits) = self._extractHistrogramFromHistogramFile(theInput)
                
-               theInput.close()
+                theInput.close()
                
-               data = self._processHistogram(data,compressed)
+                data = self._processHistogram(data,compressed)
                
-               self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
-               self._dataBag[u"%s"%(spec_id)]                = data
+                self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
+                self._dataBag[u"%s"%(spec_id)]                = data
                
-               (r,n,foundOnArchive) = self.execute(SQL_SAUNA_GET_HISTOGRAM_INFO%(aSampleID),aTryOnArchive=True,aRaiseExceptionOnError=False)
-               if nbResults == 0:
-                   SaunaNobleGasDataFetcher.c_log.warning("WARNING: Cannot find histogram information for sample_id %s in the database.\n"%(aSampleID))
-               else:
-                  # get energy and channel span from the table
-                  self._dataBag[u"%s_DATA_G_CHANNEL_SPAN"%(dataname)] = r[0]['G_CHANNELS']
-                  self._dataBag[u"%s_DATA_G_ENERGY_SPAN"%(dataname)]  = r[0]['G_ENERGY_SPAN']
-                  self._dataBag[u"%s_DATA_B_CHANNEL_SPAN"%(dataname)] = r[0]['B_CHANNELS']
-                  self._dataBag[u"%s_DATA_B_ENERGY_SPAN"%(dataname)]  = r[0]['B_ENERGY_SPAN']
+                (r,n,foundOnArchive) = self.execute(SQL_SAUNA_GET_HISTOGRAM_INFO%(aSampleID),aTryOnArchive=True,aRaiseExceptionOnError=False) #IGNORE:W0612
+                if nbResults == 0:
+                    SaunaNobleGasDataFetcher.c_log.warning("WARNING: Cannot find histogram information for sample_id %s in the database.\n"%(aSampleID))
+                else:
+                    # get energy and channel span from the table
+                    self._dataBag[u"%s_DATA_G_CHANNEL_SPAN"%(dataname)] = r[0]['G_CHANNELS']
+                    self._dataBag[u"%s_DATA_G_ENERGY_SPAN"%(dataname)]  = r[0]['G_ENERGY_SPAN']
+                    self._dataBag[u"%s_DATA_B_CHANNEL_SPAN"%(dataname)] = r[0]['B_CHANNELS']
+                    self._dataBag[u"%s_DATA_B_ENERGY_SPAN"%(dataname)]  = r[0]['B_ENERGY_SPAN']
                
-               # create a unique id for the extracted data
-               self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                # create a unique id for the extracted data
+                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
                
             elif filename.endswith(".msg") or filename.endswith(".archmsg"):
                 # Here whe should extract the 3 components
@@ -1157,7 +1158,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 CTBTOError(-1,"To be developed\n")
             # remove it for the moment
             else:
-              raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,filename,aSampleID))
+                raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,filename,aSampleID))
         
         # the global prefix BK_SID or CURR_SID and the ty (PREL, BK, CURR)
         return (dataname,ty)
@@ -1173,65 +1174,65 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         #fetch current spectrum
         if ('CURR' in spectrums):
-           self._fetchCURRSpectrumData()
+            self._fetchCURRSpectrumData()
         
         if ('QC' in spectrums):
-          self._fetchQCSpectrumData()
+            self._fetchQCSpectrumData()
         
         # this is detector BK
         # to be changed in DETBK
         if ('DETBK' in spectrums):
-           self._fetchDETBKSpectrumData()
+            self._fetchDETBKSpectrumData()
            
         # get Gas BK
         # to be change in GASBK
         if ('GASBK' in spectrums):
-           self._fetchGASBKSpectrumData()
+            self._fetchGASBKSpectrumData()
         
         if ('PREL' in spectrums):
-           self._fetchPrelsSpectrumData()
+            self._fetchPrelsSpectrumData()
            
     def _fetchAnalysisResults(self,aParams):
-       """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
-       # get static info necessary for the analysis
-       self._fetchNuclidesToQuantify()
+        # get static info necessary for the analysis
+        self._fetchNuclidesToQuantify()
            
-       analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
+        analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
        
-       if ('None' in analyses):
+        if ('None' in analyses):
             # None is in there so do not include data
             return
         
-       for analysis in analyses:
+        for analysis in analyses:
         
-          # for the moment ignore Analysis for PREL
-          if analysis == 'PREL' :
-              continue
+            # for the moment ignore Analysis for PREL
+            if analysis == 'PREL' :
+                continue
         
-          # check if there is some data regarding this type of analysis
-          # get the dataname of the current spectrum (it is the main spectrum)
-          dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
+            # check if there is some data regarding this type of analysis
+            # get the dataname of the current spectrum (it is the main spectrum)
+            dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
           
-          if dataname is not None:
-             DBDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
+            if dataname is not None:
+                DBDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
-             # extract id from dataname
-             [pre,sid] = dataname.split('_')
+                # extract id from dataname
+                [pre,sid] = dataname.split('_') #IGNORE:W0612
           
-             #self._fetchCategoryResults(sid,dataname)
+                #self._fetchCategoryResults(sid,dataname)
         
-             self._fetchNuclidesResults(sid,dataname)
+                self._fetchNuclidesResults(sid,dataname)
              
-             self._fetchROIResults(sid,dataname)
+                self._fetchROIResults(sid,dataname)
                  
-             self._fetchFlags(sid,dataname)
+                self._fetchFlags(sid,dataname)
         
-             self._fetchParameters(sid,dataname)
+                self._fetchParameters(sid,dataname)
    
    
     def _fetchNuclidesResults(self,sid,dataname):
-       """fetch all the nuclides information regading the passed sampleID (sid).
+        """fetch all the nuclides information regading the passed sampleID (sid).
             
                 Args:
                    sid:sample_id
@@ -1243,56 +1244,54 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 Raises:
                    exception"""
         
-       # get identified Nuclides
-       result = self._mainConnector.execute(SQL_SAUNA_GET_IDENTIFIED_NUCLIDES%(sid))
+        # get identified Nuclides
+        result = self._mainConnector.execute(SQL_SAUNA_GET_IDENTIFIED_NUCLIDES%(sid))
        
-       # only one row in result set
-       rows = result.fetchall()   
+        # only one row in result set
+        rows = result.fetchall()   
        
-       # get the volume to comp[ute activity from concentration
-       # it is in m3
-       volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
+        # get the volume to comp[ute activity from concentration
+        # it is in m3
+        volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
         
-       # add results in a list which will become a list of dicts
-       res = []
-       data = {}
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
         
-       for row in rows:
-          data.update(row.items())  
+        for row in rows:
+            data.update(row.items())  
             
-          nidflag = data.get(u'NID_FLAG',None)
+            nidflag = data.get(u'NID_FLAG',None)
 
-          # check if there is NID key
-          if nidflag is not None:
-            val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
-            data[u'NID_FLAG']     = val
-            data[u'NID_FLAG_NUM'] = nidflag
+            # check if there is NID key
+            if nidflag is not None:
+                val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
+                data[u'NID_FLAG']     = val
+                data[u'NID_FLAG_NUM'] = nidflag
         
           
-          # get activity. If no volume or no activity results are 0
-          data[u'ACTIVITY'] = data.get(u'CONC',0)*volume
-          data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
+            # get activity. If no volume or no activity results are 0
+            data[u'ACTIVITY'] = data.get(u'CONC',0)*volume
+            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
           
-          # to avoid div by 0 check that quotient is not nul
-          if data[u'ACTIVITY'] != 0:
-             data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
+            # to avoid div by 0 check that quotient is not nul
+            if data[u'ACTIVITY'] != 0:
+                data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
           
-          # add concentration error in percent
-          if data.get(u'CONC',0) != 0:
-             data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
+            # add concentration error in percent
+            if data.get(u'CONC',0) != 0:
+                data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
           
-          data[u'LC_ACTIVITY'] = data.get(u'LC',0)*volume  
-          data[u'LD_ACTIVITY'] = data.get(u'LD',0)*volume
+            data[u'LC_ACTIVITY'] = data.get(u'LC',0)*volume  
+            data[u'LD_ACTIVITY'] = data.get(u'LD',0)*volume
           
-                
-            
-          res.append(data)
-          data = {}
+            res.append(data)
+            data = {}
 
-       # add in dataBag
-       self._dataBag[u'%s_IDED_NUCLIDES'%(dataname)] = res
+        # add in dataBag
+        self._dataBag[u'%s_IDED_NUCLIDES'%(dataname)] = res
             
-       result.close()
+        result.close()
     
     def _fetchFlags(self,sid,aDataname):
         """ get the different flags """
@@ -1315,12 +1314,12 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
             # check that vol + err > VolMin
             if (vol + vol_err) < volMin:
-               #NOK
-               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Fail'
+                #NOK
+                self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Fail'
                
             else:
-               # OK
-               self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
+                # OK
+                self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
             
             self._dataBag[u'%s_VOLUME_VAL'%(aDataname)]  = vol
             self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x >= 0.43 ml' 
@@ -1347,12 +1346,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # check time collection 
         # if 4 within 24 hours
         if diff_in_sec < coll_min or diff_in_sec > coll_max:
-          # not ok add the diff
-          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Fail'
-          
+            # not ok add the diff
+            self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Fail'
         else:
-          # ok
-          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Pass'
+            # ok
+            self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Pass'
         
         self._dataBag[u'%s_TIME_FLAGS_COLLECTION_VAL'%(aDataname)]   = diff_in_sec
         self._dataBag[u'%s_TIME_FLAGS_COLLECTION_TEST'%(aDataname)] = 'x between 4h and 25h'
@@ -1371,11 +1369,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
         # check pause time or decay time
         if diff_in_sec > pause_max or diff_in_sec < pause_min:
-           # NOK
-           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Fail'
+            # NOK
+            self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Fail'
         else:
-           # OK
-           self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Pass' 
+            # OK
+            self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Pass' 
         
         self._dataBag[u'%s_TIME_FLAGS_DECAY_VAL'%(aDataname)]   = diff_in_sec
         self._dataBag[u'%s_TIME_FLAGS_DECAY_TEST'%(aDataname)]  = 'x between 0.1h and 24h'
@@ -1436,10 +1434,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-          data.update(row.items())  
+            data.update(row.items())  
           
-          res.append(data)
-          data = {}
+            res.append(data)
+            data = {}
 
         # add in dataBag
         self._dataBag[u'%s_PROC_PARAMS'%(dataname)] = res
@@ -1457,10 +1455,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-          data.update(row.items())  
+            data.update(row.items())  
           
-          res.append(data)
-          data = {}
+            res.append(data)
+            data = {}
 
         # add in dataBag
         self._dataBag[u'%s_ROI_PARAMS'%(dataname)] = res
@@ -1469,7 +1467,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
       
       
     def _fetchNuclideNamePerROI(self,sid):
-       """fetch the nuclide names for a given ROI.
+        """fetch the nuclide names for a given ROI.
             
                 Args:
                    sid:sample_id
@@ -1480,24 +1478,24 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 Raises:
                    exception
         """ 
-       # get ROI Concs
-       result = self._mainConnector.execute(SQL_SAUNA_GET_NUCLIDE_FOR_ROI%(sid))
+        # get ROI Concs
+        result = self._mainConnector.execute(SQL_SAUNA_GET_NUCLIDE_FOR_ROI%(sid))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
    
-       # add results in a dict
-       data = {}
-       for row in rows:
-          data[row['ROI']] = row['NAME']
+        # add results in a dict
+        data = {}
+        for row in rows:
+            data[row['ROI']] = row['NAME']
        
-       # region 1 always PB-214
-       data[1] = "PB-214"
+        # region 1 always PB-214
+        data[1] = "PB-214"
         
-       return data
+        return data
    
     def _fetchROIEfficiency(self,sid):
-       """fetch all the ROI Efficiency info.
+        """fetch all the ROI Efficiency info.
             
                 Args:
                    sid:sample_id
@@ -1507,23 +1505,23 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
                 Raises:
                    exception
-       """ 
-       # GET ROI INFO
-       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_EFFICIENCY%(sid))
+           """ 
+        # GET ROI INFO
+        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_EFFICIENCY%(sid))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
    
-       # add results in a dict
-       data = {} 
+        # add results in a dict
+        data = {} 
        
-       for row in rows:
-           data[row['ROI']]=(row['BG_EFFICIENCY'],row['BG_EFFIC_ERROR'])
+        for row in rows:
+            data[row['ROI']]=(row['BG_EFFICIENCY'],row['BG_EFFIC_ERROR'])
     
-       return data
+        return data
            
     def _fetchROIResults(self,sid,dataname):
-       """fetch all the ROI information for the passed sampleID (sid).
+        """fetch all the ROI information for the passed sampleID (sid).
             
                 Args:
                    sid:sample_id
@@ -1534,67 +1532,67 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
                 Raises:
                    exception
-       """
+        """
        
-       # first game the Nuclide for the corresponding ROI
-       ROI_2_Nuclides = self._fetchNuclideNamePerROI(sid)
+        # first game the Nuclide for the corresponding ROI
+        ROI_2_Nuclides = self._fetchNuclideNamePerROI(sid)
        
-       efficiency = self._fetchROIEfficiency(sid)
+        efficiency = self._fetchROIEfficiency(sid)
     
-       # GET ROI INFO
-       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_INFO%(sid))
+        # GET ROI INFO
+        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_INFO%(sid))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
    
-       # add results in a list which will become a list of dicts
-       res = []
-       data = {}
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
         
-       for row in rows:
-          data.update(row.items()) 
+        for row in rows:
+            data.update(row.items()) 
           
-          # add related nuclide
-          data[u'Nuclide'] = ROI_2_Nuclides.get(data['ROI'],"NoName")
+            # add related nuclide
+            data[u'Nuclide'] = ROI_2_Nuclides.get(data['ROI'],"NoName")
           
-          # add efficiency
-          eff = efficiency.get(data['ROI'],None)
-          if eff != None:
-              (e,e_err) = eff
-              data[u'EFFICIENCY'] = e
-              data[u'EFFICIENCY_ERROR'] = e_err
+            # add efficiency
+            eff = efficiency.get(data['ROI'],None)
+            if eff != None:
+                (e,e_err) = eff
+                data[u'EFFICIENCY'] = e
+                data[u'EFFICIENCY_ERROR'] = e_err
               
-              # get relative error
-              if e != 0:
-                  data[u'EFFICIENCY_ERROR_PERC'] = (e_err*100)/e
+                # get relative error
+                if e != 0:
+                    data[u'EFFICIENCY_ERROR_PERC'] = (e_err*100)/e
               
             
-          res.append(data)
-          data = {}
+            res.append(data)
+            data = {}
 
-       # add in dataBag
-       self._dataBag[u'%s_ROI_INFO'%(dataname)] = res  
-       result.close()
+        # add in dataBag
+        self._dataBag[u'%s_ROI_INFO'%(dataname)] = res  
+        result.close()
        
-       # get ROI Boundaries
-       # GET ROI INFO
-       result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_BOUNDARIES%(sid))
+        # get ROI Boundaries
+        # GET ROI INFO
+        result = self._mainConnector.execute(SQL_SAUNA_GET_ROI_BOUNDARIES%(sid))
        
-       # only one row in result set
-       rows = result.fetchall()
+        # only one row in result set
+        rows = result.fetchall()
    
-       # add results in a list which will become a list of dicts
-       res = []
-       data = {}
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
         
-       for row in rows:
-          data.update(row.items()) 
-          res.append(data)
-          data = {}
+        for row in rows:
+            data.update(row.items()) 
+            res.append(data)
+            data = {}
 
-       # add in dataBag
-       self._dataBag[u'%s_ROI_BOUNDARIES'%(dataname)] = res  
-       result.close()
+        # add in dataBag
+        self._dataBag[u'%s_ROI_BOUNDARIES'%(dataname)] = res  
+        result.close()
      
     def _fetchCalibration(self):  
         """ Fetch the calibration info for all the different spectrums """
@@ -1607,16 +1605,16 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 for prel in self._dataBag.get('CURR_List_OF_PRELS',[]):
                     
                     if prel is None:
-                       raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                        raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
                     
                     self._fetchCalibrationCoeffs(prel)
             else:    
             
-               prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
-               if prefix is None:
-                  raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
+                if prefix is None:
+                    raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
                
-               self._fetchCalibrationCoeffs(prefix)
+                self._fetchCalibrationCoeffs(prefix)
           
                         
     def _fetchCalibrationCoeffs(self,prefix):
@@ -1624,7 +1622,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # get the sampleID 
         # extract id from dataname
         
-        [pre,sid] = prefix.split('_')
+        [pre,sid] = prefix.split('_') #IGNORE:W0612
     
         if sid is None:
             raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
@@ -1747,39 +1745,39 @@ class ParticulateDataFetcher(DBDataFetcher):
             ParticulateDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
         
         for row in rows:
-           (anInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
+            (anInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
            
-           # check if it has to be compressed
-           compressed = self._conf.getboolean("Options","compressSpectrum")
-           sid = "%s_G_DATA"%(dataname)
+            # check if it has to be compressed
+            compressed = self._conf.getboolean("Options","compressSpectrum")
+            sid = "%s_G_DATA"%(dataname)
                 
-           # check the message type and do the necessary.
-           # here we expect a .msg or .s
-           # we can also have .h coming from noble gaz histogram
-           if ext == '.msg' or ext == '.archmsg':
+            # check the message type and do the necessary.
+            # here we expect a .msg or .s
+            # we can also have .h coming from noble gaz histogram
+            if ext == '.msg' or ext == '.archmsg':
               
-              (data,limits)  =  self._extractSpectrumFromMessageFile(anInput)
+                (data,limits)  =  self._extractSpectrumFromMessageFile(anInput) #IGNORE:W0612
               
-              anInput.close()
+                anInput.close()
               
-              (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
-           # '.archs' given for an archived sample
-           elif ext == '.s' or ext == '.archs':
+                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+            # '.archs' given for an archived sample
+            elif ext == '.s' or ext == '.archs':
             
-             (data,limits) = self._extractSpectrumFromSpectrumFile(anInput)
+                (data,limits) = self._extractSpectrumFromSpectrumFile(anInput)
              
-             anInput.close()
+                anInput.close()
            
-             (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
-           else:
-             raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,row['DFile'],aSampleID))
+                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+            else:
+                raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,row['DFile'],aSampleID))
          
-           self._dataBag[u"%s_COMPRESSED"%(sid)]     = compressed
-           self._dataBag[u"%s"%(sid)]                        = data
-           self._dataBag[u"%s_CHANNEL_SPAN"%(sid)]   = channel_span
-           self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
-           # create a unique id for the extract data
-           self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+            self._dataBag[u"%s_COMPRESSED"%(sid)]     = compressed
+            self._dataBag[u"%s"%(sid)]                = data
+            self._dataBag[u"%s_CHANNEL_SPAN"%(sid)]   = channel_span
+            self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
+            # create a unique id for the extract data
+            self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
         
         return (dataname,ty)
         
@@ -1801,7 +1799,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a Detector background itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
-           return
+            return
         
         ParticulateDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
@@ -1814,9 +1812,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults == 0:
-           ParticulateDataFetcher.c_log.warning("There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
-           return
+            ParticulateDataFetcher.c_log.warning("There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+            return
        
         if nbResults > 1:
             ParticulateDataFetcher.c_log.warning("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -1829,15 +1827,15 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # now fetch the spectrum
         try:
-           (dataname,ty) = self._fetchSpectrumData(sid)
+            (dataname,ty) = self._fetchSpectrumData(sid) #IGNORE:W0612
            
-           self._dataBag[u'CURRENT_BK'] = dataname
+            self._dataBag[u'CURRENT_BK'] = dataname
            
-           self._dataBag[u'CONTENT_PRESENT'].add('BK') 
+            self._dataBag[u'CONTENT_PRESENT'].add('BK') 
            
         except Exception, e:
-           ParticulateDataFetcher.c_log.warning("Warning. No Data File found for background %s.Exception : %s\n"%(sid,e))
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+            ParticulateDataFetcher.c_log.warning("Warning. No Data File found for background %s.Exception : %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
             
     
     def _fetchQCSpectrumData(self):
@@ -1856,20 +1854,20 @@ class ParticulateDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a Detector background itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
-           return
+            return
         
         ParticulateDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
         
         nbResults = len(rows)
         
         if nbResults == 0:
-           ParticulateDataFetcher.c_log.warning("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
-           # add in CONTENT_NOT_PRESENT this is used by the cache
-           self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
-           return
+            ParticulateDataFetcher.c_log.warning("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+            # add in CONTENT_NOT_PRESENT this is used by the cache
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+            return
        
         if nbResults > 1:
             ParticulateDataFetcher.c_log.warning("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -1877,16 +1875,16 @@ class ParticulateDataFetcher(DBDataFetcher):
         sid = rows[0]['SAMPLE_ID']
         
         try:
-          # now fetch the spectrum
-          (dataname,ty) = self._fetchSpectrumData(sid)
+            # now fetch the spectrum
+            (dataname,ty) = self._fetchSpectrumData(sid) #IGNORE:W0612
         
-          self._dataBag[u'CURRENT_QC'] = dataname
+            self._dataBag[u'CURRENT_QC'] = dataname
            
-          self._dataBag[u'CONTENT_PRESENT'].add('QC') 
+            self._dataBag[u'CONTENT_PRESENT'].add('QC') 
         
         except Exception, e:
-         ParticulateDataFetcher.c_log.warning("Warning. No Data File found for QC %s. Exception: %s\n"%(sid,e))
-         self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+            ParticulateDataFetcher.c_log.warning("Warning. No Data File found for QC %s. Exception: %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
         
     def _fetchPrelsSpectrumData(self):
         """get the preliminary spectrums.
@@ -1905,7 +1903,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # precondition do nothing if there the curr sample is a prel itself
         prefix = self._dataBag.get(u'CURRENT_CURR',"")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
-           return
+            return
     
         ParticulateDataFetcher.c_log.info("Getting Prels Spectrum for %s\n"%(self._sampleID))
         
@@ -1928,7 +1926,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             sid = row['SAMPLE_ID']
              
             # now fetch the spectrum with the a PREL_cpt id
-            (dataname,ty) = self._fetchSpectrumData(sid)
+            (dataname,ty) = self._fetchSpectrumData(sid) #IGNORE:W0612
             # update list of prels
             listOfPrel.append(dataname)
         
@@ -1952,12 +1950,12 @@ class ParticulateDataFetcher(DBDataFetcher):
                exception
         """
         
-        (dataname,ty) = self._fetchSpectrumData(self._sampleID)
+        (dataname,ty) = self._fetchSpectrumData(self._sampleID) #IGNORE:W0612
         
         self._dataBag[u'CURRENT_CURR'] = dataname
         
         if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
-           self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
+            self._dataBag[u'CONTENT_PRESENT'].add('CURR') 
     
     def _fetchData(self,aParams=""):
         """ get the different raw data info """
@@ -1970,16 +1968,16 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         #fetch current spectrum
         if ('CURR' in spectrums):
-           self._fetchCURRSpectrumData()
+            self._fetchCURRSpectrumData()
         
         if ('QC' in spectrums):
-           self._fetchQCSpectrumData()
+            self._fetchQCSpectrumData()
         
         if ('BK' in spectrums):
-           self._fetchBKSpectrumData()
+            self._fetchBKSpectrumData()
         
         if ('PREL' in spectrums):
-          self._fetchPrelsSpectrumData()
+            self._fetchPrelsSpectrumData()
           
             
     def _addCategoryComments(self,aData):
@@ -2021,33 +2019,33 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         if len(rows) > 0:
         
-          data = {}
-          data.update(rows[0])
-    
-          self._dataBag[u'%s_CAT_INFOS'%(dataname)] = self._transformResults(data)
-          
-          result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY%(sid))
-       
-          # only one row in result set
-          rows = result.fetchall()
-         
-          # add results in a list which will become a list of dicts
-          res = []
-        
-          # create a list of dicts
-          data = {}
-        
-          for row in rows:
-            data.update(row)
-            # transform dates if necessary
-            newRow = self._transformResults(data)
-            # add Comment
-            self._addCategoryComments(newRow)
-            res.append(newRow)
             data = {}
+            data.update(rows[0])
+    
+            self._dataBag[u'%s_CAT_INFOS'%(dataname)] = self._transformResults(data)
+          
+            result = self._mainConnector.execute(SQL_PARTICULATE_CATEGORY%(sid))
        
-          # update data bag
-          self._dataBag[u'%s_CATEGORIES'%(dataname)] = res
+            # only one row in result set
+            rows = result.fetchall()
+         
+            # add results in a list which will become a list of dicts
+            res = []
+        
+            # create a list of dicts
+            data = {}
+        
+            for row in rows:
+                data.update(row)
+                # transform dates if necessary
+                newRow = self._transformResults(data)
+                # add Comment
+                self._addCategoryComments(newRow)
+                res.append(newRow)
+                data = {}
+       
+            # update data bag
+            self._dataBag[u'%s_CATEGORIES'%(dataname)] = res
         
         result.close()
         
@@ -2060,21 +2058,21 @@ class ParticulateDataFetcher(DBDataFetcher):
         rows = result.fetchall()
         
         if len(rows) > 0:
-          # add results in a list which will become a list of dicts
-          res = []
+            # add results in a list which will become a list of dicts
+            res = []
         
-          data = {}
-        
-          for row in rows:
-            data.update(row)
-            # transform dates if necessary
-            newRow = self._transformResults(data)
-            
-            res.append(newRow)
             data = {}
+        
+            for row in rows:
+                data.update(row)
+                # transform dates if necessary
+                newRow = self._transformResults(data)
+            
+                res.append(newRow)
+                data = {}
                
-          # add in dataBag
-          self._dataBag[u'%s_PEAKS'%(dataname)] = res
+            # add in dataBag
+            self._dataBag[u'%s_PEAKS'%(dataname)] = res
         
         result.close()
         
@@ -2089,20 +2087,22 @@ class ParticulateDataFetcher(DBDataFetcher):
         rows = result.fetchall()
         
         if len(rows) > 0:
-          # add results in a list which will become a list of dicts
-          res = []
+            # add results in a list which will become a list of dicts
+            res = []
         
-          # create a list of dicts
-          data = {}
-
-          for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            res.append(data)
+            # create a list of dicts
             data = {}
+
+            for row in rows:
+                # copy row in a normal dict
+                data.update(row)
+                res.append(data)
+                data = {}
         
-          # add in dataBag
-          self._dataBag[u'%s_IDED_NUCLIDE_LINES'%(dataname)] = res
+            # add in dataBag
+            self._dataBag[u'%s_IDED_NUCLIDE_LINES'%(dataname)] = res
+        
+        result.close()
     
     def _fetchNuclidesToQuantify(self):
         
@@ -2118,10 +2118,10 @@ class ParticulateDataFetcher(DBDataFetcher):
         data = {}
 
         for row in rows:
-         # copy row in a normal dict
-         data.update(row)
-         res.append(data)
-         data = {}
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
         
         # add in dataBag
         self._dataBag[u'NUCLIDES_2_QUANTIFY'] = res
@@ -2167,44 +2167,44 @@ class ParticulateDataFetcher(DBDataFetcher):
         
     
     def _fetchAnalysisResults(self,aParams):
-       """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
            
-       # get static info necessary for the analysis
-       self._fetchNuclidesToQuantify()
+        # get static info necessary for the analysis
+        self._fetchNuclidesToQuantify()
         
-       analyses = self._parser.parse(aParams,RequestParser.PAR).get(RequestParser.ANALYSIS,set())
+        analyses = self._parser.parse(aParams,RequestParser.PAR).get(RequestParser.ANALYSIS,set())
        
-       if ('None' in analyses):
+        if ('None' in analyses):
             # None is in there so do not include data
             return
         
-       for analysis in analyses:
+        for analysis in analyses:
         
-          # for the moment ignore Analysis for PREL
-          if analysis == 'PREL' :
-              continue
+            # for the moment ignore Analysis for PREL
+            if analysis == 'PREL' :
+                continue
         
-          # check if there is some data regarding this type of analysis
-          # get the dataname of the current spectrum (it is the main spectrum)
-          dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
+            # check if there is some data regarding this type of analysis
+            # get the dataname of the current spectrum (it is the main spectrum)
+            dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
           
-          if dataname is not None:
-             ParticulateDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
+            if dataname is not None:
+                ParticulateDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
-             # extract id from dataname
-             [pre,sid] = dataname.split('_')
+                # extract id from dataname
+                [pre,sid] = dataname.split('_') #IGNORE:W0612
           
-             self._fetchCategoryResults(sid,dataname)
+                self._fetchCategoryResults(sid,dataname)
         
-             self._fetchNuclidesResults(sid,dataname)
+                self._fetchNuclidesResults(sid,dataname)
         
-             self._fetchNuclideLines(sid,dataname)
+                self._fetchNuclideLines(sid,dataname)
         
-             self._fetchPeaksResults(sid,dataname)
+                self._fetchPeaksResults(sid,dataname)
           
-             self._fetchFlags(sid,dataname)
+                self._fetchFlags(sid,dataname)
         
-             self._fetchParameters(sid,dataname)
+                self._fetchParameters(sid,dataname)
         
         
     def _getMRP(self,aDataname):
@@ -2240,8 +2240,8 @@ class ParticulateDataFetcher(DBDataFetcher):
             
         else:
             
-           ParticulateDataFetcher.c_log.info("No MRP found\n")
-           self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
+            ParticulateDataFetcher.c_log.info("No MRP found\n")
+            self._dataBag[u'TIME_FLAGS_PREVIOUS_SAMPLE']  = False 
         
         
     def _fetchFlags(self,sid,aDataname):
@@ -2261,19 +2261,19 @@ class ParticulateDataFetcher(DBDataFetcher):
         rows = result.fetchall()
         
         if len(rows):
-          data = {}
-        
-          res = []
-        
-          for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            
-            res.append(data)
             data = {}
+        
+            res = []
+        
+            for row in rows:
+                # copy row in a normal dict
+                data.update(row)
+            
+                res.append(data)
+                data = {}
                
-          # add in dataBag
-          self._dataBag[u'%s_DATA_QUALITY_FLAGS'%(dataname)] = res
+            # add in dataBag
+            self._dataBag[u'%s_DATA_QUALITY_FLAGS'%(dataname)] = res
         
     def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """
@@ -2300,9 +2300,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         # between 21.6 and 26.4
         # if 0 within 24 hours
         if diff_in_sec > 95040 or diff_in_sec < 77760:
-          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(aDataname)] = diff_in_sec
+            self._dataBag[u'%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(aDataname)] = diff_in_sec
         else:
-          self._dataBag[u'%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(aDataname)] = 0 
+            self._dataBag[u'%s_TIME_FLAGS_COLLECTION_WITHIN_24'%(aDataname)] = 0 
         
         
         # check acquisition flag
@@ -2316,9 +2316,9 @@ class ParticulateDataFetcher(DBDataFetcher):
           
         # acquisition diff with 3 hours
         if diff_in_sec < (20*60*60):
-           self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = diff_in_sec
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = diff_in_sec
         else:
-           self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 0 
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 0 
         
         # check decay flag
         # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
@@ -2341,9 +2341,9 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # check that sample_arrival_delay is within 72 hours or 72*60*60 seconds
         if sample_arrival_delay > (72*60*60):
-           self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = entry_date_time
+            self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = entry_date_time
         else:
-           self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = 0 
+            self._dataBag[u'%s_TIME_FLAGS_SAMPLE_ARRIVAL_FLAG'%(aDataname)] = 0 
            
         
     def _fetchParameters(self,sid,dataname):
@@ -2359,46 +2359,47 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         # do nothing if no results
         if nbResults >0:
-          # do some sanity checkings
-          if nbResults != 1:
-            ParticulateDataFetcher.c_log.warning("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname),"(undefined)")))
+            # do some sanity checkings
+            if nbResults != 1:
+                ParticulateDataFetcher.c_log.warning("sample_id %s is a %s sample and no processing parameters has been found\n"%(self._sampleID,self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname),"(undefined)")))
          
-          # create a list of dicts
-          data = {}
+            # create a list of dicts
+            data = {}
         
-          data.update((rows[0].items()) if len(rows) > 0 else {})
+            data.update((rows[0].items()) if len(rows) > 0 else {})
     
-          # add in dataBag
-          self._dataBag[u'%s_PROCESSING_PARAMETERS'%(dataname)] = data
+            # add in dataBag
+            self._dataBag[u'%s_PROCESSING_PARAMETERS'%(dataname)] = data
         
-          result.close()  
+            result.close()  
         
-        result = self._mainConnector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(sid))
+            result = self._mainConnector.execute(SQL_PARTICULATE_GET_UPDATE_PARAMETERS%(sid))
         
-        rows = result.fetchall()
+            rows = result.fetchall()
         
-        nbResults = len(rows)
-        # do nothing if no results
-        if nbResults >0:
-          # do some sanity checkings
-          if nbResults != 1:
-            ParticulateDataFetcher.c_log.warning("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
+            nbResults = len(rows)
+            
+            # do nothing if no results
+            if nbResults >0:
+                # do some sanity checkings
+                if nbResults != 1:
+                    ParticulateDataFetcher.c_log.warning("%s sample and no update parameters found\n"%(self._dataBag[u"%s_DATA_SPECTRAL_QUALIFIER"%(dataname)]))
             
          
-          # create a list of dicts
-          data = {}
+                # create a list of dicts
+                data = {}
 
-          data.update((rows[0].items()) if len(rows) > 0 else {})
+                data.update((rows[0].items()) if len(rows) > 0 else {})
         
-          # add in dataBag
-          self._dataBag[u'%s_UPDATE_PARAMETERS'%(dataname)] = data
+                # add in dataBag
+                self._dataBag[u'%s_UPDATE_PARAMETERS'%(dataname)] = data
         
     def _fetchCalibrationCoeffs(self,prefix):
         
         # get the sampleID 
         # extract id from dataname
         
-        [pre,sid] = prefix.split('_')
+        [pre,sid] = prefix.split('_') #IGNORE:W0612
     
         if sid is None:
             raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
@@ -2507,16 +2508,16 @@ class ParticulateDataFetcher(DBDataFetcher):
                 for prel in self._dataBag.get('CURR_List_OF_PRELS',[]):
                     
                     if prel is None:
-                       raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                        raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
                     
                     self._fetchCalibrationCoeffs(prel)
             else:    
             
-               prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
-               if prefix is None:
-                  raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
+                if prefix is None:
+                    raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
                
-               self._fetchCalibrationCoeffs(prefix)
+                self._fetchCalibrationCoeffs(prefix)
                         
         
                    
@@ -2525,6 +2526,6 @@ class ParticulateDataFetcher(DBDataFetcher):
 
 
 
-""" Dictionary used to map DB Sample type with the right fetcher """
+""" Dictionary used to map DB Sample type with the right fetcher """ #IGNORE:W0105
 SAMPLE_TYPE = {'SAUNA':SaunaNobleGasDataFetcher, 'ARIX-4':SaunaNobleGasDataFetcher, 'SPALAX':SpalaxNobleGasDataFetcher, 'RASA':ParticulateDataFetcher,'CINDER':ParticulateDataFetcher, 'LAB':ParticulateDataFetcher, None:ParticulateDataFetcher}
         
