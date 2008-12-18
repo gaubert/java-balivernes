@@ -2,8 +2,6 @@ import re
 import logging
 
 
-import ctbto.common.utils
-
 from ctbto.common import CTBTOError
 from ctbto.common import Conf
 
