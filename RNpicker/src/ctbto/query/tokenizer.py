@@ -64,7 +64,9 @@ class Tokenizer(object):
     def __init__(self):
         """ constructor """
         # list of tokens
-        self._tokens = []
+        self._tokens  = []
+        
+        self._index   = 0
         
         self._current = None
        
@@ -85,13 +87,29 @@ class Tokenizer(object):
         for toknum, tokval, tokbeg, tokend,tokline  in g:
             self._tokens.append(Token(token.tok_name[toknum],toknum, tokval, tokbeg, tokend,tokline))
         
+    def _generator(self):
+        for tok in self._tokens:
+            self._current = tok
+            yield tok
+            
     def __iter__(self):
         for tok in self._tokens:
             self._current = tok
             yield tok
+        
+    def next(self):
+        self._current = self._tokens[self._index]
+        self._index += 1
+        return self._current
+    
+    def has_next(self):
+        return self._index < len(self._tokens)
     
     def current_token(self):
         return self._current
+    
+    def advance(self):
+        return self._tokens[self._index+1]
      
     
             
@@ -109,9 +127,17 @@ class TestTokenizer(unittest.TestCase):
         # get simple string
         tokens = Tokenizer()
         
-        tokens.tokenize("retrieve spectrum[CURR,BK] where technology = radionuclide and id=123456 in file=\"/tmp/ctbto.data\", filetype=SAMPML")
+        #tokens.tokenize("retrieve spectrum[CURR,BK] where technology = radionuclide and id=123456 in file=\"/tmp/ctbto.data\", filetype=SAMPML")
+        
+        tokens.tokenize("retrieve spectrum where i>3")
+        
+        t = tokens.next()
+        
+        print "t = %s\n"%(t)
         
         for tok in tokens:
-            print "Token = %s \n"%(tok)    
+            print "Token = %s \n"%(tok)  
+            
+          
             
             
