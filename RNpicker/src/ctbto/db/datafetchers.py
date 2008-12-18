@@ -154,7 +154,7 @@ class DBDataFetcher(object):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
-    def _fetchAnalysisResults(self,params=None):
+    def _fetchAnalysisResults(self,aParams=None):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
     
@@ -817,7 +817,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
+        (rows,nbResults,_) = self.execute(SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
        
         if nbResults == 0:
             SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -833,7 +833,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
         # now fetch the spectrum
         try:
-            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
+            (dataname,_) = self._fetchAllData(sid)
            
             self._dataBag[u'CURRENT_DETBK'] = dataname
            
@@ -865,7 +865,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
+        (rows,nbResults,_) = self.execute(SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
        
         if nbResults == 0:
             SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
@@ -881,7 +881,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
         # now fetch the spectrum
         try:
-            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
+            (dataname,_) = self._fetchAllData(sid) 
            
             self._dataBag[u'CURRENT_GASBK'] = dataname
            
@@ -913,7 +913,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         SaunaNobleGasDataFetcher.c_log.info("Getting Prels Spectrum for %s\n"%(self._sampleID))
          
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GET_SAUNA_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
+        (rows,nbResults,_) = self.execute(SQL_GET_SAUNA_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID'])) 
         
         if nbResults == 0:
             SaunaNobleGasDataFetcher.c_log.info("There is no PREL spectrum for %s."%(self._sampleID))
@@ -926,7 +926,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             sid = row['SAMPLE_ID']
              
             # now fetch the spectrum with the a PREL_cpt id
-            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
+            (dataname,_) = self._fetchAllData(sid) 
             # update list of prels
             listOfPrel.append(dataname)
          
@@ -957,7 +957,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         SaunaNobleGasDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,foundOnArchive) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
+        (rows,nbResults,_) = self.execute(SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
         
         nbResults = len(rows)
         
@@ -974,7 +974,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         try:
             # now fetch the spectrum
-            (dataname,ty) = self._fetchAllData(sid) #IGNORE:W0612
+            (dataname,_) = self._fetchAllData(sid) 
         
             self._dataBag[u'CURRENT_QC'] = dataname
            
@@ -997,7 +997,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                exception
         """
         
-        (dataname,ty) = self._fetchAllData(self._sampleID) #IGNORE:W0612
+        (dataname,_) = self._fetchAllData(self._sampleID) 
         
         self._dataBag[u'CURRENT_CURR'] = dataname
         
@@ -1102,7 +1102,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                
                 spec_id = "%s_DATA_B"%(dataname)
                
-                (data,limits) = self._extractSpectrumFromSpectrumFile(theInput) #IGNORE:W0612
+                (data,_) = self._extractSpectrumFromSpectrumFile(theInput) 
              
                 theInput.close()
            
@@ -1192,7 +1192,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if ('PREL' in spectrums):
             self._fetchPrelsSpectrumData()
            
-    def _fetchAnalysisResults(self,aParams):
+    def _fetchAnalysisResults(self,aParams=None):
         """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
         # get static info necessary for the analysis
@@ -2166,7 +2166,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         
     
-    def _fetchAnalysisResults(self,aParams):
+    def _fetchAnalysisResults(self,aParams=None):
         """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
            
         # get static info necessary for the analysis

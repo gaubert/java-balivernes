@@ -226,7 +226,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='6')
+        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='1')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -257,11 +257,6 @@ class TestSAMPMLCreator(unittest.TestCase):
            xmlStr = renderer.asXmlStr(request)
            
            #print "Non Formatted String [%s]\n"%(xmlStr)
-           
-           f = open("/tmp/xmlStr.xml","w")
-           
-           f.write(xmlStr)
-           f.close()
    
            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    

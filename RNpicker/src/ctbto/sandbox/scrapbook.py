@@ -8,8 +8,10 @@ import zlib
 import ctbto.common.utils
 #import ctbto.common.time_utils as time_utils
 import re
- 
-import coverage
+
+import tokenize
+import StringIO
+
 
 
 
@@ -268,53 +270,81 @@ def replace_vars(a_str):
              
     else:   
         return toparse 
-        
+   
+   
+  
+token_pat = re.compile("\s*(?:(\d+)|(.))")
+
+class literal_token(object):
+    def __init__(self, value):
+        self.value = int(value)
+    def nud(self):
+        return self.value
+
+def expression(rbp=0):
+    global token
+    t = token
+    token = next()
+    left = t.nud()
+    while rbp < token.lbp:
+        t = token
+        token = next()
+        left = t.led(left)
+    return left
+
+class operator_add_token(object):
+    lbp = 10
+    def led(self, left):
+        right = expression(10)
+        return left + right
+
+class end_token(object):
+    lbp = 0
+
+
+def my_tokenize(program):
+    for number, operator in token_pat.findall(program):
+        if number:
+            yield literal_token(number)
+        elif operator == "+":
+            yield operator_add_token()
+        else:
+            raise SyntaxError("unknown operator")
+    yield end_token()
+
+def parse(program):
+    global token, next
+    next = my_tokenize(program).next
+    token = next()
+    return expression()
+
+def python_tokenizer(program):
+    
+    result = []
+    g = tokenize.generate_tokens(StringIO.StringIO(program).readline)   # tokenize the string
+    for toknum, tokval, tok3, tok4,_  in g:
+      result.append((toknum, tokval, tok3, tok4))
+
+    return result
+   
+def test_tokenizer():
+    
+    #res = parse("1 + 2")
+    
+    #res = python_tokenizer("retrieve spectrum.a where mdc > 2")
+    res = python_tokenizer("retrieve spectrum[CURR,BK,SPHD] where techno = radionuclide and id = 1234567 and mdc= 124.56 in  file=\"/tmp/produced.data\", filetype=\"SAMPML\"")
+    
+    print "res = %s\n"%(res)
+    
+    import token
+    
+    print "Token Name: %s\n"%(token.tok_name[1]) 
+    
     
 
 if __name__ == '__main__':
     
-    #print "40200/3600 = %s\n"%((float(40200)/float(3600)))
-    #a = 0.0830063789837
-    #b = 713.23333
-    #print "Unrounded: %f\nRounded: %.5f" % (a, a)
-    #print "Unrounded: %f\nRounded: %.5f" % (b, b)
-
-    #c = ctbto.common.utils.round(b,1)
-    #print "Unrounded: %f\nRounded: %.1f" % (b, c)
-    
-    #s = 29016
-    #print "%d secs = %s\n"%(s,time_utils.getSecondsInFormattedTime(s))
-    
-    #pr = "PT29016S"
-    #print "%s secs = %s\n"%(pr,time_utils.transformISO8601PeriodInFormattedTime(pr))
-    
-    print "Hello\n"
-    
-    print "Test 1: Result = %s\n"%(replace_vars("/toto/%(Bye[trois])/titi/%(Hello[one])/blshlbah/%(Hello[two])"))
-    
-    #testXml2Html()
-    
-    #parserTest()
-    
-    #reg = re.compile(r"%\(([^)]*)\)s|.")
-    #reg = re.compile(r"%\((?P<group>\w*)\[(?P<option>\w*)\]\)")
-    reg = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
-    # "%\(\w*)"
-    
-    #m = reg.match("%(Hello[one])")
-    
-    #print "m.group.('group') = %s"%(m.group('group'))
-    #print "m.group.('option') = %s"%(m.group('option'))
-    
-    #m = reg.match("%(Hello[%(Bye[one])])")
-    
-    #print "m.group.('group') = %s"%(m.group('group'))
-    #print "m.group.('option') = %s"%(m.group('option'))
-    
-    #m = reg.match("%(Hello[one])")
-    
-    #print "m.group.('group') = %s"%(m.group('group'))
-    #print "m.group.('option') = %s"%(m.group('option'))
+    test_tokenizer()
 
    
     
