@@ -89,22 +89,49 @@ class Tokenizer(object):
         
             
     def __iter__(self):
+        """ iterator implemented with a generator.
+        """
         for tok in self._tokens:
             self._current = tok
             yield tok
         
     def next(self):
+        """ get next token.
+          
+            Returns:
+               return next token
+        """
+        
         self._current = self._tokens[self._index]
         self._index += 1
         return self._current
     
     def has_next(self):
+        """ check it there are more tokens to consume.
+        
+            Returns:
+               return True if more tokens to consume False otherwise
+        """
         return self._index < len(self._tokens)
     
     def current_token(self):
+        """ return the latest consumed token.
+        
+            Returns:
+               return the latest consumerd token
+        """
         return self._current
     
     def advance(self,inc=1):
+        """ return the next + inc token but do not consume it.
+            Useful to check future tokens.
+        
+            Args:
+               a_expression: increment + 1 is the default (just look one step forward)
+               
+            Returns:
+               return lookhead token
+        """
         return self._tokens[self._index+inc]
      
     
