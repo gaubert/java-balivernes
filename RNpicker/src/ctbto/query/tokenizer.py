@@ -87,10 +87,6 @@ class Tokenizer(object):
         for toknum, tokval, tokbeg, tokend,tokline  in g:
             self._tokens.append(Token(token.tok_name[toknum],toknum, tokval, tokbeg, tokend,tokline))
         
-    def _generator(self):
-        for tok in self._tokens:
-            self._current = tok
-            yield tok
             
     def __iter__(self):
         for tok in self._tokens:
@@ -108,8 +104,8 @@ class Tokenizer(object):
     def current_token(self):
         return self._current
     
-    def advance(self):
-        return self._tokens[self._index+1]
+    def advance(self,inc=1):
+        return self._tokens[self._index+inc]
      
     
             
@@ -122,22 +118,44 @@ class TestTokenizer(unittest.TestCase):
          
         print " setup \n"
     
-    def testTokenizer(self):
+    def testTokenizerIterator(self):
         
         # get simple string
         tokens = Tokenizer()
         
         #tokens.tokenize("retrieve spectrum[CURR,BK] where technology = radionuclide and id=123456 in file=\"/tmp/ctbto.data\", filetype=SAMPML")
         
-        tokens.tokenize("retrieve spectrum where i>3")
+        tokens.tokenize("retrieve i > 3")
         
-        t = tokens.next()
+        valuesToCheck = ['retrieve','i','>','3','']
+        i = 0
+         
+        for tok in tokens:  
+            self.assertEqual(valuesToCheck[i],tok.value)
+            i +=1
+     
+    def testTokenizerNext(self):
+                
+        # get simple string
+        tokens = Tokenizer()
+        tokens.tokenize("retrieve i > 3")
         
-        print "t = %s\n"%(t)
+        valuesToCheck = ['retrieve','i','>','3','']
+        i = 0
         
-        for tok in tokens:
-            print "Token = %s \n"%(tok)  
+        while tokens.has_next():
             
-          
-            
+            t  = tokens.next()
+            self.assertEqual(valuesToCheck[i],t.value)
+            i += 1
+      
+    def testTokenizerAdvance(self):
+                
+        # get simple string
+        tokens = Tokenizer()
+        tokens.tokenize("retrieve i > 3")
+        
+        self.assertEqual(tokens.advance().value,"i")
+        
+        self.assertEqual(tokens.advance(2).value,">")
             
