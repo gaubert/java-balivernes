@@ -7,6 +7,12 @@ import tokenize
 import token
 import StringIO
 
+class LexerError(Exception):
+    """Lexer error """
+
+    def __init__(self,a_msg):
+        super(LexerError,self).__init__(a_msg)
+
 class Token(object):
     
     def __init__(self,type,num,value,begin,end,line):
@@ -122,6 +128,12 @@ class Tokenizer(object):
         """
         return self._current
     
+    def consume_token(self,what):
+        if self._current.value != what :
+            raise LexerError("Error. Expected '%s' but found '%s'"%(what,self._current))
+        else:
+            self.advance()
+    
     def advance(self,inc=1):
         """ return the next + inc token but do not consume it.
             Useful to check future tokens.
@@ -173,6 +185,7 @@ class TestTokenizer(unittest.TestCase):
         while tokens.has_next():
             
             t  = tokens.next()
+            print "Token = %s"%(t)
             self.assertEqual(valuesToCheck[i],t.value)
             i += 1
       
