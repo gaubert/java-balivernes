@@ -132,7 +132,7 @@ class Tokenizer(object):
         if self._current.value != what :
             raise LexerError("Error. Expected '%s' but found '%s'"%(what,self._current))
         else:
-            self.advance()
+            return self.next()
     
     def advance(self,inc=1):
         """ return the next + inc token but do not consume it.

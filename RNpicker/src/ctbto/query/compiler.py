@@ -139,9 +139,8 @@ class Compiler(object):
             if token.type == 'NAME':
                 filter_name = token
                 token = self._tokenizer.next()
-                self._tokenizer.consume_token('[') 
+                token = self._tokenizer.consume_token('[') 
                 filter_values = []
-                token = self._tokenizer.next()
                 while token.value != ']':    
                     if token.type == 'NAME':
                         filter_values.append(token)
@@ -151,7 +150,7 @@ class Compiler(object):
                     else:
                         raise ParsingError("Error expected a filter value but found %s with type %s"%(token.value,token.type))
                 #consume ] to be sure
-                self._tokenizer.consume_token(']') 
+                token = self._tokenizer.consume_token(']') 
                 filter_dict[filter_name] = filter_values
                         
                         
