@@ -169,7 +169,8 @@ class TestTokenizer(unittest.TestCase):
         valuesToCheck = ['retrieve','i','>','3','']
         i = 0
          
-        for tok in tokens:  
+        for tok in tokens: 
+            print "token = %s"%(tok) 
             self.assertEqual(valuesToCheck[i],tok.value)
             i +=1
      
