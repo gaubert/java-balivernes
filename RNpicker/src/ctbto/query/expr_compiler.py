@@ -167,6 +167,99 @@ class Expression(object):
     
     def get_priority(self):
         raise Exception("Error. need to be redefined in children")
+    
+    def get_label(self):
+        raise Exception("Error. need to be redefined in children")
+
+
+class BinOpExpression(object):
+    """ BinOpExpression
+    """
+    # Class members
+    c_log = logging.getLogger("query.BinOpExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self,val):
+        """ constructor """
+        
+        super(BinOpExpression,self).__init__()
+    
+    def operator(self):
+        raise Exception("Error. Need to be defined in children")
+    
+    def get_left(self):
+        return self._children[0]
+        
+    def get_right(self):
+        return self._children[1]
+    
+    def __repr__(self):
+        
+        left  = self._get_left()
+        right = self._get_right()
+        
+        l = "( %s )"%(left) if left.get_priority < self.get_priority() else "%s"%(left)
+        r = "( %s )"%(left) if right.get_priority < self.get_priority() else "%s"%(right)
+        
+        return "%s %s %s"(l,self._operator(),r)
+
+    def get_name(self):
+        return "%number"
+    
+    def compute(self):
+        TO Be DONE
+    
+
+"""
+public abstract class BinOp extends Expression {
+
+    public abstract String operator();
+    
+    Expression getLeft()
+    {
+        return childrenList.get(0);
+    }
+    
+    Expression getRight()
+    {
+        return childrenList.get(1);
+    }
+
+    public String toString() {
+        Expression left  = getLeft();
+        Expression right = getRight();
+        
+        String l = (left.priority().compareTo(priority()) < 0) ? "(" + left  + ")" : left.toString();
+        String r = (right.priority().compareTo(priority()) <0) ? "(" + right + ")" : right.toString();
+            
+        return  l + " " + operator() + " " + r;
+    }
+    
+
+    public Value compute(double x, double y) {
+        throw new UnsupportedOperationException("Cannot use operator " + operator()
+                + " between two double");
+    }
+
+    public Value compute(String x, String y) {
+        throw new UnsupportedOperationException("Cannot use operator " + operator()
+                + " between two Strings");
+    }
+
+    public String getName() {
+        String name = getClass().getName();
+        return name.substring(name.lastIndexOf('.') + 1).toLowerCase();
+    }
+
+    public Value compute(Date x, Date y) {
+        throw new UnsupportedOperationException("Cannot use operator " + operator()
+                + " between two Dates");
+    }
+
+    public Value compute(Date x, double y) {
+        throw new UnsupportedOperationException("Cannot use operator " + operator()
+                + " between a date and a number");
+    }"""
 
 class NumberExpression(object):
     """ NumberExpression
@@ -176,8 +269,96 @@ class NumberExpression(object):
     c_log = logging.getLogger("query.NumberExpression")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self):
+    def __init__(self,val):
         """ constructor """
+        
+        super(NumberExpression,self).__init__()
+        
+        self._value = val
+        
+    def __repr__(self):
+        
+        return "%s"%(self._value)
+
+    def get_value(self):
+        return self._value
+
+    def get_name(self):
+        return "%number"
+    
+    def get_label(self):
+        return self.__repr__()
+    
+    def get_priority(self):
+        return Expression.c_priority["atom"]
+
+class NameExpression(object):
+    """ NameExpression
+    """
+    
+    # Class members
+    c_log = logging.getLogger("query.NameExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self,val):
+        """ constructor """
+        
+        super(NameExpression,self).__init__()
+        
+        self._value = val
+        
+    def __repr__(self):
+        
+        return "%s"%(self._value)
+
+    def get_value(self):
+        return self._value
+
+    def get_name(self):
+        return "%name"
+    
+    def get_label(self):
+        return self.__repr__()
+
+    def get_variable(self):
+        return self._value
+    
+    def get_priority(self):
+        return Expression.c_priority["atom"]
+
+class StringExpression(object):
+    """ StringExpression
+    """
+    
+    # Class members
+    c_log = logging.getLogger("query.StringExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self,val):
+        """ constructor """
+        
+        super(StringExpression,self).__init__()
+        
+        self._value = val
+        
+    def __repr__(self):
+        
+        return "%s"%(self._value)
+
+    def get_value(self):
+        return self._value
+
+    def get_name(self):
+        return "%string"
+    
+    def get_label(self):
+        return self.__repr__()
+
+    def get_variable(self):
+        return self._value
+    
+    def get_priority(self):
+        return Expression.c_priority["atom"]
     
 
 class ExpressionCompiler(object):
@@ -292,14 +473,20 @@ class ExpressionCompiler(object):
         type = token.type
         
         if type == "NUMBER":
-            # create number expression
-            print "numb expre"
+            n = float(token.value)
+            p = NumberExpression(n)
+            self._tokenizer.next()
         elif type == "NAME":
-            print "ident expression"
+            p = NameExpression(token.value)
+            self._tokenizer.next()
+            # check next token and do something if necessary
         elif type == "STRING":
-            print "String expression"
+            p = StringExpression(token.value)
+            self._tokenizer.next()
         elif type == "OP":
             print "should have been detected"
+        else:
+            raise Exception("Invalid Token %s"%(token))
     
     """
 
