@@ -4,68 +4,9 @@
     compile the statements
 """
 import logging
+from tokenizer import Tokenizer
 
-class OperationFactory(object):
-    
-    c_log = logging.getLogger("query.OperationFactory")
-    c_log.setLevel(logging.DEBUG)
-    
-    c_binary_operations = {
-                        "<":"LT",
-                        ">":"GT",
-                        "+":"Add",
-                        "-":"Sub",
-                        "*":"Mul",
-                        "/":"Div",
-                        ">=":"GE",
-                        "<=":"LE",
-                        "<>":"NE",
-                        "=":"EQ",
-                        "**":"Pow",
-                        "^":"Pow",
-                        "&":"Merge",
-                        "&&":"And",
-                        "and":"And",
-                        "||":"Or",
-                        "or":"Or"
-                       }
-    
-    c_unary_operations  = {
-                         "-":"Neg",
-                         "!":"Not" 
-                       }
-         
-    def __init__(self):
-        """ constructor """
-       
-    
-    def get_binary_operation(self,bin_op): 
-        
-        """if bin_op in c_binary_operations:
-            # create the right binary operation (add,mul)
-            # make a factory of operations => return an expression
-            
-    
-    public static Expression getBinaryOperation(String str) {
-        if (binaryOperations.containsKey(str)) {
-            String className = rootPackage+".binop."+binaryOperations.get(str);
-            try {
-                Class<?> c = Class.forName(className);
-                return (Expression)c.newInstance();
-            }
-            catch (ClassNotFoundException e) {
-                throw new RuntimeException("Class '"+className+"' not found");
-            }
-            catch (Exception e) {
-                throw new RuntimeException("Error instantiating class '"+className+"'");
-            }
-        }
-        
-        throw new RuntimeException("Could not find an implementation for the given " + 
-                "input type '" + str + "'.");
-    }"""
-    
-    return Expression()
+
 
 class OperatorTypes(object):
     
@@ -73,11 +14,11 @@ class OperatorTypes(object):
     c_log.setLevel(logging.DEBUG)
     
     c_additive       = set(["+","-","&"])
-    c_multiplicative = set("*","/")
-    c_comparative    = set("<",">","=","<=",">=","<>")
-    c_power          = set("^","**")
-    c_or             = set("or","||")
-    c_and            = set("and","&&")
+    c_multiplicative = set(["*","/"])
+    c_comparative    = set(["<",">","=","<=",">=","<>"])
+    c_power          = set(["^","**"])
+    c_or             = set(["or","||"])
+    c_and            = set(["and","&&"])
     
     c_type = {
               "add":c_additive,
@@ -93,11 +34,11 @@ class OperatorTypes(object):
     
     def check(self,what,where):
         
-        if where not in c_type.keys():
+        if where not in OperatorTypes.c_type.keys():
             return False
         
-        for s in c_type[where]:
-            if what == s:
+        for s in OperatorTypes.c_type[where]:
+            if what.value == s:
                 return True
         
         return False
@@ -120,6 +61,42 @@ class OperatorTypes(object):
     def is_conjunction(self,op):
         return self.check(op,"and")
     
+# add executor factory => see if it is necessary
+class Executor(object):
+    
+    # Class members
+    c_log = logging.getLogger("query.Executor")
+    c_log.setLevel(logging.DEBUG)
+     
+    def __init__(self,op):
+        """ constructor """
+        
+        # the operation
+        self._op = op
+    
+    # abstract method list of values
+    def execute(self,values):
+        raise Exception("Error. need to be redefined in children")
+
+class NumberBinopExecutor(Executor):
+    
+     # Class members
+    c_log = logging.getLogger("query.NumberBinopExecutor")
+    c_log.setLevel(logging.DEBUG)
+     
+    def __init__(self,op):
+        """ constructor """
+        super(NumberBinopExecutor,self).__init__(op)
+     
+    def execute(self,values):  
+        
+        # more or less than 2 elements => error
+        if len(values) != 2:
+            raise Exception("Error. A BinOp Operation has two and only two arguments. Passed values = %s\n"%(values))
+        
+        self._op.compute(values[0],values[1]) 
+    
+    
 class Expression(object):
     """ the expression object => heart of the system
     """
@@ -141,8 +118,31 @@ class Expression(object):
         """ add child in the expression """
         self._children.append(child)
     
+    def _make_executor(self,expr,values):
+        """ executor factory """
+        
+        name = expr.get_name()
+        
+        # need to get values types and need to build executor for the moment only a NumberBinopExecutor
+        executor = NumberBinopExecutor(expr)
+        
+        return executor
+        
+        
     def evaluate(self):
         """ evaluate the expr => execute it """
+        values = []
+        
+        # for each child in the children list
+        for expr in self._children:
+            v = expr.evaluate()
+            values.append(v)
+        
+        executor = self._make_executor(self,values)
+        
+        result = executor.execute(values)
+        
+        return result
         
         """ return a Value
             for (Expression expression : childrenList) {
@@ -160,7 +160,6 @@ class Expression(object):
         
         return result;
         """
-        print "evaluate"
     
     def get_name(self):
         raise Exception("Error. need to be redefined in children")
@@ -172,16 +171,15 @@ class Expression(object):
         raise Exception("Error. need to be redefined in children")
 
 
-class BinOpExpression(object):
+class BinOpExpression(Expression):
     """ BinOpExpression
     """
     # Class members
     c_log = logging.getLogger("query.BinOpExpression")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self,val):
+    def __init__(self):
         """ constructor """
-        
         super(BinOpExpression,self).__init__()
     
     def operator(self):
@@ -195,72 +193,101 @@ class BinOpExpression(object):
     
     def __repr__(self):
         
-        left  = self._get_left()
-        right = self._get_right()
-        
+        left  = self.get_left()
+        right = self.get_right()
+
         l = "( %s )"%(left) if left.get_priority < self.get_priority() else "%s"%(left)
         r = "( %s )"%(left) if right.get_priority < self.get_priority() else "%s"%(right)
         
-        return "%s %s %s"(l,self._operator(),r)
+        return "%s %s %s"%(l,self.operator(),r)
 
     def get_name(self):
         return "%number"
     
-    def compute(self):
-        TO Be DONE
-    
 
-"""
-public abstract class BinOp extends Expression {
-
-    public abstract String operator();
+    def compute(self,a,b):
+        raise Exception("Error. need to be redefined in children")
     
-    Expression getLeft()
-    {
-        return childrenList.get(0);
-    }
+class Add(Expression):
+    """ Add
+    """
+    # Class members
+    c_log = logging.getLogger("query.Add")
+    c_log.setLevel(logging.DEBUG)
     
-    Expression getRight()
-    {
-        return childrenList.get(1);
-    }
-
-    public String toString() {
-        Expression left  = getLeft();
-        Expression right = getRight();
+    def __init__(self):
+        """ constructor """
+        super(Add,self).__init__()
+    
+    def operator(self):
+        return "+"
+    
+    def compute(self,a,b):
+        return a+b
         
-        String l = (left.priority().compareTo(priority()) < 0) ? "(" + left  + ")" : left.toString();
-        String r = (right.priority().compareTo(priority()) <0) ? "(" + right + ")" : right.toString();
-            
-        return  l + " " + operator() + " " + r;
-    }
+    def get_priority(self):
+        return Expression.c_priority["sum"]
+
+class Sub(Expression):
+    """ Sub
+    """
+    # Class members
+    c_log = logging.getLogger("query.Sub")
+    c_log.setLevel(logging.DEBUG)
     
+    def __init__(self):
+        """ constructor """
+        super(Sub,self).__init__()
+    
+    def operator(self):
+        return "-"
+    
+    def compute(self,a,b):
+        return a-b
+        
+    def get_priority(self):
+        return Expression.c_priority["sum"]
 
-    public Value compute(double x, double y) {
-        throw new UnsupportedOperationException("Cannot use operator " + operator()
-                + " between two double");
-    }
+class Mul(Expression):
+    """ Mul
+    """
+    # Class members
+    c_log = logging.getLogger("query.Mul")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(Mul,self).__init__()
+    
+    def operator(self):
+        return "*"
+    
+    def compute(self,a,b):
+        return a*b
+        
+    def get_priority(self):
+        return Expression.c_priority["prod"]
 
-    public Value compute(String x, String y) {
-        throw new UnsupportedOperationException("Cannot use operator " + operator()
-                + " between two Strings");
-    }
-
-    public String getName() {
-        String name = getClass().getName();
-        return name.substring(name.lastIndexOf('.') + 1).toLowerCase();
-    }
-
-    public Value compute(Date x, Date y) {
-        throw new UnsupportedOperationException("Cannot use operator " + operator()
-                + " between two Dates");
-    }
-
-    public Value compute(Date x, double y) {
-        throw new UnsupportedOperationException("Cannot use operator " + operator()
-                + " between a date and a number");
-    }"""
-
+class Div(Expression):
+    """ Div
+    """
+    # Class members
+    c_log = logging.getLogger("query.Div")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(Div,self).__init__()
+    
+    def operator(self):
+        return "/"
+    
+    def compute(self,a,b):
+        return a/b
+        
+    def get_priority(self):
+        return Expression.c_priority["prod"]
+        
 class NumberExpression(object):
     """ NumberExpression
     """
@@ -360,6 +387,56 @@ class StringExpression(object):
     def get_priority(self):
         return Expression.c_priority["atom"]
     
+class OperationFactory(object):
+    
+    c_log = logging.getLogger("query.OperationFactory")
+    c_log.setLevel(logging.DEBUG)
+    
+    c_binary_operations = {
+                        "<":"LT",
+                        ">":"GT",
+                        "+":Add,
+                        "-":Sub,
+                        "*":Mul,
+                        "/":Div,
+                        ">=":"GE",
+                        "<=":"LE",
+                        "<>":"NE",
+                        "=":"EQ",
+                        "**":"Pow",
+                        "^":"Pow",
+                        "&":"Merge",
+                        "&&":"And",
+                        "and":"And",
+                        "||":"Or",
+                        "or":"Or"
+                       }
+    
+    c_unary_operations  = {
+                         "-":"Neg",
+                         "!":"Not" 
+                       }
+         
+    def __init__(self):
+        """ constructor """
+       
+    @classmethod
+    def get_binary_operation(cls,bin_op): 
+         
+        # get classname from the c_binary_operation
+        classname = OperationFactory.c_binary_operations.get(bin_op,None)
+        
+        if classname == None:
+            raise Exception("Error %s is not a binary operation"%(bin_op))
+        
+        # create the binop
+        # create object and update its internal dictionary
+        inst = object.__new__(classname)
+        
+        inst.__dict__.update({'_children':[]})
+        
+        return inst
+    
 
 class ExpressionCompiler(object):
     """ create tokens for parsing the grammar. 
@@ -382,87 +459,86 @@ class ExpressionCompiler(object):
 
     def _read_expression(self):
         # read an expression
-        self._read_disjunction()
+        return self._read_disjunction()
         
     def _read_disjunction(self):
         
         p = self._read_conjunction()
         
         while self._operator_types.is_disjunction(self._tokenizer.current_token()):
-            op = OperationFactory.get_binary_operation(self, self._tokenizer.current_token())
+            op = OperationFactory.get_binary_operation(self._tokenizer.current_token().value)
             op.add(p)
             self._tokenizer.next()
             op.add(self._read_conjunction())
-            p = op;
+            p = op
         
-        return p;
+        return p
             
         
     def _read_conjunction(self):
-        print "do something" 
         
         p = self._read_test()
         
         while self._operator_types.is_conjunction(self._tokenizer.current_token()):
-            op = OperationFactory.get_binary_operation(self, self._tokenizer.current_token())
+            op = OperationFactory.get_binary_operation(self._tokenizer.current_token().value)
             op.add(p)
             self._tokenizer.next()
             op.add(self._read_test())
-            p = op; 
+            p = op
         
         return p
     
     def _read_test(self):
         """ read test """
-        p = read_term()
+        p = self._read_term()
         
         while self._operator_types.is_comparative(self._tokenizer.current_token()):
-            op = OperationFactory.get_binary_operation(self, self._tokenizer.current_token())
+            op = OperationFactory.get_binary_operation(self._tokenizer.current_token().value)
             op.add(p)
             self._tokenizer.next()
             op.add(self._read_term())
-            p = op; 
+            p = op 
         
         return p
      
     def _read_term(self):
         """ read term """
-        p = read_factor()
+        p = self._read_factor()
         
         while self._operator_types.is_additive(self._tokenizer.current_token()):
-            op = OperationFactory.get_binary_operation(self, self._tokenizer.current_token())
+            op = OperationFactory.get_binary_operation(self._tokenizer.current_token().value)
             op.add(p)
             self._tokenizer.next()
             op.add(self._read_factor())
-            p = op; 
+            p = op
         
         return p
     
     def _read_factor(self):
         """ read factor """
-        p = read_power()
+        p = self._read_power()
         
         while self._operator_types.is_multiplicative(self._tokenizer.current_token()):
-            op = OperationFactory.get_binary_operation(self, self._tokenizer.current_token())
+            op = OperationFactory.get_binary_operation(self._tokenizer.current_token().value)
             op.add(p)
             self._tokenizer.next()
             op.add(self._read_power())
-            p = op; 
+            p = op
         
         return p
     
     def _read_power(self):
         """ read power """
-        p = read_atom()
+        p = self._read_atom()
         
         while self._operator_types.is_power(self._tokenizer.current_token()):
-            op = OperationFactory.get_binary_operation(self, self._tokenizer.current_token())
+            op = OperationFactory.get_binary_operation(self._tokenizer.current_token().value)
             op.add(p)
             self._tokenizer.next()
             op.add(self._read_atom())
-            p = op; 
+            p = op
         
-            return p
+        return p
 
     def _read_atom(self):
         """ read atom """
@@ -487,102 +563,8 @@ class ExpressionCompiler(object):
             print "should have been detected"
         else:
             raise Exception("Invalid Token %s"%(token))
-    
-    """
-
-    private Expression readAtom() {
-        Expression p = null;
-        String token = tokenizer.currentToken();
-        int type = tokenizer.currentTokenType();
-
-        switch (type) {
-
-        case Tokenizer.NUMBER:
-            double n = Double.parseDouble(token);
-            p = new NumberExpression(n);
-            tokenizer.advance();
-            break;
-
-        case Tokenizer.IDENTIFIER:
-            p = new IdentExpression(token);
-            tokenizer.advance();
-            if (tokenizer.currentToken().equals("(")) {
-                tokenizer.advance();
-                p = FunctionFactory.getInstance().create(token);
-                boolean isHash = readList(p,")");
-                if (isHash)
-                    ((Function) p).argumentIsHash();
-                tokenizer.consumeToken(")");
-            }
-            else if (tokenizer.currentToken().equals("[")) {
-                tokenizer.advance();
-                p = new IndexExpression(p);
-                @SuppressWarnings("unused")
-                boolean isHash = readList(p,"]");
-                tokenizer.consumeToken("]");
-            }
-            break;
-
-        case Tokenizer.STRING:
-            p = new StringExpression(token);
-            tokenizer.advance();
-            break;
-            
-        case Tokenizer.DATE:
-            p = new DateExpression(token);
-            tokenizer.advance();
-            break;
-
-        case Tokenizer.PUNCTUATION:
-
-            switch (token.charAt(0)) {
-
-            case '(':
-                tokenizer.advance();
-                p = readExpression();
-                tokenizer.consumeToken(")");
-                break;
-
-            case '[':
-                tokenizer.advance();
-                p = new ListExpression();
-                readList(p,"]");
-                tokenizer.consumeToken("]");
-                break;
-                
-            case '{':
-                tokenizer.advance();
-                p = new HashExpression();
-                readList(p,"}");
-                tokenizer.consumeToken("}");
-                break;
-
-            case '-':
-                tokenizer.advance();
-                p = new Neg(readAtom());
-                break;
-
-            case '!':
-                tokenizer.advance();
-                p = new Not(readAtom());
-                break;
-                
-            case 'n': /* not */
-                tokenizer.advance();
-                p = new Not(readAtom());
-                break;
-
-            default:
-                throw new RuntimeException("Invalid token [" + token + "]");
-            }
-            break;
-
-        default:
-            throw new RuntimeException("Invalid token [" + token + "," + type
-                    + "]");
-        }
-        return p;
-    }"""
+        
+        return p
 
     def compile(self,a_tokenizer=None):
         """ compile the passed program.
@@ -600,6 +582,28 @@ class ExpressionCompiler(object):
         self._tokenizer = a_tokenizer
         
         # read expression
-        self._read_expression()
-              
+        return self._read_expression()
+       
+# unit tests part
+import unittest
+class TestExprCompiler(unittest.TestCase):
+    
+    def setUp(self):
+         
+        print " setup \n"
+    
+    def testExprCompiler(self):
+        
+        inst = object.__new__(Add)
+        
+        c = ExpressionCompiler()
+        
+        tokenizer = Tokenizer()
+        tokenizer.tokenize("1+2")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        expr.evaluate()
+        
         
