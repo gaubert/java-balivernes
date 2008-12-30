@@ -121,11 +121,28 @@ class NumberExecutor(Executor):
      
     def execute(self,values):  
         return self._value
+
+class StringExecutor(Executor):
+    
+     # Class members
+    c_log = logging.getLogger("query.StringExecutor")
+    c_log.setLevel(logging.DEBUG)
+     
+    def __init__(self,op):
+        """ constructor """
+        super(NumberExecutor,self).__init__(op)
+        
+    def initialize(self,op):
+        self._value = op.get_value()
+     
+    def execute(self,values):  
+        return self._value
+
+
     
 class Expression(object):
     """ the expression object => heart of the system
     """
-    
     # Class members
     c_log = logging.getLogger("query.Expression")
     c_log.setLevel(logging.DEBUG)
@@ -135,10 +152,10 @@ class Expression(object):
     c_types = [type(None),type("string"),type(1),type(1.0)]
     
     c_executor_dispatcher = {
-                              "%number:none":NumberExecutor,
-                              "%string:none":"StringExecutor",
-                              "%number:number:number":NumberBinopExecutor
-                             
+                              "%number:none"          :NumberExecutor,
+                              "%string:none"          :StringExecutor,
+                              "%number:number:number" :NumberBinopExecutor,
+                              "%cos:number"           :"CosExecutor",
                             }
     
     """
@@ -179,30 +196,6 @@ class Expression(object):
         dispatch.put("merge:list:list", MergeListExecutor.class);
 
         dispatch.put("eq:list:list", EQListExecutor.class);
-
-        // Mars compute
-        dispatch.put("add:...", RemoteBinOpExecutor.class);
-        dispatch.put("sub:...", RemoteBinOpExecutor.class);
-        dispatch.put("mul:...", RemoteBinOpExecutor.class);
-        dispatch.put("div:...", RemoteBinOpExecutor.class);
-
-        dispatch.put("pow:...", RemoteBinOpExecutor.class);
-
-        dispatch.put("eq:...",  RemoteBinOpExecutor.class);
-        dispatch.put("ne:...",  RemoteBinOpExecutor.class);
-        dispatch.put("lt:...",  RemoteBinOpExecutor.class);
-        dispatch.put("le:...",  RemoteBinOpExecutor.class);
-        dispatch.put("gt:...",  RemoteBinOpExecutor.class);
-        dispatch.put("ge:...",  RemoteBinOpExecutor.class);
-
-        dispatch.put("neg:...", RemoteUnOpExecutor.class);
-        dispatch.put("not:...", RemoteUnOpExecutor.class);
-
-        // builtins
-        dispatch.put("save:...", SaveExecutor.class);
-        dispatch.put("print:...", PrintExecutor.class);
-        dispatch.put("assert:...", AssertExecutor.class);
-        dispatch.put("sort:list", SortExecutor.class);
     """
     
     def __init__(self):
@@ -292,6 +285,76 @@ class Expression(object):
     def get_label(self):
         raise Exception("Error. need to be redefined in children")
 
+class UnOpExpression(Expression):
+    """ UnaryExpression
+    """
+    # Class members
+    c_log = logging.getLogger("query.UnOpExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(UnOpExpression,self).__init__()
+    
+    def operator(self):
+        raise Exception("Error. Need to be defined in children")
+    
+    def compute(self,value):
+        raise Exception("Error. Need to be defined in children")
+    
+    def get_name(self):
+        # return classname
+        raise Exception("Error. need to be redefined in children")
+    
+    def _getChild(self):
+        return self._children[0]
+    
+    def get_priority(self):
+        return Expression.c_priority["unop"]
+    
+    def __repr__(self):
+        
+        expr = self._getChild()
+        
+        l =  "( %s )"%(kid) if expr.priority() <= self.get_priority() else "%s"%(kid)
+        
+        return l
+
+class NegExpression(UnOpExpression):
+    """ NegExpression
+    """
+    # Class members
+    c_log = logging.getLogger("query.NegExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(NegExpression,self).__init__()
+    
+    def compute(self,value):
+        return -value
+    
+    def operator(self):
+        return "-"
+
+"""
+public class Neg extends UnOp {
+
+    public Neg(Expression math) {
+        add(math);
+    }
+
+    @Override
+    public Value compute(double x) {
+        return new Value(-x);
+    }
+
+    @Override
+    public
+    String operator() {
+        return "-";
+    }
+"""
 
 class BinOpExpression(Expression):
     """ BinOpExpression
@@ -326,7 +389,6 @@ class BinOpExpression(Expression):
     def get_name(self):
         return "%number"
     
-
     def compute(self,a,b):
         raise Exception("Error. need to be redefined in children")
     
@@ -363,6 +425,9 @@ class Sub(Expression):
     def __init__(self):
         """ constructor """
         super(Sub,self).__init__()
+        
+    def get_name(self):
+        return "%number"
     
     def operator(self):
         return "-"
@@ -387,6 +452,9 @@ class Mul(Expression):
     def operator(self):
         return "*"
     
+    def get_name(self):
+        return "%number"
+    
     def compute(self,a,b):
         return a*b
         
@@ -409,6 +477,9 @@ class Div(Expression):
     
     def compute(self,a,b):
         return a/b
+    
+    def get_name(self):
+        return "%number"
         
     def get_priority(self):
         return Expression.c_priority["prod"]
@@ -685,7 +756,56 @@ class ExpressionCompiler(object):
             p = StringExpression(token.value)
             self._tokenizer.next()
         elif type == "OP":
-            print "should have been detected"
+            # support negative numbers TODO
+            if token.value == '(':
+                tokenizer.next()
+                p = self._read_expression()
+                tokenizer.consume_token(')')
+            elif token.value == '-':
+                tokenizer.next()
+                p = new Neg(self._read_atom())
+            else:
+                raise Exception("Invalid Token %s"%(token))
+            """
+            switch (token.charAt(0)) {
+
+            case '(':
+                tokenizer.advance();
+                p = readExpression();
+                tokenizer.consumeToken(")");
+                break;
+
+            case '[':
+                tokenizer.advance();
+                p = new ListExpression();
+                readList(p,"]");
+                tokenizer.consumeToken("]");
+                break;
+                
+            case '{':
+                tokenizer.advance();
+                p = new HashExpression();
+                readList(p,"}");
+                tokenizer.consumeToken("}");
+                break;
+
+            case '-':
+                tokenizer.advance();
+                p = new Neg(readAtom());
+                break;
+
+            case '!':
+                tokenizer.advance();
+                p = new Not(readAtom());
+                break;
+                
+            case 'n': /* not */
+                tokenizer.advance();
+                p = new Not(readAtom());
+                break;
+
+            """
+            #raise Exception("Error. Operator %s should have been detected"%(token.value))
         else:
             raise Exception("Invalid Token %s"%(token))
         
@@ -717,7 +837,7 @@ class TestExprCompiler(unittest.TestCase):
          
         print " setup \n"
     
-    def testExprCompiler(self):
+    def testAdditivity(self):
         
         c = ExpressionCompiler()
         
@@ -727,6 +847,92 @@ class TestExprCompiler(unittest.TestCase):
         
         expr = c.compile(tokenizer)       
         
-        expr.evaluate() #IGNORE:E1103
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(3.0,result)
+        
+        print "Test multiple additions \n"
+        
+        tokenizer.tokenize("1+2+3+4")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(10.0,result)
+        
+        print "Test multiple substractions \n"
+        
+        tokenizer.tokenize("1-3+4+5")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(7.0,result)
+        
+        tokenizer.tokenize("1-7-3+4+5")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(0.0,result)
+        
+        tokenizer.tokenize("7-7+17-18")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(-1.0,result)
+    
+    def testFactors(self):
+        
+        c = ExpressionCompiler()
+        
+        tokenizer = Tokenizer()
+        tokenizer.tokenize("7*7")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(49.0,result)
+        
+        tokenizer.tokenize("7*7/7")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(7.0,result)
+        
+        
+        
+        
+        
+        
+        
         
         
