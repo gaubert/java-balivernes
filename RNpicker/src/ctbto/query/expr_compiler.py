@@ -104,7 +104,7 @@ class NumberBinopExecutor(Executor):
         if len(values) != 2:
             raise Exception("Error. A BinOp Operation has two and only two arguments. Passed values = %s\n"%(values))
         
-        self._op.compute(values[0],values[1]) 
+        return self._op.compute(values[0],values[1]) 
 
 class NumberExecutor(Executor):
     
@@ -234,10 +234,10 @@ class Expression(object):
                     signature += ":string"
                 elif type(value) == Expression.c_types[2]: 
                     # int
-                    signature  += ":int"
+                    signature  += ":number"
                 elif type(value) == Expression.c_types[3]:
                     # float 
-                    signature += ":float"
+                    signature += ":number"
         
         classname = Expression.c_executor_dispatcher.get(signature,None)
         
@@ -342,7 +342,7 @@ class Add(Expression):
         super(Add,self).__init__()
     
     def get_name(self):
-        return "%add"
+        return "%number"
     
     def operator(self):
         return "+"
