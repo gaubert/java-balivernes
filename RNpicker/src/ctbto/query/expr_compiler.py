@@ -6,7 +6,13 @@
 import logging
 from tokenizer import Tokenizer
 
-
+def make_class(classname,dict):
+    
+    inst = object.__new__(classname)
+        
+    inst.__dict__ = dict
+    
+    return inst
 
 class OperatorTypes(object):
     
@@ -74,6 +80,10 @@ class Executor(object):
         # the operation
         self._op = op
     
+    def initialize(self,argument):
+        #default do nothing
+        return
+    
     # abstract method list of values
     def execute(self,values):
         raise Exception("Error. need to be redefined in children")
@@ -95,7 +105,22 @@ class NumberBinopExecutor(Executor):
             raise Exception("Error. A BinOp Operation has two and only two arguments. Passed values = %s\n"%(values))
         
         self._op.compute(values[0],values[1]) 
+
+class NumberExecutor(Executor):
     
+     # Class members
+    c_log = logging.getLogger("query.NumberExecutor")
+    c_log.setLevel(logging.DEBUG)
+     
+    def __init__(self,op):
+        """ constructor """
+        super(NumberExecutor,self).__init__(op)
+        
+    def initialize(self,op):
+        self._value = op.get_value()
+     
+    def execute(self,values):  
+        return self._value
     
 class Expression(object):
     """ the expression object => heart of the system
@@ -106,6 +131,79 @@ class Expression(object):
     c_log.setLevel(logging.DEBUG)
     
     c_priority = {"or":1,"and":2,"test":3,"sum":4,"prod":5,"power":6,"unop":7,"atom":8}
+    
+    c_types = [type(None),type("string"),type(1),type(1.0)]
+    
+    c_executor_dispatcher = {
+                              "%number:none":NumberExecutor,
+                              "%string:none":"StringExecutor",
+                              "%number:number:number":NumberBinopExecutor
+                             
+                            }
+    
+    """
+        dispatch.put("%number:null", NumberExecutor.class);
+        dispatch.put("%string:null", StringExecutor.class);
+        dispatch.put("%ident:null", IdentExecutor.class);
+        dispatch.put("%index:...", IndexExecutor.class);
+        dispatch.put("%date:null", DateExecutor.class);
+        dispatch.put("list:...", ListExecutor.class);
+        dispatch.put("hash:...", HashExecutor.class);
+        dispatch.put("count:...", CountExecutor.class);
+
+        // Some math stuff
+        dispatch.put("sqrt:number", Sqrt.class);
+        dispatch.put("cos:number",  Cos.class);
+        dispatch.put("sin:number",  Sin.class);
+        dispatch.put("tan:number",  Tan.class);
+        dispatch.put("log:number",  Log.class);
+        dispatch.put("log10:number",  Log10.class);
+        dispatch.put("exp:number",  Exp.class);
+        dispatch.put("acos:number",  Acos.class);
+        dispatch.put("asin:number",  Asin.class);
+        dispatch.put("atan:number",  Atan.class);
+        dispatch.put("abs:number",  Abs.class);
+        dispatch.put("sgn:number",  Sgn.class);
+
+        dispatch.put("ceil:number",  Ceil.class);
+        dispatch.put("floor:number",  Floor.class);
+        dispatch.put("round:number",  Round.class);
+
+        dispatch.put("min:number:number",  Min.class);
+        dispatch.put("max:number:number",  Max.class);
+        dispatch.put("atan2:number:number",  Atan2.class);
+
+        dispatch.put("add:hash:hash", MergeHashExecutor.class);
+        dispatch.put("merge:hash:hash", MergeHashExecutor.class);
+        dispatch.put("add:list:list", MergeListExecutor.class);
+        dispatch.put("merge:list:list", MergeListExecutor.class);
+
+        dispatch.put("eq:list:list", EQListExecutor.class);
+
+        // Mars compute
+        dispatch.put("add:...", RemoteBinOpExecutor.class);
+        dispatch.put("sub:...", RemoteBinOpExecutor.class);
+        dispatch.put("mul:...", RemoteBinOpExecutor.class);
+        dispatch.put("div:...", RemoteBinOpExecutor.class);
+
+        dispatch.put("pow:...", RemoteBinOpExecutor.class);
+
+        dispatch.put("eq:...",  RemoteBinOpExecutor.class);
+        dispatch.put("ne:...",  RemoteBinOpExecutor.class);
+        dispatch.put("lt:...",  RemoteBinOpExecutor.class);
+        dispatch.put("le:...",  RemoteBinOpExecutor.class);
+        dispatch.put("gt:...",  RemoteBinOpExecutor.class);
+        dispatch.put("ge:...",  RemoteBinOpExecutor.class);
+
+        dispatch.put("neg:...", RemoteUnOpExecutor.class);
+        dispatch.put("not:...", RemoteUnOpExecutor.class);
+
+        // builtins
+        dispatch.put("save:...", SaveExecutor.class);
+        dispatch.put("print:...", PrintExecutor.class);
+        dispatch.put("assert:...", AssertExecutor.class);
+        dispatch.put("sort:list", SortExecutor.class);
+    """
     
     def __init__(self):
         """ constructor """
@@ -121,11 +219,35 @@ class Expression(object):
     def _make_executor(self,expr,values):
         """ executor factory """
         
-        name = expr.get_name()
+        name      = expr.get_name()
+        signature = "%s"%(name) 
         
-        # need to get values types and need to build executor for the moment only a NumberBinopExecutor
-        executor = NumberBinopExecutor(expr)
+        if len(values) == 0:
+            signature += ":none"
+        else:
+            for value in values:
+                if  type(value)  == Expression.c_types[0]:
+                    #None
+                    signature += ":none"
+                elif type(value) == Expression.c_types[1]:
+                    #string
+                    signature += ":string"
+                elif type(value) == Expression.c_types[2]: 
+                    # int
+                    signature  += ":int"
+                elif type(value) == Expression.c_types[3]:
+                    # float 
+                    signature += ":float"
         
+        classname = Expression.c_executor_dispatcher.get(signature,None)
+        
+        if classname == None:
+            raise Exception("Error cannot find the right dispatch for %s"%(signature))
+        
+        executor = make_class(classname,{'_op':expr})
+        
+        executor.initialize(expr)
+       
         return executor
         
         
@@ -219,6 +341,9 @@ class Add(Expression):
         """ constructor """
         super(Add,self).__init__()
     
+    def get_name(self):
+        return "%add"
+    
     def operator(self):
         return "+"
     
@@ -288,7 +413,7 @@ class Div(Expression):
     def get_priority(self):
         return Expression.c_priority["prod"]
         
-class NumberExpression(object):
+class NumberExpression(Expression):
     """ NumberExpression
     """
     
@@ -319,7 +444,7 @@ class NumberExpression(object):
     def get_priority(self):
         return Expression.c_priority["atom"]
 
-class NameExpression(object):
+class NameExpression(Expression):
     """ NameExpression
     """
     
@@ -353,7 +478,7 @@ class NameExpression(object):
     def get_priority(self):
         return Expression.c_priority["atom"]
 
-class StringExpression(object):
+class StringExpression(Expression):
     """ StringExpression
     """
     
@@ -594,8 +719,6 @@ class TestExprCompiler(unittest.TestCase):
     
     def testExprCompiler(self):
         
-        inst = object.__new__(Add)
-        
         c = ExpressionCompiler()
         
         tokenizer = Tokenizer()
@@ -604,6 +727,6 @@ class TestExprCompiler(unittest.TestCase):
         
         expr = c.compile(tokenizer)       
         
-        expr.evaluate()
+        expr.evaluate() #IGNORE:E1103
         
         
