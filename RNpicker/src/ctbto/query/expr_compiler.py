@@ -80,7 +80,7 @@ class Executor(object):
         # the operation
         self._op = op
     
-    def initialize(self,argument):
+    def initialize(self,argument): #IGNORE:W0613
         #default do nothing
         return
     
@@ -104,7 +104,25 @@ class NumberBinopExecutor(Executor):
         if len(values) != 2:
             raise Exception("Error. A BinOp Operation has two and only two arguments. Passed values = %s\n"%(values))
         
-        return self._op.compute(values[0],values[1]) 
+        return self._op.compute(values[0],values[1])
+
+class NumberUnopExecutor(Executor):
+    
+     # Class members
+    c_log = logging.getLogger("query.NumberUnopExecutor")
+    c_log.setLevel(logging.DEBUG)
+     
+    def __init__(self,op):
+        """ constructor """
+        super(NumberUnopExecutor,self).__init__(op)
+     
+    def execute(self,values):  
+        
+        # more or less than 1 elements => error
+        if len(values) != 1:
+            raise Exception("Error. A UnOp Operation has one and only one argument. Passed values = %s\n"%(values))
+        
+        return self._op.compute(values[0])  
 
 class NumberExecutor(Executor):
     
@@ -116,10 +134,12 @@ class NumberExecutor(Executor):
         """ constructor """
         super(NumberExecutor,self).__init__(op)
         
+        self._value = None
+        
     def initialize(self,op):
         self._value = op.get_value()
      
-    def execute(self,values):  
+    def execute(self,values): #IGNORE:W0613
         return self._value
 
 class StringExecutor(Executor):
@@ -130,12 +150,14 @@ class StringExecutor(Executor):
      
     def __init__(self,op):
         """ constructor """
-        super(NumberExecutor,self).__init__(op)
+        super(StringExecutor,self).__init__(op)
+        
+        self._value = None
         
     def initialize(self,op):
         self._value = op.get_value()
      
-    def execute(self,values):  
+    def execute(self,values):  #IGNORE:W0613
         return self._value
 
 
@@ -153,6 +175,7 @@ class Expression(object):
     
     c_executor_dispatcher = {
                               "%number:none"          :NumberExecutor,
+                              "%number:number"        :NumberUnopExecutor,
                               "%string:none"          :StringExecutor,
                               "%number:number:number" :NumberBinopExecutor,
                               "%cos:number"           :"CosExecutor",
@@ -232,6 +255,8 @@ class Expression(object):
                     # float 
                     signature += ":number"
         
+        print("sig:[%s]\n"%(signature))
+        
         classname = Expression.c_executor_dispatcher.get(signature,None)
         
         if classname == None:
@@ -258,23 +283,6 @@ class Expression(object):
         result = executor.execute(values)
         
         return result
-        
-        """ return a Value
-            for (Expression expression : childrenList) {
-            Value value = expression.evaluate();
-            value.attach();
-            values.add(value);
-        }
-
-        ExecutorFactory executorFactory = ExecutorFactory.getInstance();
-        Value result = executorFactory.execute(this,values);
-        
-        for (Value value : values) {
-            value.detach();
-        }
-        
-        return result;
-        """
     
     def get_name(self):
         raise Exception("Error. need to be redefined in children")
@@ -327,15 +335,19 @@ class NegExpression(UnOpExpression):
     c_log = logging.getLogger("query.NegExpression")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self):
+    def __init__(self,expr):
         """ constructor """
         super(NegExpression,self).__init__()
+        self.add(expr)
     
     def compute(self,value):
         return -value
     
     def operator(self):
         return "-"
+    
+    def get_name(self):
+        return "%number"
 
 """
 public class Neg extends UnOp {
@@ -756,14 +768,13 @@ class ExpressionCompiler(object):
             p = StringExpression(token.value)
             self._tokenizer.next()
         elif type == "OP":
-            # support negative numbers TODO
             if token.value == '(':
-                tokenizer.next()
+                self._tokenizer.next()
                 p = self._read_expression()
                 tokenizer.consume_token(')')
             elif token.value == '-':
-                tokenizer.next()
-                p = new Neg(self._read_atom())
+                self._tokenizer.next()
+                p = NegExpression(self._read_atom())
             else:
                 raise Exception("Invalid Token %s"%(token))
             """
@@ -891,6 +902,17 @@ class TestExprCompiler(unittest.TestCase):
         self.assertEqual(0.0,result)
         
         tokenizer.tokenize("7-7+17-18")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(-1.0,result)
+        
+        tokenizer.tokenize("-7-7+17-4")
         tokenizer.next()
         
         expr = c.compile(tokenizer)
