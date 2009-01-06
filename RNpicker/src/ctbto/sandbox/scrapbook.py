@@ -340,11 +340,46 @@ def test_tokenizer():
     
     print "Token Name: %s\n"%(token.tok_name[1]) 
     
+class TheClass(object):
+
+    def __init__(self,val):
+        """ constructor """
+        super(TheClass,self).__init__()
+        
+        self.constant = "TheConstant"
+        
+        self.value    = val
+        
+    
+    def print_hello(self):
+        print("Hello. constant: [%s], value: [%s]\n"%(self.constant,self.value))
+    
+def forname(modname, classname):
+    module = __import__(modname,globals(),locals(),['NoName'],-1)
+    classobj = getattr(module, classname)
+    return classobj 
+
+def new_instance(modname,classname,*args):
+    classobj = forname(modname,classname)
+    return classobj(*args)
+
+def test_new_class():
+    
+    cobj = forname("ctbto.sandbox.scrapbook","TheClass")
+    
+    instance = new_instance("ctbto.sandbox.scrapbook","TheClass","MyMessage")
+    
+    instance.print_hello()
     
 
 if __name__ == '__main__':
     
-    test_tokenizer()
+    # m = __import__("ctbto.common.exceptions",globals(),locals(),['NoName'],-1)
+    
+    # print("mod = %s\n"%(m))
+   
+    #test_tokenizer()
+    test_new_class()
 
    
     
