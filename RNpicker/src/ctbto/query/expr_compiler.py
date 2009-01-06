@@ -144,6 +144,21 @@ class StringExecutor(Executor):
     def execute(self,values):  #IGNORE:W0613
         return self._value
 
+class NameExecutor(Executor):
+    
+     # Class members
+    c_log = logging.getLogger("query.NameExecutor")
+    c_log.setLevel(logging.DEBUG)
+     
+    def __init__(self,op):
+        """ constructor """
+        super(NameExecutor,self).__init__(op)
+        
+        self._value = op.get_value() 
+     
+    def execute(self,values):  #IGNORE:W0613
+        return self._value
+
 
     
 class Expression(object):
@@ -162,6 +177,7 @@ class Expression(object):
                               "%number:number"        :"NumberUnopExecutor",
                               "%string:none"          :"StringExecutor",
                               "%number:number:number" :"NumberBinopExecutor",
+                              "%name:none"            :"NameExecutor",
                               "%cos:number"           :"CosExecutor",
                             }
     
@@ -266,6 +282,22 @@ class Expression(object):
         
         return result
     
+    def get_execution_tree(self):
+        """ return the expression representation """
+        return self.__repr__()
+    
+    def __repr__(self):
+        
+        """ evaluate the expr => execute it """
+        s = ""
+        
+        # for each child in the children list
+        for expr in self._children:
+            v = expr.__repr__()
+            s += "%s "%(v)
+        
+        return s
+    
     def get_name(self):
         raise Exception("Error. need to be redefined in children")
     
@@ -330,7 +362,10 @@ class NotExpression(UnOpExpression):
     
     def get_name(self):
         return "%number"
-
+    
+    def __repr__(self):
+        return "(not %s)"%(super(NotExpression,self).__repr__())
+    
 class NegExpression(UnOpExpression):
     """ NegExpression
     """
@@ -351,6 +386,9 @@ class NegExpression(UnOpExpression):
     
     def get_name(self):
         return "%number"
+    
+    def __repr__(self):
+        return "( - %s)"%(super(NegExpression,self).__repr__())
 
 class BinOpExpression(Expression):
     """ BinOpExpression
@@ -388,16 +426,16 @@ class BinOpExpression(Expression):
     def compute(self,a,b):
         raise Exception("Error. need to be redefined in children")
     
-class GT(Expression):
+class GTExpression(Expression):
     """ Greater than
     """
     # Class members
-    c_log = logging.getLogger("query.GT")
+    c_log = logging.getLogger("query.GTExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(GT,self).__init__()
+        super(GTExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -407,20 +445,23 @@ class GT(Expression):
     
     def compute(self,a,b):
         return (1 if a>b else 0)
+    
+    def __repr__(self):
+        return "( > %s)"%(super(GTExpression,self).__repr__())
         
     def get_priority(self):
         return Expression.c_priority["test"]
 
-class LT(Expression):
+class LTExpression(Expression):
     """ Lower than
     """
     # Class members
-    c_log = logging.getLogger("query.LT")
+    c_log = logging.getLogger("query.LTExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(LT,self).__init__()
+        super(LTExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -428,22 +469,25 @@ class LT(Expression):
     def operator(self):
         return "<"
     
+    def __repr__(self):
+        return "( < %s)"%(super(LTExpression,self).__repr__())
+    
     def compute(self,a,b):
         return (1 if a<b else 0)
         
     def get_priority(self):
         return Expression.c_priority["test"]
 
-class LE(Expression):
+class LEExpression(Expression):
     """ Lower Equal than
     """
     # Class members
-    c_log = logging.getLogger("query.LE")
+    c_log = logging.getLogger("query.LEExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(LE,self).__init__()
+        super(LEExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -451,22 +495,25 @@ class LE(Expression):
     def operator(self):
         return "<="
     
+    def __repr__(self):
+        return "( <= %s)"%(super(LEExpression,self).__repr__())
+    
     def compute(self,a,b):
         return (1 if a<=b else 0)
         
     def get_priority(self):
         return Expression.c_priority["test"]
 
-class GE(Expression):
+class GEExpression(Expression):
     """ Greater Equal than
     """
     # Class members
-    c_log = logging.getLogger("query.GE")
+    c_log = logging.getLogger("query.GEExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(GE,self).__init__()
+        super(GEExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -479,17 +526,20 @@ class GE(Expression):
         
     def get_priority(self):
         return Expression.c_priority["test"]
+    
+    def __repr__(self):
+        return "( >= %s)"%(super(GEExpression,self).__repr__())
 
-class EQ(Expression):
+class EQExpression(Expression):
     """ Equal than
     """
     # Class members
-    c_log = logging.getLogger("query.EQ")
+    c_log = logging.getLogger("query.EQExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(EQ,self).__init__()
+        super(EQExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -502,17 +552,22 @@ class EQ(Expression):
         
     def get_priority(self):
         return Expression.c_priority["test"]
+    
+    def __repr__(self):
+        s = super(EQExpression,self).__repr__()
+        return "( = %s)"%(s)
+        
 
-class NE(Expression):
+class NEExpression(Expression):
     """ Non Equal than
     """
     # Class members
-    c_log = logging.getLogger("query.NE")
+    c_log = logging.getLogger("query.NEExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(NE,self).__init__()
+        super(NEExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -520,22 +575,25 @@ class NE(Expression):
     def operator(self):
         return "<>"
     
+    def __repr__(self):
+        return "( <> %s)"%(super(NEExpression,self).__repr__())
+    
     def compute(self,a,b):
         return (1 if a != b else 0)
         
     def get_priority(self):
         return Expression.c_priority["test"]
     
-class Add(Expression):
+class AddExpression(BinOpExpression):
     """ Add
     """
     # Class members
-    c_log = logging.getLogger("query.Add")
+    c_log = logging.getLogger("query.AddExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(Add,self).__init__()
+        super(AddExpression,self).__init__()
     
     def get_name(self):
         return "%number"
@@ -543,22 +601,25 @@ class Add(Expression):
     def operator(self):
         return "+"
     
+    def __repr__(self):
+        return "( + %s)"%(super(AddExpression,self).__repr__())
+    
     def compute(self,a,b):
         return a+b
         
     def get_priority(self):
         return Expression.c_priority["sum"]
 
-class Sub(Expression):
+class SubExpression(BinOpExpression):
     """ Sub
     """
     # Class members
-    c_log = logging.getLogger("query.Sub")
+    c_log = logging.getLogger("query.SubExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(Sub,self).__init__()
+        super(SubExpression,self).__init__()
         
     def get_name(self):
         return "%number"
@@ -566,25 +627,31 @@ class Sub(Expression):
     def operator(self):
         return "-"
     
+    def __repr__(self):
+        return "( - %s)"%(super(SubExpression,self).__repr__())
+    
     def compute(self,a,b):
         return a-b
         
     def get_priority(self):
         return Expression.c_priority["sum"]
 
-class Mul(Expression):
+class MulExpression(BinOpExpression):
     """ Mul
     """
     # Class members
-    c_log = logging.getLogger("query.Mul")
+    c_log = logging.getLogger("query.MulExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(Mul,self).__init__()
+        super(MulExpression,self).__init__()
     
     def operator(self):
         return "*"
+    
+    def __repr__(self):
+        return "( * %s)"%(super(MulExpression,self).__repr__())
     
     def get_name(self):
         return "%number"
@@ -595,19 +662,68 @@ class Mul(Expression):
     def get_priority(self):
         return Expression.c_priority["prod"]
 
-class Div(Expression):
-    """ Div
+class AndExpression(BinOpExpression):
+    """ And
     """
     # Class members
-    c_log = logging.getLogger("query.Div")
+    c_log = logging.getLogger("query.AndExpression")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        super(Div,self).__init__()
+        super(AndExpression,self).__init__()
+    
+    def operator(self):
+        return "*"
+    
+    def __repr__(self):
+        return "( and %s)"%(super(AndExpression,self).__repr__())
+    
+    def compute(self,a,b):
+        return (a and b)
+        
+    def get_priority(self):
+        return Expression.c_priority["and"]
+    
+"""
+public class And extends BinOp {
+
+
+    @Override
+    public String operator() {
+        return "and";
+    }
+
+    @Override
+    public Value compute(double x, double y) {
+        return new Value(x != 0 && y != 0);
+    }
+
+    
+    @Override
+    public Priority priority() {
+        return Priority.AND;
+    }
+
+}
+"""
+
+class DivExpression(Expression):
+    """ Div
+    """
+    # Class members
+    c_log = logging.getLogger("query.DivExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(DivExpression,self).__init__()
     
     def operator(self):
         return "/"
+    
+    def __repr__(self):
+        return "( / %s)"%(super(DivExpression,self).__repr__())
     
     def compute(self,a,b):
         return a/b
@@ -634,7 +750,7 @@ class NumberExpression(Expression):
         
     def __repr__(self):
         
-        return "%s"%(self._value)
+        return "( literal %s )"%(self._value)
 
     def get_value(self):
         return self._value
@@ -665,7 +781,7 @@ class NameExpression(Expression):
         
     def __repr__(self):
         
-        return "%s"%(self._value)
+        return "( literal %s )"%(self._value)
 
     def get_value(self):
         return self._value
@@ -699,7 +815,7 @@ class StringExpression(Expression):
         
     def __repr__(self):
         
-        return "%s"%(self._value)
+        return "( literal %s )"%(self._value)
 
     def get_value(self):
         return self._value
@@ -722,28 +838,28 @@ class OperationFactory(object):
     c_log.setLevel(logging.DEBUG)
     
     c_binary_operations = {
-                        "<"  :"LT",
-                        ">"  :"GT",
-                        "+"  :"Add",
-                        "-"  :"Sub",
-                        "*"  :"Mul",
-                        "/"  :"Div",
-                        ">=" :"GE",
-                        "<=" :"LE",
-                        "<>" :"NE",
-                        "="  :"EQ",
-                        "**" :"Pow",
-                        "^"  :"Pow",
-                        "&"  :"Merge",
-                        "&&" :"And",
-                        "and":"And",
-                        "||" :"Or",
-                        "or" :"Or"
+                        "<"  :"LTExpression",
+                        ">"  :"GTExpression",
+                        "+"  :"AddExpression",
+                        "-"  :"SubExpression",
+                        "*"  :"MulExpression",
+                        "/"  :"DivExpression",
+                        ">=" :"GEExpression",
+                        "<=" :"LEExpression",
+                        "<>" :"NEExpression",
+                        "="  :"EQExpression",
+                        "**" :"PowExpression",
+                        "^"  :"PowExpression",
+                        "&"  :"MergeExpression",
+                        "&&" :"AndExpression",
+                        "and":"AndExpression",
+                        "||" :"OrExpression",
+                        "or" :"OrExpression"
                        }
     
     c_unary_operations  = {
-                         "-":"Neg",
-                         "!":"Not" 
+                         "-":"NegExpression",
+                         "!":"NotExpression" 
                        }
          
     def __init__(self):
@@ -784,7 +900,7 @@ class ExpressionCompiler(object):
         
         self._operator_types = OperatorTypes()
 
-    def _read_expression(self):
+    def read_expression(self):
         # read an expression
         return self._read_disjunction()
         
@@ -892,7 +1008,7 @@ class ExpressionCompiler(object):
         elif type == "OP":
             if token.value == '(':
                 self._tokenizer.next()
-                p = self._read_expression()
+                p = self.read_expression()
                 self._tokenizer.consume_token(')')
             elif token.value == '-':
                 self._tokenizer.next()
@@ -944,7 +1060,7 @@ class ExpressionCompiler(object):
         self._tokenizer = a_tokenizer
         
         # read expression
-        return self._read_expression()
+        return self.read_expression()
        
 # unit tests part
 import unittest
@@ -1242,6 +1358,20 @@ class TestExprCompiler(unittest.TestCase):
         print "result = %s\n"%(result)
         
         self.assertEqual(7.0,result)
+        
+    def testWithTerms(self):
+        
+        c = ExpressionCompiler()
+        
+        tokenizer = Tokenizer()
+        tokenizer.tokenize("A=1")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        print("expression = %s\n"%(expr.get_execution_tree()))
+        
+        #print "result = %s\n"%(result)
         
         
         

@@ -1294,7 +1294,7 @@ class GenieParticulateRenderer(BaseRenderer):
        
     
     def asXmlStr(self, aRequest=""):
-       """ return the xml particulate product according to the passed request
+        """ return the xml particulate product according to the passed request
         
             Args:
                aRequest: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk"). Default = ""
@@ -1304,22 +1304,22 @@ class GenieParticulateRenderer(BaseRenderer):
               
             Raises:
                exception if issue fetching data (CTBTOError)
-       """
+        """
        
-       # parse request to know what need to be added in the product
-       # [Parsing could be done for once and shared between fetcher and renderer]
-       reqDict = self._parser.parse(aRequest, RequestParser.PAR)
+        # parse request to know what need to be added in the product
+        # [Parsing could be done for once and shared between fetcher and renderer]
+        reqDict = self._parser.parse(aRequest, RequestParser.PAR)
          
-       self._fillData(reqDict)
+        self._fillData(reqDict)
        
-       self._fillAnalysisResults(reqDict)
+        self._fillAnalysisResults(reqDict)
        
-       self._fillCalibration()
+        self._fillCalibration()
        
-       # father 
-       BaseRenderer.asXmlStr(self, aRequest)
+        # father 
+        BaseRenderer.asXmlStr(self, aRequest)
        
-       return self._populatedTemplate
+        return self._populatedTemplate
        
        
        
