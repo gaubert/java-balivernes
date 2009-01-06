@@ -375,7 +375,7 @@ def test_new_class():
 if __name__ == '__main__':
     
     # m = __import__("ctbto.common.exceptions",globals(),locals(),['NoName'],-1)
-    
+    print "locals = %s\n"%(globals())
     # print("mod = %s\n"%(m))
    
     #test_tokenizer()

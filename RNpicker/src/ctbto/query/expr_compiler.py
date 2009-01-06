@@ -326,7 +326,7 @@ class NotExpression(UnOpExpression):
         return (1 if value == 0 else 0)
     
     def operator(self):
-        return "-"
+        return "not"
     
     def get_name(self):
         return "%number"
@@ -387,6 +387,144 @@ class BinOpExpression(Expression):
     
     def compute(self,a,b):
         raise Exception("Error. need to be redefined in children")
+    
+class GT(Expression):
+    """ Greater than
+    """
+    # Class members
+    c_log = logging.getLogger("query.GT")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(GT,self).__init__()
+    
+    def get_name(self):
+        return "%number"
+    
+    def operator(self):
+        return ">"
+    
+    def compute(self,a,b):
+        return (1 if a>b else 0)
+        
+    def get_priority(self):
+        return Expression.c_priority["test"]
+
+class LT(Expression):
+    """ Lower than
+    """
+    # Class members
+    c_log = logging.getLogger("query.LT")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(LT,self).__init__()
+    
+    def get_name(self):
+        return "%number"
+    
+    def operator(self):
+        return "<"
+    
+    def compute(self,a,b):
+        return (1 if a<b else 0)
+        
+    def get_priority(self):
+        return Expression.c_priority["test"]
+
+class LE(Expression):
+    """ Lower Equal than
+    """
+    # Class members
+    c_log = logging.getLogger("query.LE")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(LE,self).__init__()
+    
+    def get_name(self):
+        return "%number"
+    
+    def operator(self):
+        return "<="
+    
+    def compute(self,a,b):
+        return (1 if a<=b else 0)
+        
+    def get_priority(self):
+        return Expression.c_priority["test"]
+
+class GE(Expression):
+    """ Greater Equal than
+    """
+    # Class members
+    c_log = logging.getLogger("query.GE")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(GE,self).__init__()
+    
+    def get_name(self):
+        return "%number"
+    
+    def operator(self):
+        return ">="
+    
+    def compute(self,a,b):
+        return (1 if a>=b else 0)
+        
+    def get_priority(self):
+        return Expression.c_priority["test"]
+
+class EQ(Expression):
+    """ Equal than
+    """
+    # Class members
+    c_log = logging.getLogger("query.EQ")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(EQ,self).__init__()
+    
+    def get_name(self):
+        return "%number"
+    
+    def operator(self):
+        return "="
+    
+    def compute(self,a,b):
+        return (1 if a == b else 0)
+        
+    def get_priority(self):
+        return Expression.c_priority["test"]
+
+class NE(Expression):
+    """ Non Equal than
+    """
+    # Class members
+    c_log = logging.getLogger("query.NE")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self):
+        """ constructor """
+        super(NE,self).__init__()
+    
+    def get_name(self):
+        return "%number"
+    
+    def operator(self):
+        return "<>"
+    
+    def compute(self,a,b):
+        return (1 if a != b else 0)
+        
+    def get_priority(self):
+        return Expression.c_priority["test"]
     
 class Add(Expression):
     """ Add
@@ -584,23 +722,23 @@ class OperationFactory(object):
     c_log.setLevel(logging.DEBUG)
     
     c_binary_operations = {
-                        "<":"LT",
-                        ">":"GT",
-                        "+":Add,
-                        "-":Sub,
-                        "*":Mul,
-                        "/":Div,
-                        ">=":"GE",
-                        "<=":"LE",
-                        "<>":"NE",
-                        "=":"EQ",
-                        "**":"Pow",
-                        "^":"Pow",
-                        "&":"Merge",
-                        "&&":"And",
+                        "<"  :"LT",
+                        ">"  :"GT",
+                        "+"  :"Add",
+                        "-"  :"Sub",
+                        "*"  :"Mul",
+                        "/"  :"Div",
+                        ">=" :"GE",
+                        "<=" :"LE",
+                        "<>" :"NE",
+                        "="  :"EQ",
+                        "**" :"Pow",
+                        "^"  :"Pow",
+                        "&"  :"Merge",
+                        "&&" :"And",
                         "and":"And",
-                        "||":"Or",
-                        "or":"Or"
+                        "||" :"Or",
+                        "or" :"Or"
                        }
     
     c_unary_operations  = {
@@ -622,9 +760,7 @@ class OperationFactory(object):
         
         # create the binop
         # create object and update its internal dictionary
-        inst = object.__new__(classname)
-        
-        inst.__dict__.update({'_children':[]})
+        inst = ctbto.common.utils.new_instance("ctbto.query.expr_compiler",classname)
         
         return inst
     
@@ -757,7 +893,7 @@ class ExpressionCompiler(object):
             if token.value == '(':
                 self._tokenizer.next()
                 p = self._read_expression()
-                tokenizer.consume_token(')')
+                self._tokenizer.consume_token(')')
             elif token.value == '-':
                 self._tokenizer.next()
                 p = NegExpression(self._read_atom())
@@ -784,25 +920,9 @@ class ExpressionCompiler(object):
                 p = new HashExpression();
                 readList(p,"}");
                 tokenizer.consumeToken("}");
-                break;
-
-            case '-':
-                tokenizer.advance();
-                p = new Neg(readAtom());
-                break;
-
-            case '!':
-                tokenizer.advance();
-                p = new Not(readAtom());
-                break;
-                
-            case 'n': /* not */
-                tokenizer.advance();
-                p = new Not(readAtom());
-                break;
+                break;  
 
             """
-            #raise Exception("Error. Operator %s should have been detected"%(token.value))
         else:
             raise Exception("Invalid Token %s"%(token))
         
@@ -834,6 +954,176 @@ class TestExprCompiler(unittest.TestCase):
          
         print " setup \n"
     
+    def testBooleanExpression(self):
+        
+        c = ExpressionCompiler()
+        
+        tokenizer = Tokenizer()
+        tokenizer.tokenize("3 < 2")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(0,result)
+        
+        tokenizer.tokenize("1 < 2")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("3 <= 2")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(0,result)
+        
+        tokenizer.tokenize("3 <= 10")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("100 <= 100")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("10 > 20")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(0,result)
+        
+        tokenizer.tokenize("1000 > 20")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("10 >= 20")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(0,result)
+        
+        tokenizer.tokenize("1000 >= 20")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("1000 >= 1000")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("1000 = 20")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(0,result)
+        
+        tokenizer.tokenize("20 = 20")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("20 <> 21")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
+        tokenizer.tokenize("21 <> 21")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(0,result)
+        
+        tokenizer.tokenize("not(21 <> 21)")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)       
+        
+        result = expr.evaluate() #IGNORE:E1103
+        
+        print("result = %s\n"%(result))
+        
+        self.assertEqual(1,result)
+        
     def testAdditivity(self):
         
         c = ExpressionCompiler()

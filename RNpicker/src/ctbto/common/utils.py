@@ -24,13 +24,19 @@ class curry:
 
 
 def forname(modname, classname):
-    """ high level api: reflection, get a class object and load its corresponding module from a string module and class name """
+    """ high level api: reflection, get a class object and load its corresponding module from a string module and class name 
+        If modulename is "" the local module ctbto.common is taken
+    """
     module = __import__(modname,globals(),locals(),['NoName'],-1)
     classobj = getattr(module, classname)
     return classobj 
 
 def new_instance(modname,classname,*args):
     """ instance a class from a string class and module name """
+    
+    if modname == None:
+        modname = ""
+    
     classobj = forname(modname,classname)
     return classobj(*args) #IGNORE:W0142
 
