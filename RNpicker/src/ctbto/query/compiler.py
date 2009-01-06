@@ -171,6 +171,8 @@ class Compiler(object):
         statement = CriteriaStatement() 
         
         
+        return statement
+        
     def _read_filter_statement(self):
         """ private compilation method .
         
@@ -196,7 +198,7 @@ class Compiler(object):
                 token = self._tokenizer.consume_token('[') 
                 filter_values = []
                 while token.value != ']':    
-                    if token.type == 'NAME':
+                    if token.type == 'NAME' or token.type == 'NUMBER':
                         filter_values.append(token.value)
                         token = self._tokenizer.next()
                     elif token.type == 'OP' and token.value == ',':
@@ -213,7 +215,7 @@ class Compiler(object):
             else:
                 raise ParsingError("Error expected a filter name but found %s with type %s"%(token.value,token.type))
             
-            return statement
+        return statement
     
     def _read_retrieve_statement(self):
         """ private compilation method .
@@ -280,7 +282,7 @@ class TestCompiler(unittest.TestCase):
         
         c = Compiler()
         
-        c.compile("retrieve spectrum[CURR,BK,134], analysis[CURR,BK] where techno = radionuclide")
+        c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide")
      
    
         

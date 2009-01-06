@@ -21,6 +21,19 @@ class curry:
             kw = kwargs or self.kwargs
         return self.fun(*(self.pending + args), **kw)
 
+
+
+def forname(modname, classname):
+    """ high level api: reflection, get a class object and load its corresponding module from a string module and class name """
+    module = __import__(modname,globals(),locals(),['NoName'],-1)
+    classobj = getattr(module, classname)
+    return classobj 
+
+def new_instance(modname,classname,*args):
+    """ instance a class from a string class and module name """
+    classobj = forname(modname,classname)
+    return classobj(*args) #IGNORE:W0142
+
 def round_as_string(aFloat,aNbDigits):
     """ Round a float number up to aNbDigits after the .
         printf is used to do that.

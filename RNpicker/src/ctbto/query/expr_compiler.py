@@ -6,13 +6,7 @@
 import logging
 from tokenizer import Tokenizer
 
-def make_class(classname,dict):
-    
-    inst = object.__new__(classname)
-        
-    inst.__dict__ = dict
-    
-    return inst
+import ctbto.common.utils
 
 class OperatorTypes(object):
     
@@ -80,10 +74,6 @@ class Executor(object):
         # the operation
         self._op = op
     
-    def initialize(self,argument): #IGNORE:W0613
-        #default do nothing
-        return
-    
     # abstract method list of values
     def execute(self,values):
         raise Exception("Error. need to be redefined in children")
@@ -134,9 +124,6 @@ class NumberExecutor(Executor):
         """ constructor """
         super(NumberExecutor,self).__init__(op)
         
-        self._value = None
-        
-    def initialize(self,op):
         self._value = op.get_value()
      
     def execute(self,values): #IGNORE:W0613
@@ -152,10 +139,7 @@ class StringExecutor(Executor):
         """ constructor """
         super(StringExecutor,self).__init__(op)
         
-        self._value = None
-        
-    def initialize(self,op):
-        self._value = op.get_value()
+        self._value = op.get_value() 
      
     def execute(self,values):  #IGNORE:W0613
         return self._value
@@ -174,10 +158,10 @@ class Expression(object):
     c_types = [type(None),type("string"),type(1),type(1.0)]
     
     c_executor_dispatcher = {
-                              "%number:none"          :NumberExecutor,
-                              "%number:number"        :NumberUnopExecutor,
-                              "%string:none"          :StringExecutor,
-                              "%number:number:number" :NumberBinopExecutor,
+                              "%number:none"          :"NumberExecutor",
+                              "%number:number"        :"NumberUnopExecutor",
+                              "%string:none"          :"StringExecutor",
+                              "%number:number:number" :"NumberBinopExecutor",
                               "%cos:number"           :"CosExecutor",
                             }
     
@@ -262,10 +246,8 @@ class Expression(object):
         if classname == None:
             raise Exception("Error cannot find the right dispatch for %s"%(signature))
         
-        executor = make_class(classname,{'_op':expr})
+        executor = ctbto.common.utils.new_instance("ctbto.query.expr_compiler", classname,expr)
         
-        executor.initialize(expr)
-       
         return executor
         
         
@@ -328,6 +310,27 @@ class UnOpExpression(Expression):
         
         return l
 
+class NotExpression(UnOpExpression):
+    """ NotExpression
+    """
+    # Class members
+    c_log = logging.getLogger("query.NotExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self,expr):
+        """ constructor """
+        super(NotExpression,self).__init__()
+        self.add(expr)
+    
+    def compute(self,value):
+        return (1 if value == 0 else 0)
+    
+    def operator(self):
+        return "-"
+    
+    def get_name(self):
+        return "%number"
+
 class NegExpression(UnOpExpression):
     """ NegExpression
     """
@@ -348,25 +351,6 @@ class NegExpression(UnOpExpression):
     
     def get_name(self):
         return "%number"
-
-"""
-public class Neg extends UnOp {
-
-    public Neg(Expression math) {
-        add(math);
-    }
-
-    @Override
-    public Value compute(double x) {
-        return new Value(-x);
-    }
-
-    @Override
-    public
-    String operator() {
-        return "-";
-    }
-"""
 
 class BinOpExpression(Expression):
     """ BinOpExpression
@@ -499,7 +483,6 @@ class Div(Expression):
 class NumberExpression(Expression):
     """ NumberExpression
     """
-    
     # Class members
     c_log = logging.getLogger("query.NumberExpression")
     c_log.setLevel(logging.DEBUG)
@@ -761,9 +744,12 @@ class ExpressionCompiler(object):
             p = NumberExpression(n)
             self._tokenizer.next()
         elif type == "NAME":
-            p = NameExpression(token.value)
-            self._tokenizer.next()
-            # check next token and do something if necessary
+            if token.value == 'not':
+                self._tokenizer.next()
+                p = NotExpression(self._read_atom())
+            else:
+                p = NameExpression(token.value)
+                self._tokenizer.next()
         elif type == "STRING":
             p = StringExpression(token.value)
             self._tokenizer.next()
@@ -776,7 +762,7 @@ class ExpressionCompiler(object):
                 self._tokenizer.next()
                 p = NegExpression(self._read_atom())
             else:
-                raise Exception("Invalid Token %s"%(token))
+                raise Exception("Invalid Operator Token %s"%(token))
             """
             switch (token.charAt(0)) {
 
@@ -860,11 +846,11 @@ class TestExprCompiler(unittest.TestCase):
         
         result = expr.evaluate() #IGNORE:E1103
         
-        print "result = %s\n"%(result)
+        print("result = %s\n"%(result))
         
         self.assertEqual(3.0,result)
         
-        print "Test multiple additions \n"
+        print("Test multiple additions \n")
         
         tokenizer.tokenize("1+2+3+4")
         tokenizer.next()
@@ -873,11 +859,11 @@ class TestExprCompiler(unittest.TestCase):
         
         result = expr.evaluate()
         
-        print "result = %s\n"%(result)
+        print("result = %s\n"%(result))
         
         self.assertEqual(10.0,result)
         
-        print "Test multiple substractions \n"
+        print("Test multiple substractions \n")
         
         tokenizer.tokenize("1-3+4+5")
         tokenizer.next()
@@ -886,7 +872,7 @@ class TestExprCompiler(unittest.TestCase):
         
         result = expr.evaluate()
         
-        print "result = %s\n"%(result)
+        print("result = %s\n"%(result))
         
         self.assertEqual(7.0,result)
         
@@ -897,7 +883,7 @@ class TestExprCompiler(unittest.TestCase):
         
         result = expr.evaluate()
         
-        print "result = %s\n"%(result)
+        print("result = %s\n"%(result))
         
         self.assertEqual(0.0,result)
         
@@ -908,7 +894,7 @@ class TestExprCompiler(unittest.TestCase):
         
         result = expr.evaluate()
         
-        print "result = %s\n"%(result)
+        print("result = %s\n"%(result))
         
         self.assertEqual(-1.0,result)
         
@@ -919,9 +905,26 @@ class TestExprCompiler(unittest.TestCase):
         
         result = expr.evaluate()
         
-        print "result = %s\n"%(result)
+        print("result = %s\n"%(result))
         
         self.assertEqual(-1.0,result)
+        
+    def testNegation(self):
+         
+        c = ExpressionCompiler()
+        tokenizer = Tokenizer()
+        
+        tokenizer.tokenize("not 0")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        result = expr.evaluate()
+        
+        print "result = %s\n"%(result)
+        
+        self.assertEqual(1,result)
+        
     
     def testFactors(self):
         
