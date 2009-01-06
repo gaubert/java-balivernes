@@ -6,6 +6,7 @@
 import logging
 
 from tokenizer import Tokenizer
+from expr_compiler import ExpressionCompiler
 
 class ParsingError(Exception):
     """Base class for All exceptions"""
@@ -18,6 +19,9 @@ class Statement(object):
     """Base Class used for all statements """
     
     def execute(self):
+        raise Error(-1,"Abstract method to be implemented by the children")
+    
+    def get_execution_tree(self):
         raise Error(-1,"Abstract method to be implemented by the children")
     
 class BlockStatement(Statement):
@@ -40,6 +44,14 @@ class BlockStatement(Statement):
             last = statement.execute()
        
         return last
+    
+    def get_execution_tree(self):
+        last = None
+        
+        for statement in self._statements:
+            last = statement.get_execution_tree()
+       
+        return last
 
 class CriteriaStatement(Statement):
     
@@ -49,12 +61,12 @@ class CriteriaStatement(Statement):
         
         self._criteria = []
         
-    def add_criteria(self,op,a,b):
+    def add_criteria(self,expr):
         
-        self._criteria.append((op,a,b))
+        self._criteria.append(expr)
         
         
-    def execute(self):
+    def get_execution_tree(self):
         
         s = ""
         
@@ -78,7 +90,7 @@ class FilterStatement(Statement):
         else:
             raise ParsingError("Error filter %s already exists"%(name))
         
-    def execute(self):
+    def get_execution_tree(self):
         s = ""
         
         for (key,value) in self._filters.iteritems():
@@ -102,11 +114,11 @@ class RetrieveStatement(Statement):
         #precondition, check that the passed object is a statement
         self._statements.append(statement)
         
-    def execute(self):
+    def get_execution_tree(self):
         last = ""
         
         for statement in self._statements:
-            last += statement.execute()
+            last += statement.get_execution_tree()
        
         return "( retrieve %s )"%(last)
 
@@ -126,6 +138,9 @@ class Compiler(object):
 
         # the current statement used to create a pseudo iterator
         self._current_statement = None
+        
+        #use delegation
+        self._expr_compiler = ExpressionCompiler()
  
     def compile(self,program):
         """ compile the passed program.
@@ -179,11 +194,15 @@ class Compiler(object):
         """
         statement = CriteriaStatement() 
         
-        token = self._tokenizer.next()
+        token = self._tokenizer.current_token()
         
-        while token.value != 
-        
-        
+        while token.type != 'ENDMARKER':
+            expr = self._expr_compiler.compile(self._tokenizer)
+            print "expr = %s\n"%(expr)
+            statement.add_criteria(expr)
+            
+            token = self._tokenizer.current_token()
+                
         
         return statement
         
@@ -300,9 +319,9 @@ class TestCompiler(unittest.TestCase):
         
         c = Compiler()
         
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide")
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide and magnitude < 10")
      
-        print "execute program %s\n"%(program.execute())
+        print "get_execution_tree program %s\n"%(program.get_execution_tree())
    
         
         
