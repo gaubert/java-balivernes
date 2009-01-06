@@ -70,18 +70,19 @@ class FilterStatement(Statement):
     def add_filter(self,name,values):
         
         if name not in self._filters:
-            self[name] = values
+            self._filters[name] = values
         else:
             raise ParsingError("Error filter %s already exists"%(name))
         
     def execute(self):
         s = ""
-        for (key,value) in filters:
-            s = "( [ ( literal %s ) "%(key)
-            for v in value:
-                s += "( literal %s ) "%(v)
         
-        return "( filter )"%(s)
+        for (key,value) in self._filters.iteritems():
+            s += "( [ ( literal %s )"%(key)
+            for v in value:
+                s += "( literal %s )"%(v)
+        
+        return "( filter %s )"%(s)
         
 class RetrieveStatement(Statement):
     
@@ -97,12 +98,12 @@ class RetrieveStatement(Statement):
         self._statements.append(statement)
         
     def execute(self):
-        last = None
+        last = ""
         
         for statement in self._statements:
-            last = statement.execute()
+            last += statement.execute()
        
-        return last
+        return "( retrieve %s )"%(last)
 
 class Compiler(object):
     """ create tokens for parsing the grammar. 
@@ -136,7 +137,8 @@ class Compiler(object):
         self._tokenizer = Tokenizer()
         self._tokenizer.tokenize(program)
         self._tokenizer.next()
-        self._compile()
+        
+        return self._compile()
         
     def _compile(self):
         """ private compilation method .
@@ -155,6 +157,8 @@ class Compiler(object):
         
         for s in self._read_statements():
             block.add(s)
+        
+        return block
     
     def _read_criteria_statement(self):
         """ private compilation method .
@@ -241,7 +245,7 @@ class Compiler(object):
         # => parse expression, parse date (in date parse period, parse list of date, parse single dates)
         
         #ret_statement.add(self._read_criteria())
-       
+        return ret_statement
     
     
     def _read_statements(self):
@@ -256,15 +260,16 @@ class Compiler(object):
             Raises:
                exception 
         """ 
+        statements = []
+        
         token = self._tokenizer.current_token()
         
         if token.value.lower() == 'retrieve':
-            return self._read_retrieve_statement()
+            statements.append(self._read_retrieve_statement())
         else:
             raise ParsingError("Error in parsing. non expected token %s in line %s, col %s"%(token.value,token.begin[1],token.begin[0])) 
         
-        
-        
+        return statements
         
         
         
@@ -282,8 +287,9 @@ class TestCompiler(unittest.TestCase):
         
         c = Compiler()
         
-        c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide")
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide")
      
+        print "execute program %s\n"%(program.execute())
    
         
         
