@@ -47,17 +47,21 @@ class CriteriaStatement(Statement):
         
         super(CriteriaStatement,self).__init__()
         
-        self._criteria = {}
+        self._criteria = []
         
-    def add_criteria(self,name,values):
+    def add_criteria(self,op,a,b):
         
-        if name not in self._criteria:
-            self[name] = values
-        else:
-            raise ParsingError("Error filter %s already exists"%(name))
+        self._criteria.append((op,a,b))
+        
         
     def execute(self):
-        """ """
+        
+        s = ""
+        
+        for (op,a,b) in self._criteria:
+            s += "( %s ( literal %s ) (literal %s ) )"%(op,a,b)
+        
+        return "( criteria %s )"%(s)
         
 class FilterStatement(Statement):
  
@@ -80,9 +84,10 @@ class FilterStatement(Statement):
         for (key,value) in self._filters.iteritems():
             s += "( [ ( literal %s )"%(key)
             for v in value:
-                s += "( literal %s )"%(v)
+                s += " ( literal %s )"%(v)
+            s += " ) "
         
-        return "( filter %s )"%(s)
+        return "( filter %s)"%(s)
         
 class RetrieveStatement(Statement):
     
@@ -174,6 +179,11 @@ class Compiler(object):
         """
         statement = CriteriaStatement() 
         
+        token = self._tokenizer.next()
+        
+        while token.value != 
+        
+        
         
         return statement
         
@@ -235,16 +245,19 @@ class Compiler(object):
         """ 
         ret_statement = RetrieveStatement()
         
-        # fisrt read a 'filter' statement
+        # first read a 'filter' statement
         ret_statement.add(self._read_filter_statement())
+       
         # consume the where token
-        token = self._tokenizer.consume_token('where') 
+        self._tokenizer.consume_token('where') 
+        
+        # read criteria statements
+        ret_statement.add(self._read_criteria_statement())
         
         # read criteria statement
         # look for where min(spectrum.A) , date = "20081203/20081205", date="20081203/to/20091203"
         # => parse expression, parse date (in date parse period, parse list of date, parse single dates)
         
-        #ret_statement.add(self._read_criteria())
         return ret_statement
     
     
