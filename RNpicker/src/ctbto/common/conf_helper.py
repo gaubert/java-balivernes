@@ -197,7 +197,16 @@ class Conf(object):
         opt = self.optionxform(option)
         
         if section not in self._sections:
-            return self._get_defaults(default,fail_if_missing)
+            #check if it is a ENV section
+            dummy = None
+            if section == Conf.ENVGROUP:
+                r     = resource.Resource(CliArgument=None,EnvVariable=opt)
+                dummy = r.getValue()
+            elif section == Conf.CLIGROUP:
+                r     = resource.Resource(CliArgument=opt,EnvVariable=None)
+                dummy = r.getValue()
+            #return default if dummy is None otherwise return dummy
+            return ( (self._get_defaults(default,fail_if_missing)) if dummy == None else dummy )
         elif opt in self._sections[section]:
             return self._replace_vars(self._sections[section][opt],section, option)
         else:
@@ -487,7 +496,7 @@ class TestConf(unittest.TestCase):
     
         fp = open("/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/tests/test.config")
     
-        self.conf._read(fp,"the file")
+        self.conf._read(fp,"the file") #IGNORE:W0212
     
     def testGetObjects(self):
         
@@ -589,7 +598,7 @@ class TestConf(unittest.TestCase):
         self.assertEqual(s,'oracle.jdbc.driver.OracleDriver')
     
     def testReadFromResource(self):
-        """ Do substituions with resources """
+        """ Do substitutions with resources """
         
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
@@ -602,9 +611,31 @@ class TestConf(unittest.TestCase):
         sys.argv.append("--LongName")
         sys.argv.append("My Cli Value")
         
-        val = self.conf.get("GroupTest1","fromcli")
+        val = self.conf.get("GroupTest1","fromcli1")
    
         self.assertEqual(val,'My Cli Value is embedded')
+        
+        #check with a more natural cli value
+        val = self.conf.get("GroupTest1","fromcli2")
+   
+        self.assertEqual(val,'My Cli Value is embedded 2')
+    
+    def testGetFromENV(self):
+    
+        #set environment
+        os.environ["TESTENV"] = "/tmp/foo/foo.bar"
+        
+        val = self.conf.get("ENV","TESTENV")
+        
+        self.assertEqual(val,"/tmp/foo/foo.bar")
+        
+        #set cli arg
+        sys.argv.append("--LongName")
+        sys.argv.append("My Cli Value")
+        
+        val = self.conf.get("CLI","LongName")
+        
+        self.assertEqual(val,"My Cli Value")
         
         
         
