@@ -1,3 +1,9 @@
+""" 
+    Copyright 2008 CTBTO
+    
+    configuration env
+"""
+
 import os
 import re
 
@@ -73,8 +79,6 @@ class MissingSectionHeaderError(ParsingError):
         self.lineno = lineno
         self.line = line
 
-MAX_INCLUDE_DEPTH = 10
-
 class Conf(object):
     """ 
        Configuration Object with a several features:
@@ -83,7 +87,8 @@ class Conf(object):
        - support for variables in configuration file
        - support for default values in all accessors
        - integrated with the resources object offering to get the configuration from an env var, a commandline option or the conf
-       - support for blocs, list comprehension and dict comprehension, json 
+       - to be done : support for blocs, list comprehension and dict comprehension, json 
+       - to be done : define resources in the conf using the [Resource] group with A= { ENV:TESTVAR, CLI:--testvar, VAL:1.234 }
     
     """
     # command line and env resource stuff
@@ -93,8 +98,9 @@ class Conf(object):
     #class member
     _instance = None
     
-    CLIGROUP = "CLI"
-    ENVGROUP = "ENV"
+    _CLIGROUP          = "CLI"
+    _ENVGROUP          = "ENV"
+    _MAX_INCLUDE_DEPTH = 10
     
     @classmethod
     def get_instance(cls):
@@ -199,10 +205,10 @@ class Conf(object):
         if section not in self._sections:
             #check if it is a ENV section
             dummy = None
-            if section == Conf.ENVGROUP:
+            if section == Conf._ENVGROUP:
                 r     = resource.Resource(CliArgument=None,EnvVariable=opt)
                 dummy = r.getValue()
-            elif section == Conf.CLIGROUP:
+            elif section == Conf._CLIGROUP:
                 r     = resource.Resource(CliArgument=opt,EnvVariable=None)
                 dummy = r.getValue()
             #return default if dummy is None otherwise return dummy
@@ -328,10 +334,10 @@ class Conf(object):
                     # if it is in ENVGROUP then check ENV variables with a Resource object
                     # if it is in CLIGROUP then check CLI argument with a Resource object
                     # otherwise check in standard groups
-                    if g == Conf.ENVGROUP:
+                    if g == Conf._ENVGROUP:
                         r = resource.Resource(CliArgument=None,EnvVariable=o)
                         dummy = r.getValue()
-                    elif g == Conf.CLIGROUP:
+                    elif g == Conf._CLIGROUP:
                         r = resource.Resource(CliArgument=o,EnvVariable=None)
                         dummy = r.getValue()
                     else:
@@ -389,7 +395,7 @@ class Conf(object):
     def _read_include(self,line,origin,depth):
         
         # Error if depth is MAX_INCLUDE_DEPTH 
-        if depth >= MAX_INCLUDE_DEPTH:
+        if depth >= Conf._MAX_INCLUDE_DEPTH:
             raise IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes"%(MAX_INCLUDE_DEPTH))
         
         # remove %include from the path and we should have a path
