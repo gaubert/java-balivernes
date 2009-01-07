@@ -93,6 +93,9 @@ class Conf(object):
     #class member
     _instance = None
     
+    CLIGROUP = "CLI"
+    ENVGROUP = "ENV"
+    
     @classmethod
     def get_instance(cls):
         if cls._instance == None:
@@ -313,7 +316,17 @@ class Conf(object):
                 o = self._replace_vars(m.group('option'),group,option)
             
                 try:
-                    dummy = self._sections[g][self.optionxform(o)]
+                    # if it is in ENVGROUP then check ENV variables with a Resource object
+                    # if it is in CLIGROUP then check CLI argument with a Resource object
+                    # otherwise check in standard groups
+                    if g == Conf.ENVGROUP:
+                        r = resource.Resource(CliArgument=None,EnvVariable=o)
+                        dummy = r.getValue()
+                    elif g == Conf.CLIGROUP:
+                        r = resource.Resource(CliArgument=o,EnvVariable=None)
+                        dummy = r.getValue()
+                    else:
+                        dummy = self._sections[g][self.optionxform(o)]
                 except KeyError, ke: #IGNORE:W0612
                     raise SubstitutionError(group,option,"Error, property %s[%s] doesn't exist in this configuration file \n"%(g,o))
             
@@ -465,6 +478,7 @@ class Conf(object):
 
 # unit tests part
 import unittest
+import sys
 class TestConf(unittest.TestCase):
     
     def setUp(self):
@@ -562,7 +576,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(val,'foo')
     
-    def testUseConfEnvNAMERessource(self):
+    def testUseConfEnvNAMEResource(self):
         """ Use the Resource CONF_FILE to locate the configuration file """
         
         # need to setup the ENV containing the the path to the conf file:
@@ -573,7 +587,25 @@ class TestConf(unittest.TestCase):
         s = self.conf.get("MainDatabaseAccess","driverClassName")
         
         self.assertEqual(s,'oracle.jdbc.driver.OracleDriver')
+    
+    def testReadFromResource(self):
+        """ Do substituions with resources """
+        
+        #set environment
+        os.environ["TESTENV"] = "/tmp/foo/foo.bar"
+        
+        val = self.conf.get("GroupTest1","fromenv")
    
+        self.assertEqual(val,'/mydir//tmp/foo/foo.bar')
+        
+        #set cli arg
+        sys.argv.append("--LongName")
+        sys.argv.append("My Cli Value")
+        
+        val = self.conf.get("GroupTest1","fromcli")
+   
+        self.assertEqual(val,'My Cli Value is embedded')
+        
         
         
 if __name__ == '__main__':
