@@ -410,7 +410,7 @@ class BinOpExpression(Expression):
     def get_right(self):
         return self._children[1]
     
-    def __repr__(self):
+    def print_expression(self):
         
         left  = self.get_left()
         right = self.get_right()
@@ -674,7 +674,7 @@ class AndExpression(BinOpExpression):
         super(AndExpression,self).__init__()
     
     def operator(self):
-        return "*"
+        return "and"
     
     def __repr__(self):
         return "( and %s)"%(super(AndExpression,self).__repr__())
@@ -684,29 +684,29 @@ class AndExpression(BinOpExpression):
         
     def get_priority(self):
         return Expression.c_priority["and"]
+
+class OrExpression(BinOpExpression):
+    """ OrExpression
+    """
+    # Class members
+    c_log = logging.getLogger("query.OrExpression")
+    c_log.setLevel(logging.DEBUG)
     
-"""
-public class And extends BinOp {
-
-
-    @Override
-    public String operator() {
-        return "and";
-    }
-
-    @Override
-    public Value compute(double x, double y) {
-        return new Value(x != 0 && y != 0);
-    }
-
+    def __init__(self):
+        """ constructor """
+        super(OrExpression,self).__init__()
     
-    @Override
-    public Priority priority() {
-        return Priority.AND;
-    }
-
-}
-"""
+    def operator(self):
+        return "or"
+    
+    def __repr__(self):
+        return "( or %s)"%(super(OrExpression,self).__repr__())
+    
+    def compute(self,a,b):
+        return (a or b)
+        
+    def get_priority(self):
+        return Expression.c_priority["or"]
 
 class DivExpression(Expression):
     """ Div
@@ -1070,7 +1070,7 @@ class TestExprCompiler(unittest.TestCase):
          
         print " setup \n"
     
-    def testBooleanExpression(self):
+    def testEvaluateBooleanExpression(self):
         
         c = ExpressionCompiler()
         
@@ -1240,7 +1240,7 @@ class TestExprCompiler(unittest.TestCase):
         
         self.assertEqual(1,result)
         
-    def testAdditivity(self):
+    def testEvaluateAdditivity(self):
         
         c = ExpressionCompiler()
         
@@ -1315,7 +1315,7 @@ class TestExprCompiler(unittest.TestCase):
         
         self.assertEqual(-1.0,result)
         
-    def testNegation(self):
+    def testEvaluateNegation(self):
          
         c = ExpressionCompiler()
         tokenizer = Tokenizer()
@@ -1332,7 +1332,7 @@ class TestExprCompiler(unittest.TestCase):
         self.assertEqual(1,result)
         
     
-    def testFactors(self):
+    def testEvaluateFactors(self):
         
         c = ExpressionCompiler()
         
@@ -1359,19 +1359,34 @@ class TestExprCompiler(unittest.TestCase):
         
         self.assertEqual(7.0,result)
         
-    def testWithTerms(self):
+    def testExcutionTreeWithTerms(self):
         
         c = ExpressionCompiler()
-        
         tokenizer = Tokenizer()
+        
         tokenizer.tokenize("A=1")
         tokenizer.next()
         
         expr = c.compile(tokenizer)
         
-        print("expression = %s\n"%(expr.get_execution_tree()))
+        self.assertEqual("( = ( literal A ) ( literal 1.0 ) )",expr.get_execution_tree())
         
-        #print "result = %s\n"%(result)
+        tokenizer.tokenize("A=1 and B>10")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        print "Execution Tree = %s\n"%(expr.get_execution_tree())
+        
+        self.assertEqual("( and ( = ( literal A ) ( literal 1.0 ) ) ( > ( literal B ) ( literal 10.0 ) ) )",expr.get_execution_tree())
+        
+        tokenizer.tokenize("(A=1 and B>10) or (C > 10)")
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        print "Execution Tree = %s\n"%(expr.get_execution_tree())
+        
         
         
         
