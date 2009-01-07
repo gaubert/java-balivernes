@@ -637,6 +637,14 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(val,"My Cli Value")
         
+        # get a float from env
+        os.environ["TESTENV"] = "1.05"
+        
+        val = self.conf.getfloat("ENV","TESTENV")
+        
+        self.assertEqual(val+1,2.05)
+        
+        
         
         
 if __name__ == '__main__':
