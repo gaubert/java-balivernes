@@ -12,14 +12,10 @@ import conf_helper
 class ResourceError(Exception):
     """Base class for ressource exceptions"""
 
-    cErrs = {
-                -1: "Ressource Error",
-            }
-
     def __init__(self,aMsg):
-        self.args   = (-1, aMsg)
-        self.errno  = -1
-        self.errmsg = aMsg
+        
+        super(ResourceError,self).__init__(aMsg)
+        
 
 
 class Resource(object):
@@ -29,7 +25,7 @@ class Resource(object):
     """
     
     def __init__(self,CliArgument=None,EnvVariable=None,ConfProperty=None): 
-      """ 
+        """ 
           Default Constructor.
           It is important to understand that there is precedence between the different ways to set the ressource:
           - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
@@ -37,17 +33,17 @@ class Resource(object):
            Args:
               CliArgument : The command line argument name
               EnvVariable : The env variable name used for this ressource
-              ConfProperty: It should be a tupr containing two elements (group,property)
-       """
+              ConfProperty: It should be a tuple containing two elements (group,property)
+        """
       
-      self._cliArg   = CliArgument.lower() if CliArgument is not None else None
-      self._envVar   = EnvVariable.upper() if EnvVariable is not None else None
+        self._cliArg   = CliArgument.lower() if CliArgument is not None else None
+        self._envVar   = EnvVariable.upper() if EnvVariable is not None else None
       
-      if ConfProperty is not None:
-         (self._confGroup,self._confProperty) = ConfProperty
-      else:
-         self._confGroup    = None
-         self._confProperty = None
+        if ConfProperty is not None:
+            (self._confGroup,self._confProperty) = ConfProperty
+        else:
+            self._confGroup    = None
+            self._confProperty = None
       
     def setCliArgument(self,CliArgument):
         self._cliArg = CliArgument.lower()
@@ -56,47 +52,47 @@ class Resource(object):
         self._envVar = EnvVariable
     
     def _getValueFromTheCommandLine(self):
-      """
+        """
           internal method for extracting the value from the command line.
           All command line agruments must be lower case (unix style).
           To Do support short and long cli args.
            
            Returns:
              the Value if defined otherwise None
-      """
+        """
           
-      # check precondition
-      if self._cliArg == None:
-        return None
+        # check precondition
+        if self._cliArg == None:
+            return None
     
-      # look for cliArg in sys argv
-      for arg in sys.argv:
-         if arg.lower() == self._cliArg:
-           i = sys.argv.index(arg)
-           print "i = %d, val = %s\n"%(i,sys.argv[i])
-           if len(sys.argv) <= i:
-             # No more thing to read in the command line so quit
-             print "Ressource: Commandline argument %s has no value\n"%(self._cliArg)
-             return None 
-           else:
-            print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
-            return sys.argv[i+1]
+        # look for cliArg in sys argv
+        for arg in sys.argv:
+            if arg.lower() == self._cliArg:
+                i = sys.argv.index(arg)
+                print "i = %d, val = %s\n"%(i,sys.argv[i])
+                if len(sys.argv) <= i:
+                    # No more thing to read in the command line so quit
+                    print "Ressource: Commandline argument %s has no value\n"%(self._cliArg)
+                    return None 
+                else:
+                    print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
+                    return sys.argv[i+1]
             
 
     def _getValueFromEnv(self):
-      """
+        """
           internal method for extracting the value from the env.
           All support ENV Variables should be in uppercase.
            
            Returns:
              the Value if defined otherwise None
-      """
+        """
       
-      # precondition
-      if self._envVar == None:
-          return None
+        # precondition
+        if self._envVar == None:
+            return None
      
-      return os.environ.get(self._envVar,None)
+        return os.environ.get(self._envVar,None)
       
     def _getFromConf(self):
         """
@@ -110,7 +106,7 @@ class Resource(object):
           
         
     def getValue(self,aRaiseException=True):
-       """
+        """
            Return the value of the Resource as a string.
            - get from the command line if defined otherwise get from the Env variable if defined otherwise get from the conf file otherwise error
               
@@ -121,22 +117,22 @@ class Resource(object):
        
            Raises:
               exception CTBTOError if the aRaiseExceptionOnError flag is activated
-       """
+        """
        
-       # get a value using precedence rule 1) command-line, 2) ENV, 3) Conf
-       val = self._getValueFromTheCommandLine()
-       if val is None:
-           val = self._getValueFromEnv()
-           if val is None:
-               val = self._getFromConf()
-               if (val is None) and aRaiseException:
-                  raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf Group:[%s] and Property=%s\n"%(self._cliArg,self._envVar,self._confGroup,self._confProperty))
+        # get a value using precedence rule 1) command-line, 2) ENV, 3) Conf
+        val = self._getValueFromTheCommandLine()
+        if val is None:
+            val = self._getValueFromEnv()
+            if val is None:
+                val = self._getFromConf()
+                if (val is None) and aRaiseException:
+                    raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf Group:[%s] and Property=%s\n"%(self._cliArg,self._envVar,self._confGroup,self._confProperty))
     
-       # we do have a val
-       return val
+        # we do have a val
+        return val
    
     def _get(self,conv):
-      """
+        """
            Private _get method used to convert to the right expected type (int,float or boolean).
            Strongly inspired by ConfigParser.py
               
@@ -145,11 +141,11 @@ class Resource(object):
        
            Raises:
               exception ValueError if conversion issue
-      """
-      return conv(self.getValue())
+        """
+        return conv(self.getValue())
 
     def getValueAsInt(self):
-      """
+        """
            Return the value as an int
               
            Returns:
@@ -157,11 +153,11 @@ class Resource(object):
        
            Raises:
               exception ValueError if conversion issue
-      """
-      return self._get(int)
+        """
+        return self._get(int)
 
     def getValueAsFloat(self):
-      """
+        """
            Return the value as a float
               
            Returns:
@@ -169,8 +165,8 @@ class Resource(object):
        
            Raises:
               exception ValueError if conversion issue
-      """
-      return self._get(float)
+        """
+        return self._get(float)
 
     _boolean_states = {'1': True, 'yes': True, 'true': True, 'on': True,
                        '0': False, 'no': False, 'false': False, 'off': False}
@@ -189,50 +185,56 @@ class Resource(object):
         if v.lower() not in self._boolean_states:
             raise ValueError, 'Not a boolean: %s' % v
         return self._boolean_states[v.lower()]
-   
-   
-def tests():
-  # set command line
-  sys.argv.append("--LongName")
-  sys.argv.append("My Cli Value")
-   
-  r = Resource(CliArgument="--LongName",EnvVariable=None) 
   
-  print "Val from commandLine [%s]\n"%(r.getValue())
+ # unit tests part
+import unittest
+class TestResource(unittest.TestCase):
+    
+    def testResource(self):
+        
+        # set command line
+        sys.argv.append("--LongName")
+        sys.argv.append("My Cli Value")
+        
+        r = Resource(CliArgument="--LongName",EnvVariable=None) 
+        
+        self.assertEqual("My Cli Value",r.getValue())
+        
+        #ENV 
+        os.environ["MYENVVAR"]="My ENV Value"
   
-  os.environ["MYENVVAR"]="My ENV Value"
+        r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+        
+        self.assertEqual("My ENV Value",r.getValue())
+        
+        r = Resource(CliArgument="--LongName",EnvVariable="MYENVVAR")
   
-  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+        print "Check precedence Rule. Should get the Cli Val first [%s]=[My Cli Value]\n"%(r.getValue())
+        
+        self.assertEqual("My Cli Value",r.getValue())
   
-  print "Val from ENV [%s]\n"%(r.getValue())
+        os.environ["MYENVVAR"]="yes"
   
-  r = Resource(CliArgument="--LongName",EnvVariable="MYENVVAR")
+        r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
   
-  print "Check precedence Rule. Should get the Cli Val first [%s]=[My Cli Value]\n"%(r.getValue())
+        print "Get Boolean Value =%s. return res of (r.getValueAsBoolean) == True : %s \n"%(r.getValueAsBoolean(),(r.getValueAsBoolean() is True))
   
-  os.environ["MYENVVAR"]="yes"
+        self.assertEqual(r.getValueAsBoolean(),True)
+        
+        os.environ["MYENVVAR"]="4"
   
-  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+        r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
   
-  print "Get Boolean Value =%s. return res of (r.getValueAsBoolean) == True : %s \n"%(r.getValueAsBoolean(),(r.getValueAsBoolean() is True))
+        print "Get Int Value =%s. return res of (r.getValueAsInt()+1) = %s \n"%(r.getValueAsInt(),(r.getValueAsInt()+1))
   
-  os.environ["MYENVVAR"]="4"
+        self.assertEqual(r.getValueAsInt()+1,5)
+        
+        os.environ["MYENVVAR"]="4.345"
   
-  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
+        r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
   
-  print "Get Int Value =%s. return res of (r.getValueAsInt()+1) = %s \n"%(r.getValueAsInt(),(r.getValueAsInt()+1))
+        print "Get Float Value =%s. return res of (r.getValueAsFloat()+1) = %s \n"%(r.getValueAsFloat(),(r.getValueAsFloat()+1))
   
-  os.environ["MYENVVAR"]="4.345"
-  
-  r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
-  
-  print "Get Float Value =%s. return res of (r.getValueAsFloat()+1) = %s \n"%(r.getValueAsFloat(),(r.getValueAsFloat()+1))
-  
-  
-  
-  
-if __name__ == '__main__':
-    # call little tests
-    tests()     
+        self.assertEqual(r.getValueAsFloat()+1,5.345)
  
        
