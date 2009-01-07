@@ -562,7 +562,8 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(val,'foo')
     
-    def testUseRessource(self):
+    def testUseConfEnvNAMERessource(self):
+        """ Use the Resource CONF_FILE to locate the configuration file """
         
         # need to setup the ENV containing the the path to the conf file:
         os.environ[Conf.ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
