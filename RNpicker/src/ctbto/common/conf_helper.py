@@ -500,7 +500,7 @@ class TestConf(unittest.TestCase):
          
         self.conf = Conf(use_resource=False)
     
-        fp = open("/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/tests/test.config")
+        fp = open("../../../etc/ext/tests/test.config")
     
         self.conf._read(fp,"the file") #IGNORE:W0212
     
@@ -516,7 +516,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(aint,10)
         
-        # get float
+        # get floatcompile the statements
         afloat = self.conf.getfloat("GroupTest1","afloat")
         
         self.assertEqual(afloat,5.24)
@@ -595,7 +595,8 @@ class TestConf(unittest.TestCase):
         """ Use the Resource CONF_FILE to locate the configuration file """
         
         # need to setup the ENV containing the the path to the conf file:
-        os.environ[Conf.ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
+        #os.environ[Conf.ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
+        os.environ[Conf.ENVNAME] = "../../../etc/conf/rnpicker.config"
    
         self.conf = Conf.get_instance()
         
