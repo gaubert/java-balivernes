@@ -1015,30 +1015,6 @@ class ExpressionCompiler(object):
                 p = NegExpression(self._read_atom())
             else:
                 raise Exception("Invalid Operator Token %s"%(token))
-            """
-            switch (token.charAt(0)) {
-
-            case '(':
-                tokenizer.advance();
-                p = readExpression();
-                tokenizer.consumeToken(")");
-                break;
-
-            case '[':
-                tokenizer.advance();
-                p = new ListExpression();
-                readList(p,"]");
-                tokenizer.consumeToken("]");
-                break;
-                
-            case '{':
-                tokenizer.advance();
-                p = new HashExpression();
-                readList(p,"}");
-                tokenizer.consumeToken("}");
-                break;  
-
-            """
         else:
             raise Exception("Invalid Token %s"%(token))
         
