@@ -70,8 +70,8 @@ class CriteriaStatement(Statement):
         
         s = ""
         
-        for (op,a,b) in self._criteria:
-            s += "( %s ( literal %s ) (literal %s ) )"%(op,a,b)
+        for expr in self._criteria:
+            s += expr.get_execution_tree()
         
         return "( criteria %s )"%(s)
         
