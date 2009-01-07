@@ -51,6 +51,17 @@ class Resource(object):
     def setEnvVariable(self,EnvVariable):
         self._envVar = EnvVariable
     
+    def _get_srandardized_cli_argument(self,a_tostrip):
+        """
+           remove -- or - from the command line argument and add a -- prefix to standardize the cli argument 
+        """
+        s = a_tostrip
+        
+        while s.startswith('-'):
+            s = s[1:]
+        
+        return '--%s'%(s)
+    
     def _getValueFromTheCommandLine(self):
         """
           internal method for extracting the value from the command line.
@@ -64,10 +75,13 @@ class Resource(object):
         # check precondition
         if self._cliArg == None:
             return None
+        
+
+        s = self._get_srandardized_cli_argument(self._cliArg)
     
         # look for cliArg in sys argv
         for arg in sys.argv:
-            if arg.lower() == self._cliArg:
+            if arg.lower() == s:
                 i = sys.argv.index(arg)
                 print "i = %d, val = %s\n"%(i,sys.argv[i])
                 if len(sys.argv) <= i:
@@ -197,6 +211,11 @@ class TestResource(unittest.TestCase):
         sys.argv.append("My Cli Value")
         
         r = Resource(CliArgument="--LongName",EnvVariable=None) 
+        
+        self.assertEqual("My Cli Value",r.getValue())
+        
+        # look for LongName without --. It should be formalized by the Resource object
+        r = Resource(CliArgument="LongName",EnvVariable=None) 
         
         self.assertEqual("My Cli Value",r.getValue())
         
