@@ -1,0 +1,14 @@
+Metadata-Version: 1.0
+Name: conf
+Version: 0.8
+Summary: Conf a class for powerfully accessing configuration files, from CTBTO (www.ctbto.org)
+Home-page: http://www.ctbto.org
+Author: Guillaume Aubert
+Author-email: guillaume.aubert@ctbto.org
+License: Apache 2.0
+Description: This is the info file for my test application
+        nn
+Keywords: configuration,resources
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Topic :: Util :: Libraries :: Python Modules

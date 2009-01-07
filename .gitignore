@@ -3,6 +3,7 @@
 *.pyc
 *.log
 .classpath
+res.txt
 bin-groovy
 bin-python
 bin
