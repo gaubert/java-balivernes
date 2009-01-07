@@ -319,7 +319,8 @@ class TestCompiler(unittest.TestCase):
         
         c = Compiler()
         
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide and magnitude < 10")
+        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide and mda < 10 and category > 2")
      
         print "get_execution_tree program %s\n"%(program.get_execution_tree())
    
