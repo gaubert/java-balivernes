@@ -18,6 +18,6 @@ setup(name='conf',
       url='http://www.ctbto.org',
       license='Apache 2.0',
       packages=find_packages(),
-      namespace_packages=['org'],
+      namespace_packages=['org.ctbto.conf'],
       install_requires=[]
       )
