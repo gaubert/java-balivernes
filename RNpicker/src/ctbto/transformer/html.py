@@ -8,8 +8,6 @@ import logging
 
 import ctbto.common.utils as utils
 import ctbto.common.time_utils as time_utils
-from ctbto.common import CTBTOError
-from ctbto.common import Conf
 
 UNDEFINED="N/A"
 RDIGITS   = 5 
@@ -35,11 +33,11 @@ class XML2HTMLRenderer(object):
     
     def render(self,aXmlPath):
         
-       self._fill_values(aXmlPath)
+        self._fill_values(aXmlPath)
        
-       print "context = %s\n"%(self._context)
+        print("context = %s\n"%(self._context))
          
-       return self._template.render(self._context)    
+        return self._template.render(self._context)    
       
     
     def _fill_values(self,aXmlPath):

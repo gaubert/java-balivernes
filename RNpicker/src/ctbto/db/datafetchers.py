@@ -12,8 +12,8 @@ import ctbto.common.time_utils
 import ctbto.db.rndata
 from ctbto.query import RequestParser
 
-from ctbto.common import CTBTOError
-from ctbto.common import Conf
+from ctbto.common   import CTBTOError
+from org.ctbto.conf import Conf
 # module local to the package so no needs of ctbto here
 #list of requests
 from sqlrequests import *

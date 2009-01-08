@@ -13,8 +13,8 @@ from lxml import etree
 import ctbto.common.utils as utils
 import ctbto.common.xml_utils
 
-from ctbto.common    import Conf
 from ctbto.db        import DatabaseConnector,DBDataFetcher
+from org.ctbto.conf  import Conf
 
 from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer

@@ -10,7 +10,8 @@ bin
 build
 tools
 RNpicker/dist/RNPicker.egg-info/
-RNpicker/dist/RNPicker.egg-info/*
+RNpicker/dist/conf.egg-info/*
+dists/conf-dist/dist/*
 .coverage
 .project
 .externalToolBuilders
