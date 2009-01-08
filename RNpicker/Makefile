@@ -26,10 +26,10 @@ RNVERSION=0.5
 RNDISTNAME=rnpicker-$(RNVERSION)
 
 CONFVERSION=0.8
-CONFDISTNAME=conf-$(VERSION)
+CONFDISTNAME=conf-$(CONFVERSION)
 
 
-all: conf-egg-dist
+all: conf-src-dist
 
 init:
 	mkdir -p $(RNDIST)
@@ -41,13 +41,17 @@ rn-egg-dist: init
 	cd $(RNDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(RNDISTNAME) -d ../../$(RNBUILDDIST) 
 	echo "distribution stored in $(RNBUILDDIST)"
 
+conf-src-dist: clean init 
+	cd $(CONFDIST); $(PYTHONBIN) setup.py sdist -d ../../$(CONFBUILD) 
+	echo "distribution stored in $(CONFBUILDDIST)"
+
 conf-egg-dist: init 
 	cd $(CONFDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(CONFDISTNAME) -d ../../$(CONFBUILDDIST) 
 	echo "distribution stored in $(CONFBUILDDIST)"
 
 clean: clean-build
 	cd $(RNDIST); rm -Rf build; rm -Rf RNPicker.egg-info
-	cd $(CONFDIST); rm -Rf build; rm -Rf RNPicker.egg-info
+	cd $(CONFDIST); rm -Rf build; rm -Rf conf.egg-info
 	
 clean-build:
 	cd $(RNBUILD); rm -Rf egg-dist
