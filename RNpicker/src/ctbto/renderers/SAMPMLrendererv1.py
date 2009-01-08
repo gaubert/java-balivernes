@@ -3,10 +3,10 @@ import re
 
 import ctbto.common.utils
 
-from ctbto.common import CTBTOError
+from ctbto.common   import CTBTOError
 
-from ctbto.common import Conf
-from ctbto.query  import RequestParser
+from org.ctbto.conf import Conf
+from ctbto.query    import RequestParser
 
 class BaseRenderer(object):
     """ Base Class used to transform the fetcher content into XML """

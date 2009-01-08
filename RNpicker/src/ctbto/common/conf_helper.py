@@ -79,7 +79,7 @@ class MissingSectionHeaderError(ParsingError):
         self.lineno = lineno
         self.line = line
 
-class Conf(object):
+class Conf_OLD(object):
     """ 
        Configuration Object with a several features:
        - get configuration info in different types
