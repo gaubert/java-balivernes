@@ -15,9 +15,9 @@ import StringIO
 
 
 
-from ctbto.common     import Conf
-from ctbto.db.rndata  import RemoteFSDataSource
-from ctbto.query      import RequestParser
+from org.ctbto.conf    import Conf
+from ctbto.db.rndata   import RemoteFSDataSource
+from ctbto.query       import RequestParser
 from ctbto.transformer import XML2HTMLRenderer
 
 #
@@ -370,18 +370,28 @@ def test_new_class():
     instance = new_instance("ctbto.sandbox.scrapbook","TheClass","MyMessage")
     
     instance.print_hello()
+
+def get_package_path():
+    
+    import org.ctbto.conf
+    
+    fmod_path = org.ctbto.conf.__path__
+    
+    test_dir = "%s/tests"%fmod_path[0]
+    
+    print("path = %s\n"%fmod_path)
+    
+    print("test dir = %s\n"%test_dir)
+    
+    fi = open('%s/test.config'%(test_dir))
+    
+    for line in fi:
+        print(line)
     
 
 if __name__ == '__main__':
     
-    # m = __import__("ctbto.common.exceptions",globals(),locals(),['NoName'],-1)
-    print "locals = %s\n"%(globals())
-    # print("mod = %s\n"%(m))
-   
-    #test_tokenizer()
-    test_new_class()
-
-   
+    get_package_path()
     
     
     

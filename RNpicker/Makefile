@@ -14,7 +14,7 @@ RNBUILDDIST=$(RNDIST)/build/egg-dist
 #ConfDist info
 CONFDIST=$(DISTS)/conf-dist
 CONFBUILD=$(CONFDIST)/build
-CONFBUILDDIST=$(CONFDIST)/build/egg-dist
+CONFBUILDDIST=$(CONFDIST)/build
 
 BUILD=$(BASEDIR)/build
 BUILDDIST=$(BUILD)/egg-dist
@@ -42,10 +42,13 @@ rn-egg-dist: init
 	echo "distribution stored in $(RNBUILDDIST)"
 
 conf-src-dist: clean init 
+	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
+	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)
 	cd $(CONFDIST); $(PYTHONBIN) setup.py sdist -d ../../$(CONFBUILD) 
 	echo "distribution stored in $(CONFBUILDDIST)"
 
 conf-egg-dist: init 
+	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)
 	cd $(CONFDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(CONFDISTNAME) -d ../../$(CONFBUILDDIST) 
 	echo "distribution stored in $(CONFBUILDDIST)"
 
