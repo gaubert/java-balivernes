@@ -17,7 +17,9 @@ setup(name='conf',
       author_email='guillaume.aubert@ctbto.org',
       url='http://www.ctbto.org',
       license='Apache 2.0',
-      packages=find_packages(),
-      namespace_packages=['org.ctbto.conf'],
+      packages=['org','org.ctbto','org.ctbto.conf'],
+      package_dir={'org.ctbto.conf': 'org/ctbto/conf'},
+      package_data={'org.ctbto.conf': ['tests/test.config','tests/foo.config']},
+      #data_files=[('/tmp/py-tests',['/home/aubert/dev/src-reps/java-balivernes/RNpicker/dists/conf-dist/tests/foo.config','/home/aubert/dev/src-reps/java-balivernes/RNpicker/dists/conf-dist/tests/test.config'])],
       install_requires=[]
       )

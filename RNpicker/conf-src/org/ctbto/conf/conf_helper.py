@@ -1,8 +1,35 @@
 """ 
-    Copyright 2008 CTBTO
+    Copyright 2008 CTBTO Organisation
     
-    configuration env
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    
+    module: configuration env
 """
+#
+# Copyright (C) 2006 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 import os
 import re
@@ -39,12 +66,10 @@ class NoSectionError(Error):
         self.section = section
 
 class SubstitutionError(Error):
-    """Base class for interpolation-related exceptions."""
+    """Base class for substitution-related exceptions."""
 
-    def __init__(self, section,option, msg):
-        Error.__init__(self, msg)
-        self.option = option
-        self.section = section
+    def __init__(self, lineno,location, msg):
+        Error.__init__(self,'SubstitutionError on line %d: %s. %s'%(lineno,location,msg) if lineno !=-1 else 'SubstitutionError in %s. %s'%(lineno,location,msg))
         
 class IncludeError(Error):
     """ Raised when an include command is incorrect """
@@ -214,7 +239,7 @@ class Conf(object):
             #return default if dummy is None otherwise return dummy
             return ( (self._get_defaults(default,fail_if_missing)) if dummy == None else dummy )
         elif opt in self._sections[section]:
-            return self._replace_vars(self._sections[section][opt],section, option)
+            return self._replace_vars(self._sections[section][opt],"%s[%s]"%(section, option),-1)
         else:
             return self._get_defaults(default,fail_if_missing)
 
@@ -251,7 +276,7 @@ class Conf(object):
             option = self.optionxform(option)
             return (option in self._sections[section])
     
-    def _get_closing_bracket_index(self,index,s,group,option):
+    def _get_closing_bracket_index(self,index,s,location,lineno):
         """ private method used by _replace_vars to count the closing brackets.
             
             Args:
@@ -287,12 +312,12 @@ class Conf(object):
             closing_brack_index +=1
             i += 1
     
-        raise SubstitutionSyntaxError(group,option,"SyntaxError. Missing a closing bracket in %s"%(tolook))
+        raise SubstitutionError(lineno,location,"Missing a closing bracket in %s"%(tolook))
 
     # very permissive regex
     _SUBSGROUPRE = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
     
-    def _replace_vars(self,a_str,group,option):
+    def _replace_vars(self,a_str,location,lineno=-1):
         """ private replacing all variables. A variable will be in the from of %(group[option]).
             Multiple variables are supported, ex /foo/%(group1[opt1])/%(group2[opt2])/bar
             Nested variables are also supported, ex /foo/%(group[%(group1[opt1]].
@@ -315,7 +340,7 @@ class Conf(object):
         # if found opening %( look for end bracket)
         if index >= 0:
             # look for closing brackets while counting openings one
-            closing_brack_index = self._get_closing_bracket_index(index,a_str,group,option)
+            closing_brack_index = self._get_closing_bracket_index(index,a_str,location,lineno)
         
             #print "closing bracket %d"%(closing_brack_index)
             var = toparse[index:closing_brack_index+1]
@@ -323,12 +348,12 @@ class Conf(object):
             m = self._SUBSGROUPRE.match(var)
         
             if m == None:
-                raise SubstitutionError(group,option,"Error. Cannot match a group[option] in %s but found an opening bracket (. Malformated expression "%(var))
+                raise SubstitutionError(lineno,location,"Cannot match a group[option] in %s but found an opening bracket (. Malformated expression "%(var))
             else:
             
                 # recursive calls
-                g = self._replace_vars(m.group('group'),group,option)
-                o = self._replace_vars(m.group('option'),group,option)
+                g = self._replace_vars(m.group('group'),location,-1)
+                o = self._replace_vars(m.group('option'),location,-1)
             
                 try:
                     # if it is in ENVGROUP then check ENV variables with a Resource object
@@ -343,12 +368,11 @@ class Conf(object):
                     else:
                         dummy = self._sections[g][self.optionxform(o)]
                 except KeyError, ke: #IGNORE:W0612
-                    raise SubstitutionError(group,option,"Error, property %s[%s] doesn't exist in this configuration file \n"%(g,o))
-            
+                    raise SubstitutionError(lineno,location,"Property %s[%s] doesn't exist in this configuration file \n"%(g,o))
             
             toparse = toparse.replace(var,dummy)
             
-            return self._replace_vars(toparse,group,option)    
+            return self._replace_vars(toparse,location,-1)    
         else:   
             return toparse 
 
@@ -392,16 +416,19 @@ class Conf(object):
         r'(?P<value>.*)$'                     # everything up to eol
         )
 
-    def _read_include(self,line,origin,depth):
+    def _read_include(self,lineno,line,origin,depth):
         
         # Error if depth is MAX_INCLUDE_DEPTH 
         if depth >= Conf._MAX_INCLUDE_DEPTH:
-            raise IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes"%(MAX_INCLUDE_DEPTH))
+            raise IncludeError("Error. Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes"%(Conf._MAX_INCLUDE_DEPTH))
         
         # remove %include from the path and we should have a path
         i = line.find('%include')
         
-        path = line[i+8:].strip()   
+        path = line[i+8:].strip() 
+        
+        # replace variables if there are any
+        path = self._replace_vars(path,line,lineno)
         
         # check if file exits
         if not os.path.exists(path):
@@ -433,7 +460,7 @@ class Conf(object):
             lineno = lineno + 1
             # include in this form %include
             if line.startswith('%include'):
-                self._read_include(line,fpname,depth)
+                self._read_include(lineno,line,fpname,depth)
                 continue
             # comment or blank line?
             if line.strip() == '' or line[0] in '#;':
@@ -494,18 +521,40 @@ class Conf(object):
 # unit tests part
 import unittest
 import sys
+import org.ctbto.conf
+
+def tests():
+    suite = unittest.TestLoader().loadTestsFromModule(org.ctbto.conf)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
 class TestConf(unittest.TestCase):
+    
+    def _get_tests_dir_path(self):
+        """ get the org.ctbto.conf.tests path depending on where it is defined """
+        
+        fmod_path = org.ctbto.conf.__path__
+        
+        test_dir = "%s/tests"%fmod_path[0]
+        
+        return test_dir
     
     def setUp(self):
          
+        # necessary for the include with the VAR ENV substitution
+        os.environ["DIRCONFENV"] = self._get_tests_dir_path()
+         
         self.conf = Conf(use_resource=False)
     
-        fp = open("../../../../etc/ext/tests/test.config")
+        fp = open('%s/%s'%(self._get_tests_dir_path(),"test.config"))
     
         self.conf._read(fp,"the file") #IGNORE:W0212
+        
+    def testAPrintModulePath(self):
+        
+        print("org.ctbto.conf module is loaded from %s\n"%(self._get_tests_dir_path()))
     
     def testGetObjects(self):
-        
+        """testGetObjects: test getter from all types """
         # get simple string
         astring = self.conf.get("GroupTest1","astring")
         
@@ -539,6 +588,7 @@ class TestConf(unittest.TestCase):
         self.assertEqual(abool4,False)
         
     def testGetDefaults(self):
+        """testGetDefaults: test defaults values """
         
          # get all defaults
         astring = self.conf.get("GroupTest","astring","astring")
@@ -568,7 +618,8 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(abool5,False)
         
-    def testVarSubstitution(self):
+    def testVarSubstitutions(self):
+        """testVarSubstitutions: test variables substitutions"""
         
         # simple substitution
         apath = self.conf.get("GroupTestVars","path")
@@ -586,17 +637,26 @@ class TestConf(unittest.TestCase):
         self.assertEqual(nested,"this is done")  
         
     def testInclude(self):
-        
+        """testInclude: test includes """
         val = self.conf.get("IncludedGroup","hello")
         
         self.assertEqual(val,'foo')
+        
+    def _create_fake_conf_file_in_tmp(self):
+        
+        f = open('/tmp/fake_conf.config','w')
+        
+        f.write('\n[MainDatabaseAccess]\n')
+        f.write('driverClassName=oracle.jdbc.driver.OracleDriver')
+        f.flush()
+        f.close()
     
-    def testUseConfEnvNAMEResource(self):
-        """ Use the Resource CONF_FILE to locate the configuration file """
+    def testUseConfENVNAMEResource(self):
+        """testUseConfENVNAMEResource: Use default resource ENVNAME to locate conf file"""
+        self._create_fake_conf_file_in_tmp()
         
         # need to setup the ENV containing the the path to the conf file:
-        #os.environ[Conf.ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
-        os.environ[Conf.ENVNAME] = "../../../../etc/conf/rnpicker.config"
+        os.environ[Conf.ENVNAME] = "/tmp/fake_conf.config"
    
         self.conf = Conf.get_instance()
         
@@ -604,9 +664,8 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(s,'oracle.jdbc.driver.OracleDriver')
     
-    def testReadFromResource(self):
-        """ Do substitutions with resources """
-        
+    def testReadFromCLI(self):
+        """testReadFromCLI: do substitutions from command line resources"""
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
         
@@ -627,8 +686,8 @@ class TestConf(unittest.TestCase):
    
         self.assertEqual(val,'My Cli Value is embedded 2')
     
-    def testGetFromENV(self):
-    
+    def testReadFromENV(self):
+        """testReadFromENV: do substitutions from ENV resources"""
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
         
@@ -649,11 +708,8 @@ class TestConf(unittest.TestCase):
         
         val = self.conf.getfloat("ENV","TESTENV")
         
-        self.assertEqual(val+1,2.05)
-        
-        
-        
+        self.assertEqual(val+1,2.05)  
+      
         
 if __name__ == '__main__':
-    
-    unittest.main()
+    tests()

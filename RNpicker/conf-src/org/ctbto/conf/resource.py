@@ -1,9 +1,23 @@
-"""
-   Manage external Resources. A cli resource (command line ressource) is an information passed in the command line or with an ENV variable (to be implemented => or as part of a configuration file if the file)
-   For example the Conf object is defining a ressource called conf-path as 
-"""
 
+""" 
+    Copyright 2008 CTBTO Organisation
+    
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    
+    module: Manage external Resources. 
+            A cli resource (command line ressource) is an information passed in the command line or with an ENV variable (to be implemented => or as part of a configuration file if the file)
+            For example the Conf object is defining a ressource called conf-path as 
+"""
 import sys
 import os
 
@@ -83,13 +97,13 @@ class Resource(object):
         for arg in sys.argv:
             if arg.lower() == s:
                 i = sys.argv.index(arg)
-                print "i = %d, val = %s\n"%(i,sys.argv[i])
+                #print "i = %d, val = %s\n"%(i,sys.argv[i])
                 if len(sys.argv) <= i:
                     # No more thing to read in the command line so quit
-                    print "Ressource: Commandline argument %s has no value\n"%(self._cliArg)
+                    print "Resource: Commandline argument %s has no value\n"%(self._cliArg)
                     return None 
                 else:
-                    print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
+                    #print "i+1 = %d, val = %s\n"%(i+1,sys.argv[i+1])
                     return sys.argv[i+1]
             
 
@@ -204,8 +218,8 @@ class Resource(object):
 import unittest
 class TestResource(unittest.TestCase):
     
-    def testResource(self):
-        
+    def testResourceSimpleCli(self):
+        """testResourceSimpleCli: read resource from CLI"""
         # set command line
         sys.argv.append("--LongName")
         sys.argv.append("My Cli Value")
@@ -218,7 +232,9 @@ class TestResource(unittest.TestCase):
         r = Resource(CliArgument="LongName",EnvVariable=None) 
         
         self.assertEqual("My Cli Value",r.getValue())
-        
+    
+    def testResourceFromEnv(self): 
+        """testResourceFromENV: read resource from ENV"""   
         #ENV 
         os.environ["MYENVVAR"]="My ENV Value"
   
@@ -226,33 +242,29 @@ class TestResource(unittest.TestCase):
         
         self.assertEqual("My ENV Value",r.getValue())
         
+    def testResourcePriorityRules(self):
+        """testResourcePriorityRules: test priority rules"""   
         r = Resource(CliArgument="--LongName",EnvVariable="MYENVVAR")
   
-        print "Check precedence Rule. Should get the Cli Val first [%s]=[My Cli Value]\n"%(r.getValue())
-        
         self.assertEqual("My Cli Value",r.getValue())
   
+    def testResourceGetDifferentTypes(self):
+        """testResourceGetDifferentTypes: return resource in different types"""
+        
         os.environ["MYENVVAR"]="yes"
-  
         r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
-  
-        print "Get Boolean Value =%s. return res of (r.getValueAsBoolean) == True : %s \n"%(r.getValueAsBoolean(),(r.getValueAsBoolean() is True))
-  
+        
         self.assertEqual(r.getValueAsBoolean(),True)
         
         os.environ["MYENVVAR"]="4"
   
         r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
   
-        print "Get Int Value =%s. return res of (r.getValueAsInt()+1) = %s \n"%(r.getValueAsInt(),(r.getValueAsInt()+1))
-  
         self.assertEqual(r.getValueAsInt()+1,5)
         
         os.environ["MYENVVAR"]="4.345"
   
         r = Resource(CliArgument=None,EnvVariable="MYENVVAR")
-  
-        print "Get Float Value =%s. return res of (r.getValueAsFloat()+1) = %s \n"%(r.getValueAsFloat(),(r.getValueAsFloat()+1))
   
         self.assertEqual(r.getValueAsFloat()+1,5.345)
  
