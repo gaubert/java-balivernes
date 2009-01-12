@@ -1,4 +1,4 @@
-import random
+
 import unittest
 
 import time
@@ -7,7 +7,6 @@ import logging
 import logging.handlers
 import StringIO
 import re
-import string
 from lxml import etree
 
 import ctbto.common.utils as utils
@@ -46,6 +45,29 @@ def myBasicLoggingConfig():
 
 
 class TestSAMPMLCreator(unittest.TestCase):
+    
+    def __init__(self,stuff):
+        super(TestSAMPMLCreator,self).__init__(stuff)
+        
+        self.conf              = None
+        
+        self.mainDatabase      = None
+        self.mainUser          = None
+        self.mainPassword      = None
+        self.mainConn          = None
+        
+        self.archiveDatabase   = None
+        self.archiveUser       = None
+        self.archivePassword   = None
+        self.archConn          = None
+        
+        self.xpath_calIDs      = None
+        self.xpath_specalIDs   = None
+        
+        self.nbDatabase        = None
+        self.nbUser            = None
+        self.nbPassword        = None
+        self.nbConn            = None
     
     def _setUpGenieParticulate(self):
         
@@ -153,33 +175,33 @@ class TestSAMPMLCreator(unittest.TestCase):
 
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
-       result = self.mainConn.execute(SQL_GETSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
+        result = self.mainConn.execute(SQL_GETSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
         
-       sampleIDs= []
+        sampleIDs= []
         
-       rows = result.fetchall()
+        rows = result.fetchall()
        
-       for row in rows:
-           sampleIDs.append(row[0])
+        for row in rows:
+            sampleIDs.append(row[0])
        
-       print "samples %s\n"%(sampleIDs)
+        print "samples %s\n"%(sampleIDs)
       
-       return sampleIDs
+        return sampleIDs
    
     def getListOfSaunaSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
-       result = self.nbConn.execute(SQL_GETSAUNASAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
+        result = self.nbConn.execute(SQL_GETSAUNASAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
         
-       sampleIDs= []
+        sampleIDs= []
         
-       rows = result.fetchall()
+        rows = result.fetchall()
        
-       for row in rows:
-           sampleIDs.append(row[0])
+        for row in rows:
+            sampleIDs.append(row[0])
        
-       print "sauna samples %s\n"%(sampleIDs)
+        print "sauna samples %s\n"%(sampleIDs)
       
-       return sampleIDs
+        return sampleIDs
       
     def tesstPrelParticulateSamples(self):
         
@@ -200,21 +222,21 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "list of Prel Sample",listOfSamplesToTest
         
         for sampleID in listOfSamplesToTest:
-           # fetchnoble particulate
-           fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
+            # fetchnoble particulate
+            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
-           fetcher.fetch()
+            fetcher.fetch()
            
-           renderer = ParticulateRenderer(fetcher)
+            renderer = ParticulateRenderer(fetcher)
    
-           xmlStr = renderer.asXmlStr()
-           
-           path = "/tmp/samples/sampml-prel-%s.xml"%(sampleID)
+            xmlStr = renderer.asXmlStr()
+            
+            path = "/tmp/samples/sampml-prel-%s.xml"%(sampleID)
    
-           common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+            common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
-           # check if no tags are left
-           self.assertIfNoTagsLeft(path)
+            # check if no tags are left
+            self.assertIfNoTagsLeft(path)
 
     def testFullGenieParticulateSamples(self):
         
@@ -225,8 +247,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         request="spectrum=ALL, analysis=ALL"
         
-        # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2003-10-24',endDate='2003-10-26',spectralQualif='FULL',nbOfElem='1')
+        # get full 2003-10-24 to 2003-10-26
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='1')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -243,35 +265,35 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
             
-           print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+            print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
            
-           t0 = time.time()
+            t0 = time.time()
            
-           # fetchnoble particulate
-           fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
+            # fetchnoble particulate
+            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
    
-           fetcher.fetch(request,'PAR')
+            fetcher.fetch(request,'PAR')
                  
-           renderer = GenieParticulateRenderer(fetcher)
+            renderer = GenieParticulateRenderer(fetcher)
    
-           xmlStr = renderer.asXmlStr(request)
+            xmlStr = renderer.asXmlStr(request)
            
-           #print "Non Formatted String [%s]\n"%(xmlStr)
+            #print "Non Formatted String [%s]\n"%(xmlStr)
    
-           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    
-           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+            ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
-           # check if no tags are left
-           self.assertIfNoTagsLeft(path)
+            # check if no tags are left
+            self.assertIfNoTagsLeft(path)
            
-           self.assertAllCalibrationInfo(path)
+            self.assertAllCalibrationInfo(path)
            
-           t1 = time.time()
+            t1 = time.time()
            
-           print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+            print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
            
-           cpt +=1
+            cpt +=1
         
         total_t1 = time.time()
         
@@ -303,7 +325,7 @@ class TestSAMPMLCreator(unittest.TestCase):
               
         # remove sampleID for which data isn't available
         if "141372" in listOfSamplesToTest:
-           listOfSamplesToTest.remove("141372")
+            listOfSamplesToTest.remove("141372")
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -317,18 +339,18 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
             
-           print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+            print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
            
-           t0 = time.time()
+            t0 = time.time()
            
-           # fetchnoble particulate
-           fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
+            # fetchnoble particulate
+            fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
-           fetcher.fetch(request,'GAS')
+            fetcher.fetch(request,'GAS')
                  
-           renderer = SaunaRenderer(fetcher)
+            renderer = SaunaRenderer(fetcher)
    
-           xmlStr = renderer.asXmlStr(request)
+            xmlStr = renderer.asXmlStr(request)
            
            #print "Non Formatted String [%s]\n"%(xmlStr)
            
@@ -337,20 +359,20 @@ class TestSAMPMLCreator(unittest.TestCase):
            #f.write(xmlStr)
            #f.close()
    
-           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    
-           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+            ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
            # check if no tags are left
            #self.assertIfNoTagsLeft(path)
            
            #self.assertAllCalibrationInfo(path)
            
-           t1 = time.time()
+            t1 = time.time()
            
-           print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+            print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
            
-           cpt +=1
+            cpt +=1
         
         total_t1 = time.time()
         
@@ -380,8 +402,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         toRemove = [141372,206975]
         
         for id in toRemove:
-          if id in listOfSamplesToTest:
-             listOfSamplesToTest.remove(id)
+            if id in listOfSamplesToTest:
+                listOfSamplesToTest.remove(id)
                
         print "list Full of Sample",listOfSamplesToTest
         
@@ -391,39 +413,39 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
            
-           print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+            print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
            
-           t0 = time.time()
+            t0 = time.time()
            
-           # fetchnoble particulate
-           fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
+            # fetchnoble particulate
+            fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
-           fetcher.fetch(request,'GAS')
+            fetcher.fetch(request,'GAS')
                  
-           renderer = SaunaRenderer(fetcher)
+            renderer = SaunaRenderer(fetcher)
    
-           xmlStr = renderer.asXmlStr(request)
+            xmlStr = renderer.asXmlStr(request)
            
-           path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    
-           ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+            ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
-           # check if no tags are left
-           self.assertIfNoTagsLeft(path)
+            # check if no tags are left
+            self.assertIfNoTagsLeft(path)
            
-           self.assertAllCalibrationInfo(path)
+            self.assertAllCalibrationInfo(path)
            
-           t1 = time.time()
+            t1 = time.time()
            
-           print "Fetch sample nb %d with SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+            print "Fetch sample nb %d with SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
            
-           cpt +=1
+            cpt +=1
         
-           r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
+            r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
     
-           result = r.render(path)
+            result = r.render(path)
     
-           utils.printInFile(result,"/tmp/ARR-%s.html"%(sampleID))
+            utils.printInFile(result,"/tmp/ARR-%s.html"%(sampleID))
            
         total_t1 = time.time()
         

@@ -1,6 +1,6 @@
 import os
 from setuptools import setup, find_packages
-version = '0.1.0'
+version = '0.8.0'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 setup(name='RNPicker',
@@ -19,5 +19,5 @@ setup(name='RNPicker',
       license='Apache 2.0',
       packages=find_packages(),
       namespace_packages=['ctbto'],
-      install_requires=['SQLAchemy>=0.5.0','cx-Oracle>=4.3','lxml>=2.0']
+      install_requires=['conf>=0.8.0','SQLAlchemy>=0.4.7','cx-Oracle>=4.3','lxml>=2.0']
       )
