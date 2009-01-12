@@ -238,7 +238,7 @@ class TestSAMPMLCreator(unittest.TestCase):
             # check if no tags are left
             self.assertIfNoTagsLeft(path)
 
-    def testFullGenieParticulateSamples(self):
+    def tesstFullGenieParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -303,7 +303,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "****************************************************************************\n"
         print "****************************************************************************\n"
         
-    def tesstFullNobleGazSamples(self):
+    def testFullNobleGazSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997

@@ -6,6 +6,7 @@
 #$3 offset to reach
 #$4 size to read
 #$5 local file where to put the results
+#$6 remote user
 # return a spectrum in stdout
 
 
@@ -24,9 +25,9 @@ my \$blocksize = \$DEFAULT_BLOCKSIZE;
 my \$n;
 my \$total = $4;
 
-open(\$fhandle,"<$2") or die "Couldn't open file fro reading: \$! \n";
+open(\$fhandle,"<$2") or die "Couldn't open remote file $2 on machine $1. Error code: \$! \n";
 
-seek(\$fhandle, \$pos, 0)     or die "Couldn't seek to \$pos: \$!\n";
+seek(\$fhandle, \$pos, 0)     or die "Couldn't seek to \$pos. Error code: \$!\n";
 
 while ( (\$total > 0) && ( (\$n = read(\$fhandle,\$buffer,\$blocksize)) > 0 ) )
 {
