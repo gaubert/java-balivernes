@@ -29,7 +29,7 @@ CONFVERSION=0.8
 CONFDISTNAME=conf-$(CONFVERSION)
 
 
-all: conf-src-dist
+all: conf-src-dist rn-src-dist
 
 init:
 	mkdir -p $(RNDIST)
@@ -38,7 +38,7 @@ init:
 	mkdir -p $(CONFBUILDDIST)
 
 rn-egg-dist: init 
-	cp -R $(BASEDIR)/src/org $(RNDIST)
+	cp -R $(BASEDIR)/src/ctbto $(RNDIST)
 	cd $(RNDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(RNDISTNAME) -d ../../$(RNBUILDDIST) 
 	echo "distribution stored in $(RNBUILDDIST)"
 
@@ -61,7 +61,7 @@ conf-egg-dist: init
 
 clean: clean-build
 	cd $(RNDIST); rm -Rf build; rm -Rf RNPicker.egg-info
-	cd $(CONFDIST); rm -Rf build; rm -Rf conf.egg-info
+	cd $(CONFDIST); rm -Rf build; rm -Rf conf.egg-info; rm -Rf dist
 	
 clean-build:
 	cd $(RNBUILD); rm -Rf egg-dist
