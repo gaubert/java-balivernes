@@ -198,13 +198,13 @@ class RemoteFSDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID,aOffset,aSize):
+    def __init__(self, aDataPath,aID,aOffset,aSize,aRemoteHostname=None):
         
         super(RemoteFSDataSource,self).__init__(aDataPath,aID,aOffset,aSize)
         
         self._remoteScript      = self._conf.get("RemoteAccess","prodAccessScript")
         
-        self._remoteHostname    = self._conf.get("RemoteAccess","prodAccessHost")
+        self._remoteHostname    = (self._conf.get("RemoteAccess","prodAccessHost") if aRemoteHostname == None else aRemoteHostname)
         
         self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser")
         
@@ -272,7 +272,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteArchiveDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize):
+    def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize,aRemoteHostname=None):
         
         # my variables
         super(RemoteArchiveDataSource,self).__init__(aDataPath,aID,aRemoteOffset,aRemoteSize)
@@ -282,7 +282,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         self._remoteScript      = self._conf.get("RemoteAccess","archiveAccessScript")
         
-        self._remoteHostname    = self._conf.get("RemoteAccess","archiveAccessHost")
+        self._remoteHostname    = (self._conf.get("RemoteAccess","archiveAccessHost") if aRemoteHostname == None else aRemoteHostname)
         
         self._remoteUser        = self._conf.get("RemoteAccess","archiveAccessUser")
         

@@ -238,7 +238,7 @@ class TestSAMPMLCreator(unittest.TestCase):
             # check if no tags are left
             self.assertIfNoTagsLeft(path)
 
-    def tesstFullGenieParticulateSamples(self):
+    def testFullGenieParticulateSamples(self):
         
         # another recent sample = "0889826" 
         # tanzani 0888997
@@ -271,6 +271,9 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             # fetchnoble particulate
             fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
+            
+            #modify remoteHost
+            fetcher.setRemoteHost('kuredu')
    
             fetcher.fetch(request,'PAR')
                  
@@ -313,13 +316,11 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
-        #listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-11',endDate='2008-11-12',spectralQualif='FULL',nbOfElem='1000')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-08-11',endDate='2008-11-12',spectralQualif='FULL',nbOfElem='2')
         
         # error
         # 103729,241116     
-        #listOfSamplesToTest = [ "239909" ]
-        listOfSamplesToTest = ['174188']
-        #listOfSamplesToTest = ['239646']
+        #listOfSamplesToTest = ['174188']
         
         #print "list of samples %s\n"%(listOfSamplesToTest)
               
