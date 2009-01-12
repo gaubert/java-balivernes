@@ -198,15 +198,15 @@ class RemoteFSDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID,aOffset,aSize,aHost=None):
+    def __init__(self, aDataPath,aID,aOffset,aSize):
         
         super(RemoteFSDataSource,self).__init__(aDataPath,aID,aOffset,aSize)
-       
-        self._remoteScript      = self._conf.get("RemoteAccess","sftpScript")
-       
-        # try to get it from the conf if not passed
-        if aHost is None:
-            self._remoteHost        = self._conf.get("RemoteAccess","accessHost","kuredu")
+        
+        self._remoteScript      = self._conf.get("RemoteAccess","prodAccessScript")
+        
+        self._remoteHostname    = self._conf.get("RemoteAccess","prodAccessHost")
+        
+        self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser")
         
         self._getRemoteFile()
         
@@ -236,13 +236,14 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         while tries < 4:
        
             func = subprocess.call
-            t = ftimer(func,[[self._remoteScript,self._remotePath,destinationPath,self._remoteHost]],{},res,number=1)
+            
+            t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
        
-            RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHost))
-            #res = subprocess.call([self._remoteScript,self._remotePath,destinationPath,self._remoteHost])
+            RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+       
             if res[0] != 0:
                 if tries >= 3:
-                    raise CTBTOError(-1,"Error when executing sftp Script %s. Error code = %d\n"%(self._remoteScript,res))
+                    raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
                 else:
                     tries += 1
             else:
@@ -331,7 +332,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
        
         #res = subprocess.call([self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser])
         if res[0] != 0:
-            raise CTBTOError(-1,"Error when executing archiveAccess Script %s\n"%(self._remoteScript))
+            raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
         
         self._fd = open(destinationPath,"r")
     
