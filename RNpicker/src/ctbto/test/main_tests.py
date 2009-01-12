@@ -248,7 +248,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full 2003-10-24 to 2003-10-26
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSampleIDs('2007-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='100')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -316,7 +316,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-08-11',endDate='2008-11-12',spectralQualif='FULL',nbOfElem='2')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-08-11',endDate='2008-12-12',spectralQualif='FULL',nbOfElem='2')
         
         # error
         # 103729,241116     

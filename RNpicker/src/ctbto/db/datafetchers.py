@@ -1324,7 +1324,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
             
             self._dataBag[u'%s_VOLUME_VAL'%(aDataname)]  = vol
-            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x >= 0.43 ml' 
+            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x greater equal than 0.43 ml' 
     
     def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """

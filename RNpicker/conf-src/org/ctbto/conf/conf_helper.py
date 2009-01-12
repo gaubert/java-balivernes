@@ -708,7 +708,16 @@ class TestConf(unittest.TestCase):
         
         val = self.conf.getfloat("ENV","TESTENV")
         
-        self.assertEqual(val+1,2.05)  
+        self.assertEqual(val+1,2.05) 
+        
+    def testReadStrings(self):
+        
+        # get all defaults
+        astring = self.conf.get("GroupTestBlocks","block1")
+        
+        print "AString = %s\n"%(astring)
+        
+        #self.assertEqual(astring,"astring")
       
         
 if __name__ == '__main__':
