@@ -38,14 +38,21 @@ init:
 	mkdir -p $(CONFBUILDDIST)
 
 rn-egg-dist: init 
+	cp -R $(BASEDIR)/src/org $(RNDIST)
 	cd $(RNDIST); $(PYTHONBIN) setup.py bdist_egg -b /tmp/build -p $(RNDISTNAME) -d ../../$(RNBUILDDIST) 
 	echo "distribution stored in $(RNBUILDDIST)"
+
+rn-src-dist: clean init 
+	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
+	cp -R $(BASEDIR)/conf-src/org $(RNDIST)
+	cd $(RNDIST); $(PYTHONBIN) setup.py sdist -d ../../$(RNBUILD) 
+	echo "distribution stored in $(RNBUILD)"
 
 conf-src-dist: clean init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)
 	cd $(CONFDIST); $(PYTHONBIN) setup.py sdist -d ../../$(CONFBUILD) 
-	echo "distribution stored in $(CONFBUILDDIST)"
+	echo "distribution stored in $(CONFBUILD)"
 
 conf-egg-dist: init 
 	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)

@@ -432,10 +432,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
         print "****************************************************************************\n"
         print "****************************************************************************\n"
-        
+  
+def tests():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestSAMPMLCreator)
+    unittest.TextTestRunner(verbosity=2).run(suite)    
 
 if __name__ == '__main__':
     
-    unittest.main()
+    tests()
     
     

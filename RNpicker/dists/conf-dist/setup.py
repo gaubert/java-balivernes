@@ -1,6 +1,6 @@
 import os
 from setuptools import setup, find_packages
-version = '0.8'
+version = '0.9'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 setup(name='conf',
