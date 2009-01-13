@@ -117,8 +117,8 @@ class Conf(object):
     
     """
     # command line and env resource stuff
-    CLINAME ="--power_conf_file"
-    ENVNAME ="POWER_CONF_FILE" 
+    CLINAME ="--conf_file"
+    ENVNAME ="CONF_FILE" 
     
     #class member
     _instance = None
@@ -709,16 +709,7 @@ class TestConf(unittest.TestCase):
         val = self.conf.getfloat("ENV","TESTENV")
         
         self.assertEqual(val+1,2.05) 
-        
-    def testReadStrings(self):
-        
-        # get all defaults
-        astring = self.conf.get("GroupTestBlocks","block1")
-        
-        print "AString = %s\n"%(astring)
-        
-        #self.assertEqual(astring,"astring")
-      
+
         
 if __name__ == '__main__':
     tests()

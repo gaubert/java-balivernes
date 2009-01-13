@@ -718,7 +718,7 @@ class GenieParticulateRenderer(BaseRenderer):
               
             Raises:
                exception if issue fetching data (CTBTOError)
-       """
+        """
     
         # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
         requestedTypes = requestDict[RequestParser.SPECTRUM]

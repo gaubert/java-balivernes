@@ -1,8 +1,7 @@
 
 import unittest
-
-import time
 import os
+import time
 import logging
 import logging.handlers
 import StringIO
@@ -43,14 +42,30 @@ def myBasicLoggingConfig():
         log.setLevel(logging.DEBUG)
         log.info("Start")
 
-
+import ctbto.tests
 class TestSAMPMLCreator(unittest.TestCase):
+    
+    def _get_tests_dir_path(self):
+        """ get the ctbto.tests path depending on where it is defined """
+        
+        fmod_path = ctbto.tests.__path__
+        
+        test_dir = "%s/conf_tests"%fmod_path[0]
+        
+        return test_dir
     
     def __init__(self,stuff):
         super(TestSAMPMLCreator,self).__init__(stuff)
         
-        self.conf              = None
+        myBasicLoggingConfig()  
         
+        os.environ['SAMPML_CONF_DIR'] = self._get_tests_dir_path()
+        
+        os.environ[Conf.ENVNAME] = '%s/%s'%(self._get_tests_dir_path(),'rnpicker.config')
+        
+        # create an empty shell Conf object
+        self.conf = Conf.get_instance()
+    
         self.mainDatabase      = None
         self.mainUser          = None
         self.mainPassword      = None
@@ -103,7 +118,6 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         activateTimer = True
         
-        self.conf = Conf.get_instance()
         self.nbDatabase  = self.conf.get("NobleGazDatabaseAccess","hostname")
         self.nbUser      = self.conf.get("NobleGazDatabaseAccess","user")
         self.nbPassword  = self.conf.get("NobleGazDatabaseAccess","password")
@@ -117,13 +131,6 @@ class TestSAMPMLCreator(unittest.TestCase):
     
     
     def setUp(self):
-         
-        myBasicLoggingConfig()  
-        
-        # need to setup the ENV containing the the path to the conf file:
-        os.environ[Conf.ENVNAME] = "/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/rnpicker.config"
-   
-        self.conf = Conf.get_instance()
    
         self._setUpGenieParticulate()
         
@@ -171,7 +178,7 @@ class TestSAMPMLCreator(unittest.TestCase):
                 self.failUnless((elem in calibrationIDs), "Error the following calibration info %s is not defined in the <Calibration> Tag. Xml file produced %s\n"%(elem,path))
         
    
-           
+      
 
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
@@ -203,6 +210,10 @@ class TestSAMPMLCreator(unittest.TestCase):
       
         return sampleIDs
       
+    def testAPrintModulePath(self):
+        
+        print("org.ctbto.conf module is loaded from %s\n"%(self._get_tests_dir_path()))
+        
     def tesstPrelParticulateSamples(self):
         
         # another recent sample = "0889826" 
@@ -383,13 +394,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         print "****************************************************************************\n"
         print "****************************************************************************\n"
     
-    def tesstGenerateNobleGasARR(self):
+    def testGenerateNobleGasARR(self):
         """ Generate a Noble Gaz ARR """
         
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2003-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='50')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='1')
         
         #listOfSamplesToTest = ['174188']
         #listOfSamplesToTest = [141372]
@@ -421,6 +432,9 @@ class TestSAMPMLCreator(unittest.TestCase):
             # fetchnoble particulate
             fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
+            #modify remoteHost
+            fetcher.setRemoteHost(self.conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
+            
             fetcher.fetch(request,'GAS')
                  
             renderer = SaunaRenderer(fetcher)
@@ -442,7 +456,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             cpt +=1
         
-            r = XML2HTMLRenderer('/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates','ArrHtml.html')
+            r = XML2HTMLRenderer('%s/%s'%(self._get_tests_dir_path(),'templates'),'ArrHtml.html')
     
             result = r.render(path)
     
