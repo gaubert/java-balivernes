@@ -39,11 +39,15 @@ def myBasicLoggingConfig():
         logging.root.addHandler(console)
         
         log = logging.getLogger("ROOT")
-        log.setLevel(logging.DEBUG)
+        log.setLevel(logging.INFO)
         log.info("Start")
 
 import ctbto.tests
 class TestSAMPMLCreator(unittest.TestCase):
+    
+    # Class members
+    c_log = logging.getLogger("main_tests.TestSAMPMLCreator")
+    c_log.setLevel(logging.INFO)
     
     def _get_tests_dir_path(self):
         """ get the ctbto.tests path depending on where it is defined """
@@ -70,11 +74,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.mainUser          = None
         self.mainPassword      = None
         self.mainConn          = None
+        self.mainActivateTimer = False
         
-        self.archiveDatabase   = None
-        self.archiveUser       = None
-        self.archivePassword   = None
-        self.archConn          = None
+        self.archiveDatabase      = None
+        self.archiveUser          = None
+        self.archivePassword      = None
+        self.archiveActivateTimer = False
+        self.archConn             = None
         
         self.xpath_calIDs      = None
         self.xpath_specalIDs   = None
@@ -82,31 +88,37 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.nbDatabase        = None
         self.nbUser            = None
         self.nbPassword        = None
+        self.nbActivateTimer   = False
         self.nbConn            = None
+        
+        TestSAMPMLCreator.c_log.info("\n********************************************************************************\n  rnpicker modules are loaded from %s\n********************************************************************************\n"%(self._get_tests_dir_path()))
     
     def _setUpGenieParticulate(self):
         
-        activateTimer = True
         
         self.mainDatabase  = self.conf.get("MainDatabaseAccess","hostname")
         self.mainUser      = self.conf.get("MainDatabaseAccess","user")
         self.mainPassword  = self.conf.get("MainDatabaseAccess","password")
+        self.mainActivateTimer = self.conf.getboolean("MainDatabaseAccess","activateTimer",True)
    
-        print "Main Database=%s"%(self.mainDatabase)
+        TestSAMPMLCreator.c_log.info("")
+        TestSAMPMLCreator.c_log.info("Main Database=%s"%(self.mainDatabase))
    
         # create DB connector
-        self.mainConn = DatabaseConnector(self.mainDatabase,self.mainUser,self.mainPassword,activateTimer)
+        self.mainConn = DatabaseConnector(self.mainDatabase,self.mainUser,self.mainPassword,self.mainActivateTimer)
    
         self.mainConn.connect()
         
         self.archiveDatabase  = self.conf.get("ArchiveDatabaseAccess","hostname")
         self.archiveUser      = self.conf.get("ArchiveDatabaseAccess","user")
         self.archivePassword  = self.conf.get("ArchiveDatabaseAccess","password")
+        self.archiveActivateTimer    = self.conf.getboolean("ArchiveDatabaseAccess","activateTimer",True)
    
-        print "Archive Database=%s"%(self.archiveDatabase)
+   
+        TestSAMPMLCreator.c_log.info("Archive Database=%s"%(self.archiveDatabase))
    
         # create DB connector
-        self.archConn = DatabaseConnector(self.archiveDatabase,self.archiveUser,self.archivePassword,activateTimer)
+        self.archConn = DatabaseConnector(self.archiveDatabase,self.archiveUser,self.archivePassword,self.archiveActivateTimer)
    
         self.archConn.connect()
         
@@ -115,17 +127,17 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.xpath_specalIDs   = etree.XPath("//*[local-name(.)='MeasuredInformation']/*[local-name(.)='Spectrum']/@calibrationIDs")
     
     def _setUpNobleGaz(self):
-        
-        activateTimer = True
-        
-        self.nbDatabase  = self.conf.get("NobleGazDatabaseAccess","hostname")
-        self.nbUser      = self.conf.get("NobleGazDatabaseAccess","user")
-        self.nbPassword  = self.conf.get("NobleGazDatabaseAccess","password")
+           
+        self.nbDatabase        = self.conf.get("NobleGazDatabaseAccess","hostname")
+        self.nbUser            = self.conf.get("NobleGazDatabaseAccess","user")
+        self.nbPassword        = self.conf.get("NobleGazDatabaseAccess","password")
+        self.nbActivateTimer   = self.conf.getboolean("NobleGazDatabaseAccess","activateTimer",True)
    
-        print "NB Database=%s"%(self.nbDatabase)
+   
+        TestSAMPMLCreator.c_log.info("Noble Gaz Database=%s"%(self.nbDatabase))
    
         # create DB connector
-        self.nbConn = DatabaseConnector(self.nbDatabase,self.nbUser,self.nbPassword,activateTimer)
+        self.nbConn = DatabaseConnector(self.nbDatabase,self.nbUser,self.nbPassword,self.nbActivateTimer)
    
         self.nbConn.connect()
     
@@ -158,7 +170,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
     def assertAllCalibrationInfo(self,path):
         """
-           check that the calibration info is there
+           Check that the calibration info is there
         """
         
         tree = etree.parse(open(path,"r"))
@@ -168,8 +180,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         calibrationIDs    = self.xpath_calIDs(tree)
         specCalIDs        = self.xpath_specalIDs(tree)
 
-        print "spec cal = %s\n"%(specCalIDs)
-        print "calibrationIDs =%s\n"%(calibrationIDs)
+        TestSAMPMLCreator.c_log.debug("spec cal = %s\n"%(specCalIDs))
+        TestSAMPMLCreator.c_log.debug("calibrationIDs =%s\n"%(calibrationIDs))
         
         for cals in specCalIDs:
             # split string
@@ -178,8 +190,20 @@ class TestSAMPMLCreator(unittest.TestCase):
                 self.failUnless((elem in calibrationIDs), "Error the following calibration info %s is not defined in the <Calibration> Tag. Xml file produced %s\n"%(elem,path))
         
    
-      
-
+    def assertFileContentEquals(self,a_master_path,a_tocheck_path):
+        """
+           check at the string level that the two files are identical otherwise fail
+        """
+        linenum = 1
+        master  = open(a_master_path,'r')
+        tocheck = open(a_tocheck_path,'r')
+        
+        for m_line in master:
+            c_line = tocheck.readline()
+            
+            if m_line != c_line:
+                self.fail("line num %d is different on the master %s and on the file to check %s.\n master line:[%s]\n tcheck line:[%s]"%(linenum,a_master_path,a_tocheck_path,m_line,c_line))
+            
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
         result = self.mainConn.execute(SQL_GETSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
@@ -191,7 +215,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         for row in rows:
             sampleIDs.append(row[0])
        
-        print "samples %s\n"%(sampleIDs)
+        TestSAMPMLCreator.c_log.info("samples %s\n"%(sampleIDs))
       
         return sampleIDs
    
@@ -206,21 +230,11 @@ class TestSAMPMLCreator(unittest.TestCase):
         for row in rows:
             sampleIDs.append(row[0])
        
-        print "sauna samples %s\n"%(sampleIDs)
+        TestSAMPMLCreator.c_log.info("sauna samples %s\n"%(sampleIDs))
       
         return sampleIDs
-      
-    def testAPrintModulePath(self):
         
-        print("org.ctbto.conf module is loaded from %s\n"%(self._get_tests_dir_path()))
-        
-    def tesstPrelParticulateSamples(self):
-        
-        # another recent sample = "0889826" 
-        # tanzani 0888997
-        # list to run on production 
-        #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
-        #listOfSamplesToTest = [ "0889826" ]
+    def ztestPrelParticulateSamples(self):
         
         # get full
         listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='1')
@@ -230,7 +244,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         #listOfSamplesToTest = map(str,intifiedlist)
         
-        print "list of Prel Sample",listOfSamplesToTest
+        TestSAMPMLCreator.c_log.info("list of Prel Sample: %s"%(listOfSamplesToTest))
         
         for sampleID in listOfSamplesToTest:
             # fetchnoble particulate
@@ -248,14 +262,55 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             # check if no tags are left
             self.assertIfNoTagsLeft(path)
+            
+    def testGetOneParticulateSampleAndDoBitChecking(self):
+        """
+           get a unique particulate sample and do a bit checking against a registered existing sample
+        """
+        
+        request="spectrum=CURR, analysis=CURR"
+        cpt = 0
+        total_t0 = time.time()
+        
+        #listOfSamplesToTest = self.getListOfSampleIDs('2008-12-24',endDate='2008-12-25',spectralQualif='FULL',nbOfElem='1')
+        
+        #sampleID = listOfSamplesToTest[0]
+        sampleID = 967273
+        
+        # fetchnoble particulate
+        fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
+            
+        fetcher.fetch(request,'PAR')
+                 
+        renderer = GenieParticulateRenderer(fetcher)
+   
+        xmlStr = renderer.asXmlStr(request)
+           
+        path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+   
+        ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           
+        # check if no tags are left
+        self.assertIfNoTagsLeft(path)
+           
+        self.assertAllCalibrationInfo(path)
+        
+        self.assertFileContentEquals("%s/samples/sampml-full-%s.xml.master"%(self._get_tests_dir_path(),sampleID),path)
+                           
+        cpt +=1
+        
+        total_t1 = time.time()
+        
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
 
-    def testFullGenieParticulateSamples(self):
+
+
+    def ztestFullGenieParticulateSamples(self):
+        """ 
+           test Genie Particulate samples 
         
-        # another recent sample = "0889826" 
-        # tanzani 0888997
-        # list to run on production 
-        #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
-        
+        """
+         
         request="spectrum=ALL, analysis=ALL"
         
         # get full 2003-10-24 to 2003-10-26
@@ -269,14 +324,14 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         #listOfSamplesToTest = map(str,intifiedlist)
         
-        print "list Full of Sample",listOfSamplesToTest
+        TestSAMPMLCreator.c_log.info("list samples: %s"%listOfSamplesToTest)
         
         cpt = 0
         total_t0 = time.time()
         
         for sampleID in listOfSamplesToTest:
             
-            print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    Start Test %d for SampleID %s.\n********************************************************************************\n"%(cpt,sampleID))
            
             t0 = time.time()
            
@@ -289,8 +344,6 @@ class TestSAMPMLCreator(unittest.TestCase):
    
             xmlStr = renderer.asXmlStr(request)
            
-            #print "Non Formatted String [%s]\n"%(xmlStr)
-   
             path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
    
             ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
@@ -302,53 +355,36 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             t1 = time.time()
            
-            print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
-           
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
+                       
             cpt +=1
         
         total_t1 = time.time()
         
-        print "****************************************************************************\n"
-        print "****************************************************************************\n"
-        print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
-        print "****************************************************************************\n"
-        print "****************************************************************************\n"
-        
-    def testFullNobleGazSamples(self):
-        
-        # another recent sample = "0889826" 
-        # tanzani 0888997
-        # list to run on production 
-        #listOfSamplesToTest = ["0892843","0892533","0892630","0892506","0892493"]
-        
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+
+    def ztestFullNobleGazSamples(self):
+        """ 
+           Get Full Noble Gaz samples.
+        """
+         
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
         listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-08-11',endDate='2008-12-12',spectralQualif='FULL',nbOfElem='2')
-        
-        # error
-        # 103729,241116     
-        #listOfSamplesToTest = ['211065']
-        
-        #print "list of samples %s\n"%(listOfSamplesToTest)
-              
+               
         # remove sampleID for which data isn't available
         if "141372" in listOfSamplesToTest:
             listOfSamplesToTest.remove("141372")
                
-        #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
-        #intifiedlist = map(int,listOfSamplesToTest)
-        
-        #listOfSamplesToTest = map(str,intifiedlist)
-        
-        print "list Full of Sample",listOfSamplesToTest
+        TestSAMPMLCreator.c_log.info("list samples :%s"%(listOfSamplesToTest))
         
         cpt = 0
         total_t0 = time.time()
         
         for sampleID in listOfSamplesToTest:
             
-            print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+            TestSAMPMLCreator.c_log.info("Start Test %d for SampleID %s.\n"%(cpt,sampleID))
            
             t0 = time.time()
            
@@ -375,39 +411,31 @@ class TestSAMPMLCreator(unittest.TestCase):
    
             ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
            
-           # check if no tags are left
-           #self.assertIfNoTagsLeft(path)
+            # check if no tags are left
+            self.assertIfNoTagsLeft(path)
            
            #self.assertAllCalibrationInfo(path)
            
             t1 = time.time()
            
-            print "End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+            #TestSAMPMLCreator.c_log.info("End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0)))
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
            
             cpt +=1
         
         total_t1 = time.time()
         
-        print "****************************************************************************\n"
-        print "****************************************************************************\n"
-        print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
-        print "****************************************************************************\n"
-        print "****************************************************************************\n"
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
-    def testGenerateNobleGasARR(self):
-        """ Generate a Noble Gaz ARR """
+    def ztestGenerateNobleGasARR(self):
+        """ 
+           Generate a Noble Gaz ARR.
+        """
         
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
         listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='1')
-        
-        #listOfSamplesToTest = ['174188']
-        #listOfSamplesToTest = [141372]
-        #listOfSamplesToTest = '141238, 139969, 141830, 139546, 140675, 141372, 141501, 139677, 141691, 142128, 140977, 139167, 142561, 140252, 140543, 142276, 141110, 140399, 141988, 139425, 140837, 139826, 139296, 140113, 143970, 144955, 145169, 145252, 144283, 145587, 145754, 143122, 145414, 144510, 142690, 144635, 145851, 145996, 144401, 142992, 143501, 143378, 143251, 143690, 143821, 142843, 144785, 144129, 147392, 146697, 147571, 148103, 146935, 147055, 147285, 148230, 147693, 147973, 148355, 146437, 146824, 148466, 146446, 146448, 148587, 147845, 146570, 147169'.split(',')
-        #listOfSamplesToTest = map(string.strip,listOfSamplesToTest)
-        
-        print "list of samples %s\n"%(listOfSamplesToTest)
               
         # remove sampleID for which data isn't available
         # 206975: No Calibration Available
@@ -417,7 +445,7 @@ class TestSAMPMLCreator(unittest.TestCase):
             if id in listOfSamplesToTest:
                 listOfSamplesToTest.remove(id)
                
-        print "list Full of Sample",listOfSamplesToTest
+        TestSAMPMLCreator.c_log.info("list samples %s"%listOfSamplesToTest)
         
         cpt = 1
         total_t0 = time.time()
@@ -425,7 +453,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
            
-            print "Start Test %d for SampleID %s.\n"%(cpt,sampleID)
+            TestSAMPMLCreator.c_log.info("Start Test %d for SampleID %s.\n"%(cpt,sampleID))
            
             t0 = time.time()
            
@@ -452,7 +480,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             t1 = time.time()
            
-            print "Fetch sample nb %d with SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0))
+            TestSAMPMLCreator.c_log.info("Fetch sample nb %d with SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0)))
            
             cpt +=1
         
@@ -464,11 +492,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            
         total_t1 = time.time()
         
-        print "****************************************************************************\n"
-        print "****************************************************************************\n"
-        print "****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ******************\n"%(cpt,total_t1-total_t0)
-        print "****************************************************************************\n"
-        print "****************************************************************************\n"
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
   
 def tests():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSAMPMLCreator)

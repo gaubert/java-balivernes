@@ -24,7 +24,7 @@ class DBDataFetcher(object):
     
     # Class members
     c_log = logging.getLogger("datafetchers.DBDataFetcher")
-    c_log.setLevel(logging.DEBUG)
+    c_log.setLevel(logging.INFO)
     
     c_nid_translation = {0:"nuclide not identified by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
     
@@ -788,7 +788,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
     
       # Class members
     c_log = logging.getLogger("datafetchers.SaunaNobleGasDataFetcher")
-    c_log.setLevel(logging.DEBUG)
+    c_log.setLevel(logging.INFO)
 
 
     def __init__(self,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
@@ -1688,7 +1688,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
     
       # Class members
     c_log = logging.getLogger("datafetchers.SpalaxNobleGasDataFetcher")
-    c_log.setLevel(logging.DEBUG)
+    c_log.setLevel(logging.INFO)
 
 
     def __init__(self,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
@@ -1703,7 +1703,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     
       # Class members
     c_log = logging.getLogger("datafetchers.ParticulateDataFetcher")
-    c_log.setLevel(logging.DEBUG)
+    #c_log.setLevel(logging.DEBUG)
     
     c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
     

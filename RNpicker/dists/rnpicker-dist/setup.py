@@ -17,7 +17,10 @@ setup(name='RNPicker',
       author_email='guillaume.aubert@ctbto.org',
       url='http://www.ctbto.org',
       license='Apache 2.0',
-      packages=find_packages(),
-      namespace_packages=['ctbto'],
+      #packages=find_packages(),
+      packages=['ctbto','ctbto.common','ctbto.db','ctbto.query','ctbto.renderers','ctbto.tests','ctbto.transformer'],
+      package_dir={'ctbto.tests': 'ctbto/tests'},
+      package_dir={'ctbto.tests': 'ctbto/tests'},
+      package_data={'ctbto.tests': ['conf_tests/rnpicker.config','conf_tests/pretty-print.xslt','conf_tests/scripts/*.sh','conf_tests/samples/*.master','conf_tests/templates/*.html']},
       install_requires=['conf>=0.8.0','SQLAlchemy>=0.4.7','cx-Oracle>=4.3','lxml>=2.0']
       )

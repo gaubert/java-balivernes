@@ -13,9 +13,7 @@ class BaseRenderer(object):
     
     # Class members
     c_log = logging.getLogger("SAMPMLrendererv1.BaseRenderer")
-    c_log.setLevel(logging.DEBUG)
-    
-    
+    c_log.setLevel(logging.INFO)
     
     def __init__(self, aDataFetcher):
         
@@ -124,7 +122,7 @@ class SaunaRenderer(BaseRenderer):
     
     # Class members
     c_log = logging.getLogger("SAMPMLrendererv1.SaunaRenderer")
-    c_log.setLevel(logging.DEBUG)
+    c_log.setLevel(logging.INFO)
     
       
     def __init__(self, aDataFetcher):
@@ -675,7 +673,7 @@ class GenieParticulateRenderer(BaseRenderer):
     
     # Class members
     c_log = logging.getLogger("SAMPMLrendererv1.GenieParticulateRenderer")
-    c_log.setLevel(logging.DEBUG)
+    c_log.setLevel(logging.INFO)
     
       
     def __init__(self, aDataFetcher):

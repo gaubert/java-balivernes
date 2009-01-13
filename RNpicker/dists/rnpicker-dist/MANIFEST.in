@@ -1,4 +1,4 @@
 include HISTORY.txt
 include README.txt
 include LICENSE
-recursive-include *.txt *.py
+recursive-include ctbto/tests *.master *.xslt *.config *.html *.sh
