@@ -194,6 +194,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         """
            check at the string level that the two files are identical otherwise fail
         """
+        TestSAMPMLCreator.c_log.info("Start bit checking")
+        
         linenum = 1
         master  = open(a_master_path,'r')
         tocheck = open(a_tocheck_path,'r')
@@ -203,7 +205,9 @@ class TestSAMPMLCreator(unittest.TestCase):
             
             if m_line != c_line:
                 self.fail("line num %d is different on the master %s and on the file to check %s.\n master line:[%s]\n tcheck line:[%s]"%(linenum,a_master_path,a_tocheck_path,m_line,c_line))
-            
+          
+        TestSAMPMLCreator.c_log.info("End of bit checking") 
+        
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
         result = self.mainConn.execute(SQL_GETSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
@@ -233,36 +237,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         TestSAMPMLCreator.c_log.info("sauna samples %s\n"%(sampleIDs))
       
         return sampleIDs
-        
-    def ztestPrelParticulateSamples(self):
-        
-        # get full
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-07-01',endDate='2008-07-31',spectralQualif='PREL',nbOfElem='1')
-        #listOfSamplesToTest = [857991]       
-        #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
-        #intifiedlist = map(int,listOfSamplesToTest)
-        
-        #listOfSamplesToTest = map(str,intifiedlist)
-        
-        TestSAMPMLCreator.c_log.info("list of Prel Sample: %s"%(listOfSamplesToTest))
-        
-        for sampleID in listOfSamplesToTest:
-            # fetchnoble particulate
-            fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
-   
-            fetcher.fetch()
-           
-            renderer = ParticulateRenderer(fetcher)
-   
-            xmlStr = renderer.asXmlStr()
-            
-            path = "/tmp/samples/sampml-prel-%s.xml"%(sampleID)
-   
-            common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
-           
-            # check if no tags are left
-            self.assertIfNoTagsLeft(path)
-            
+          
     def testGetOneParticulateSampleAndDoBitChecking(self):
         """
            get a unique particulate sample and do a bit checking against a registered existing sample
@@ -305,10 +280,9 @@ class TestSAMPMLCreator(unittest.TestCase):
 
 
 
-    def ztestFullGenieParticulateSamples(self):
+    def testFullGenieParticulateSamples(self):
         """ 
            test Genie Particulate samples 
-        
         """
          
         request="spectrum=ALL, analysis=ALL"
@@ -363,7 +337,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
 
-    def ztestFullNobleGazSamples(self):
+    def testFullNobleGazSamples(self):
         """ 
            Get Full Noble Gaz samples.
         """
@@ -427,7 +401,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
-    def ztestGenerateNobleGasARR(self):
+    def testGenerateNobleGasARR(self):
         """ 
            Generate a Noble Gaz ARR.
         """
