@@ -112,15 +112,15 @@ class DatabaseConnector:
         
         sql = sqlalchemy.text(aSql)
         
-        if not self._activateTimer:
-            result = self._conn.execute(sql)
-            return result
-        else:
+        if self._activateTimer:
             result = []
             func = self._conn.execute
             t= ftimer(func,[sql],{},result,number=1)
             DatabaseConnector.c_log.info("\nTime: %s secs \nDatabase: %s\nRequest: %s\n"%(t,self._database,aSql))
             return result[0]
+        else:
+            result = self._conn.execute(sql)
+            return result
         
         
         
