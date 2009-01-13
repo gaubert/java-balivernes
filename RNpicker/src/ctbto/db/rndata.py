@@ -237,6 +237,8 @@ class RemoteFSDataSource(BaseRemoteDataSource):
        
             func = subprocess.call
             
+            RemoteFSDataSource.c_log.info("Trying to fetch remote file with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
+            
             t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
        
             RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))

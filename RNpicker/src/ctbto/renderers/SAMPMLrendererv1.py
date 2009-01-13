@@ -233,8 +233,8 @@ class SaunaRenderer(BaseRenderer):
                 xml += dummy_template
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
-            else:
-                SaunaRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n" % (prefix))
+        else:
+            SaunaRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         # get energy calibration 
         en_id = self._fetcher.get("%s_G_ENERGY_CAL" % (prefix), None)
@@ -256,8 +256,8 @@ class SaunaRenderer(BaseRenderer):
                 xml += dummy_template
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
-            else:
-                GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n" % (prefix))
+        else:
+            SaunaRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         return xml
         
@@ -1208,8 +1208,8 @@ class GenieParticulateRenderer(BaseRenderer):
                 xml += dummy_template
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
-            else:
-                GenieParticulateRenderer.c_log.warning("Warning. Could not find any energy calibration info for sample %s\n" % (prefix))
+        else:
+            GenieParticulateRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         template = self._conf.get("ParticulateTemplatingSystem", "particulateResolutionCalTemplate")
         

@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 
 # quick script for extracting spectrum from archive file
 #$1 ssh hostname (need to have a public key installed)"
