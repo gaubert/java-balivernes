@@ -694,15 +694,16 @@ class GenieParticulateRenderer(BaseRenderer):
         """ Read the template from a file. Old method now everything is read from the conf """
         
         # get template path from conf
-        path = self._conf.get("ParticulateTemplatingSystem", "ParticulateBaseTemplate")
+        self._template = self._conf.get("ParticulateTemplatingSystem", "particulateBaseTemplate")
         
+        #old method
+        # get template path from conf
+        #path = self._conf.get("ParticulateTemplatingSystem", "ParticulateBaseTemplate")
         # assert that the file exists
-        ctbto.common.utils.file_exits(path)
-        
+        #ctbto.common.utils.file_exits(path)
         # read the full template in a string buffer
-        f = open(path, "r") 
-        
-        self._template = f.read()
+        #f = open(path, "r") 
+        #self._template = f.read()
         
         self._populatedTemplate = self._template
       
