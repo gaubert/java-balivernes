@@ -248,7 +248,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full 2003-10-24 to 2003-10-26
-        listOfSamplesToTest = self.getListOfSampleIDs('2007-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='100')
+        listOfSamplesToTest = self.getListOfSampleIDs('2007-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='2')
         
         # error
         #listOfSamplesToTest = [ "700637" ]
@@ -272,9 +272,6 @@ class TestSAMPMLCreator(unittest.TestCase):
             # fetchnoble particulate
             fetcher = DBDataFetcher.getDataFetcher(self.mainConn,self.archConn,sampleID)
             
-            #modify remoteHost
-            fetcher.setRemoteHost('kuredu')
-   
             fetcher.fetch(request,'PAR')
                  
             renderer = GenieParticulateRenderer(fetcher)
@@ -320,7 +317,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # error
         # 103729,241116     
-        #listOfSamplesToTest = ['174188']
+        #listOfSamplesToTest = ['211065']
         
         #print "list of samples %s\n"%(listOfSamplesToTest)
               
@@ -346,6 +343,9 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             # fetchnoble particulate
             fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
+            
+            #modify remoteHost
+            fetcher.setRemoteHost(self.conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
    
             fetcher.fetch(request,'GAS')
                  
