@@ -8,6 +8,7 @@ import zlib
 import ctbto.common.utils
 #import ctbto.common.time_utils as time_utils
 import re
+import getopt
 
 import tokenize
 import StringIO
@@ -369,7 +370,7 @@ def test_new_class():
     
     instance = new_instance("ctbto.sandbox.scrapbook","TheClass","MyMessage")
     
-    instance.print_hello()
+    instance.print_hello()    
 
 def get_package_path():
     
@@ -391,7 +392,6 @@ def get_package_path():
 
 if __name__ == '__main__':
     
-    get_package_path()
     
     
     

@@ -431,7 +431,7 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             t0 = time.time()
            
-            # fetchnoble particulate
+            # fetch noble gaz or particulate
             fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
    
             #modify remoteHost
