@@ -174,7 +174,7 @@ class DBDataFetcher(object):
     
     def _fetchStationInfo(self):
         """ get station info. same treatment for all sample types """ 
-        DBDataFetcher.c_log.info("In fetch Station Info")
+        DBDataFetcher.c_log.debug("In fetch Station Info")
         result = self._mainConnector.execute(sqlrequests.SQL_GETSTATIONINFO%(self._sampleID))
        
         # only one row in result set
@@ -193,7 +193,7 @@ class DBDataFetcher(object):
     def _fetchDetectorInfo(self):
         """ get station info. same treatment for all sample types """ 
        
-        DBDataFetcher.c_log.info("In fetch Detector Info ")
+        DBDataFetcher.c_log.debug("In fetch Detector Info ")
        
         result = self._mainConnector.execute(sqlrequests.SQL_GETDETECTORINFO%(self._sampleID))
        
@@ -1324,7 +1324,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
             
             self._dataBag[u'%s_VOLUME_VAL'%(aDataname)]  = vol
-            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x greater equal than 0.43 ml' 
+            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x superior or equal to 0.43 ml' 
     
     def _fetchTimelinessFlags(self,sid,aDataname):
         """ prepare timeliness checking info """
@@ -1696,6 +1696,10 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         super(SpalaxNobleGasDataFetcher,self).__init__(aMainDbConnector,aArchiveDbConnector,aSampleID)
         
         self._dataBag['SAMPLE_TYPE']= 'SPALAX'
+    
+    def _fetchData(self,aParams=None):
+        """ abstract global data fetching method """
+        raise CTBTOError(-1,"method not implemented currently in the SpalaxNobleGasDataFetcher")
         
 
 class ParticulateDataFetcher(DBDataFetcher):

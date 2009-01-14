@@ -67,7 +67,7 @@ class DatabaseConnector:
         
         self._connected = True
         
-        DatabaseConnector.c_log.info("Connected to the database")
+        DatabaseConnector.c_log.info("Connected to the database %s"%(self._database))
     
     def disconnect(self):
         
