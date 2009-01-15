@@ -159,7 +159,7 @@ def parse_arguments(a_args):
     
     return result
 
-SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID,STATION_ID,SITE_DET_CODE from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
+SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
 class Runner(object):
     """ Class for fetching and producing the ARR """
@@ -315,10 +315,19 @@ class Runner(object):
         dir = a_args['dir']
         
         self._create_directories(dir)
+        
+        to_ignore = [53758,141372,141501,206975]
     
         for sid in sids:
+            
+            if int(sid) in to_ignore:
+                Runner.c_log.info("*************************************************************")
+                Runner.c_log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
+                Runner.c_log.info("*************************************************************\n")
+                #skip this iteration
+                continue
     
-            Runner.c_log.info("************************************************************")
+            Runner.c_log.info("*************************************************************")
             Runner.c_log.info("Fetch data and build SAMPML data file for %s"%(sid))
             
             # fetch noble gaz or particulate
@@ -351,7 +360,7 @@ class Runner(object):
             
             ctbto.common.utils.printInFile(result,path)
             
-            Runner.c_log.info("************************************************************\n")
+            Runner.c_log.info("*************************************************************\n")
   
 def run():
     #args = '-v -s 211384,211065'.split()
