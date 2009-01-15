@@ -45,6 +45,9 @@ rn-egg-dist: init
 rn-src-dist: clean init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/src/ctbto $(RNDIST)
+	# copy scripts in dist
+	cp -R $(BASEDIR)/etc/scripts $(RNDIST)
+	cp -R $(BASEDIR)/etc/conf $(RNDIST)
 	cd $(RNDIST); $(PYTHONBIN) setup.py sdist -d ../../$(RNBUILD) 
 	echo "distribution stored in $(RNBUILD)"
 

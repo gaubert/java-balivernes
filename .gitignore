@@ -16,6 +16,9 @@ RNpicker/dists/conf-dist/org*
 RNpicker/dists/rnpicker-dist/ctbto*
 RNpicker/dists/rnpicker-dist/testing*
 RNpicker/dists/rnpicker-dist/dist*
+RNpicker/dists/rnpicker-dist/MANIFEST
+RNpicker/dists/rnpicker-dist/conf*
+RNpicker/dists/rnpicker-dist/scripts*
 .coverage
 .project
 .externalToolBuilders
