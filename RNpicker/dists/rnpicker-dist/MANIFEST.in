@@ -2,3 +2,4 @@ include HISTORY.txt
 include README.txt
 include LICENSE
 recursive-include ctbto/tests *.master *.xslt *.config *.html *.sh
+recursive-include conf *.config *.xslt *.config *.html *.sh

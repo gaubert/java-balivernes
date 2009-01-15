@@ -208,12 +208,15 @@ class Runner(object):
         
         #try to read from env
         if dir == None:
-            dir = os.environ['SAMPML_CONF_DIR']
+            dir = os.environ.get('SAMPML_CONF_DIR',None)
         else:
             #always force the ENV Variable
             os.environ['SAMPML_CONF_DIR'] = dir
         
-        if dir != None and os.path.isdir(dir):
+        if dir is None:
+            raise Exception('Error. the conf dir needs to be set from the command line or using the env variable SAMPML_CONF_DIR')
+        
+        if os.path.isdir(dir):
             os.environ[Conf.ENVNAME] = '%s/%s'%(dir,'rnpicker.config')
             
             return Conf.get_instance()
