@@ -1678,7 +1678,10 @@
           <Method>standard</Method>
           <Comments>Old version</Comments>
         </Software>
-        <Categorization/>
+        <Categorization>
+          <Category>2</Category>
+          <CategoryComment>No Comment</CategoryComment>
+        </Categorization>
         <IdedNuclides>
           <Nuclide quantifiable="true" reportMDA="false">
             <Name>BE-7</Name>
@@ -2764,10 +2767,10 @@
             <Name>AC-228</Name>
             <Type>NATURAL</Type>
             <HalfLife>9.99899 Y</HalfLife>
-            <Concentration unit="uBq/m3">0</Concentration>
-            <ConcentrationError unit="percentage">0</ConcentrationError>
+            <Concentration unit="uBq/m3">71.9203</Concentration>
+            <ConcentrationError unit="percentage">8.4806</ConcentrationError>
             <MDA unit="uBq">19.0921812382 0</MDA>
-            <NuclideIdentificationIndicator numericVal="0">nuclide not identified by automated analysis</NuclideIdentificationIndicator>
+            <NuclideIdentificationIndicator numericVal="1">nuclide identified by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
           <Nuclide quantifiable="false" reportMDA="false">
             <Name>TH-228</Name>
@@ -2791,19 +2794,19 @@
             <Name>TH-234</Name>
             <Type>NATURAL</Type>
             <HalfLife>24.1 D</HalfLife>
-            <Concentration unit="uBq/m3">0</Concentration>
-            <ConcentrationError unit="percentage">0</ConcentrationError>
+            <Concentration unit="uBq/m3">147803397632.0</Concentration>
+            <ConcentrationError unit="percentage">384452.0746</ConcentrationError>
             <MDA unit="uBq">317.247630883 0</MDA>
-            <NuclideIdentificationIndicator numericVal="0">nuclide not identified by automated analysis</NuclideIdentificationIndicator>
+            <NuclideIdentificationIndicator numericVal="1">nuclide identified by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
           <Nuclide quantifiable="false" reportMDA="false">
             <Name>U-235</Name>
             <Type>NATURAL</Type>
             <HalfLife>7.03799E+08 Y</HalfLife>
-            <Concentration unit="uBq/m3">0</Concentration>
-            <ConcentrationError unit="percentage">0</ConcentrationError>
+            <Concentration unit="uBq/m3">30.6746</Concentration>
+            <ConcentrationError unit="percentage">5.5385</ConcentrationError>
             <MDA unit="uBq">11.6529058122 0</MDA>
-            <NuclideIdentificationIndicator numericVal="0">nuclide not identified by automated analysis</NuclideIdentificationIndicator>
+            <NuclideIdentificationIndicator numericVal="1">nuclide identified by automated analysis</NuclideIdentificationIndicator>
           </Nuclide>
           <Nuclide quantifiable="false" reportMDA="false">
             <Name>U-237</Name>
@@ -3747,6 +3750,54 @@
             <Abundance unit="percent">0.589999973774 0.0900000035763</Abundance>
             <Efficiency unit="percent">0.0280514620245 0.00105254433583</Efficiency>
           </IdedNuclideLine>
+          <IdedNuclideLine peakID="10">
+            <Name>U-235</Name>
+            <MDA unit="uBq">11.8494</MDA>
+            <Activity unit="mBq">30.6746 5.5385</Activity>
+            <Energy unit="keV">185.715 0.005</Energy>
+            <Abundance unit="percent">57.5 1.1</Abundance>
+            <Efficiency unit="percent">0.071819 0.00073862</Efficiency>
+          </IdedNuclideLine>
+          <IdedNuclideLine peakID="7">
+            <Name>TH-234</Name>
+            <MDA unit="uBq">81522140943.2</MDA>
+            <Activity unit="mBq">147803397632.0 384452.0746</Activity>
+            <Energy unit="keV">92.38 0.01</Energy>
+            <Abundance unit="percent">2.6 0.6</Abundance>
+            <Efficiency unit="percent">0.052803 0.0006</Efficiency>
+          </IdedNuclideLine>
+          <IdedNuclideLine peakID="34">
+            <Name>AC-228</Name>
+            <MDA unit="uBq">18.0008</MDA>
+            <Activity unit="mBq">71.9203 8.4806</Activity>
+            <Energy unit="keV">911.204 0.004</Energy>
+            <Abundance unit="percent">25.8 0.4</Abundance>
+            <Efficiency unit="percent">0.030429 0.0010939</Efficiency>
+          </IdedNuclideLine>
+          <IdedNuclideLine peakID="37">
+            <Name>AC-228</Name>
+            <MDA unit="uBq">97.008</MDA>
+            <Activity unit="mBq">65.5906 8.0988</Activity>
+            <Energy unit="keV">964.766 0.01</Energy>
+            <Abundance unit="percent">4.99 0.09</Abundance>
+            <Efficiency unit="percent">0.028987 0.0010696</Efficiency>
+          </IdedNuclideLine>
+          <IdedNuclideLine peakID="38">
+            <Name>AC-228</Name>
+            <MDA unit="uBq">29.5431</MDA>
+            <Activity unit="mBq">74.8432 8.6512</Activity>
+            <Energy unit="keV">968.971 0.017</Energy>
+            <Abundance unit="percent">15.8 0.3</Abundance>
+            <Efficiency unit="percent">0.028861 0.0010673</Efficiency>
+          </IdedNuclideLine>
+          <IdedNuclideLine peakID="51">
+            <Name>AC-228</Name>
+            <MDA unit="uBq">337.3435</MDA>
+            <Activity unit="mBq">170.4481 13.0556</Activity>
+            <Energy unit="keV">1630.627 0.01</Energy>
+            <Abundance unit="percent">1.51 0.04</Abundance>
+            <Efficiency unit="percent">0.018729 0.00055931</Efficiency>
+          </IdedNuclideLine>
         </IdedNuclideLines>
         <PeakResults>
           <PeakResult peakID="1">
@@ -4560,33 +4611,8 @@
             <DecayTimeLTE24Hrs>true</DecayTimeLTE24Hrs>
             <SampleReceived72HrsFromCollectStart>true</SampleReceived72HrsFromCollectStart>
           </TimelinessAndAvailabilityFlags>
-          <DataQualityFlags>
-            <Ba140MDC>
-              <Value>20.7593021393</Value>
-              <Pass>1</Pass>
-              <Test>lower than 30</Test>
-            </Ba140MDC>
-            <K40LocationDifference>
-              <Value>0.2392578125</Value>
-              <Pass>0</Pass>
-              <Test>lower than 3 * std deviation</Test>
-            </K40LocationDifference>
-            <NormalizedGainDifference>
-              <Value>4.36305999756e-05</Value>
-              <Pass>1</Pass>
-              <Test>lower than 0.0001</Test>
-            </NormalizedGainDifference>
-            <Be7FWHM>
-              <Value>1.6031525135</Value>
-              <Pass>1</Pass>
-              <Test>lower than 1.7</Test>
-            </Be7FWHM>
-            <FlowRate>
-              <Value>994.443359375</Value>
-              <Pass>1</Pass>
-              <Test>greater than 500</Test>
-            </FlowRate>
-          </DataQualityFlags>
+          <DataQualityFlags><Ba140MDC><Value>20.7593021393</Value><Pass>1</Pass><Test>lower than 30</Test></Ba140MDC><K40LocationDifference><Value>0.2392578125</Value><Pass>0</Pass><Test>lower than 3 * std deviation</Test></K40LocationDifference><NormalizedGainDifference><Value>4.36305999756e-05</Value><Pass>1</Pass><Test>lower than 0.0001</Test></NormalizedGainDifference><Be7FWHM><Value>1.6031525135</Value><Pass>1</Pass><Test>lower than 1.7</Test></Be7FWHM><FlowRate><Value>994.443359375</Value><Pass>1</Pass><Test>greater than 500</Test></FlowRate><ActivationProducts><Value>0</Value><Pass>0</Pass><Test>lower than 1</Test></ActivationProducts>NoneNoneNone
+</DataQualityFlags>
         </Flags>
       </Analysis>
     </Analyses>
