@@ -1,0 +1,10 @@
+#!/usr/bin/python
+""" 
+    Copyright 2008 CTBTO Organisation
+    
+    module: generate_noble_gaz_arr
+"""
+
+import ctbto.run.generate_arr as runner
+   
+runner.run()
