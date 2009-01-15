@@ -47,30 +47,6 @@ def get_tests_dir_path():
         
     return test_dir
 
-def myBasicLoggingConfig():
-    """
-    Do basic configuration for the logging system by creating a
-    StreamHandler with a default Formatter and adding it to the
-    root logger.
-    """
-    if len(logging.root.handlers) == 0:
-        hdlr = logging.handlers.RotatingFileHandler("/tmp/logging.log", "a", 5000000, 4)
-        console = logging.StreamHandler()
-        fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-        console_filter    = logging.Filter('Runner')
-        hdlr.setFormatter(fmt)
-        
-        
-        console.setFormatter(console_formatter)
-        console.addFilter(console_filter)
-        
-        logging.root.addHandler(hdlr)
-        logging.root.addHandler(console)
-        
-        #log = logging.getLogger("ROOT")
-        #log.setLevel(logging.INFO)
-
 def parse_arguments(a_args):
     """
             return the checksum of the calibration coeffs. This is done to create a unique id for the different calibration types.
@@ -165,6 +141,8 @@ class Runner(object):
           
         # create an empty shell Conf object
         self._conf = self._load_configuration(a_args)
+        
+        self._set_logging_configuration()
     
         # setup the prod databasse and connect to it
         self._ngDatabase        = self._conf.get("NobleGazDatabaseAccess","hostname")
@@ -187,6 +165,40 @@ class Runner(object):
         #connect to the DBs
         self._ngMainConn.connect()
         self._ngArchConn.connect()
+        
+    def _set_logging_configuration(self):
+        """
+            setup the logging info.
+            Set the root logger and the hanlders. 
+            Read the information from the configuration file.
+            Two handlers are created: one logging in a file file_handler. This one logs everything by default
+            and another one logging a minimal set of info in the console. 
+        
+            Args:
+               None 
+               
+            Returns:
+               return a conf object
+        
+            Raises:
+               exception
+        """
+        if len(logging.root.handlers) == 0:
+            
+            # create logger that logs in rolling file
+            file_handler = logging.handlers.RotatingFileHandler(self._conf.get('Logging','fileLogging','/tmp/rnpicker.log'), "a", 5000000, 4)
+            file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            file_handler.setFormatter(file_formatter)
+            
+            # create logger that logs in console
+            console = logging.StreamHandler()
+            console_formatter = logging.Formatter("%(levelname)s - %(message)s")
+            console_filter    = logging.Filter(self._conf.get('Logging','consoleFilter','Runner'))
+            console.setFormatter(console_formatter)
+            console.addFilter(console_filter)
+        
+            logging.root.addHandler(file_handler)
+            logging.root.addHandler(console)
         
     def _load_configuration(self,a_args):
         """
@@ -309,28 +321,24 @@ class Runner(object):
   
 def run():
     #args = '-v -s 211384,211065'.split()
-    args = '-v -s 211384 --from 2008-12-02 --end 2008-12-04 --dir /tmp'.split()
-    print "args = %s\n"%(args)
+    #args = '-v -s 211384 --from 2008-12-02 --end 2008-12-04 --dir /tmp'.split()
+    #print "args = %s\n"%(args)
     #args = sys.argv[1:]
     
     try:
         parsed_args = parse_arguments(sys.argv[1:])
-        
-        # setup loggers   
-        myBasicLoggingConfig()
-    
-        #print "result = %s\n"%(parsed_args)
-        
+         
         runner = Runner(parsed_args)
         
-        runner.execute(parsed_args)
-        
+        runner.execute(parsed_args)    
     except : #IGNORE:W0703,W0702
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info() #IGNORE:W0702
         traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
         usage()
         sys.exit(3)
+    
+    sys.exit(0)
           
 if __name__ == "__main__":
-    print "dir = %s"%(get_tests_dir_path())
+    #print "dir = %s"%(get_tests_dir_path())
     run()
