@@ -1,6 +1,6 @@
 import os
-from setuptools import setup, find_packages
-#from distutils.core import setup
+#from setuptools import setup, find_packages
+from distutils.core import setup
 
 
 version = '0.8.0'
