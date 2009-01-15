@@ -19,13 +19,47 @@ from ctbto.db          import DatabaseConnector,DBDataFetcher
 from ctbto.renderers   import SaunaRenderer
 from ctbto.transformer import XML2HTMLRenderer
 
-
-VERSION     ="1.0"
+NAME        = "generate_arr"
+VERSION     = "1.0"
 DATE_FORMAT = "%Y-%m-%d"
 
 def usage():
     
-    print("this is the usage\n")
+    usage_string = """
+  generate_arr [options]
+
+  Mandatory Options:
+  --sids    (-s)   Retrieve the data and create the ARR of the following sample ids.
+                   If --sids and --from or --end are used only the information provided with --sids will be used.
+  or
+  
+  --from    (-f)   Get all the sample ids corresponding to the from date until the end date (default= today).
+                   The date is in the YYYY-MM-DD form (ex: 2008-08-22)
+  --end     (-e)   Get all the sample ids created during the from and end period            (default= today).
+                   The date is in the YYYY-MM-DD form (ex: 2008-08-22)
+             
+
+  Extra Options:
+  --dir           (-d)       Destination directory where the data will be written.            (default=/tmp)
+                             The SAMPML files will be added under DIR/samples and the ARR
+                             under DIR/ARR. 
+                             The directories will be created if not present
+  --conf_dir      (-c)       directory containing a configuration file rnpicker.config        (default=$SAMPML_CONF_DIR)    
+
+
+  Help Options:
+   --help     Show this usage information.
+
+  Examples:
+  >./generate_arr --sids 211384,211386 --dir ./results
+  
+  Get the SAMPML and ARR files for the sample ids 211384 and 211386 and store them in ./results
+  
+  >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results
+ 
+  """
+       
+    print(usage_string)
 
 import ctbto.tests
 def get_tests_dir_path():
@@ -75,8 +109,8 @@ def parse_arguments(a_args):
         sys.exit(2)
     for o, a in opts:
         if o == "-v":
-            print("version %s"%(VERSION))
-            #sys.exit()
+            print("%s v %s"%(NAME,VERSION))
+            sys.exit()
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
@@ -284,7 +318,7 @@ class Runner(object):
     
         for sid in sids:
     
-            Runner.c_log.info("**************************************************")
+            Runner.c_log.info("************************************************************")
             Runner.c_log.info("Fetch data and build SAMPML data file for %s"%(sid))
             
             # fetch noble gaz or particulate
@@ -317,7 +351,7 @@ class Runner(object):
             
             ctbto.common.utils.printInFile(result,path)
             
-            Runner.c_log.info("**************************************************\n")
+            Runner.c_log.info("************************************************************\n")
   
 def run():
     #args = '-v -s 211384,211065'.split()
@@ -331,7 +365,7 @@ def run():
         runner = Runner(parsed_args)
         
         runner.execute(parsed_args)    
-    except : #IGNORE:W0703,W0702
+    except Exception: #IGNORE:W0703,W0702
         exceptionType, exceptionValue, exceptionTraceback = sys.exc_info() #IGNORE:W0702
         traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
         usage()
@@ -340,5 +374,6 @@ def run():
     sys.exit(0)
           
 if __name__ == "__main__":
-    #print "dir = %s"%(get_tests_dir_path())
+    
     run()
+    #usage()
