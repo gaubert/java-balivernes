@@ -53,7 +53,7 @@ def check_and_set_env():
             break
     
     if not found:
-        raise ENVError("Cannot find %s.so.* in LIBXML2_DIR %s"%(LIBXML2_ROOT,LIBXML2_DIR))
+        raise ENVError("Cannot find %sso.* in LIBXML2_DIR %s"%(LIBXML2_ROOT,LIBXML2_DIR))
     
     # CHECK that LIBXSLT_DIR contains a libxslt.so.*
     if LIBXSLT_DIR == None or not os.path.isdir(LIBXSLT_DIR):
