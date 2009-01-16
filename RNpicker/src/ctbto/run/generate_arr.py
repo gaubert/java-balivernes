@@ -51,11 +51,11 @@ def usage():
    --help     Show this usage information.
 
   Examples:
-  >./generate_arr --sids 211384,211386 --dir ./results
+  >./generate_arr --sids 211384,248969 --dir ./results --conf_dir ../conf
   
-  Get the SAMPML and ARR files for the sample ids 211384 and 211386 and store them in ./results
+  Get the SAMPML and ARR files for the sample ids 211384 and 248969 and store them in ./results
   
-  >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results
+  >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
  
   """
        
