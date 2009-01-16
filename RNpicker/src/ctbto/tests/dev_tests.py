@@ -21,7 +21,7 @@ from ctbto.transformer import XML2HTMLRenderer
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
 
-SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID,STATION_ID,SITE_DET_CODE from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
 def myBasicLoggingConfig():
     """
@@ -418,6 +418,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         for id in toRemove:
             if id in listOfSamplesToTest:
                 listOfSamplesToTest.remove(id)
+                
+        listOfSamplesToTest = [206975]
                
         TestSAMPMLCreator.c_log.info("list samples %s"%listOfSamplesToTest)
         
