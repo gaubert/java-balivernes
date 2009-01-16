@@ -101,7 +101,7 @@ def parse_arguments(a_args):
     result['dir'] = "/tmp/"
     
     try:
-        (opts,_) = getopt.getopt(a_args, "hs:f:e:d:c:v", ["help", "s=","from=","end=","dir=","conf_dir=","version"])
+        (opts,_) = getopt.getopt(a_args, "hs:f:e:d:c:v", ["help", "sids=","from=","end=","dir=","conf_dir=","version"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
