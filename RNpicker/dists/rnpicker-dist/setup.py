@@ -26,5 +26,5 @@ setup(name='RNPicker',
       package_data={'ctbto.tests': ['conf_tests/rnpicker.config','conf_tests/pretty-print.xslt','conf_tests/scripts/*.sh','conf_tests/samples/*.master','conf_tests/templates/*.html']},
       # copy extra files from first val in tuple to second. Everything is always done from --root that is sys.prefix by default
       data_files=[('conf',['conf/rnpicker.config','conf/pretty-print.xslt']),('conf/scripts',['conf/scripts/remote_extraction_from_archive.sh']),('conf/templates',['conf/templates/ArrHtml.html'])],
-      install_requires=['conf>=0.8.0','SQLAlchemy>=0.4.7','cx-Oracle>=4.3','lxml>=2.0']
+      #install_requires=['conf>=0.8.0','SQLAlchemy>=0.4.7','cx-Oracle>=4.3','lxml>=2.0']
       )
