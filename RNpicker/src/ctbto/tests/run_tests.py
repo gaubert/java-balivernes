@@ -63,7 +63,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         myBasicLoggingConfig()  
         
-        os.environ['SAMPML_CONF_DIR'] = self._get_tests_dir_path()
+        os.environ['RNPICKER_CONF_DIR'] = self._get_tests_dir_path()
         
         os.environ[Conf.ENVNAME] = '%s/%s'%(self._get_tests_dir_path(),'rnpicker.config')
         

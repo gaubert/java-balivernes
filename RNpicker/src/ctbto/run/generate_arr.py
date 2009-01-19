@@ -26,7 +26,7 @@ DATE_FORMAT = "%Y-%m-%d"
 def usage():
     
     usage_string = """
-  generate_arr [options]
+Usage: generate_arr [options] 
 
   Mandatory Options:
   --sids    (-s)   Retrieve the data and create the ARR of the following sample ids.
@@ -44,7 +44,10 @@ def usage():
                              The SAMPML files will be added under DIR/samples and the ARR
                              under DIR/ARR. 
                              The directories will be created if not present
-  --conf_dir      (-c)       directory containing a configuration file rnpicker.config        (default=$SAMPML_CONF_DIR)    
+  --conf_dir      (-c)       directory containing a configuration file rnpicker.config        (default=$RNPICKER_CONF_DIR)  
+  
+  --vvv           (-3)       Increase verbosity ot level 3 in order to have all the errors
+                             in the stdout  
 
 
   Help Options:
@@ -81,6 +84,24 @@ def get_tests_dir_path():
         
     return test_dir
 
+def get_exception_traceback():
+    """
+            return the exception traceback (stack info and so on) in a string
+        
+            Args:
+               None
+               
+            Returns:
+               return a string that contains the exception traceback
+        
+            Raises:
+               
+    """
+    f = StringIO.StringIO()
+    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info() #IGNORE:W0702
+    traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback,file=f)
+    return f.getvalue()
+
 def parse_arguments(a_args):
     """
             return the checksum of the calibration coeffs. This is done to create a unique id for the different calibration types.
@@ -99,9 +120,10 @@ def parse_arguments(a_args):
     
     # add default
     result['dir'] = "/tmp/"
+    result['verbose'] = 1
     
     try:
-        (opts,_) = getopt.getopt(a_args, "hs:f:e:d:c:v", ["help", "sids=","from=","end=","dir=","conf_dir=","version"])
+        (opts,_) = getopt.getopt(a_args, "hs:f:e:d:c:v3", ["help", "sids=","from=","end=","dir=","conf_dir=","version","vvv"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -121,45 +143,61 @@ def parse_arguments(a_args):
                 # insure that each sid only contains digits
                 for s in sids:
                     if not s.isdigit():
-                        raise Exception("Error passed sid %s is not a number"%(s)) 
+                        raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(s)) 
                     
                 result['sids'] = sids   
             elif a.isdigit():
                 result['sids'] = [a]                
             else:
-                raise Exception("Error passed sid %s is not a number"%(a))
+                raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(a))
         elif o in ("-d", "--dir"):
             # try to make the dir if necessary
             ctbto.common.utils.makedirs(a)
             result['dir'] = a   
+        elif o in ("-3","--vvv"):
+            result['verbose'] = 3 
         elif o in ("-f", "--from"):
             try:
                 #check that the passed string a date
                 datetime.datetime.strptime(a,DATE_FORMAT)
                 result['from'] = a
             except:
-                raise Exception("Invalid from date %s"%(a))
+                raise ParsingError("Invalid --from or -f date %s"%(a))
         elif o in ("-e", "--end"):
             try:
                 #check that the passed string a date
                 datetime.datetime.strptime(a,DATE_FORMAT)
                 result['end'] = a
             except:
-                raise Exception("Invalid from date %s"%(a))
+                raise ParsingError("Invalid --from or -f date %s"%(a))
         elif o in ("-c", "--conf_dir"):
             try:
                 #check that it is a dir
                 if not os.path.isdir(a):
-                    raise Exception("%s conf_dir is not a directory")
+                    raise ParsingError("%s --conf_dir or -d is not a directory")
                 result['conf_dir'] = a
             except:
-                raise Exception("Invalid from date %s"%(a))
+                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
         else:
-            raise Exception("unknown option %s = %s"%(o,a))
+            raise ParsingError("Unknown option %s = %s"%(o,a))
     
     return result
 
 SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+
+class ParsingError(Exception):
+    """The only exception where a logger as not yet been set as it depends on the conf"""
+
+    def __init__(self,aMsg):
+        super(ParsingError,self).__init__()
+        self.message = aMsg
+        
+class ConfAccessError(Exception):
+    """The only exception where a logger as not yet been set as it depends on the conf"""
+
+    def __init__(self,aMsg):
+        super(ConfAccessError,self).__init__()
+        self.message = aMsg
 
 class Runner(object):
     """ Class for fetching and producing the ARR """
@@ -237,7 +275,7 @@ class Runner(object):
     def _load_configuration(self,a_args):
         """
             try to load the configuration from the config file.
-            priority rules: if --conf_dir is set, try to read a dir/rnpicker.config. Otherwise look for SAMPML_CONF_DIR env var
+            priority rules: if --conf_dir is set, try to read a dir/rnpicker.config. Otherwise look for RNPICKER_CONF_DIR env var
         
             Args:
                None 
@@ -254,20 +292,20 @@ class Runner(object):
         
         #try to read from env
         if dir == None:
-            dir = os.environ.get('SAMPML_CONF_DIR',None)
+            dir = os.environ.get('RNPICKER_CONF_DIR',None)
         else:
             #always force the ENV Variable
-            os.environ['SAMPML_CONF_DIR'] = dir
+            os.environ['RNPICKER_CONF_DIR'] = dir
         
         if dir is None:
-            raise Exception('Error. the conf dir needs to be set from the command line or using the env variable SAMPML_CONF_DIR')
+            raise ConfAccessError('The conf dir needs to be set from the command line or using the env variable RNPICKER_CONF_DIR')
         
         if os.path.isdir(dir):
             os.environ[Conf.ENVNAME] = '%s/%s'%(dir,'rnpicker.config')
             
             return Conf.get_instance()
         else:
-            raise Exception('Error. The conf dir %s set with the env variable SAMPML_CONF_DIR is not a dir'%(dir))
+            raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
         
     def _getListOfSaunaSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='1000000'):
         
@@ -316,11 +354,12 @@ class Runner(object):
         
         self._create_directories(dir)
         
-        to_ignore = [53758,141372,141501,206975]
+        #to_ignore = [53758,141372,141501,206975]
+        to_ignore = self._conf.getlist('IgnoreSamples','noblegazSamples')
     
         for sid in sids:
             
-            if int(sid) in to_ignore:
+            if sid in to_ignore:
                 Runner.c_log.info("*************************************************************")
                 Runner.c_log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
                 Runner.c_log.info("*************************************************************\n")
@@ -363,20 +402,31 @@ class Runner(object):
             Runner.c_log.info("*************************************************************\n")
   
 def run():
-    #args = '-v -s 211384,211065'.split()
-    #args = '-v -s 211384 --from 2008-12-02 --end 2008-12-04 --dir /tmp'.split()
-    #print "args = %s\n"%(args)
-    #args = sys.argv[1:]
+    parsed_args = {}
     
     try:
         parsed_args = parse_arguments(sys.argv[1:])
          
         runner = Runner(parsed_args)
         
-        runner.execute(parsed_args)    
-    except Exception: #IGNORE:W0703,W0702
-        exceptionType, exceptionValue, exceptionTraceback = sys.exc_info() #IGNORE:W0702
-        traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback)
+        runner.execute(parsed_args) 
+    except ParsingError, e:
+        # Not Runner set print
+        print "Error: %s"%(e.message) 
+        usage() 
+        sys.exit(2)
+    except ConfAccessError, e:
+        # Not Runner set print
+        print "Error: %s"%(e.message) 
+        usage() 
+        sys.exit(2)
+    except Exception, e: #IGNORE:W0703,W0702
+        Runner.c_log.error("Error: %s. For more information see the log file."%(e))
+        if parsed_args.get('verbose',1) == 3:
+            a_logger = Runner.c_log.error
+        else:
+            a_logger = Runner.c_log.debug
+        a_logger("Traceback: %s."%(get_exception_traceback()))
         usage()
         sys.exit(3)
     

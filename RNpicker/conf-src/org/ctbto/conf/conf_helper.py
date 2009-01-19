@@ -395,6 +395,13 @@ class Conf(object):
         if v.lower() not in self._boolean_states:
             raise ValueError, 'Not a boolean: %s' % v
         return self._boolean_states[v.lower()]
+    
+    def getlist(self,section, option, default=None,fail_if_missing=False):
+        """ get a list of string """
+        v = self.get(section, option, default,fail_if_missing)
+        l = v.split(',')
+        return l
+        
         
     def optionxform(self, optionstr):
         return optionstr.lower()
