@@ -115,9 +115,9 @@ def check_and_set_oracle_env():
 if __name__ == "__main__":
 
     try:
-        check_and_set_env()
+        #check_and_set_env()
     
-        check_and_set_oracle_env()
+        #check_and_set_oracle_env()
     
         import ctbto.run.generate_arr as runner
    
