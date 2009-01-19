@@ -104,7 +104,7 @@ runner.run()
 EOF
 
 #./generate_arr $ARGS
-#$PYTHON_BIN /tmp/rnpicker.bootstrap $ARGS
+$PYTHON_BIN /tmp/rnpicker.bootstrap $ARGS
 
 
 
