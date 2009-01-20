@@ -339,7 +339,7 @@ class Runner(object):
         else:
             raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
         
-    def _get_list_of_sauna_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='1000000'):
+    def _get_list_of_sauna_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
         
         l = ','.join(map(str,stations)) #IGNORE:W0141
         
@@ -352,7 +352,8 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        Runner.c_log.info("Found %d sampleIDs: %s\n"%(len(sampleIDs),sampleIDs))
+        Runner.c_log.info("Found %d sampleIDs"%(len(sampleIDs)))
+        Runner.c_log.info("list of found sampleIDs: %s"%(sampleIDs))
        
         return sampleIDs
     
@@ -414,7 +415,7 @@ class Runner(object):
                 stations = self._get_stations_ids(stations)
             else:
                 stations = self._get_all_stations()
-            sids     = self._get_list_of_sauna_sampleIDs(stations,begin, end)
+                sids     = self._get_list_of_sauna_sampleIDs(stations,begin, end)
         else:
             raise Exception('need either a sid or some dates')
     
@@ -427,7 +428,7 @@ class Runner(object):
     
         for sid in sids:
             
-            if sid in to_ignore:
+            if str(sid) in to_ignore:
                 Runner.c_log.info("*************************************************************")
                 Runner.c_log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
                 Runner.c_log.info("*************************************************************\n")
@@ -489,7 +490,7 @@ def run():
         usage() 
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
-        Runner.c_log.error("Error: %s. For more information see the log file."%(e))
+        Runner.c_log.error("Error: %s. For more information see the log file %s"%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
         if parsed_args.get('verbose',1) == 3:
             a_logger = Runner.c_log.error
         else:

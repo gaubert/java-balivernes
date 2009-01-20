@@ -26,7 +26,7 @@ my \$blocksize = \$DEFAULT_BLOCKSIZE;
 my \$n;
 my \$total = $4;
 
-open(\$fhandle,"<$2") or die "Couldn't open remote file $2 on machine $1. Error code: \$! \n";
+open(\$fhandle,"<$2") or die "Warning. Cannot not open remote file $2 on machine $1. Error code: \$! \n";
 
 seek(\$fhandle, \$pos, 0)     or die "Couldn't seek to \$pos. Error code: \$!\n";
 
@@ -50,7 +50,7 @@ rm -f $tempfile
 
 if [ $res != 0 ];
 then
-  echo "Error.delete $5"
+  # echo "Error.delete $5"
   rm -f $5
 fi
 
