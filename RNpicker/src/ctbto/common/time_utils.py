@@ -3,6 +3,17 @@ import time
 
 from ctbto.common import scanf
 
+def getToday():
+    """ return today in so format """
+    today = datetime.date.today()
+    return today.isoformat()
+
+def getYesterday():
+    """ return yesterday in so format """
+    today = datetime.date.today()
+    yesterday = today - datetime.timedelta(1)
+    return yesterday.isoformat()
+
 def getDateTimeFromISO8601(aISOStr):
     """ transform a datetime object in ISO 8601 string """
     

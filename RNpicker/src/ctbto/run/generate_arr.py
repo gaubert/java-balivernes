@@ -13,6 +13,7 @@ import StringIO
 import traceback
 
 import ctbto.common.xml_utils
+import ctbto.common.time_utils
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector,DBDataFetcher
@@ -29,14 +30,16 @@ def usage():
 Usage: generate_arr [options] 
 
   Mandatory Options:
-  --sids    (-s)   Retrieve the data and create the ARR of the following sample ids.
-                   If --sids and --from or --end are used only the information provided with --sids will be used.
+  --sids     (-s)   Retrieve the data and create the ARR of the following sample ids.
+                    If --sids and --from or --end are used only the information provided with --sids will be used.
   or
   
-  --from    (-f)   Get all the sample ids corresponding to the from date until the end date (default= today).
-                   The date is in the YYYY-MM-DD form (ex: 2008-08-22)
-  --end     (-e)   Get all the sample ids created during the from and end period            (default= today).
-                   The date is in the YYYY-MM-DD form (ex: 2008-08-22)
+  --from     (-f)   Get all the sample ids corresponding to the from date until the end date  (default=today).
+                    The date is in the YYYY-MM-DD form (ex: 2008-08-22)
+  --end      (-e)   Get all the sample ids created during the from and end period             (default=yesterday).
+                    The date is in the YYYY-MM-DD form (ex: 2008-08-22)
+  --stations (-t)   Get all the sample ids belonging to the passed stations code              (default=all SAUNA stations)
+                    ex: --stations USX74,CAL05
              
 
   Extra Options:
@@ -54,11 +57,20 @@ Usage: generate_arr [options]
    --help     Show this usage information.
 
   Examples:
-  >./generate_arr --sids 211384,248969 --dir ./results --conf_dir ../conf
+  >./generate_arr --sids 211384,248969 --dir ./results 
   
-  Get the SAMPML and ARR files for the sample ids 211384 and 248969 and store them in ./results
+  Get the SAMPML and ARR files for the sample ids 211384 and 248969 and store them in ./results.
+  
+  >./generate_arr --stations USX74,CAL05 --dir ./results 
+  
+  Get the SAMPML and ARR files for the samples belonging to the stations USX75 and CAL05
+  from yesterday to today.
   
   >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
+  
+  Get the SAMPML and ARR files for the samples belonging to all the SAUNA stations for the passed
+  period. The configuration file rnpicker.config fron ../conf will be used to get the configuration
+  information.
  
   """
        
@@ -123,7 +135,7 @@ def parse_arguments(a_args):
     result['verbose'] = 1
     
     try:
-        (opts,_) = getopt.getopt(a_args, "hs:f:e:d:c:v3", ["help", "sids=","from=","end=","dir=","conf_dir=","version","vvv"])
+        (opts,_) = getopt.getopt(a_args, "ht:s:f:e:d:c:v3", ["help","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -144,12 +156,24 @@ def parse_arguments(a_args):
                 for s in sids:
                     if not s.isdigit():
                         raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(s)) 
-                    
                 result['sids'] = sids   
             elif a.isdigit():
                 result['sids'] = [a]                
             else:
                 raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(a))
+        elif o in ("-t", "--stations"):
+            # if there is a comma try to build a list
+            if a.find(',') != -1:
+                stations = a.split(',')
+                
+                l = []
+                for elem in stations:
+                    l.append("\'%s\'"%(elem))
+                
+                # insure that each sid only contains digits    
+                result['stations'] = l  
+            else:
+                result['stations'] = ["\'%s\'"%(a)]                
         elif o in ("-d", "--dir"):
             # try to make the dir if necessary
             ctbto.common.utils.makedirs(a)
@@ -183,7 +207,15 @@ def parse_arguments(a_args):
     
     return result
 
-SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+#SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+
+SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+
+SQL_GETALLSAUNASTATIONCODES = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type=\'SAUNA\'"
+
+SQL_GETALLSAUNASTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
+
+#SQL_GETSAUNASAMPLEIDS2  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in () RMSMAN.GARDS_STATIONS"
 
 class ParsingError(Exception):
     """The only exception where a logger as not yet been set as it depends on the conf"""
@@ -307,9 +339,11 @@ class Runner(object):
         else:
             raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
         
-    def _getListOfSaunaSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='1000000'):
+    def _get_list_of_sauna_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='1000000'):
         
-        result = self._ngMainConn.execute(SQL_GETSAUNASAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
+        l = ','.join(map(str,stations)) #IGNORE:W0141
+        
+        result = self._ngMainConn.execute(SQL_GETSAUNASAMPLEIDS%(l,beginDate,endDate,spectralQualif,nbOfElem))
         
         sampleIDs= []
         
@@ -321,6 +355,36 @@ class Runner(object):
         Runner.c_log.info("Found %d sampleIDs: %s\n"%(len(sampleIDs),sampleIDs))
        
         return sampleIDs
+    
+    def _get_stations_ids(self,a_station_codes):
+        
+        result = self._ngMainConn.execute(SQL_GETALLSAUNASTATIONIDSFROMCODES%(','.join(a_station_codes)))
+        
+        sta_ids    = []
+        
+        rows   = result.fetchall()
+        
+        for row in rows:
+            sta_ids.append(row[0])
+            
+        return sta_ids
+    
+    def _get_all_stations(self):
+        
+        result = self._ngMainConn.execute(SQL_GETALLSAUNASTATIONCODES)
+        
+        sta_codes  = []
+        sta_ids    = []
+        
+        rows   = result.fetchall()
+        
+        for row in rows:
+            sta_codes.append(row[0])
+            sta_ids.append(row[1])
+            
+        Runner.c_log.info("Found the following SAUNA stations: %s\n"%(sta_codes))
+        
+        return sta_ids
     
     def _create_directories(self,dir):
         
@@ -342,11 +406,15 @@ class Runner(object):
         
         if 'sids' in a_args:
             sids    = a_args['sids']
-        elif 'from' in a_args or 'end' in a_args:
-            begin = a_args.get('from','2009-01-14')
-            end   = a_args.get('end','2009-01-14')
-            
-            sids = self._getListOfSaunaSampleIDs(begin, end)
+        elif 'from' in a_args or 'end' in a_args or 'stations' in a_args:
+            begin    = a_args.get('from',ctbto.common.time_utils.getYesterday())
+            end      = a_args.get('end',ctbto.common.time_utils.getToday())
+            stations = a_args.get('stations',None)
+            if stations != None:
+                stations = self._get_stations_ids(stations)
+            else:
+                stations = self._get_all_stations()
+            sids     = self._get_list_of_sauna_sampleIDs(stations,begin, end)
         else:
             raise Exception('need either a sid or some dates')
     
