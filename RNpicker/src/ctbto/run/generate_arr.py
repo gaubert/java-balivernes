@@ -46,7 +46,7 @@ Usage: generate_arr [options]
              
 
   Extra Options:
-  --dir             (-d)  Destination directory where the data will be written.                     (default=/tmp)
+  --dir             (-d)  Destination directory where the data will be written.                     (default=/tmp/samples)
                           The SAMPML files will be added under DIR/samples and the ARR
                           under DIR/ARR. 
                           The directories will be created if not present.
@@ -148,7 +148,7 @@ def parse_arguments(a_args):
     result = {}
     
     # add defaults
-    result['dir']                 = "/tmp"
+    result['dir']                 = "/tmp/samples"
     result['verbose']             = 1
     result['clean_cache']         = False
     result['automatic_tests']     = False
