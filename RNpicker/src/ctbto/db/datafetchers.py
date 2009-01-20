@@ -816,20 +816,41 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
             return
         
-        SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
+        SaunaNobleGasDataFetcher.c_log.info("Getting Detector Background Spectrum for %s\n"%(self._sampleID))
         
-        # need to get the latest BK sample_id
-        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
+        # follow the same method as the one defined in bg_analyse
+        # first look for the gas bk id in gards_sample_aux and then try to get the corresponding id.
+        # if no sample_id is found look use the mrp method
+        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_AUX_DETBK_ID%(self._sampleID))
+        id_found = False
+        if nbResults == 1:
+            # get ID from the measurement ID
+            mid = rows[0]['mid']
+            
+            (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_DETBK_SAMPLEID_FROM_MID%(mid))
+            
+            if nbResults >= 1:
+                sid =  rows[0]['sid']
+                id_found = True
+            else:
+                SaunaNobleGasDataFetcher.c_log.info("Warning. Could not find a Detector Background sample_id from the measurement id %s. For more details regarding the request, see the log file"%(mid))
+
+        if not id_found:
+            #go in MRP method 
+            SaunaNobleGasDataFetcher.c_log.info("Warning. Use MRP method to find the detector background associated to %s\n"%(self._sampleID))
+            # need to get the latest BK sample_id
+            (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_MRP_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
        
-        if nbResults == 0:
-            SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-            self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
-            return
+            if nbResults == 0:
+                SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Detector Background for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_MRP_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+                self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
+                return
        
-        if nbResults > 1:
-            SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            if nbResults > 1:
+                SaunaNobleGasDataFetcher.c_log.info("There is more than one Detector Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_MRP_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
-        sid = rows[0]['SAMPLE_ID']
+            sid = rows[0]['SAMPLE_ID']
+        
         
         DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
           
@@ -842,7 +863,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[u'CONTENT_PRESENT'].add('DETBK') 
            
         except Exception, e: #IGNORE:W0703
-            SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for background %s\n.Exception e = %s\n"%(sid,e))
+            SaunaNobleGasDataFetcher.c_log.info("Warning. No Data File found for a Detector Background %s\n.Exception e = %s\n"%(sid,e))
             self._dataBag[u'CONTENT_NOT_PRESENT'].add('DETBK')
     
     def _fetchGASBKSpectrumData(self):
@@ -864,20 +885,38 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'G':
             return
         
-        SaunaNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
+        SaunaNobleGasDataFetcher.c_log.info("Getting Gas Background Spectrum for %s\n"%(self._sampleID))
         
-        # need to get the latest BK sample_id
-        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
+         # follow the same method as the one defined in bg_analyse
+        # first look for the gas bk id in gards_sample_aux and then try to get the corresponding id.
+        # if no sample_id is found look use the mrp method
+        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_AUX_GASBK_ID%(self._sampleID))
+        id_found = False
+        if nbResults == 1:
+            # get ID from the measurement ID
+            mid = rows[0]['mid']
+            
+            (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_GASBK_SAMPLEID_FROM_MID%(mid))
+            
+            if nbResults >= 1:
+                sid =  rows[0]['sid']
+                id_found = True
+            else:
+                SaunaNobleGasDataFetcher.c_log.info("Warning. Could not find a Gas Background sample_id from the measurement id %s. For more details regarding the request, see the log file"%(mid))
+
+        if not id_found:
+            # need to get the latest GAS BK sample_id
+            (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
        
-        if nbResults == 0:
-            SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
-            self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
-            return
+            if nbResults == 0:
+                SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+                self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
+                return
        
-        if nbResults > 1:
-            SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            if nbResults > 1:
+                SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
-        sid = rows[0]['SAMPLE_ID']
+            sid = rows[0]['SAMPLE_ID']
         
         DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
           
@@ -959,7 +998,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         SaunaNobleGasDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
+        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
         
         nbResults = len(rows)
         
@@ -983,7 +1022,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[u'CONTENT_PRESENT'].add('QC') 
         
         except Exception, e: #IGNORE:W0703
-            SaunaNobleGasDataFetcher.c_log.error("Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e))
+            SaunaNobleGasDataFetcher.c_log.info("Warning. No Data File found for QC %s\n.Exception e = %s\n"%(sid,e))
             self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
     
     def _fetchCURRSpectrumData(self):
@@ -1086,7 +1125,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(ty,"")
             (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SAUNA_GET_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False) 
         elif nbResults != 3:
-            SaunaNobleGasDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+            SaunaNobleGasDataFetcher.c_log.warning("WARNING: found %d data file for %s when exactly 3 should be found\n"%(nbResults,aSampleID))
             
         data = {}
         

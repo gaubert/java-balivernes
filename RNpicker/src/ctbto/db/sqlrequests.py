@@ -36,6 +36,42 @@ SQL_SAUNA_GET_ROI_CONCS_OLD = "select ROI,CONC,CONC_ERR,MDC,NID_FLAG,LC,LD from 
 
 SQL_SAUNA_GET_ROI_COUNTS_OLD = "select ROI,GROSS, GROSS_ERR, GAS_BKGND_GROSS, GAS_BKGND_COUNT, GAS_BKGND_COUNT_ERR, DET_BKGND_COUNT, DET_BKGND_COUNT_ERR, NET_COUNT, NET_COUNT_ERR, CRITICAL_LEV_SAMP, CRITICAL_LEV_GAS from gards_BG_ROI_counts where sample_id=%s"
 
+SQL_GET_SAUNA_DETBK_SAMPLEID_OLD   = "select * from \
+                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                    where gd.station_id=%s \
+                                    and gd.DETECTOR_ID=%s \
+                                    and gd.SPECTRAL_QUALIFIER='FULL' \
+                                    and gd.data_type='D' \
+                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                                                 and detector_id=%s) \
+                                    and gd.sample_id = gs.sample_id \
+                                    and gs.status in ('V','P')) \
+                                    where rownum=1"
+
+SQL_GET_SAUNA_GASBK_SAMPLEID_OLD   = "select * from \
+                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                    where gd.station_id=%s \
+                                    and gd.DETECTOR_ID=%s \
+                                    and gd.SPECTRAL_QUALIFIER='FULL' \
+                                    and gd.data_type='G' \
+                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                                                 and detector_id=%s) \
+                                    and gd.sample_id = gs.sample_id \
+                                    and gs.status in ('V','P')) \
+                                    where rownum=1"
+
+SQL_GET_SAUNA_QC_SAMPLEID_OLD = "select * from \
+                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                    where gd.station_id=%s \
+                                    and gd.DETECTOR_ID=%s \
+                                    and gd.SPECTRAL_QUALIFIER='FULL' \
+                                    and gd.data_type='Q' \
+                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                                                 and detector_id=%s) \
+                                    and gd.sample_id = gs.sample_id \
+                                    and gs.status in ('V','P')) \
+                                    where rownum=1"
+
 """ ************************************ Common Part ********************************************"""
 
 """ sql used requests  """
@@ -78,32 +114,41 @@ SQL_SAUNA_GET_PROCESSING_PARAMS = "select * from gards_bg_proc_params where samp
 
 SQL_SAUNA_GET_ROI_PARAMS = "select * from gards_bg_proc_params_roi where sample_id=%s"
 
-""" Get information regarding all nuclides """
+# Get information regarding all nuclides 
 SQL_SAUNA_GETALLNUCLIDES = "select conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, lib.NAME as Name, lib.type as Type, lib.HALFLIFE as halflife from RMSMAN.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
 
-SQL_GET_SAUNA_DETBK_SAMPLEID   = "select * from \
-                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
-                                    where gd.station_id=%s \
-                                    and gd.DETECTOR_ID=%s \
-                                    and gd.SPECTRAL_QUALIFIER='FULL' \
-                                    and gd.data_type='D' \
-                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
-                                                                 and detector_id=%s) \
-                                    and gd.sample_id = gs.sample_id \
-                                    and gs.status in ('V','P')) \
-                                    where rownum=1"
 
-SQL_GET_SAUNA_GASBK_SAMPLEID   = "select * from \
-                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
-                                    where gd.station_id=%s \
-                                    and gd.DETECTOR_ID=%s \
-                                    and gd.SPECTRAL_QUALIFIER='FULL' \
-                                    and gd.data_type='G' \
-                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
-                                                                 and detector_id=%s) \
-                                    and gd.sample_id = gs.sample_id \
-                                    and gs.status in ('V','P')) \
-                                    where rownum=1"
+SQL_GET_SAUNA_AUX_DETBK_ID          = "SELECT aux.bkgd_measurement_id as mid FROM \
+                                       rmsauto.gards_sample_data sam, rmsauto.gards_sample_aux aux \
+                                       WHERE sam.sample_id = %s AND sam.sample_id = aux.sample_id"
+                                    
+SQL_GET_SAUNA_DETBK_SAMPLEID_FROM_MID  = "SELECT sam.sample_id as sid FROM \
+                                               rmsauto.gards_sample_aux aux, rmsauto.gards_sample_data sam WHERE \
+                                               aux.measurement_id = '%s' and aux.sample_id = sam.sample_id and \
+                                               sam.data_type = 'D' and sam.spectral_qualifier = 'FULL'"
+                                               
+SQL_GET_SAUNA_MRP_DETBK_SAMPLEID       = "select * from \
+                                      (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                       where gd.station_id=%s and gd.DETECTOR_ID=%s and gd.SPECTRAL_QUALIFIER='FULL' and gd.data_type='D' \
+                                       and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                       and detector_id=%s) and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc) \
+                                      where rownum = 1"
+
+SQL_GET_SAUNA_AUX_GASBK_ID          = "SELECT aux.GAS_BKGD_MEASUREMENT_ID as mid FROM \
+                                       rmsauto.gards_sample_data sam, rmsauto.gards_sample_aux aux \
+                                       WHERE sam.sample_id = %s AND sam.sample_id = aux.sample_id"
+                                    
+SQL_GET_SAUNA_GASBK_SAMPLEID_FROM_MID  = "SELECT sam.sample_id as sid FROM \
+                                               rmsauto.gards_sample_aux aux, rmsauto.gards_sample_data sam WHERE \
+                                               aux.measurement_id = '%s' and aux.sample_id = sam.sample_id and \
+                                               sam.data_type = 'G' and sam.spectral_qualifier = 'FULL'"                                   
+
+SQL_GET_SAUNA_MRP_GASBK_SAMPLEID      = "select * from \
+                                      (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                       where gd.station_id=%s and gd.DETECTOR_ID=%s and gd.SPECTRAL_QUALIFIER='FULL' and gd.data_type='G' \
+                                       and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                       and detector_id=%s) and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc) \
+                                      where rownum = 1"
 
 SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      where COLLECT_STOP=\
@@ -112,18 +157,13 @@ SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      and Spectral_qualifier='PREL'\
                                      order by  ACQUISITION_REAL_SEC asc"
 
-                                   
-SQL_GET_SAUNA_QC_SAMPLEID = "select * from \
-                                    (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
-                                    where gd.station_id=%s \
-                                    and gd.DETECTOR_ID=%s \
-                                    and gd.SPECTRAL_QUALIFIER='FULL' \
-                                    and gd.data_type='Q' \
-                                    and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
-                                                                 and detector_id=%s) \
-                                    and gd.sample_id = gs.sample_id \
-                                    and gs.status in ('V','P')) \
-                                    where rownum=1"
+# give the latest QC mesured                                                          
+SQL_GET_SAUNA_QC_SAMPLEID    = "select * from \
+                                (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                 where gd.station_id=%s and gd.DETECTOR_ID=%s and gd.SPECTRAL_QUALIFIER='FULL' and gd.data_type='Q' \
+                                 and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
+                                                              and detector_id=%s) and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc) \
+                                where rownum = 1"
 
 SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      where COLLECT_STOP=\
@@ -141,7 +181,7 @@ SQL_GET_SAUNA_XE_NUCL_LIB = "select NAME from GARDS_XE_NUCL_LIB"
 
 """ ************************************* Particulate Part ********************************************* """
 
-""" get any spectrum full or prel or qc or back """
+# get any spectrum full or prel or qc or back 
 SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 SQL_GETPARTICULATE_RAW_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
@@ -182,15 +222,15 @@ SQL_GETPARTICULATE_QC_SAMPLEID = "select * from \
                                     and gs.status in ('V','P')) \
                                     where rownum=1"
 
-""" get particulate category """
+# get particulate category 
 SQL_PARTICULATE_CATEGORY_STATUS ="select entry_date as cat_entry_date, cnf_begin_date as cat_cnf_begin_date,cnf_end_date as cat_cnf_end_date, review_date as cat_review_date, review_time as cat_review_time, analyst as cat_analyst, status as cat_status, category as cat_category, auto_category as cat_auto_category, release_date as cat_release_date from RMSMAN.GARDS_SAMPLE_STATUS where sample_id=%s"
 
 SQL_PARTICULATE_CATEGORY ="select NAME as CAT_NUCL_NAME, METHOD_ID as CAT_METHOD_ID, CATEGORY as CAT_CATEGORY, UPPER_BOUND as CAT_UPPER_BOUND, LOWER_BOUND as CAT_LOWER_BOUND, CENTRAL_VALUE as CAT_CENTRAL_VALUE, DELTA as CAT_DELTA, ACTIVITY as CAT_ACTIVITY from RMSMAN.GARDS_SAMPLE_CAT where sample_id=%s and hold=0"
 
-""" returned all ided nuclides for a particular sample """
+# returned all ided nuclides for a particular sample """
 SQL_PARTICULATE_GET_NUCL2QUANTIFY="select name from RMSMAN.GARDS_NUCL2QUANTIFY"
 
-""" return sample_ref_id. Identifier given by the detector for the sample. It is unique """
+# return sample_ref_id. Identifier given by the detector for the sample. It is unique """
 SQL_PARTICULATE_GET_SAMPLE_REF_ID="select sample_ref_id from RMSMAN.GARDS_SAMPLE_AUX where sample_id=%s"
 
 SQL_PARTICULATE_GET_NUCLIDES_INFO="select * from RMSMAN.GARDS_NUCL_IDED ided where sample_id=%s"
@@ -203,8 +243,8 @@ SQL_PARTICULATE_GET_PROCESSING_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_P
 
 SQL_PARTICULATE_GET_UPDATE_PARAMETERS = "select * from RMSMAN.GARDS_SAMPLE_UPDATE_PARAMS where sample_id=%s"
 
-# beware with the date trick. In order to use the index and not perform a full scan on the table use between superior newest date and 1980-xxxxx 
-# to do the same as gsd.collect_stop < to_date(XXXXX) because in this case the index is not used
+# beware with the date trick. In order to use the index and not perform a full scan on the table use between superior newest date and 1980-xx
+""" to do the same as gsd.collect_stop < to_date(XXXXX) because in this case the index is not used """
 SQL_PARTICULATE_GET_MRP = "select gsd.sample_id as mrp_sample_id, to_char (gsd.collect_stop, 'YYYY-MM-DD HH24:MI:SS')  as mrp_collect_stop, gsd.collect_stop - to_date('%s', 'YYYY-MM-DD HH24:MI:SS') as mrp_collect_stop_diff from gards_sample_data gsd \
                            where gsd.collect_stop between to_date ('%s','YYYY-MM-DD HH24:MI:SS')-1 and  to_date ('1980-01-01','YYYY-MM-DD HH24:MI:SS')\
                              and gsd.data_type = '%s' \
