@@ -164,9 +164,12 @@ class Conf(object):
         # list of sections
         self._sections = {}
         
+        self._configuration_file_path = None
+        
         # create config object 
         if use_resource:       
             self._load_config()
+        
 
    
     def _load_config(self,aFile=None):
@@ -181,12 +184,19 @@ class Conf(object):
             fp = open(aFile,'r') 
                 
             self._read(fp,aFile)
+            
+            # memorize conf file path
+            self._configuration_file_path = aFile
+            
         except Exception, e:
             print "Can't read the config file %s"%(aFile)
             print "Current executing from dir = %s\n"%(os.getcwd())
             raise e
             
             #raise ContextError(-1,"Can't read the config file %s"%(aFile))
+    
+    def get_conf_file_path(self):
+        return self._configuration_file_path if self._configuration_file_path != None else "unknown"
        
     def sections(self):
         """Return a list of section names, excluding [DEFAULT]"""

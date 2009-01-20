@@ -78,6 +78,11 @@ Usage: generate_arr [options]
   Get the SAMPML and ARR files for the samples belonging to the stations USX75 and CAL05
   from yesterday to today.
   
+  >./generate_arr --from 2009-01-15 --stations CNX22,USX75
+  
+  Get the SAMPML and ARR files for the samples belonging to the stations CNX22 and USX75
+  and produced from the 15 of Jan 2009 until today.
+  
   >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
   
   Get the SAMPML and ARR files for the samples belonging to all the SAUNA stations for the passed
@@ -143,7 +148,7 @@ def parse_arguments(a_args):
     result = {}
     
     # add defaults
-    result['dir']                 = "/tmp/"
+    result['dir']                 = "/tmp"
     result['verbose']             = 1
     result['clean_cache']         = False
     result['automatic_tests']     = False
@@ -382,8 +387,8 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        Runner.c_log.info("Found %d sampleIDs"%(len(sampleIDs)))
-        Runner.c_log.info("list of found sampleIDs: %s"%(sampleIDs))
+        Runner.c_log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
+        Runner.c_log.debug("list of found sampleIDs: %s"%(sampleIDs))
        
         return sampleIDs
     
@@ -413,7 +418,8 @@ class Runner(object):
             sta_codes.append(row[0])
             sta_ids.append(row[1])
             
-        Runner.c_log.info("Found the following SAUNA stations: %s\n"%(sta_codes))
+        Runner.c_log.info("Found %d SAUNA stations."%(len(sta_codes)))
+        Runner.c_log.debug("Found the following SAUNA stations: %s."%(sta_codes))
         
         return sta_ids
     
@@ -449,6 +455,13 @@ class Runner(object):
         if a_args == None or a_args == {}:
             raise Exception('No commands passed. See usage message.')
         
+        Runner.c_log.info("*************************************************************")
+        Runner.c_log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
+        
+        Runner.c_log.info("For more information check the detailed logs under %s"%(self._conf.get('Logging','fileLogging','/tmp/rnpicker.log')))
+        
+        Runner.c_log.info("*************************************************************\n")
+        
         cache_cleaned         = False
         local_spectra_cleaned = False
         
@@ -466,6 +479,7 @@ class Runner(object):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # check if we have some sids or we get it from some dates
+        Runner.c_log.info("*************************************************************")
         
         if 'sids' in a_args:
             sids    = a_args['sids']
@@ -485,6 +499,9 @@ class Runner(object):
             else:  
                 # no actions performed error
                 raise Exception('need either a sid or some dates or a station name')
+        
+        Runner.c_log.info("Start the product generation")
+        Runner.c_log.info("*************************************************************\n")
     
         dir = a_args['dir']
         
