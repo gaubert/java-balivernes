@@ -106,7 +106,7 @@ class DBRawRenderer:
         # write xml tree in file
         f = open("%s/%s.xml"%(aDir,aFilename), 'w')
         
-        utils.prettyFormatElem(aXmlRoot)
+        #utils.prettyFormatElem(aXmlRoot)
          
         tree = ElementTree(aXmlRoot)
         
