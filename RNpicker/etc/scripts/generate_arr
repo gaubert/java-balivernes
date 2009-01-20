@@ -1,129 +1,121 @@
-#!/usr/bin/python
-""" 
-    Copyright 2008 CTBTO Organisation
-    
-    module: generate_noble_gaz_arr
-"""
+#!/bin/sh
+#set -x
 
-LIBXML2_DIR='/usr/lib'
-LIBXSLT_DIR='/usr/lib'
+# Runs on Linux
+#################################
+## RNPicker Distribution home directory
+#################################
+RNPICKER_HOME=..
 
-# On my machine
-# On dls007 => '/opt/oracle'
-ORACLE_HOME='/usr/lib/oracle/xe/app/oracle/product/10.2.0/server'
+#################################
+## if RNPICKER_HOME is relative,
+## build the absolute path
+#################################
+D=`dirname "$RNPICKER_HOME"`
+B=`basename "$RNPICKER_HOME"`
+RNPICKER_HOME="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+
+#################################
+## RNPicker necessary information
+#################################
+PYTHON_BIN=$RNPICKER_HOME/bin/python
+
+# /usr/lib/oracle/xe/app/oracle/product/10.2.0/server
+DEFAULT_ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
+
+#DEFAULT_LIBXML2_DIR=/home/smd/aubert/new-env/ext/clib/libxml2/lib
+DEFAULT_LIBXML2_DIR=/usr/lib
+
+#DEFAULT_LIBXSLT_DIR=/home/smd/aubert/new-env/ext/clib/libxslt/lib
+DEFAULT_LIBXSLT_DIR=/usr/lib
+
+DEFAULT_RNPICKER_CONF_DIR=$RNPICKER/conf
+
+#################################
+## You probably do not want to
+## change anything from there
+#################################
+
+echo "INFO - *************************************************************"
+echo "INFO - Check configuration and environment"
+
+##################################
+## Apply Default Settings if global not defined
+##################################
+if [ -z "$ORACLE_HOME" ]; then
+   echo "INFO - ORACLE_HOME is undefined. Set it to default=($DEFAULT_ORACLE_HOME)."
+   ORACLE_HOME=$DEFAULT_ORACLE_HOME
+fi
+
+if [ -z "$LIBXML2_DIR" ]; then
+   echo "INFO - LIBXML2_DIR is undefined. Set it to default=($DEFAULT_LIBXML2_DIR)."
+   LIBXML2_DIR=$DEFAULT_LIBXML2_DIR
+fi
+
+if [ -z "$LIBXSLT_DIR" ]; then
+   echo "INFO - LIBXSLT_DIR is undefined. Set it to default=($DEFAULT_LIBXSLT_DIR)."
+   LIBXSLT_DIR=$DEFAULT_LIBXSLT_DIR
+fi
+
+if [ -z "$RNPICKER_CONF_DIR" ]; then
+   echo "INFO - RNPICKER_CONF_DIR is undefined. Set it to default=($DEFAULT_RNPICKER_CONF_DIR)."
+   RNPICKER_CONF_DIR=$DEFAULT_RNPICKER_CONF_DIR
+fi
+
+####################################
+## Checkings
+####################################
+
+if [ ! -f "$ORACLE_HOME/lib/libclntsh.so" ]; then
+    echo "ERROR - ORACLE_HOME: [$ORACLE_HOME] is not an oracle distribution"
+    echo "Please set the ORACLE_HOME variable globally or set DEFAULT_ORACLE_HOME (defined in this script) to an oracle distribution"
+    exit 1
+else
+    export ORACLE_HOME
+fi
+
+if [ ! -f "$LIBXML2_DIR/libxml2.so" ]; then
+    echo "ERROR - LIBXML2_DIR: [$LIBXML2_DIR] doesn\'t contain libxml2.so"
+    echo "Please set the LIBXML2_DIR variable globally or set DEFAULT_LIBXML2_DIR (defined in this script) to a directory containing libxml2.so"
+    exit 1
+else
+    LD_LIBRARY_PATH=$LIBXML2_DIR:$LD_LIBRARY_PATH 
+fi
+
+if [ ! -f "$LIBXSLT_DIR/libxslt.so" -a ! -f "$LIBXSLT_DIR/lib/libexslt.so" ]; then
+    echo "ERROR - LIBXSLT_DIR: [$LIBXSLT_DIR] doesn\'t contain libexslt.so"
+    echo "Please set the LIBXSLT_DIR variable globally or set DEFAULT_LIBXSLT_DIR (defined in this script) to a directory containing libxslt.so and libexslt.so"
+    exit 1
+else
+    LD_LIBRARY_PATH=$LIBXSLT_DIR:$LD_LIBRARY_PATH 
+fi
+
+if [ ! -f "$RNPICKER_CONF_DIR/rnpicker.config" ]; then
+    echo "RNPICKER_CONF $RNPICKER_CONF_DIR doesn't contain rnpicker.config. generate_arr will try to load it from the CLI argument --conf_dir"
+fi
+
+export LD_LIBRARY_PATH
+
+###################################
+## create bootstrap and launch program
+## the bootstrap is always under 
+## /tmp/rnpicker.bootstrap
+###################################
 
 
-###############################################################################
-###############################################################################
-""" You probably do not want to change any thing below that part """
-###############################################################################
-###############################################################################
+# keep args in variables
+ARGS="$@"
+
+cat > /tmp/rnpicker.bootstrap << EOF
+import ctbto.run.generate_arr as runner
+runner.run()
+EOF
+
+echo "INFO - *************************************************************"
+echo ""
+
+#./generate_arr $ARGS
+$PYTHON_BIN /tmp/rnpicker.bootstrap $ARGS
 
 
-import os
-import sys
 
-class ENVError(Exception):
-    """Base class for All exceptions"""
-
-    def __init__(self,aMsg):
-        super(ENVError,self).__init__()
-        self.message = aMsg
- 
-# Constants
-LIBXML2_ROOT     ='libxml2.' 
-LIBXSLT_ROOT     ='libxslt.'
-LIBEXSLT_ROOT    ='libexslt.'
-LD_LIBRARY_PATH  ='LD_LIBRARY_PATH'
-  
-def check_and_set_env():
-    """ check that the right env variables are set """
-    
-    #CHECK that LIBXML2_DIR contains a libxml2.so*
-    if LIBXML2_DIR == None or not os.path.isdir(LIBXML2_DIR):
-        raise ENVError("LIBXML2_DIR %s is not a directory"%(LIBXML2_DIR))
-    
-    content = os.listdir(LIBXML2_DIR)
-    
-    found   = False
-    
-    for l in content:
-        if l.startswith(LIBXML2_ROOT):
-            found = True
-            break
-    
-    if not found:
-        raise ENVError("Cannot find %sso.* in LIBXML2_DIR %s"%(LIBXML2_ROOT,LIBXML2_DIR))
-    
-    # CHECK that LIBXSLT_DIR contains a libxslt.so.*
-    if LIBXSLT_DIR == None or not os.path.isdir(LIBXSLT_DIR):
-        raise ENVError("LIBXSLT_DIR %s is not a directory"%(LIBXSLT_DIR))
-    
-    content = os.listdir(LIBXSLT_DIR)
-    
-    found   = False
-    
-    #Look for lib xslt
-    for l in content:
-        if l.startswith(LIBXSLT_ROOT):
-            found = True
-            break
-    
-    if not found:
-        raise ENVError("Cannot find %sso.* in LIBXML2_DIR %s"%(LIBXSLT_ROOT,LIBXSLT_DIR))
-    
-    found   = False
-    
-    #Look for lib xslt
-    for l in content:
-        if l.startswith(LIBEXSLT_ROOT):
-            found = True
-            break
-    
-    if not found:
-        raise ENVError("Cannot find %sso.* in LIBXML2_DIR %s"%(LIBEXSLT_ROOT,LIBXSLT_DIR))
-    
-    # add the two dirs in the LD_LIBRARY_PATH
-    os.environ[LD_LIBRARY_PATH] = "%s:%s:%s"%(LIBXML2_DIR,LIBXSLT_DIR,os.environ[LD_LIBRARY_PATH])
-    
-    print "LD_LIBRARY_PATH = %s"%(os.environ[LD_LIBRARY_PATH])
-    
-def check_and_set_oracle_env():
-    
-    if ORACLE_HOME == None or not os.path.isdir(ORACLE_HOME):
-        raise ENVError("ORACLE_HOME %s is not a directory"%(ORACLE_HOME))
-    
-    # check if there is dir ORACLE_HOME/lib with libclntsh. in it
-    if not os.path.exists('%s/lib'%(ORACLE_HOME)) and not os.path.isdir('%s/lib'%(ORACLE_HOME)):
-        raise ENVError("There is no directory %s/lib"%(ORACLE_HOME))
-        
-    content = os.listdir('%s/lib'%(ORACLE_HOME))
-    
-    found   = False
-    
-    for l in content:
-        if l.startswith('libclntsh.'):
-            found = True
-            break
-    
-    if not found:
-        raise ENVError("Cannot find libclntsh.so.* in %s. Please check that %s is an Oracle installation dir"%(ORACLE_HOME))
-    
-    # set Oracle_home
-    os.environ['ORACLE_HOME'] = ORACLE_HOME
-    
-if __name__ == "__main__":
-
-    try:
-        #check_and_set_env()
-    
-        #check_and_set_oracle_env()
-    
-        import ctbto.run.generate_arr as runner
-   
-        runner.run()
-        
-        
-    except ENVError,e:
-        print(e.message)
-        sys.exit(4)

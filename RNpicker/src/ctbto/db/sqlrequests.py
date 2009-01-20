@@ -157,13 +157,25 @@ SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      and Spectral_qualifier='PREL'\
                                      order by  ACQUISITION_REAL_SEC asc"
 
-# give the latest QC mesured                                                          
+# give the latest QC mesured  
+# this method is inherited from the particulates part                                                        
 SQL_GET_SAUNA_QC_SAMPLEID    = "select * from \
                                 (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
                                  where gd.station_id=%s and gd.DETECTOR_ID=%s and gd.SPECTRAL_QUALIFIER='FULL' and gd.data_type='Q' \
                                  and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s \
                                                               and detector_id=%s) and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc) \
                                 where rownum = 1"
+
+#this method is inherited from bg analyse
+# 7 parameters
+SQL_GET_SAUNA_QC_SAMPLEID_BG_ANALYSE    = "SELECT sample_id FROM rmsauto.gards_sample_data WHERE \
+                                station_id = %s AND detector_id = %s AND \
+                                acquisition_start = \
+                                (SELECT MAX(acquisition_start) FROM \
+                                        rmsauto.gards_sample_data \
+                                        WHERE station_id = %s AND detector_id = %s AND \
+                                        acquisition_start < (SELECT acquisition_start FROM gards_sample_data \
+                                        WHERE SAMPLE_ID=%s and station_id=%s and detector_id=%s) AND data_type = 'Q' AND spectral_qualifier = 'FULL')"
 
 SQL_GET_SAUNA_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
                                      where COLLECT_STOP=\

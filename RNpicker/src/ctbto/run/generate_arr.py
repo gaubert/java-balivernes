@@ -30,27 +30,39 @@ def usage():
 Usage: generate_arr [options] 
 
   Mandatory Options:
-  --sids     (-s)   Retrieve the data and create the ARR of the following sample ids.
-                    If --sids and --from or --end are used only the information provided with --sids will be used.
+  --sids           (-s)   Retrieve the data and create the ARR of the following sample ids.
+                          If --sids and --from or --end are used only the information provided 
+                          with --sids will be used.
   or
   
-  --from     (-f)   Get all the sample ids corresponding to the from date until the end date  (default=today).
-                    The date is in the YYYY-MM-DD form (ex: 2008-08-22)
-  --end      (-e)   Get all the sample ids created during the from and end period             (default=yesterday).
-                    The date is in the YYYY-MM-DD form (ex: 2008-08-22)
-  --stations (-t)   Get all the sample ids belonging to the passed stations code              (default=all SAUNA stations)
-                    ex: --stations USX74,CAL05
+  --from           (-f)   Get all the sample ids corresponding to the from date until the end date. (default=today).
+                          The date is in the YYYY-MM-DD form (ex: 2008-08-22).
+  --end            (-e)   Get all the sample ids created during the from and end period.            (default=yesterday).
+                          The date is in the YYYY-MM-DD form (ex: 2008-08-22).
+  or
+  
+  --stations       (-t)   Get all the sample ids belonging to the passed stations code.             (default=all SAUNA stations)
+                          ex: --stations USX74,CAL05.
              
 
   Extra Options:
-  --dir           (-d)       Destination directory where the data will be written.            (default=/tmp)
-                             The SAMPML files will be added under DIR/samples and the ARR
-                             under DIR/ARR. 
-                             The directories will be created if not present
-  --conf_dir      (-c)       directory containing a configuration file rnpicker.config        (default=$RNPICKER_CONF_DIR)  
+  --dir             (-d)  Destination directory where the data will be written.                     (default=/tmp)
+                          The SAMPML files will be added under DIR/samples and the ARR
+                          under DIR/ARR. 
+                          The directories will be created if not present.
+                          
+  --conf_dir        (-c)  Directory containing a configuration file rnpicker.config.                (default=$RNPICKER_CONF_DIR)  
   
-  --vvv           (-3)       Increase verbosity ot level 3 in order to have all the errors
-                             in the stdout  
+  --vvv             (-3)  Increase verbosity ot level 3 in order to have all the errors
+                          in the stdout.  
+  
+  Advanced Options:
+  --clean_cache         (-l)  Clean the caching area as defined in the configuration file.
+  
+  --clean_local_spectra (-o)  Clean the directory containing the spectra cached locally
+                              as defined in the configuration file.
+  
+  --automatic_tests     (-a)  Run the automatic tests and exit.
 
 
   Help Options:
@@ -69,7 +81,7 @@ Usage: generate_arr [options]
   >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
   
   Get the SAMPML and ARR files for the samples belonging to all the SAUNA stations for the passed
-  period. The configuration file rnpicker.config fron ../conf will be used to get the configuration
+  period. The configuration file rnpicker.config under ../conf will be used to get the configuration
   information.
  
   """
@@ -130,12 +142,15 @@ def parse_arguments(a_args):
     
     result = {}
     
-    # add default
-    result['dir'] = "/tmp/"
-    result['verbose'] = 1
+    # add defaults
+    result['dir']                 = "/tmp/"
+    result['verbose']             = 1
+    result['clean_cache']         = False
+    result['automatic_tests']     = False
+    result['clean_local_spectra'] = False
     
     try:
-        (opts,_) = getopt.getopt(a_args, "ht:s:f:e:d:c:v3", ["help","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv"])
+        (opts,_) = getopt.getopt(a_args, "ht:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -200,6 +215,21 @@ def parse_arguments(a_args):
                 if not os.path.isdir(a):
                     raise ParsingError("%s --conf_dir or -d is not a directory")
                 result['conf_dir'] = a
+            except:
+                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
+        elif o in ("-a", "--automatic_tests"):
+            try:
+                result['automatic_tests'] = True
+            except:
+                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
+        elif o in ("-l", "--clean_cache"):
+            try:
+                result['clean_cache'] = True
+            except:
+                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
+        elif o in ("-o", "--clean_local_spectra"):
+            try:
+                result['clean_local_spectra'] = True
             except:
                 raise ParsingError("Invalid --conf_dir or -d %s"%(a))
         else:
@@ -395,10 +425,42 @@ class Runner(object):
         # try to make the dir if necessary
         ctbto.common.utils.makedirs('%s/ARR'%(dir))
 
+    def _clean_cache(self):
+        """ clean the cache directory """
+        
+        path = self._conf.get('Caching','dir',None)
+        
+        Runner.c_log.info("Clean the cached data under %s"%(path))
+        
+        if path is not None:
+            ctbto.common.utils.delete_all_under(path)
+    
+    def _clean_cached_spectrum(self):
+        """ clean the cached spectrum """
+        path = self._conf.get('RemoteAccess','localdir',None)
+        
+        Runner.c_log.info("Clean the cached spectra under %s"%(path))
+        
+        if path is not None:
+            ctbto.common.utils.delete_all_under(path)
+
     def execute(self,a_args):
     
         if a_args == None or a_args == {}:
-            return
+            raise Exception('No commands passed. See usage message.')
+        
+        cache_cleaned         = False
+        local_spectra_cleaned = False
+        
+        # check if we need to clean the cache
+        if a_args['clean_cache']:
+            self._clean_cache()
+            cache_cleaned = True
+        
+        if a_args['clean_local_spectra']:
+            self._clean_cached_spectrum()
+            local_spectra_cleaned = True
+        
         
         # default request => do not retrieve PREL but all the rest
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
@@ -415,15 +477,19 @@ class Runner(object):
                 stations = self._get_stations_ids(stations)
             else:
                 stations = self._get_all_stations()
-                sids     = self._get_list_of_sauna_sampleIDs(stations,begin, end)
+            sids     = self._get_list_of_sauna_sampleIDs(stations,begin, end)
         else:
-            raise Exception('need either a sid or some dates')
+            # if the cache has been clean then exit quietly as one action has been performed
+            if cache_cleaned or local_spectra_cleaned:
+                return
+            else:  
+                # no actions performed error
+                raise Exception('need either a sid or some dates or a station name')
     
         dir = a_args['dir']
         
         self._create_directories(dir)
         
-        #to_ignore = [53758,141372,141501,206975]
         to_ignore = self._conf.getlist('IgnoreSamples','noblegazSamples')
     
         for sid in sids:
@@ -469,15 +535,26 @@ class Runner(object):
             ctbto.common.utils.printInFile(result,path)
             
             Runner.c_log.info("*************************************************************\n")
-  
+
+def run_automatic_tests():
+    """ run the automatic test suite """
+    
+    import ctbto.tests.run_tests as auto_tests
+    auto_tests.tests()
+    sys.exit(0)
+
 def run():
     parsed_args = {}
     
     try:
         parsed_args = parse_arguments(sys.argv[1:])
          
+        # very special case: run the automatic case
+        # the Runner is bypassed
+        if parsed_args['automatic_tests']:
+            run_automatic_tests()
+         
         runner = Runner(parsed_args)
-        
         runner.execute(parsed_args) 
     except ParsingError, e:
         # Not Runner set print

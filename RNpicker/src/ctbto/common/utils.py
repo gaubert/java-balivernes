@@ -19,7 +19,7 @@ class curry:
             kw.update(kwargs)
         else:
             kw = kwargs or self.kwargs
-        return self.fun(*(self.pending + args), **kw)
+        return self.fun(*(self.pending + args), **kw) #IGNORE:W0142
 
 
 
@@ -133,23 +133,50 @@ def makedirs(aPath):
         raise OSError("a file with the same name as the desired dir, '%s', already exists."%(aPath))
 
     os.makedirs(aPath)
+    
+def __rmgeneric(path, __func__):
+    """ private function that is part of delete_all_under """
+    try:
+        __func__(path)
+        #print 'Removed ', path
+    except OSError, (errno, strerror): #IGNORE:W0612
+        print """Error removing %(path)s, %(error)s """%{'path' : path, 'error': strerror }
+            
+def delete_all_under(path):
+    """ delete all files and directories under path """
 
-def ftimer(func, args, kwargs, result = [], number=1, timer=time.time):
+    if not os.path.isdir(path):
+        return
+    
+    files=os.listdir(path)
+
+    for x in files:
+        fullpath=os.path.join(path, x)
+        if os.path.isfile(fullpath):
+            f=os.remove
+            __rmgeneric(fullpath, f)
+        elif os.path.isdir(fullpath):
+            delete_all_under(fullpath)
+            f=os.rmdir
+            __rmgeneric(fullpath, f)
+
+
+def ftimer(func, args, kwargs, result = [], number=1, timer=time.time): #IGNORE:W0102
     """ time a func or object method """
     it = itertools.repeat(None, number)
     gc_saved = gc.isenabled()
     
     try:
-       gc.disable()
-       t0 = timer()
-       for i in it:
-         r = func(*args, **kwargs)
-         if r is not None:
-            result.append(r)
-       t1 = timer()
+        gc.disable()
+        t0 = timer()
+        for i in it:                  #IGNORE:W0612
+            r = func(*args, **kwargs) #IGNORE:W0142
+            if r is not None:
+                result.append(r)
+                t1 = timer()
     finally:
-       if gc_saved:
-          gc.enable()
+        if gc_saved:
+            gc.enable()
         
     return t1 - t0
       
@@ -170,35 +197,12 @@ def printInFile(aStr,aPath):
     #check if it is a path or a file
      
     if str(aPath.__class__) == "<type 'str'>":
-      f = open(aPath,"w")
+        f = open(aPath,"w")
     else:
-      f = aPath
+        f = aPath
     
     f.write(aStr)
     f.close()
-    
-   
-    
-#####################################
-#
-#  pretty Format an Xml Tree
-#
-###################################  
-def prettyFormatElem(elem,level=0):
-    """ indent an xml tree """
-    i = "\n" + level*"  "
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
-        for e in elem:
-            prettyFormatElem(e, level+1)
-            if not e.tail or not e.tail.strip():
-                e.tail = i + "  "
-        if not e.tail or not e.tail.strip():
-            e.tail = i
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
 
 
 
