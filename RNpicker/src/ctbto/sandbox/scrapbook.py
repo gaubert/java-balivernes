@@ -388,11 +388,51 @@ def get_package_path():
     
     for line in fi:
         print(line)
+   
+def reassoc(head,tail,res,memo=''): 
+    
+    # stop condition, no more fuel
+    if len(tail) == 0:
+        # if command separate
+        if head.startswith('-'):
+            res.extend([memo,head])
+            return
+        else:
+            res.append(memo + head)
+            return
+    
+    if head.endswith(','):
+        reassoc(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head)
+    elif head.startswith(','):
+        reassoc(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head)
+    elif head.startswith('-'):
+        # we do have a command so separate it from the rest
+        res.append(head)
+        reassoc(tail[0],tail[1:] if len(tail) > 1 else [],res,'')
+    else:  
+        # it is not a command 
+        reassoc(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head) 
+            
+    
+def get_head_and_tail(a_args):
+    
+    res = []
+    reassoc(a_args[0],a_args[1:],res)
+    print "res = %s\n"%(res)
+    
+def test(list):
+    
+    list.extend([1,3])
     
 
 if __name__ == '__main__':
     
-    
+   get_head_and_tail(['--toto','a,',' b,','c ',',d','qwerty','--titi'])
+   
+   l = [2]
+   test(l)
+   print "l %s\n"%(l)
+   
     
     
     

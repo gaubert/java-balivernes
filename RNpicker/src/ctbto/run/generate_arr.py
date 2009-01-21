@@ -131,6 +131,45 @@ def get_exception_traceback():
     traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback,file=f)
     return f.getvalue()
 
+def reassociate_arguments(a_args):
+    
+    l = len(a_args)
+    
+    if l <= 1:
+        return a_args
+    else:
+        res = []
+        _reassoc_arguments(a_args[0],a_args[1:],res)
+        return res
+
+def _reassoc_arguments(head,tail,res,memo=''): 
+    
+    # stop condition, no more fuel
+    if len(tail) == 0:
+        # if command separate
+        if head.startswith('-'):
+            res.extend([memo,head])
+            return
+        else:
+            res.append(memo + head)
+            return
+    
+    if head.endswith(',') or head.startswith(','):
+        _reassoc_arguments(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head)
+    elif head.startswith('-'):
+        # we do have a command so separate it from the rest
+        if len(memo) > 0:
+            res.append(memo)
+            
+        res.append(head)
+        
+        _reassoc_arguments(tail[0],tail[1:] if len(tail) > 1 else [],res,'')
+    else:  
+        # it is not a command 
+        _reassoc_arguments(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head) 
+            
+    
+
 def parse_arguments(a_args):
     """
             return the checksum of the calibration coeffs. This is done to create a unique id for the different calibration types.
@@ -155,8 +194,10 @@ def parse_arguments(a_args):
     result['clean_local_spectra'] = False
     
     try:
-        (opts,_) = getopt.getopt(a_args, "ht:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
-    except getopt.GetoptError, err:
+        reassoc_args = reassociate_arguments(a_args)
+        (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
+    #except getopt.GetoptError, err:
+    except Exception, e:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
         usage()
@@ -173,14 +214,21 @@ def parse_arguments(a_args):
             if a.find(',') != -1:
                 sids = a.split(',')
                 # insure that each sid only contains digits
+                good_sids = []
                 for s in sids:
+                    s=s.strip()
+                    if len(s) == 0:
+                        continue
                     if not s.isdigit():
-                        raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(s)) 
-                result['sids'] = sids   
+                        raise ParsingError("Error passed sid [%s] (with --sids or -s) is not a number"%(s)) 
+                    else:
+                        good_sids.append(s)
+                result['sids'] = good_sids   
             elif a.isdigit():
                 result['sids'] = [a]                
             else:
                 raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(a))
+             
         elif o in ("-t", "--stations"):
             # if there is a comma try to build a list
             if a.find(',') != -1:
@@ -188,12 +236,12 @@ def parse_arguments(a_args):
                 
                 l = []
                 for elem in stations:
-                    l.append("\'%s\'"%(elem))
+                    l.append("\'%s\'"%(elem.strip()))
                 
                 # insure that each sid only contains digits    
                 result['stations'] = l  
             else:
-                result['stations'] = ["\'%s\'"%(a)]                
+                result['stations'] = ["\'%s\'"%(a.strip())]                
         elif o in ("-d", "--dir"):
             # try to make the dir if necessary
             ctbto.common.utils.makedirs(a)
