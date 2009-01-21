@@ -252,19 +252,29 @@ SQL_GETALLSAUNASTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIO
 
 #SQL_GETSAUNASAMPLEIDS2  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in () RMSMAN.GARDS_STATIONS"
 
-class ParsingError(Exception):
-    """The only exception where a logger as not yet been set as it depends on the conf"""
+class CLIError(Exception):
+    """ Base class exception """
+    pass
 
-    def __init__(self,aMsg):
+class ParsingError(CLIError):
+    """Error when the command line is parsed"""
+
+    def __init__(self,a_error_msg):
         super(ParsingError,self).__init__()
-        self.message = aMsg
+        self._error_message = a_error_msg
         
-class ConfAccessError(Exception):
+    def get_message_error(self):
+        return self._error_message
+        
+class ConfAccessError(CLIError):
     """The only exception where a logger as not yet been set as it depends on the conf"""
 
-    def __init__(self,aMsg):
+    def __init__(self,a_error_msg):
         super(ConfAccessError,self).__init__()
-        self.message = aMsg
+        self._error_message = a_error_msg
+    
+    def get_message_error(self):
+        return self._error_message
 
 class Runner(object):
     """ Class for fetching and producing the ARR """
@@ -341,7 +351,8 @@ class Runner(object):
             #log = logging.getLogger("ROOT")
             #log.setLevel(logging.INFO)
             #log.info("********************************Star*************************8t")
-            
+    
+    @classmethod
     def log_in_file(self,aMessage):
         """ to log in the file as the ROOT logger """
         
@@ -585,12 +596,14 @@ def run():
         runner.execute(parsed_args) 
     except ParsingError, e:
         # Not Runner set print
-        print "Error: %s"%(e.message) 
+        print "Error - %s"%(e.get_message_error()) 
         usage() 
         sys.exit(2)
     except ConfAccessError, e:
         # Not Runner set print
-        print "Error: %s"%(e.message) 
+        print "Error - %s"%(e.get_message_error()) 
+        if parsed_args.get('verbose',1) == 3:
+            print("Traceback: %s."%(get_exception_traceback()))
         usage() 
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
@@ -598,7 +611,7 @@ def run():
         if parsed_args.get('verbose',1) == 3:
             a_logger = Runner.c_log.error
         else:
-            a_logger = self.log_in_file
+            a_logger = Runner.log_in_file
         a_logger("Traceback: %s."%(get_exception_traceback()))
         usage()
         sys.exit(3)

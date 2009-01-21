@@ -29,7 +29,7 @@ DEFAULT_LIBXML2_DIR=/usr/lib
 #DEFAULT_LIBXSLT_DIR=/home/smd/aubert/new-env/ext/clib/libxslt/lib
 DEFAULT_LIBXSLT_DIR=/usr/lib
 
-DEFAULT_RNPICKER_CONF_DIR=$RNPICKER/conf
+DEFAULT_RNPICKER_CONF_DIR=$RNPICKER_HOME/conf
 
 #################################
 ## You probably do not want to
@@ -75,7 +75,7 @@ else
 fi
 
 if [ ! -f "$LIBXML2_DIR/libxml2.so" ]; then
-    echo "ERROR - LIBXML2_DIR: [$LIBXML2_DIR] doesn\'t contain libxml2.so"
+    echo "ERROR - LIBXML2_DIR: [$LIBXML2_DIR] doesn't contain libxml2.so"
     echo "Please set the LIBXML2_DIR variable globally or set DEFAULT_LIBXML2_DIR (defined in this script) to a directory containing libxml2.so"
     exit 1
 else
@@ -83,18 +83,20 @@ else
 fi
 
 if [ ! -f "$LIBXSLT_DIR/libxslt.so" -a ! -f "$LIBXSLT_DIR/lib/libexslt.so" ]; then
-    echo "ERROR - LIBXSLT_DIR: [$LIBXSLT_DIR] doesn\'t contain libexslt.so"
+    echo "ERROR - LIBXSLT_DIR: [$LIBXSLT_DIR] doesn't contain libexslt.so"
     echo "Please set the LIBXSLT_DIR variable globally or set DEFAULT_LIBXSLT_DIR (defined in this script) to a directory containing libxslt.so and libexslt.so"
     exit 1
 else
     LD_LIBRARY_PATH=$LIBXSLT_DIR:$LD_LIBRARY_PATH 
+    export LD_LIBRARY_PATH
 fi
 
 if [ ! -f "$RNPICKER_CONF_DIR/rnpicker.config" ]; then
-    echo "RNPICKER_CONF $RNPICKER_CONF_DIR doesn't contain rnpicker.config. generate_arr will try to load it from the CLI argument --conf_dir"
+    echo "RNPICKER_CONF_DIR $RNPICKER_CONF_DIR doesn't contain rnpicker.config. generate_arr will try to load it from the CLI argument --conf_dir"
+else
+    # export it to have it accessible for the python interpreter
+    export RNPICKER_CONF_DIR
 fi
-
-export LD_LIBRARY_PATH
 
 ###################################
 ## create bootstrap and launch program
