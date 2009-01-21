@@ -273,7 +273,6 @@ class Runner(object):
     c_log = logging.getLogger("Runner")
     c_log.setLevel(logging.INFO)
 
-
     def __init__(self,a_args):
         
         super(Runner,self).__init__()
@@ -338,6 +337,17 @@ class Runner(object):
         
             logging.root.addHandler(file_handler)
             logging.root.addHandler(console)
+            
+            #log = logging.getLogger("ROOT")
+            #log.setLevel(logging.INFO)
+            #log.info("********************************Star*************************8t")
+            
+    def log_in_file(self,aMessage):
+        """ to log in the file as the ROOT logger """
+        
+        log = logging.getLogger("ROOT")
+        log.setLevel(logging.INFO)
+        log.info(aMessage)
         
     def _load_configuration(self,a_args):
         """
@@ -388,8 +398,8 @@ class Runner(object):
             sampleIDs.append(row[0])
        
         Runner.c_log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
-        Runner.c_log.debug("list of found sampleIDs: %s"%(sampleIDs))
-       
+        self.log_in_file("list of sampleIDs to fetch: %s"%(sampleIDs))
+        
         return sampleIDs
     
     def _get_stations_ids(self,a_station_codes):
@@ -419,7 +429,7 @@ class Runner(object):
             sta_ids.append(row[1])
             
         Runner.c_log.info("Found %d SAUNA stations."%(len(sta_codes)))
-        Runner.c_log.debug("Found the following SAUNA stations: %s."%(sta_codes))
+        self.log_in_file("Found the following SAUNA stations: %s."%(sta_codes))
         
         return sta_ids
     
@@ -588,7 +598,7 @@ def run():
         if parsed_args.get('verbose',1) == 3:
             a_logger = Runner.c_log.error
         else:
-            a_logger = Runner.c_log.debug
+            a_logger = self.log_in_file
         a_logger("Traceback: %s."%(get_exception_traceback()))
         usage()
         sys.exit(3)
