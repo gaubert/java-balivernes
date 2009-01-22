@@ -450,16 +450,142 @@ def email_test():
     # Send the message via our own SMTP server, but don't include the
     # envelope header.
     s = smtplib.SMTP()
-    s.set_debuglevel(1)
-    s.connect()
+    s.set_debuglevel(3)
+    s.connect('malta14.office.ctbto.org')
+    s.login('aubert','ernest25')
+    s.sendmail(sender, [receiver], msg.as_string())
+    s.close()
+    
+def send_html_as_attachment():
+    
+    sender   = 'guillaume.aubert@ctbto.org'
+    #receivers = ['guillaume.aubert@ctbto.org','guillaume.aubert@gmail.com','aubert_guillaume@yahoo.fr']
+    receivers = ['guillaume.aubert@ctbto.org']
+
+    # Import smtplib for the actual sending function
+    import smtplib
+
+    # Here are the email package modules we'll need
+    import mimetypes
+
+    from email                  import encoders
+    from email.message          import Message
+    from email.mime.audio       import MIMEAudio
+    from email.mime.base        import MIMEBase
+    from email.mime.image       import MIMEImage
+    from email.mime.multipart   import MIMEMultipart
+    from email.mime.application import MIMEApplication
+    from email.mime.text        import MIMEText
+
+    # Create the container (outer) email message.
+    outer = MIMEMultipart()
+    outer['Subject'] = 'Test with Html and XML'
+    
+    # prepare the message
+    
+    outer['From']  = sender
+    outer.preamble = 'Test with Html'
+    htmlfiles = ['/tmp/samples/ARR/ARR-245310.html','/tmp/samples/samples/sampml-full-245310.xml']
+    # Assume we know that the image files are all in PNG format
+    for file in htmlfiles:
+        ctype, encoding = mimetypes.guess_type(file)
+        if ctype is None or encoding is not None:
+            # No guess could be made, or the file is encoded (compressed), so
+            # use a generic bag-of-bits type.
+            ctype = 'application/octet-stream'
+        
+        maintype, subtype = ctype.split('/', 1)
+        if maintype == 'text':
+            fp = open(file)
+            # Note: we should handle calculating the charset
+            msg = MIMEText(fp.read(), _subtype=subtype)
+            fp.close()
+        elif maintype == 'image':
+            fp = open(file, 'rb')
+            msg = MIMEImage(fp.read(), _subtype=subtype)
+            fp.close()
+        elif maintype == 'audio':
+            fp = open(file, 'rb')
+            msg = MIMEAudio(fp.read(), _subtype=subtype)
+            fp.close()
+        else:
+            fp = open(file)
+            #Old way
+            #msg = MIMEBase(maintype, subtype)
+            #msg.set_payload(fp.read())
+            #fp.close()
+            # Encode the payload using Base64
+            #encoders.encode_base64(msg)
+            #deal with xml
+            msg = MIMEApplication(fp.read(), _subtype=subtype)
+        # Set the filename parameter
+        msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(file))
+        outer.attach(msg)
+
+    s = smtplib.SMTP()
+    s.set_debuglevel(3)
+    s.connect('malta14.office.ctbto.org')
+    s.login('aubert','ernest25')
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    for receiver in receivers:
+        outer['To'] = receiver 
+        print " Send message to %s\n"%(receiver) 
+        s.sendmail(sender, [receiver], outer.as_string())
+    
+    s.close()
+
+def send_img_as_attachment():
+    
+    sender   = 'guillaume.aubert@ctbto.org'
+    receiver = 'guillaume.aubert@gmail.com'
+
+    # Import smtplib for the actual sending function
+    import smtplib
+    from email.mime.image import MIMEImage
+    from email.mime.multipart import MIMEMultipart
+
+    # Create the container (outer) email message.
+    msg = MIMEMultipart()
+    msg['Subject'] = 'Test with an Image'
+    # me == the sender's email address
+    # family = the list of all recipients' email addresses
+    msg['From']  = sender
+    msg['To']    = receiver
+    msg.preamble = 'Our family reunion'
+
+    pngfiles = ['/home/aubert/Desktop/2760470500_3857ef7ca6_o.jpg','/home/aubert/Desktop/the_message_system.jpg']
+    # Assume we know that the image files are all in PNG format
+    for file in pngfiles:
+        # Open the files in binary mode.  Let the MIMEImage class automatically
+        # guess the specific image type.
+        fp = open(file, 'rb')
+        img = MIMEImage(fp.read())
+        fp.close()
+        msg.attach(img)
+
+   
+    # me == the sender's email address
+    # you == the recipient's email address
+    #msg['Subject'] = 'The contents of %s' % textfile
+    
+
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    s = smtplib.SMTP()
+    s.set_debuglevel(3)
+    s.connect('malta14.office.ctbto.org')
+    s.login('aubert','ernest25')
     s.sendmail(sender, [receiver], msg.as_string())
     s.close()
 
 
 
+
 if __name__ == '__main__':
     
-   email_test()
+   #email_test()
+   send_html_as_attachment()
    
     
     

@@ -196,7 +196,7 @@ def parse_arguments(a_args):
     try:
         reassoc_args = reassociate_arguments(a_args)
         (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
-    except Exception, err:
+    except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
         usage()
