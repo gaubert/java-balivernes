@@ -76,7 +76,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.mainConn          = None
         self.mainActivateTimer = False
         
-        self.archiveDatabase      = None
+        self.ParticulateArchiveDatabaseAccess      = None
         self.archiveUser          = None
         self.archivePassword      = None
         self.archiveActivateTimer = False
@@ -96,29 +96,29 @@ class TestSAMPMLCreator(unittest.TestCase):
     def _setUpGenieParticulate(self):
         
         
-        self.mainDatabase  = self.conf.get("MainDatabaseAccess","hostname")
-        self.mainUser      = self.conf.get("MainDatabaseAccess","user")
-        self.mainPassword  = self.conf.get("MainDatabaseAccess","password")
-        self.mainActivateTimer = self.conf.getboolean("MainDatabaseAccess","activateTimer",True)
+        self.mainDatabase  = self.conf.get("ParticulateDatabaseAccess","hostname")
+        self.mainUser      = self.conf.get("ParticulateDatabaseAccess","user")
+        self.mainPassword  = self.conf.get("ParticulateDatabaseAccess","password")
+        self.mainActivateTimer = self.conf.getboolean("ParticulateDatabaseAccess","activateTimer",True)
    
         TestSAMPMLCreator.c_log.info("")
-        TestSAMPMLCreator.c_log.info("Main Database=%s"%(self.mainDatabase))
+        TestSAMPMLCreator.c_log.info("Particulate Database=%s"%(self.mainDatabase))
    
         # create DB connector
         self.mainConn = DatabaseConnector(self.mainDatabase,self.mainUser,self.mainPassword,self.mainActivateTimer)
    
         self.mainConn.connect()
         
-        self.archiveDatabase  = self.conf.get("ArchiveDatabaseAccess","hostname")
-        self.archiveUser      = self.conf.get("ArchiveDatabaseAccess","user")
-        self.archivePassword  = self.conf.get("ArchiveDatabaseAccess","password")
-        self.archiveActivateTimer    = self.conf.getboolean("ArchiveDatabaseAccess","activateTimer",True)
+        self.ParticulateArchiveDatabaseAccess  = self.conf.get("ParticulateArchiveDatabaseAccess","hostname")
+        self.archiveUser      = self.conf.get("ParticulateArchiveDatabaseAccess","user")
+        self.archivePassword  = self.conf.get("ParticulateArchiveDatabaseAccess","password")
+        self.archiveActivateTimer    = self.conf.getboolean("ParticulateArchiveDatabaseAccess","activateTimer",True)
    
    
-        TestSAMPMLCreator.c_log.info("Archive Database=%s"%(self.archiveDatabase))
+        TestSAMPMLCreator.c_log.info("Archive Database=%s"%(self.ParticulateArchiveDatabaseAccess))
    
         # create DB connector
-        self.archConn = DatabaseConnector(self.archiveDatabase,self.archiveUser,self.archivePassword,self.archiveActivateTimer)
+        self.archConn = DatabaseConnector(self.ParticulateArchiveDatabaseAccess,self.archiveUser,self.archivePassword,self.archiveActivateTimer)
    
         self.archConn.connect()
         

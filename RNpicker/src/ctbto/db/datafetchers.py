@@ -653,7 +653,7 @@ class DBDataFetcher(object):
         theInput = None
         
         # if config says RemoteDataSource is activated then create a remote data source
-        if self._conf.getboolean("Options","remoteDataSource") is True:
+        if self._conf.getboolean("Options","remoteDataSource",True) is True:
             # to be changed as a factory should be used
             if aFoundOnArchive is True:
                 theInput = ctbto.db.rndata.RemoteArchiveDataSource(path,aSampleID,aOffset,aSize,self._remoteHost)

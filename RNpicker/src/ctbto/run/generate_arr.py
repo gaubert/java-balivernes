@@ -350,13 +350,13 @@ class Runner(object):
         self._ngMainConn = DatabaseConnector(self._ngDatabase,self._ngUser,self._ngPassword,self._ngActivateTimer)
 
         # setup the archive database and connect to it
-        self._archiveDatabase       = self._conf.get("ArchiveDatabaseAccess","hostname")
-        self._archiveUser           = self._conf.get("ArchiveDatabaseAccess","user")
-        self._archivePassword       = self._conf.get("ArchiveDatabaseAccess","password")
-        self._archiveActivateTimer  = self._conf.getboolean("ArchiveDatabaseAccess","activateTimer",True)
+        self._ParticulateArchiveDatabaseAccess       = self._conf.get("ParticulateArchiveDatabaseAccess","hostname")
+        self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess","user")
+        self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess","password")
+        self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess","activateTimer",True)
         
         # create DB connector
-        self._ngArchConn = DatabaseConnector(self._archiveDatabase,self._archiveUser,self._archivePassword,self._archiveActivateTimer)
+        self._ngArchConn = DatabaseConnector(self._ParticulateArchiveDatabaseAccess,self._archiveUser,self._archivePassword,self._archiveActivateTimer)
         
         #connect to the DBs
         self._ngMainConn.connect()
@@ -655,13 +655,12 @@ def run():
         usage() 
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
-        Runner.c_log.error("Error: %s. For more information see the log file %s"%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+        Runner.c_log.error("Error: %s. For more information see the log file %s.\nType ./generate_arr --help or -h for help."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
         if parsed_args.get('verbose',1) == 3:
             a_logger = Runner.c_log.error
         else:
             a_logger = Runner.log_in_file
         a_logger("Traceback: %s."%(get_exception_traceback()))
-        usage()
         sys.exit(3)
     
     sys.exit(0)

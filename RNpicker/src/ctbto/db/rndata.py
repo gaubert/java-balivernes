@@ -4,6 +4,7 @@ r""" Return object for access the Radionuclide data locally or remotely
 
 import logging
 import os
+import pwd
 import subprocess
 
 import ctbto.common.utils
@@ -61,11 +62,34 @@ class BaseRemoteDataSource(object):
         """ localFilename Accessor """
         
         return self._localFilename
+    
+    def _get_file_locally_available_in_cache(self,a_source,a_offset,a_size,a_destination):
+        """ copy the file locally available and put it in the cache """
         
+        src = open(a_source,"r")
+        src.seek(a_offset)
+        
+        dest = open(a_destination,"w")
+        
+        dest.write(src.read(a_size))
+        
+        dest.flush()
+        dest.close()
+        src.close()
+        
+        #set self._fd once the copy has been done and return
+        f = open(a_destination,"r")
+        
+        return f
         
     def _getRemoteFile(self):
         """ abstract global data fetching method """
         raise CTBTOError(-1,"method not implemented in Base Class. To be defined in children")
+
+    def _getCurrentUser(self):
+        """ get the user running the current session if the prodAccessUser isn't defined in the conf """
+        
+        return pwd.getpwuid(os.getuid())[0]
     
 
     def __iter__(self):
@@ -187,6 +211,7 @@ class BaseRemoteDataSource(object):
         """
         _complain_ifclosed(self.closed)
         self._fd.flush()
+        
 
 class RemoteFSDataSource(BaseRemoteDataSource):
     """ get data from the a remote filesystem using ssh.
@@ -206,11 +231,11 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         
         self._remoteHostname    = (self._conf.get("RemoteAccess","prodAccessHost") if aRemoteHostname == None else aRemoteHostname)
         
-        self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser")
+        self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser",self._getCurrentUser())
         
         self._getRemoteFile()
-        
     
+   
     def _getRemoteFile(self):
         """ fetch the file and store it in a temporary location """
         
@@ -228,30 +253,34 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         if os.path.exists(destinationPath) and self._cachingActivated:
             self._fd = open(destinationPath,"r")
             return
+        # check to see if the file is not available locally
+        elif os.path.exists(self._remotePath) and self._cachingActivated:
+            self._fd = self._get_file_locally_available_in_cache(self._remotePath,self._remoteOffset,self._remoteSize,destinationPath)
+        else:
+            # try to get it remotely 
+            # try 3 times before to fail
+            tries = 1
+            res   = []
         
-        # try 3 times before to fail
-        tries = 1
-        res   = []
-        
-        while tries < 4:
+            while tries < 4:
        
-            func = subprocess.call
+                func = subprocess.call
             
-            RemoteFSDataSource.c_log.info("Trying to fetch remote file with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
+                RemoteFSDataSource.c_log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
             
-            t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
+                t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
        
-            RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+                RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
        
-            if res[0] != 0:
-                if tries >= 3:
-                    raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
+                if res[0] != 0:
+                    if tries >= 3:
+                        raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
+                    else:
+                        tries += 1
                 else:
-                    tries += 1
-            else:
-                tries += 4
+                    tries += 4
               
-        self._fd = open(destinationPath,"r")
+            self._fd = open(destinationPath,"r")
     
        
 
@@ -286,7 +315,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         self._remoteHostname    = (self._conf.get("RemoteAccess","archiveAccessHost") if aRemoteHostname == None else aRemoteHostname)
         
-        self._remoteUser        = self._conf.get("RemoteAccess","archiveAccessUser")
+        self._remoteUser        = self._conf.get("RemoteAccess","archiveAccessUser",self._getCurrentUser())
         
         self._localDir          = self._conf.get("RemoteAccess","localDir")
         
@@ -308,7 +337,6 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
             RemoteArchiveDataSource.c_log.warning("Warning cannot find the archived file type for %s. Guess it is a message\n"%(aRemotePath))
             return "archmsg"
         
-    
     def _getRemoteFile(self):
         """ fetch the file and store it in a temporary location """
         
@@ -323,20 +351,34 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         # if file there and caching activated open fd and quit
         if os.path.exists(destinationPath) and self._cachingActivated:
             self._fd = open(destinationPath,"r")
-            return
+        # check to see if the file is not available locally
+        elif os.path.exists(self._remotePath) and self._cachingActivated:
+            self._fd = self._get_file_locally_available_in_cache(self._remotePath,self._remoteOffset,self._remoteSize,destinationPath)
+        else:
+            # try to get it remotely 
+            # try 3 times before to fail
+            tries = 1
+            res   = []
         
-        res  = []
-        
-        func = subprocess.call
-        t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
-         
-        RemoteArchiveDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+            while tries < 4:
        
-        #res = subprocess.call([self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser])
-        if res[0] != 0:
-            raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
-        
-        self._fd = open(destinationPath,"r")
+                func = subprocess.call
+            
+                RemoteFSDataSource.c_log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
+            
+                t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
+       
+                RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+       
+                if res[0] != 0:
+                    if tries >= 3:
+                        raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
+                    else:
+                        tries += 1
+                else:
+                    tries += 4
+              
+            self._fd = open(destinationPath,"r")
     
 
         

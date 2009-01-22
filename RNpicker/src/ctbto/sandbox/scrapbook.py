@@ -420,18 +420,46 @@ def get_head_and_tail(a_args):
     reassoc(a_args[0],a_args[1:],res)
     print "res = %s\n"%(res)
     
-def test(list):
+def email_test():
     
-    list.extend([1,3])
+    # Import smtplib for the actual sending function
+    import smtplib
+
+    # Import the email modules we'll need
+    from email.mime.text import MIMEText
+
+    # Open a plain text file for reading.  For this example, assume that
+    # the text file contains only ASCII characters.
+    #textfile = '/tmp/samples/ARR/ARR-211384.html'
+    textfile = '/tmp/msg.txt'
+    fp = open(textfile, 'rb')
     
+    # Create a text/plain message
+    msg = MIMEText(fp.read())
+    fp.close()
+
+    sender   = 'guillaume.aubert@ctbto.org'
+    receiver = 'guillaume.aubert@gmail.com'
+
+    # me == the sender's email address
+    # you == the recipient's email address
+    msg['Subject'] = 'The contents of %s' % textfile
+    msg['From'] = sender
+    msg['To']   = receiver
+
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    s = smtplib.SMTP()
+    s.set_debuglevel(1)
+    s.connect()
+    s.sendmail(sender, [receiver], msg.as_string())
+    s.close()
+
+
 
 if __name__ == '__main__':
     
-   get_head_and_tail(['--toto','a,',' b,','c ',',d','qwerty','--titi'])
-   
-   l = [2]
-   test(l)
-   print "l %s\n"%(l)
+   email_test()
    
     
     
