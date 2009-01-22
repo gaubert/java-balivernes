@@ -196,8 +196,7 @@ def parse_arguments(a_args):
     try:
         reassoc_args = reassociate_arguments(a_args)
         (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
-    #except getopt.GetoptError, err:
-    except Exception, e:
+    except Exception, err:
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
         usage()
@@ -472,6 +471,10 @@ class Runner(object):
         for row in rows:
             sta_ids.append(row[0])
             
+        # Error message is no ids found for the stations
+        if len(sta_ids) == 0:
+            raise Exception("Cannot find any sample ids for the stations %s. Are you sure they are valid station codes ?"%(a_station_codes))
+            
         return sta_ids
     
     def _get_all_stations(self):
@@ -655,7 +658,7 @@ def run():
         usage() 
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
-        Runner.c_log.error("Error: %s. For more information see the log file %s.\nType ./generate_arr --help or -h for help."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+        Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
         if parsed_args.get('verbose',1) == 3:
             a_logger = Runner.c_log.error
         else:
