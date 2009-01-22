@@ -251,10 +251,12 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         
         # if file there and caching activated open fd and quit
         if os.path.exists(destinationPath) and self._cachingActivated:
+            RemoteFSDataSource.c_log.info("Fetch %s from the cache %s"%(self._remotePath,destinationPath))
             self._fd = open(destinationPath,"r")
             return
         # check to see if the file is not available locally
         elif os.path.exists(self._remotePath) and self._cachingActivated:
+            RemoteFSDataSource.c_log.info("Fetch %s"%(self._remotePath))
             self._fd = self._get_file_locally_available_in_cache(self._remotePath,self._remoteOffset,self._remoteSize,destinationPath)
         else:
             # try to get it remotely 
@@ -350,9 +352,11 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         # if file there and caching activated open fd and quit
         if os.path.exists(destinationPath) and self._cachingActivated:
+            RemoteFSDataSource.c_log.info("Fetch %s from the cache %s"%(self._remotePath,destinationPath))
             self._fd = open(destinationPath,"r")
         # check to see if the file is not available locally
         elif os.path.exists(self._remotePath) and self._cachingActivated:
+            RemoteFSDataSource.c_log.info("Fetch %s, offset %s, size %s"%(self._remotePath,self._remoteOffset,self._remoteSize))
             self._fd = self._get_file_locally_available_in_cache(self._remotePath,self._remoteOffset,self._remoteSize,destinationPath)
         else:
             # try to get it remotely 
