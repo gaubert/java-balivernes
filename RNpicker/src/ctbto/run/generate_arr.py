@@ -352,6 +352,8 @@ class Runner(object):
         # create an empty shell Conf object
         self._conf     = self._load_configuration(a_args)
         
+        self._log_path = None
+        
         self._set_logging_configuration()
     
         # setup the prod database and connect to it
@@ -423,7 +425,7 @@ class Runner(object):
                 logging.root.addHandler(file_handler)
                 logging.root.addHandler(console)
                 
-        except Exception, e: #INGORE:W0612
+        except Exception, e: #IGNORE:W0612
             # Fatal error when setuping the logger
             print("Fatal Error when setuping the logging system. Exception Traceback: %s."%(get_exception_traceback()))
             raise LoggingSetupError('Cannot setup the loggers properly. See Exception Traceback printed in stdout')
@@ -524,13 +526,23 @@ class Runner(object):
         
         return sta_ids
     
-    def _create_directories(self,dir):
+    def _create_results_directories(self,dir):
         
+        if os.path.exists(dir) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK |os.X_OK):
+            raise Exception("Do not have the right permissions to write in result's directory %s.Please choose another result's SAMPML directory."%(dir))
+        
+        if os.path.exists('%s/samples'%(dir)) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK):
+            raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/samples'%(dir)))
+
+        if os.path.exists('%s/ARR'%(dir)) and not os.access('%s/ARR'%(dir),os.R_OK | os.W_OK):
+            raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/ARR'%(dir)))
+            
         # try to make the dir if necessary
         ctbto.common.utils.makedirs('%s/samples'%(dir))
         
         # try to make the dir if necessary
-        ctbto.common.utils.makedirs('%s/ARR'%(dir))
+        ctbto.common.utils.makedirs('%s/ARR'%(dir))  
+        
 
     def _clean_cache(self):
         """ clean the cache directory """
@@ -575,6 +587,10 @@ class Runner(object):
             self._clean_cached_spectrum()
             local_spectra_cleaned = True
         
+        # check if we can write in case the dir already exists    
+        dir = a_args['dir']
+        self._create_results_directories(dir)
+        
         
         # default request => do not retrieve PREL but all the rest
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
@@ -603,10 +619,6 @@ class Runner(object):
         
         Runner.c_log.info("Start the product generation")
         Runner.c_log.info("*************************************************************\n")
-    
-        dir = a_args['dir']
-        
-        self._create_directories(dir)
         
         to_ignore = self._conf.getlist('IgnoreSamples','noblegazSamples')
     
@@ -691,7 +703,6 @@ def run():
         print("Error - %s"%(e.get_message_error())) 
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
-        print "In Exception"
         try:
             Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
             if parsed_args.get('verbose',1) == 3:
@@ -700,9 +711,10 @@ def run():
                 a_logger = Runner.log_in_file
            
             a_logger("Traceback: %s."%(get_exception_traceback()))
+        except: 
+            print("Fatal error that could not be logged properly. print Traceback in stdout: %s."%(get_exception_traceback())) #IGNORE:W0702
+        finally:
             sys.exit(3)
-        except:
-            print("Fatal Error that could not be logged properly. print Traceback in stdout: %s."%(get_exception_traceback()))
     
     sys.exit(0)
           
