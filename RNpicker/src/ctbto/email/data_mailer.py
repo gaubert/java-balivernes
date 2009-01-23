@@ -3,18 +3,21 @@
     
     module: data_mailer
 """
+#general packages
+import logging
+import os
 
 # email stuff
 import smtplib
 import mimetypes
 from email.mime.audio       import MIMEAudio
-from email.mime.base        import MIMEBase
 from email.mime.image       import MIMEImage
 from email.mime.multipart   import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text        import MIMEText
 
-import ctbto.common.utils   
+import ctbto.common.utils  
+ 
 
 class DataEmailer(object):
     """ Class used to send emails containing attached data """
@@ -23,7 +26,7 @@ class DataEmailer(object):
     c_log = logging.getLogger("DataEmailer")
     c_log.setLevel(logging.INFO)
 
-    def __init__(self,a_server_host,a_server_port,a_login=None,a_password=None,a_debugging_level=1):
+    def __init__(self,a_server_host,a_server_port=25,a_login=None,a_password=None,a_debugging_level=0):
         
         super(DataEmailer,self).__init__()
         
@@ -39,7 +42,7 @@ class DataEmailer(object):
         self._smtp_server = None
           
     
-    def connect(self,a_server_host=None,a_server_port=None,a_login=None,a_password=None):
+    def connect(self,a_login=None,a_password=None,a_server_host=None,a_server_port=None):
         """
             Connect to the SMTP Server. All the passed information (host,port,login,password) are keeped
             in the related object's attributes.
@@ -76,13 +79,13 @@ class DataEmailer(object):
         self._smtp_server = smtplib.SMTP()
         self._smtp_server.set_debuglevel(self._debug_level)
         
-        s.connect(self._server_host,self._server_port)
+        self._smtp_server.connect(self._server_host,self._server_port)
         
         #login if there is a login passed
         if self._login != None: 
-            s.login(self._login,self._password)
+            self._smtp_server.login(self._login,self._password)
     
-    def send_email(self,a_sender,a_receivers,a_list_of_attached_files,a_subject='(no subject)'):
+    def send_email_attached_files(self,a_sender,a_receivers,a_list_of_attached_files,a_subject='(no subject)'):
         """
             Send email with the passed data to the receiver
         
@@ -117,15 +120,15 @@ class DataEmailer(object):
         
         # Create the container (outer) email message.
         outer = MIMEMultipart()
-        outer['Subject'] = 'Test with Html and XML'
+        outer['Subject'] = a_subject
     
         # prepare the message
     
-        outer['From']  = sender
-        outer.preamble = 'Test with Html'
-        htmlfiles = ['/tmp/samples/ARR/ARR-245310.html','/tmp/samples/samples/sampml-full-245310.xml']
+        outer['From']  = a_sender
+        #outer.preamble = ''
+        
         # Assume we know that the image files are all in PNG format
-        for file in htmlfiles:
+        for file in a_list_of_attached_files:
             ctype, encoding = mimetypes.guess_type(file)
             if ctype is None or encoding is not None:
                 # No guess could be made, or the file is encoded (compressed), so
@@ -157,8 +160,62 @@ class DataEmailer(object):
             
         # send to all receivers
         for receiver in receivers:
-           outer['To'] = receiver 
-           print " Send message to %s\n"%(receiver) 
-           s.sendmail(sender, [receiver], outer.as_string())
+            outer['To'] = receiver 
+            DataEmailer.c_log.info('send message to %s with the following attachments %s.'%(receiver,a_list_of_attached_files))
+            self._smtp_server.sendmail(a_sender, [receiver], outer.as_string())
+        
+        return
+
+# unit tests part
+import unittest
+import ctbto.email.data_mailer
+import ctbto.tests
+
+def tests():
+    suite = unittest.TestLoader().loadTestsFromModule(ctbto.email.data_mailer)
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+class TestDataEmailer(unittest.TestCase):
+    
+    def _setBasicLoggingConfig(self):
+        if len(logging.root.handlers) == 0:
+            console = logging.StreamHandler()
+            fmt = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            console.setFormatter(fmt)
+            logging.root.addHandler(console)
+        
+            log = logging.getLogger("ROOT")
+            log.setLevel(logging.INFO)
+            log.info("Start")
+    
+    def _get_tests_dir_path(self):
+        """ get the ctbto.tests path depending on where it is defined """
+        
+        fmod_path = ctbto.tests.__path__
+        
+        test_dir = "%s/conf_tests"%fmod_path[0]
+        
+        return test_dir
+    
+    def setUp(self):
+        self._setBasicLoggingConfig()
+        
+    def testSendEmailWithAttachedFiles(self):
+        
+        s = DataEmailer('malta14.office.ctbto.org')
+        s.connect('aubert','ernest25')
+        
+        s.send_email_attached_files('guillaume.aubert@ctbto.org','guillaume.aubert@gmail.com',['%s/samples/sampml-full-967273.xml.master'%(self._get_tests_dir_path())], 'a test')
+    
+    def testSendtoMultipleClients(self):
+        
+        s = DataEmailer('malta14.office.ctbto.org')
+        s.connect('aubert','ernest25')
+        
+        s.send_email_attached_files('guillaume.aubert@ctbto.org','guillaume.aubert@gmail.com,guillaume.aubert@ctbto.org',['%s/samples/sampml-full-967273.xml.master'%(self._get_tests_dir_path())], 'a test')
+    
+
+if __name__ == '__main__':
+    tests()
        
         
