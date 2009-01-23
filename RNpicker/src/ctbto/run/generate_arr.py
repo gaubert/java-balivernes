@@ -132,7 +132,10 @@ def get_exception_traceback():
     return f.getvalue()
 
 def reassociate_arguments(a_args):
-    
+    """
+        reassociate arguments passed in the program arguments when they are spearated by a space.
+        a, b , c will become 'a, b ,c'
+    """
     l = len(a_args)
     
     if l <= 1:
@@ -143,7 +146,9 @@ def reassociate_arguments(a_args):
         return res
 
 def _reassoc_arguments(head,tail,res,memo=''): 
-    
+    """
+            private function used to recurse in reassociate_arguments
+    """
     # stop condition, no more fuel
     if len(tail) == 0:
         # if command separate
@@ -323,6 +328,16 @@ class ConfAccessError(CLIError):
     def get_message_error(self):
         return self._error_message
 
+class LoggingSetupError(CLIError):
+    """Error when the logger cannot be setuped"""
+
+    def __init__(self,a_error_msg):
+        super(LoggingSetupError,self).__init__()
+        self._error_message = a_error_msg
+    
+    def get_message_error(self):
+        return self._error_message
+
 class Runner(object):
     """ Class for fetching and producing the ARR """
     
@@ -335,11 +350,11 @@ class Runner(object):
         super(Runner,self).__init__()
           
         # create an empty shell Conf object
-        self._conf = self._load_configuration(a_args)
+        self._conf     = self._load_configuration(a_args)
         
         self._set_logging_configuration()
     
-        # setup the prod databasse and connect to it
+        # setup the prod database and connect to it
         self._ngDatabase        = self._conf.get("NobleGazDatabaseAccess","hostname")
         self._ngUser            = self._conf.get("NobleGazDatabaseAccess","user")
         self._ngPassword        = self._conf.get("NobleGazDatabaseAccess","password")
@@ -364,7 +379,7 @@ class Runner(object):
     def _set_logging_configuration(self):
         """
             setup the logging info.
-            Set the root logger and the hanlders. 
+            Set the root logger and the handlers. 
             Read the information from the configuration file.
             Two handlers are created: one logging in a file file_handler. This one logs everything by default
             and another one logging a minimal set of info in the console. 
@@ -378,26 +393,40 @@ class Runner(object):
             Raises:
                exception
         """
-        if len(logging.root.handlers) == 0:
+        try:
             
-            # create logger that logs in rolling file
-            file_handler = logging.handlers.RotatingFileHandler(self._conf.get('Logging','fileLogging','/tmp/rnpicker.log'), "a", 5000000, 4)
-            file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-            file_handler.setFormatter(file_formatter)
+            if len(logging.root.handlers) == 0:
             
-            # create logger that logs in console
-            console = logging.StreamHandler()
-            console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-            console_filter    = logging.Filter(self._conf.get('Logging','consoleFilter','Runner'))
-            console.setFormatter(console_formatter)
-            console.addFilter(console_filter)
+                # if file exists check that the user can write in there otherwise create a new log file with the pid:
+                self._log_path = self._conf.get('Logging','fileLogging','/tmp/generate_arr.log')
+                
+                if os.path.exists(self._log_path) and not os.access(self._log_path,os.R_OK | os.W_OK):
+                    n_log_path = '%s.%d'%(self._log_path,os.getpid())
+                    print("WARNING - *************************************************************")
+                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead'%(self._log_path,n_log_path))
+                    print("WARNING - *************************************************************")
+                    self._log_path = n_log_path
+                
+                
+                # create logger that logs in rolling file
+                file_handler = logging.handlers.RotatingFileHandler(self._log_path, "a", 5000000, 4)
+                file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+                file_handler.setFormatter(file_formatter)
+            
+                # create logger that logs in console
+                console = logging.StreamHandler()
+                console_formatter = logging.Formatter("%(levelname)s - %(message)s")
+                console_filter    = logging.Filter(self._conf.get('Logging','consoleFilter','Runner'))
+                console.setFormatter(console_formatter)
+                console.addFilter(console_filter)
         
-            logging.root.addHandler(file_handler)
-            logging.root.addHandler(console)
-            
-            #log = logging.getLogger("ROOT")
-            #log.setLevel(logging.INFO)
-            #log.info("********************************Star*************************8t")
+                logging.root.addHandler(file_handler)
+                logging.root.addHandler(console)
+                
+        except Exception, e: #INGORE:W0612
+            # Fatal error when setuping the logger
+            print("Fatal Error when setuping the logging system. Exception Traceback: %s."%(get_exception_traceback()))
+            raise LoggingSetupError('Cannot setup the loggers properly. See Exception Traceback printed in stdout')
     
     @classmethod
     def log_in_file(self,aMessage):
@@ -530,7 +559,7 @@ class Runner(object):
         Runner.c_log.info("*************************************************************")
         Runner.c_log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
         
-        Runner.c_log.info("For more information check the detailed logs under %s"%(self._conf.get('Logging','fileLogging','/tmp/rnpicker.log')))
+        Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
         
         Runner.c_log.info("*************************************************************\n")
         
@@ -647,24 +676,33 @@ def run():
         runner.execute(parsed_args) 
     except ParsingError, e:
         # Not Runner set print
-        print "Error - %s"%(e.get_message_error()) 
+        print("Error - %s"%(e.get_message_error()))
         usage() 
         sys.exit(2)
     except ConfAccessError, e:
         # Not Runner set print
-        print "Error - %s"%(e.get_message_error()) 
+        print("Error - %s"%(e.get_message_error())) 
         if parsed_args.get('verbose',1) == 3:
             print("Traceback: %s."%(get_exception_traceback()))
         usage() 
         sys.exit(2)
+    except LoggingSetupError, e:
+        # Not Runner set print
+        print("Error - %s"%(e.get_message_error())) 
+        sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
-        Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
-        if parsed_args.get('verbose',1) == 3:
-            a_logger = Runner.c_log.error
-        else:
-            a_logger = Runner.log_in_file
-        a_logger("Traceback: %s."%(get_exception_traceback()))
-        sys.exit(3)
+        print "In Exception"
+        try:
+            Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            if parsed_args.get('verbose',1) == 3:
+                a_logger = Runner.c_log.error
+            else:
+                a_logger = Runner.log_in_file
+           
+            a_logger("Traceback: %s."%(get_exception_traceback()))
+            sys.exit(3)
+        except:
+            print("Fatal Error that could not be logged properly. print Traceback in stdout: %s."%(get_exception_traceback()))
     
     sys.exit(0)
           

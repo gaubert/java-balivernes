@@ -484,7 +484,7 @@ def send_html_as_attachment():
     # prepare the message
     
     outer['From']  = sender
-    outer.preamble = 'Test with Html'
+    #outer.preamble = 'Test with Html'
     htmlfiles = ['/tmp/samples/ARR/ARR-245310.html','/tmp/samples/samples/sampml-full-245310.xml']
     # Assume we know that the image files are all in PNG format
     for file in htmlfiles:
