@@ -8,7 +8,7 @@
 #$4 size to read
 #$5 local file where to put the results
 #$6 remote user
-# return a spectrum in stdout
+# return a spectrum in stdout (needs to be saved in file for example)
 
 
 tempfile="/tmp/job.$$.remote"
