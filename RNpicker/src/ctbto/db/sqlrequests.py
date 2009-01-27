@@ -77,7 +77,7 @@ SQL_GET_SAUNA_QC_SAMPLEID_OLD = "select * from \
 """ sql used requests  """
 SQL_GETDETECTORINFO   = "select det.detector_id as detector_id, det.detector_code as detector_code, det.description as detector_description, det.type as detector_type from RMSMAN.GARDS_DETECTORS det, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and data.DETECTOR_ID=det.DETECTOR_ID"
 SQL_GETSTATIONINFO    = "select sta.station_id as station_id, sta.station_code as station_code, sta.country_code as station_country_code, sta.type as station_type, sta.description as station_location,to_char(sta.lat)||' '||to_char(sta.lon)||' '||to_char(sta.elevation) as station_coordinates from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
-SQL_GETSAMPLETYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
+SQL_GET_SAMPLE_TYPE     = "select sta.type as sample_type from RMSMAN.GARDS_STATIONS sta, RMSMAN.GARDS_SAMPLE_DATA data where data.sample_id=%s and sta.STATION_ID=data.STATION_ID"
 
 
 SQL_GETSAMPLEINFO     = "select input_file_name as spectrum_filepath, data_type as data_data_type, geometry as data_sample_geometry, \
@@ -87,11 +87,50 @@ SQL_GETSAMPLEINFO     = "select input_file_name as spectrum_filepath, data_type 
                                 quantity/(86400*(collect_stop  - collect_start )/3600) as data_flow_rate from RMSMAN.GARDS_SAMPLE_DATA where sample_id=%s"
   
 """ ************************************ Noble Gaz Part ******************************************** """
-                                
+  
+# SPALAX is more like particulates. The same method is used for the spectroscopic analysis 
+SQL_SPALAX_GET_SPECTRUM          = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_SPALAX_GET_RAW_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+   
+SQL_SPALAX_GET_DETBK_SAMPLEID   = "select * from \
+                                      (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                       where gd.station_id=%s and gd.DETECTOR_ID=%s \
+                                       and gd.SPECTRAL_QUALIFIER='FULL' and gd.data_type='D' \
+                                       and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s and detector_id=%s) \
+                                       and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc \
+                                      ) \
+                                  where rownum = 1"
+                                  
+
+SQL_SPALAX_GET_PREL_SAMPLEIDS = "select sample_id from gards_sample_data \
+                                     where COLLECT_STOP=\
+                                     (select COLLECT_STOP from gards_sample_data where sample_id=%s)\
+                                     and detector_id=%s\
+                                     and Spectral_qualifier='PREL'\
+                                     order by  ACQUISITION_REAL_SEC asc"
+
+                                   
+SQL_SPALAX_GET_QC_SAMPLEID = "select * from \
+                                      (select gd.sample_id from gards_sample_data gd, gards_sample_status gs \
+                                       where gd.station_id=%s and gd.DETECTOR_ID=%s \
+                                       and gd.SPECTRAL_QUALIFIER='FULL' and gd.data_type='Q' \
+                                       and gd.acquisition_start <= (select acquisition_start from gards_sample_data where SAMPLE_ID=%s and station_id=%s and detector_id=%s) \
+                                       and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc \
+                                      ) \
+                                  where rownum = 1"
+                                  
+SQL_SPALAX_GET_XE_REF_LINES = "select * from RMSAUTO.GARDS_XE_REFLINE_MASTER order by refpeak_energy"
+
+SQL_SPALAX_GET_ENERGY_CAL         = "select * from RMSMAN.GARDS_ENERGY_CAL where sample_id=%s"
+
+SQL_SPALAX_GET_RESOLUTION_CAL     = "select * from RMSMAN.GARDS_RESOLUTION_CAL where sample_id=%s"
+
+SQL_SPALAX_GET_EFFICIENCY_CAL     = "select * from RMSMAN.GARDS_EFFICIENCY_CAL where sample_id=%s"
+
+""" ************************************ Sauna Part ************************************************ """                          
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
 SQL_SAUNA_GET_FILES                   = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 SQL_SAUNA_GET_RAW_FILE                = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
-
 SQL_SAUNA_GET_HISTOGRAM_INFO          = "select G_CHANNELS, B_CHANNELS, G_ENERGY_SPAN, B_ENERGY_SPAN from rmsman.gards_histogram where sample_id=%s"
 
 """ Get information regarding all identified nuclides """
@@ -188,13 +227,14 @@ SQL_GET_AUX_SAMPLE_INFO = "select * from GARDS_SAMPLE_AUX where sample_id=%s"
 
 SQL_GET_SAUNA_ENERGY_CAL  = "select * from GARDS_BG_ENERGY_CAL where sample_id=%s"
 
-SQL_GET_SAUNA_XE_NUCL_LIB = "select NAME from GARDS_XE_NUCL_LIB"
+SQL_GET_NOBLEGAS_XE_NUCL_LIB = "select NAME from GARDS_XE_NUCL_LIB"
 
+SQL_GET_NOBLEGAS_XE_NUCL_LINES_LIB = "select NAME,ENERGY,ENERGY_ERR,ABUNDANCE,ABUNDANCE_ERR,KEY_FLAG,NUCLIDE_ID from GARDS_XE_NUCL_LINES_LIB order by NUCLIDE_ID"
 
 """ ************************************* Particulate Part ********************************************* """
 
 # get any spectrum full or prel or qc or back 
-SQL_GETPARTICULATE_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_GETPARTICULATE_SPECTRUM          = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.typeid=29 and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 
 SQL_GETPARTICULATE_RAW_SPECTRUM      = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 

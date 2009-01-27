@@ -179,20 +179,20 @@ class RequestParser(object):
         vals = values.split('/')
       
         if len(vals) == 0:
-          raise CTBTOError(-1,"Cannot find values for the spectrum params in parameters string %s"%(aRequest))
+            raise CTBTOError(-1,"Cannot find values for the spectrum params in parameters string %s"%(aRequest))
         
         for val in vals:
-          dummy = val.strip().upper()
+            dummy = val.strip().upper()
           
-          if dummy == 'ALL':
-             #ALL superseeds everything and add all the different types
-             result.update(aSpectrumTypeDefault)
-             # leave loop
-             break
+            if dummy == 'ALL':
+                #ALL superseeds everything and add all the different types
+                result.update(aSpectrumTypeDefault)
+                # leave loop
+                break
                 
-          if dummy not in aSpectrumTypes:
-              raise CTBTOError(-1,"Unknown spectrum type %s. The spectrum type can only be one of the following %s"%(dummy,aSpectrumTypes))
+            if dummy not in aSpectrumTypes:
+                raise CTBTOError(-1,"Unknown spectrum type %s. The spectrum type can only be one of the following %s"%(dummy,aSpectrumTypes))
           
-          result.add(dummy)
+            result.add(dummy)
           
         return result   
