@@ -27,6 +27,8 @@ class DBDataFetcher(object):
     c_log.setLevel(logging.INFO)
     
     c_nid_translation = {0:"nuclide not identified by automated analysis",1:"nuclide identified by automated analysis",-1:"nuclide identified by automated analysis but rejected"}
+    c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
+    
     
     def getDataFetcher(cls,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
         """ Factory method returning the right DBFetcher \
@@ -41,7 +43,7 @@ class DBDataFetcher(object):
         if aSampleID is None : raise CTBTOError(-1,"passed argument aSampleID is null")
        
         # get sampleID type (ARIX or SAUNA or SPALAX or Particulate)
-        result = aMainDbConnector.execute(sqlrequests.SQL_GETSAMPLETYPE%(aSampleID))
+        result = aMainDbConnector.execute(sqlrequests.SQL_GET_SAMPLE_TYPE%(aSampleID))
         
         rows = result.fetchall()
        
@@ -54,9 +56,11 @@ class DBDataFetcher(object):
        
         cls.c_log.debug("Klass = %s"%(SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']]))
         
-        ty = SAMPLE_TYPE[rows[0]['SAMPLE_TYPE']]
+        
+        
+        ty = SAMPLE_TYPE.get(rows[0]['SAMPLE_TYPE'],None)
         if ty is None: 
-            ty = Particulate
+            raise CTBTOError(-1,"The sample type %s is not supported or unknown"%(rows[0]['SAMPLE_TYPE']))
 
         inst = ty(aMainDbConnector,aArchiveDbConnector,aSampleID)
     
@@ -400,6 +404,8 @@ class DBDataFetcher(object):
         result.close()
        
         return (dataname,ty)
+    
+    
        
     def _createCachingFile(self,aSampleID):
         """Build a caching file from the config caching dir and the given sampleID.
@@ -1070,30 +1076,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
            
-    def _fetchNuclidesToQuantify(self):
-        
-        
-        # return all gards_XE_NUCL_LIB
-        result = self._mainConnector.execute(sqlrequests.SQL_GET_SAUNA_XE_NUCL_LIB)
-        
-        rows = result.fetchall()
-        
-        # add results in a list which will become a list of dicts
-        res = []
-        
-        # create a list of dicts
-        data = {}
-
-        for row in rows:
-            # copy row in a normal dict
-            data.update(row)
-            res.append(data)
-            data = {}
-        
-        # add in dataBag
-        self._dataBag[u'XE_NUCL_LIB'] = res
-        
-        result.close()      
+    
         
     def _fetchAllData(self,aSampleID):
         """Fetch the two spectra (beta and gamma) and histogram
@@ -1122,7 +1105,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
          
         if nbResults == 0:
             SaunaNobleGasDataFetcher.c_log.warning("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
-            arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(ty,"")
+            arch_type = DBDataFetcher.c_fpdescription_type_translation.get(ty,"")
             (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SAUNA_GET_RAW_FILE%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False) 
         elif nbResults != 3:
             SaunaNobleGasDataFetcher.c_log.warning("WARNING: found %d data file for %s when exactly 3 should be found\n"%(nbResults,aSampleID))
@@ -1232,12 +1215,37 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         if ('PREL' in spectrums):
             self._fetchPrelsSpectrumData()
-           
+    
+    def _fetchNuclidesToQuantify(self):
+        
+        # return all gards_XE_NUCL_LIB
+        result = self._mainConnector.execute(sqlrequests.SQL_GET_NOBLEGAS_XE_NUCL_LIB)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'XE_NUCL_LIB'] = res
+        
+        result.close() 
+              
     def _fetchAnalysisResults(self,aParams=None):
         """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
         
         # get static info necessary for the analysis
         self._fetchNuclidesToQuantify()
+        
            
         analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
        
@@ -1737,8 +1745,545 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         self._dataBag['SAMPLE_TYPE']= 'SPALAX'
     
     def _fetchData(self,aParams=None):
-        """ abstract global data fetching method """
-        raise CTBTOError(-1,"method not implemented currently in the SpalaxNobleGasDataFetcher")
+        """ get the different raw data info """
+        
+        spectrums = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.SPECTRUM,set())
+        
+        if ('None' in spectrums):
+            # None is in there so do not include data
+            return
+        
+        #fetch current spectrum
+        if ('CURR' in spectrums):
+            self._fetchCURRSpectrumData()
+        
+        #if ('QC' in spectrums):
+        #    self._fetchQCSpectrumData()
+        
+        if ('DETBK' in spectrums):
+            self._fetchDETBKSpectrumData()
+        
+        if ('PREL' in spectrums):
+            self._fetchPrelsSpectrumData()
+      
+    def _fetchDETBKSpectrumData(self):
+        """get the Background spectrum.
+           If the caching function is activated save the retrieved spectrum on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the curr sample is a Detector background itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
+            return
+        
+        SpalaxNobleGasDataFetcher.c_log.info("Getting Background Spectrum for %s\n"%(self._sampleID))
+        
+        # need to get the latest BK sample_id
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_DETBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']))
+        
+        # only one row in result set
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults == 0:
+            SpalaxNobleGasDataFetcher.c_log.warning("There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+            return
+       
+        if nbResults > 1:
+            SpalaxNobleGasDataFetcher.c_log.warning("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GETPARTICULATE_BK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
+        sid = rows[0]['SAMPLE_ID']
+        
+        DBDataFetcher.c_log.debug("sid = %s\n"%(sid))
+        
+        result.close()
+        
+        # now fetch the spectrum
+        try:
+            (dataname,ty) = self._fetchSpectrumData(sid) #IGNORE:W0612
+           
+            self._dataBag[u'CURRENT_BK'] = dataname
+           
+            self._dataBag[u'CONTENT_PRESENT'].add('BK') 
+           
+        except Exception, e: #IGNORE:W0703
+            SpalaxNobleGasDataFetcher.c_log.warning("Warning. No Data File found for background %s.Exception : %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('BK')
+            
+    
+    def _fetchQCSpectrumData(self):
+        """get the QC spectrum.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: aDataname prefix in the dict
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """  
+        # precondition do nothing if there the curr sample is a Detector background itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'Q':
+            return
+        
+        SpalaxNobleGasDataFetcher.c_log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
+        
+        # need to get the latest BK sample_id
+        (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SPALAX_GET_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) #IGNORE:W0612
+        
+        nbResults = len(rows)
+        
+        if nbResults == 0:
+            SpalaxNobleGasDataFetcher.c_log.warning("Warning. There is no QC for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows)) 
+            # add in CONTENT_NOT_PRESENT this is used by the cache
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+            return
+       
+        if nbResults > 1:
+            SpalaxNobleGasDataFetcher.c_log.warning("There is more than one QC for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GETPARTICULATE_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
+           
+        sid = rows[0]['SAMPLE_ID']
+        
+        try:
+            # now fetch the spectrum
+            (dataname,ty) = self._fetchSpectrumData(sid) #IGNORE:W0612
+        
+            self._dataBag[u'CURRENT_QC'] = dataname
+           
+            self._dataBag[u'CONTENT_PRESENT'].add('QC') 
+        
+        except Exception, e: #IGNORE:W0703
+            SpalaxNobleGasDataFetcher.c_log.warning("Warning. No Data File found for QC %s. Exception: %s\n"%(sid,e))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('QC')
+        
+    def _fetchPrelsSpectrumData(self):
+        """get the preliminary spectrums.
+           If the caching function is activated save the retrieved specturm on disc.
+        
+            Args:
+               params: None
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        # precondition do nothing if there the curr sample is a prel itself
+        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'S' and self._dataBag.get(u"%s_DATA_SPECTRAL_QUALIFIER"%(prefix),'') == 'PREL':
+            return
+    
+        SpalaxNobleGasDataFetcher.c_log.info("Getting Prels Spectrum for %s\n"%(self._sampleID))
+        
+        # need to get the latest BK sample_id
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_PREL_SAMPLEIDS%(self._sampleID,self._dataBag[u'DETECTOR_ID']))
+        
+        # only one row in result set
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults == 0:
+            SpalaxNobleGasDataFetcher.c_log.warning("There is no PREL spectrum for %s."%(self._sampleID))
+            self._dataBag[u'CONTENT_NOT_PRESENT'].add('PREL')
+            return
+        
+        listOfPrel = []
+          
+        for row in rows:
+            sid = row['SAMPLE_ID']
+             
+            # now fetch the spectrum with the a PREL_cpt id
+            (dataname,ty) = self._fetchSpectrumData(sid) #IGNORE:W0612
+            # update list of prels
+            listOfPrel.append(dataname)
+        
+        self._dataBag['CURR_List_OF_PRELS']  =  listOfPrel
+        self._dataBag[u'CONTENT_PRESENT'].add('PREL') 
+           
+        
+        result.close()
+        
+    def _fetchCURRSpectrumData(self):
+        """ fetch the current spectrum identified by the current sampleID
+        
+            Args:
+               params: aDataname
+               
+            Returns:
+               return Nothing
+        
+            Raises:
+               exception
+        """
+        
+        (dataname,ty) = self._fetchSpectrumData(self._sampleID) #IGNORE:W0612
+        
+        self._dataBag[u'CURRENT_CURR'] = dataname
+        
+        if'CURR' not in self._dataBag[u'CONTENT_PRESENT']:
+            self._dataBag[u'CONTENT_PRESENT'].add('CURR')  
+    
+    def _fetchAuxiliarySampleInfo(self,aSampleID,aDataname):
+        """ Get auxiliary information
+        
+            Args:
+               aSampleID: sampleID
+               
+        """
+        SpalaxNobleGasDataFetcher.c_log.info("Getting auxiliary sample info for %s\n"%(aSampleID))
+       
+        result = self._mainConnector.execute(sqlrequests.SQL_GET_AUX_SAMPLE_INFO%(aSampleID))
+       
+        # only one row in result set
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults != 1:
+            SpalaxNobleGasDataFetcher.c_log.info("Warning. No auxiliary info for sample %s\n"%(aSampleID))
+         
+        # get retrieved data and transform dates
+        data = {}
+        data.update(rows[0])
+        
+        self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
+    
+    def _fetchSpectrumData(self,aSampleID):
+        """get the any spectrum data.
+           If the caching function is activated save the retrieved specturm on disc.
+           Try to find an extracted spectrum on OPS and Archive and if there is none of them look for the raw message (typeid)
+        
+            Args:
+               aDataname: Name of the data. This will be used to create the name in the persistent hashtable and in the data spectrum filename
+               
+            Returns: (dataname,type)
+                     where dataname = ID of the spectrum info in the data dict
+                     where type     = type of the spectrum (SPHD, PREL, QC, BK)
+        
+            Raises:
+               exception
+        """
+           
+        SpalaxNobleGasDataFetcher.c_log.info("Getting Spectrum for %s\n"%(aSampleID))
+           
+        # get sample info related to this sampleID
+        # pass the gamma prefix
+        (dataname,ty) = self._fetchGeneralSpectrumInfo(aSampleID,"_G")
+        
+        # fetch auxiliary data
+        self._fetchAuxiliarySampleInfo(aSampleID,dataname)
+        
+        SpalaxNobleGasDataFetcher.c_log.info("Its name will be %s and its type is %s"%(dataname,ty))
+         
+        (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SPALAX_GET_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
+        
+        if nbResults == 0:
+            SpalaxNobleGasDataFetcher.c_log.warning("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
+            arch_type = DBDataFetcher.c_fpdescription_type_translation.get(ty,"")
+            (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SPALAX_GET_RAW_SPECTRUM%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
+        elif nbResults > 1:
+            ParticulateDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+        
+        for row in rows:
+            (anInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
+           
+            # check if it has to be compressed
+            compressed = self._conf.getboolean("Options","compressSpectrum")
+            sid = "%s_G_DATA"%(dataname)
+                
+            # check the message type and do the necessary.
+            # here we expect a .msg or .s
+            # we can also have .h coming from noble gaz histogram
+            if ext == '.msg' or ext == '.archmsg':
+              
+                (data,limits)  =  self._extractSpectrumFromMessageFile(anInput) #IGNORE:W0612
+              
+                anInput.close()
+              
+                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+            # '.archs' given for an archived sample
+            elif ext == '.s' or ext == '.archs':
+            
+                (data,limits) = self._extractSpectrumFromSpectrumFile(anInput)
+             
+                anInput.close()
+           
+                (data,channel_span,energy_span) = self._processSpectrum(data,compressed)
+            else:
+                raise CTBTOError(-1,"Error unknown extension %s. Do not know how to read the file %s for aSampleID %s"%(ext,row['DFile'],aSampleID))
+         
+            self._dataBag[u"%s_COMPRESSED"%(sid)]     = compressed
+            self._dataBag[u"%s"%(sid)]                = data
+            self._dataBag[u"%s_CHANNEL_SPAN"%(sid)]   = channel_span
+            self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
+            # create a unique id for the extract data
+            self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+        
+        return (dataname,ty)
+    
+    def _fetchNuclidesToQuantify(self):
+        """ get the Xe nuclides to quantify """
+        # return all gards_XE_NUCL_LIB
+        result = self._mainConnector.execute(sqlrequests.SQL_GET_NOBLEGAS_XE_NUCL_LIB)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'XE_NUCL_LIB'] = res
+        
+        result.close()  
+    
+    def _fetchXeRefLines(self):  
+        """ get the Xe reference lines"""
+        
+        # return all gards_XE_NUCL_LIB
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_XE_REF_LINES)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'XE_REF_LINES_LIB'] = res
+        
+        result.close()
+        
+    def _fetchXeNuclideLinesLib(self):
+        """ get the lib of nuclides lines"""
+        
+        # return all gards_XE_NUCL_LIB
+        result = self._mainConnector.execute(sqlrequests.SQL_GET_NOBLEGAS_XE_NUCL_LINES_LIB)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'XE_NUCLIDE_LINES_LIB'] = res
+        
+        result.close()
+           
+    def _fetchAnalysisResults(self,aParams=None):
+        """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
+        
+        # get static info necessary for the analysis
+        self._fetchNuclidesToQuantify()
+        
+        self._fetchXeNuclideLinesLib()
+        
+        self._fetchXeRefLines()
+           
+        
+        analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
+       
+        if ('None' in analyses):
+            # None is in there so do not include data
+            return
+        
+        for analysis in analyses:
+        
+            # for the moment ignore Analysis for PREL
+            if analysis == 'PREL' :
+                continue
+        
+            # check if there is some data regarding this type of analysis
+            # get the dataname of the current spectrum (it is the main spectrum)
+            dataname = self._dataBag.get('CURRENT_%s'%(analysis),None)
+          
+            if dataname is not None:
+                DBDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
+          
+                # extract id from dataname
+                [pre,sid] = dataname.split('_') #IGNORE:W0612
+          
+                #self._fetchCategoryResults(sid,dataname)
+        
+                #self._fetchNuclidesResults(sid,dataname)
+             
+                #self._fetchNuclideLines(sid,dataname)
+        
+                #self._fetchPeaksResults(sid,dataname)
+          
+                #self._fetchFlags(sid,dataname)
+        
+                #self._fetchParameters(sid,dataname)
+    
+    def _fetchCalibrationCoeffs(self,prefix):
+        
+        # get the sampleID 
+        # extract id from dataname
+        
+        [pre,sid] = prefix.split('_') #IGNORE:W0612
+    
+        if sid is None:
+            raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
+        
+        calIDs_list = []
+        
+        # get energy calibration info
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_ENERGY_CAL%(sid))
+        
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults != 1:
+            raise CTBTOError(-1,"Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        
+        # create a list of dicts
+        data = {}
+
+        data.update(rows[0].items())
+        
+        checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
+        
+        cal_id = 'EN-%s'%(checksum)
+        
+        # add in dataBag as EN-checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # prefix_ENERGY_CAL now refers to this calibration ID
+        self._dataBag[u'%s_G_ENERGY_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        # get resolution Calibration
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_RESOLUTION_CAL%(sid))
+        
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults != 1:
+            raise CTBTOError(-1,"Expecting to have 1 resolution calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        
+        # init list of dicts
+        data = {}
+
+        data.update(rows[0].items())
+        
+        checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
+        
+        cal_id = 'RE-%s'%(checksum)
+        
+        # add in dataBag as EN-checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # add in dataBag
+        self._dataBag[u'%s_G_RESOLUTION_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_EFFICIENCY_CAL%(sid))
+        
+        rows = result.fetchall()
+        
+        nbResults = len(rows)
+       
+        if nbResults != 1:
+            raise CTBTOError(-1,"Expecting to have 1 efficiency calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        
+        # create a list of dicts
+        data = {}
+
+        data.update(rows[0].items())
+        
+        checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
+       
+        cal_id = 'EF-%s'%(checksum)
+        
+        # add in dataBag as EN-checksumif not already in the dataBag
+        if cal_id not in self._dataBag:
+            self._dataBag[cal_id] = data
+        
+        # add in dataBag
+        self._dataBag[u'%s_G_EFFICIENCY_CAL'%(prefix)] = cal_id
+        
+        # add in list of calibration info for this particular sample
+        calIDs_list.append(cal_id)
+        
+        # add the list of calib_infos in the bag
+        self._dataBag[u'%s_G_DATA_ALL_CALS'%(prefix)] = calIDs_list
+        
+        result.close()
+        
+    def _fetchCalibration(self):  
+        """ Fetch the calibration info for all the different spectrums """
+        
+        for present in self._dataBag.get('CONTENT_PRESENT',[]):
+            
+            # treat preliminary samples differently
+            if present == 'PREL':
+                
+                for prel in self._dataBag.get('CURR_List_OF_PRELS',[]):
+                    
+                    if prel is None:
+                        raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+                    
+                    self._fetchCalibrationCoeffs(prel)
+            else:    
+            
+                prefix = self._dataBag.get(u'CURRENT_%s'%(present),None)
+                if prefix is None:
+                    raise CTBTOError(-1,"Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n"%(present,present))
+               
+                self._fetchCalibrationCoeffs(prefix)
+                        
+        
+              
         
 
 class ParticulateDataFetcher(DBDataFetcher):
@@ -1748,9 +2293,7 @@ class ParticulateDataFetcher(DBDataFetcher):
     c_log = logging.getLogger("datafetchers.ParticulateDataFetcher")
     #c_log.setLevel(logging.DEBUG)
     
-    c_fpdescription_type_translation = {"SPHD":"SPHDF","PREL":"SPHDP","":"BLANK","QC":"QCPHD","BK":"DETBKPHD"}
     
-
     def __init__(self,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
         
         super(ParticulateDataFetcher,self).__init__(aMainDbConnector,aArchiveDbConnector,aSampleID)
@@ -1785,7 +2328,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
         if nbResults == 0:
             ParticulateDataFetcher.c_log.warning("WARNING: sample_id %s has no extracted spectrum.Try to find a raw message.\n"%(aSampleID))
-            arch_type = ParticulateDataFetcher.c_fpdescription_type_translation.get(ty,"")
+            arch_type = DBDataFetcher.c_fpdescription_type_translation.get(ty,"")
             (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_GETPARTICULATE_RAW_SPECTRUM%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
         elif nbResults > 1:
             ParticulateDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
@@ -2573,5 +3116,5 @@ class ParticulateDataFetcher(DBDataFetcher):
 
 
 """ Dictionary used to map DB Sample type with the right fetcher """ #IGNORE:W0105
-SAMPLE_TYPE = {'SAUNA':SaunaNobleGasDataFetcher, 'ARIX-4':SaunaNobleGasDataFetcher, 'SPALAX':SpalaxNobleGasDataFetcher, 'RASA':ParticulateDataFetcher,'CINDER':ParticulateDataFetcher, 'LAB':ParticulateDataFetcher, None:ParticulateDataFetcher}
+SAMPLE_TYPE = {'SAUNA':SaunaNobleGasDataFetcher, 'ARIX-4':SaunaNobleGasDataFetcher, 'SPALAX':SpalaxNobleGasDataFetcher, 'RASA':ParticulateDataFetcher,'CINDER':ParticulateDataFetcher, 'LAB':ParticulateDataFetcher, None:ParticulateDataFetcher,'Gas':None}
         

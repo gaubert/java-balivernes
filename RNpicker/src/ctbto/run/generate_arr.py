@@ -53,7 +53,7 @@ Usage: generate_arr [options]
                           
   --conf_dir        (-c)  Directory containing a configuration file rnpicker.config.                (default=$RNPICKER_CONF_DIR)  
   
-  --vvv             (-3)  Increase verbosity ot level 3 in order to have all the errors
+  --vvv             (-3)  Increase verbosity to level 3 in order to have all the errors
                           in the stdout.  
   
   Advanced Options:
@@ -298,7 +298,7 @@ def parse_arguments(a_args):
 
 SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETALLSAUNASTATIONCODES = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type=\'SAUNA\'"
+SQL_GETALLSAUNASTATIONCODES = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
 
 SQL_GETALLSAUNASTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
 

@@ -21,7 +21,9 @@ from ctbto.transformer import XML2HTMLRenderer
 
 SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
 
-SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSAUNASAMPLEIDS  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+
+SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (600,542,555,566,521,620,685,614,595) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
 def myBasicLoggingConfig():
     """
@@ -237,6 +239,22 @@ class TestSAMPMLCreator(unittest.TestCase):
         TestSAMPMLCreator.c_log.info("sauna samples %s\n"%(sampleIDs))
       
         return sampleIDs
+    
+    def getListOfSpalaxSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
+        
+        result = self.nbConn.execute(SQL_GETSPALAXSAMPLEIDS%(beginDate,endDate,spectralQualif,nbOfElem))
+        
+        sampleIDs= []
+        
+        rows = result.fetchall()
+       
+        for row in rows:
+            sampleIDs.append(row[0])
+       
+        TestSAMPMLCreator.c_log.info("spalax samples %s\n"%(sampleIDs))
+      
+        return sampleIDs
+    
           
     def ztestGetOneParticulateSampleAndDoBitChecking(self):
         """
@@ -401,7 +419,74 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
-    def testGenerateNobleGasARR(self):
+    def testSpalaxFullNobleGazSamples(self):
+        """ 
+           Get Full Noble Gaz samples.
+        """
+         
+        request="spectrum=ALL, analysis=CURR"
+        
+        # get full
+        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-01',endDate='2009-12-12',spectralQualif='FULL',nbOfElem='2')
+               
+        # remove sampleID for which data isn't available
+        #if "141372" in listOfSamplesToTest:
+        #    listOfSamplesToTest.remove("141372")
+        #PREL 211385
+        #listOfSamplesToTest = ['262213']
+        TestSAMPMLCreator.c_log.info("list samples :%s"%(listOfSamplesToTest))
+        
+        cpt = 0
+        total_t0 = time.time()
+        
+        for sampleID in listOfSamplesToTest:
+            
+            TestSAMPMLCreator.c_log.info("Start Test %d for SampleID %s.\n"%(cpt,sampleID))
+           
+            t0 = time.time()
+           
+            # fetchnoble particulate
+            fetcher = DBDataFetcher.getDataFetcher(self.nbConn,self.archConn,sampleID)
+            
+            #modify remoteHost
+            fetcher.setRemoteHost(self.conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
+   
+            fetcher.fetch(request,'GAS')
+                 
+            renderer = SaunaRenderer(fetcher)
+   
+            xmlStr = renderer.asXmlStr(request)
+           
+           #print "Non Formatted String [%s]\n"%(xmlStr)
+           
+           #f = open("/tmp/xmlStr.xml","w")
+           
+           #f.write(xmlStr)
+           #f.close()
+   
+            path = "/tmp/samples/sampml-full-%s.xml"%(sampleID)
+   
+            ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+           
+            # check if no tags are left
+            self.assertIfNoTagsLeft(path)
+           
+           #self.assertAllCalibrationInfo(path)
+           
+            t1 = time.time()
+           
+            #TestSAMPMLCreator.c_log.info("End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0)))
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
+           
+            cpt +=1
+        
+        total_t1 = time.time()
+        
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+    
+    
+    
+    def ztestGenerateNobleGasARR(self):
         """ 
            Generate a Noble Gaz ARR.
         """
@@ -409,7 +494,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2008-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='1')
+        listOfSamplesToTest = self.getListOfSaunaSampleIDs('2007-11-25',endDate='2008-11-26',spectralQualif='FULL',nbOfElem='5')
               
         # remove sampleID for which data isn't available
         # 206975: No Calibration Available
@@ -419,7 +504,7 @@ class TestSAMPMLCreator(unittest.TestCase):
             if id in listOfSamplesToTest:
                 listOfSamplesToTest.remove(id)
                 
-        listOfSamplesToTest = [206975]
+        #listOfSamplesToTest = [206975]
                
         TestSAMPMLCreator.c_log.info("list samples %s"%listOfSamplesToTest)
         
