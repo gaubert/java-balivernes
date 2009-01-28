@@ -118,7 +118,9 @@ SQL_SPALAX_GET_QC_SAMPLEID = "select * from \
                                        and gd.sample_id = gs.sample_id and gs.status in ('V','P') order by sample_id desc \
                                       ) \
                                   where rownum = 1"
-                                  
+   
+SQL_SPALAX_GET_XE_RESULTS   = "select METHOD_ID,NUCLIDE_ID,CONC,CONC_ERR,MDC,MDI,NID_FLAG,LC,LD,SAMPLE_ACT,COV_XE_131M,COV_XE_133M,COV_XE_133,COV_XE_135,COV_RADON from RMSAUTO.GARDS_XE_RESULTS where sample_id=%s"                               
+
 SQL_SPALAX_GET_XE_REF_LINES = "select * from RMSAUTO.GARDS_XE_REFLINE_MASTER order by refpeak_energy"
 
 SQL_SPALAX_GET_ENERGY_CAL         = "select * from RMSMAN.GARDS_ENERGY_CAL where sample_id=%s"
@@ -126,6 +128,8 @@ SQL_SPALAX_GET_ENERGY_CAL         = "select * from RMSMAN.GARDS_ENERGY_CAL where
 SQL_SPALAX_GET_RESOLUTION_CAL     = "select * from RMSMAN.GARDS_RESOLUTION_CAL where sample_id=%s"
 
 SQL_SPALAX_GET_EFFICIENCY_CAL     = "select * from RMSMAN.GARDS_EFFICIENCY_CAL where sample_id=%s"
+
+SQL_SPALAX_GET_DATA_QUALITY_FLAGS = "select gflags.flag_id as dq_flag_id, result as dq_result, value as dq_value, name as dq_name, threshold as dq_threshold, units as dq_units, test as dq_test from RMSMAN.GARDS_SAMPLE_FLAGS sflags,RMSMAN.GARDS_FLAGS gflags where sample_id=%s and sflags.FLAG_ID = gflags.FLAG_ID"
 
 """ ************************************ Sauna Part ************************************************ """                          
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """

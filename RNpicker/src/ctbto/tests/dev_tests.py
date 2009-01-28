@@ -433,7 +433,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         #if "141372" in listOfSamplesToTest:
         #    listOfSamplesToTest.remove("141372")
         #PREL 211385
-        #listOfSamplesToTest = ['262213']
+        listOfSamplesToTest = ['263003']
         TestSAMPMLCreator.c_log.info("list samples :%s"%(listOfSamplesToTest))
         
         cpt = 0

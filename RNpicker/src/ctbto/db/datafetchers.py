@@ -2122,7 +2122,6 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         
         self._fetchXeRefLines()
            
-        
         analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
        
         if ('None' in analyses):
@@ -2145,17 +2144,109 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 # extract id from dataname
                 [pre,sid] = dataname.split('_') #IGNORE:W0612
           
-                #self._fetchCategoryResults(sid,dataname)
+                self._fetchCategoryResults(sid,dataname)
         
-                #self._fetchNuclidesResults(sid,dataname)
+                self._fetchXeResults(sid,dataname)
              
-                #self._fetchNuclideLines(sid,dataname)
-        
-                #self._fetchPeaksResults(sid,dataname)
-          
-                #self._fetchFlags(sid,dataname)
+                self._fetchFlags(sid,dataname)
         
                 #self._fetchParameters(sid,dataname)
+    
+    def _fetchCategoryResults(self,a_sid,a_dataname):
+        """ 
+           Get the category results
+           
+            Args:
+               
+            Returns:   = type of the spectrum (SPHD, PREL, QC, BK)
+        
+            Raises:
+               exception
+        """
+        
+        # to be done when the category scheme is established
+        
+    def _fetchFlags(self,sid,aDataname):
+        """ get the different flags """
+        
+        self._fetchdataQualityFlags(sid,aDataname)
+        
+    def _fetchdataQualityFlags(self,sid,dataname):
+        """ 
+           Get the category results
+           
+            Args:
+               
+            Returns:   = type of the spectrum (SPHD, PREL, QC, BK)
+        
+            Raises:
+               exception
+        """
+        
+         # get MDA nuclides
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_DATA_QUALITY_FLAGS%(sid))
+        
+        rows = result.fetchall()
+        
+        if len(rows):
+            data = {}
+        
+            res = []
+        
+            for row in rows:
+                # copy row in a normal dict
+                data.update(row)
+            
+                res.append(data)
+                data = {}
+               
+            # add in dataBag
+            self._dataBag[u'%s_DATA_QUALITY_FLAGS'%(dataname)] = res
+    
+    def _fetchXeResults(self,sid,dataname):
+        """ 
+           Get the XE results
+           
+            Args:
+               
+            Returns:
+        
+            Raises:
+               exception
+        """
+        # get identified Nuclides
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_XE_RESULTS %(sid))
+       
+        # only one row in result set
+        rows = result.fetchall()   
+       
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
+        
+        for row in rows:
+            data.update(row.items())  
+            
+            nidflag = data.get(u'NID_FLAG',None)
+
+            # check if there is NID key
+            if nidflag is not None:
+                val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
+                data[u'NID_FLAG']     = val
+                data[u'NID_FLAG_NUM'] = nidflag
+        
+            # add concentration error in percent
+            if data.get(u'CONC',0) != 0:
+                data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
+          
+            res.append(data)
+            data = {}
+
+        # add in dataBag
+        self._dataBag[u'%s_XE_RESULTS'%(dataname)] = res
+            
+        result.close() 
+    
     
     def _fetchCalibrationCoeffs(self,prefix):
         
