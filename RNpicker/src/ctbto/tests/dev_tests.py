@@ -427,13 +427,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-01',endDate='2009-12-12',spectralQualif='FULL',nbOfElem='2')
+        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-01',endDate='2009-12-12',spectralQualif='FULL',nbOfElem='200')
                
         # remove sampleID for which data isn't available
         #if "141372" in listOfSamplesToTest:
         #    listOfSamplesToTest.remove("141372")
         #PREL 211385
-        listOfSamplesToTest = ['263003']
+        #listOfSamplesToTest = ['263003']
         TestSAMPMLCreator.c_log.info("list samples :%s"%(listOfSamplesToTest))
         
         cpt = 0
