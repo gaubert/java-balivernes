@@ -165,14 +165,308 @@ class SpalaxRenderer(BaseRenderer):
          
         self._fillData(reqDict)
        
-        #self._fillAnalysisResults(reqDict)
+        self._fillAnalysisResults(reqDict)
        
-        #self._fillCalibration()
+        self._fillCalibration()
        
         # father 
         BaseRenderer.asXmlStr(self, aRequest)
        
         return self._populatedTemplate 
+    
+    def _getCategory(self, id): #IGNORE:W0613
+        """ return Categorization for the passed sample_id. Do nothing for the moment """
+        return ""
+    
+    def _getParameters(self, id): #IGNORE:W0613
+        """ return Categorization for the passed sample_id. Do nothing for the moment """
+        return ""
+
+    def _getNuclides(self, id):
+        """ fill the information regarding the analysed nuclides
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        return ""
+    
+    def _getXECovMatrix(self,id):
+        """ fill the covariance matrix results
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        
+        result_str = ""
+        
+         # first get the template
+        cell_template          = self._conf.get("SpalaxTemplatingSystem", "spalaxCovMatrixCell")
+        method_matrix_template = self._conf.get("SpalaxTemplatingSystem", "spalaxMethodMatrix")
+        
+        matrix_results = {}
+        
+        xeresults = self._fetcher.get("%s_XE_RESULTS"%(id),None)
+        
+        if xeresults is not None:
+            for result in xeresults:
+                method = result[u'METHOD']
+                # if the matrix doesn't exist add it in the results
+                if method not in matrix_results:
+                    matrix_results[method] = ""
+               
+                cells = matrix_results[method]
+               
+                row     = re.sub("\${ROW}",str(result.get(u'NUCLIDE_ID','Error')) , cell_template)
+                
+                one_row = re.sub("\${COL}"  ,'XE_131M', row)
+                one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_131M','Error')) , one_row)
+                cells  += one_row
+                
+                one_row = re.sub("\${COL}"  ,'XE_133M', row)
+                one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_133M','Error')) , one_row)
+                cells  += one_row
+                
+                one_row = re.sub("\${COL}"  ,'XE_133', row)
+                one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_133','Error')) , one_row)
+                cells  += one_row
+                
+                one_row = re.sub("\${COL}"  ,'XE_135', row)
+                one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_135','Error')) , one_row)
+                cells  += one_row
+                
+                # put cells in matrix_results for the found method
+                matrix_results[method] = cells
+        
+        # hopefully we should get two matrixes in matrix_results
+        for (method,cells) in matrix_results.items():
+            m = re.sub("\${METHOD}",method, method_matrix_template)
+            m = re.sub("\${CELLS}",cells, m)
+            
+            result_str += m
+            
+                
+        return result_str
+    
+    def _getFlags(self, id):
+        """ create xml part with the flag info
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        return ""
+    
+    def _fillAnalysisResults(self, requestDict):
+        """ fill the analysis results for each result
+        
+            Args:
+               aRequest: string containing some parameters for each fetching bloc (ex params="specturm=curr/qc/prels/bk"). Default = ""
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
+        requestedTypes = requestDict[RequestParser.ANALYSIS]
+        
+        all_analyses_xml = ""
+      
+        for ty in requestedTypes:
+           
+            #identifier in the dict for this analysis  
+            sindict_id = self._fetcher.get("CURRENT_%s" % (ty), None)
+           
+            if sindict_id is not None:
+        
+                # first get the template
+                template = self._conf.get("SpalaxTemplatingSystem", "spalaxAnalysisTemplate")
+                dummy_template = ""
+        
+                # for the moment only one result
+                dummy_template += template
+    
+                spectrum_id = self._fetcher.get("%s_DATA_G_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "unknown")
+             
+                # Add analysis identifier => SpectrumID prefixed by AN
+                dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_id), dummy_template)
+        
+                dummy_template = re.sub("\${SPECTRUM_ID}", spectrum_id, dummy_template)
+        
+                dummy_template = re.sub("\${CATEGORY}", self._getCategory(sindict_id), dummy_template)
+        
+                dummy_template = re.sub("\${NUCLIDES}", self._getNuclides(sindict_id), dummy_template)
+             
+                dummy_template = re.sub("\${XECOVMATRIX}", self._getXECovMatrix(sindict_id), dummy_template)
+                
+                dummy_template = re.sub("\${PARAMETERS}", self._getParameters(sindict_id), dummy_template)
+        
+                dummy_template = re.sub("\${FLAGS}", self._getFlags(sindict_id), dummy_template)
+             
+                #add Calibration references
+                l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (sindict_id))
+                if l is None :
+                    SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                    l = []
+                else:
+                    # add calibration info
+                    dummy_template = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), dummy_template) #IGNORE:W0141
+        
+                # add software method version info
+                dummy_template = re.sub("\${SOFTWARE}", "bg_analyse", dummy_template)
+                dummy_template = re.sub("\${METHOD}", "standard", dummy_template)
+                dummy_template = re.sub("\${VERSION}", "1.0", dummy_template)
+                dummy_template = re.sub("\${SOFTCOMMENTS}", "Old version", dummy_template)
+             
+                all_analyses_xml += dummy_template
+        
+            # add all the analysis info in the global template
+            self._populatedTemplate = re.sub("\${AnalysisResults}", all_analyses_xml, self._populatedTemplate)
+         
+    
+    def _fillCalibrationCoeffs(self, prefix, calibInfos):
+        """ Insert the calibration information
+        
+            Args:
+               prefix: the prefix for constituting the UID identifying the currently treated sampleID in the fetcher object
+               calibInfos: set of calib info ids that have already been included in the xml
+            
+            Returns: generated xml data for displaying calibration info
+               
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        
+        # first add Energy Cal
+        template = self._conf.get("ParticulateTemplatingSystem", "particulateEnergyCalTemplate")
+        
+        xml = ""
+        dummy_template = ""
+        
+        # get energy calibration 
+        en_id = self._fetcher.get("%s_G_ENERGY_CAL" % (prefix), None)
+        
+        if (en_id is not None):
+        
+            # add calib info if it isn't there already
+            if en_id not in calibInfos:
+                energy = self._fetcher.get(en_id, {})
+                dummy_template = re.sub("\${TERM0}", str(energy.get(u'COEFF1', "None")), template)
+                dummy_template = re.sub("\${TERM1}", str(energy.get(u'COEFF2', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(energy.get(u'COEFF3', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM3}", str(energy.get(u'COEFF4', "None")), dummy_template)
+                dummy_template = re.sub("\${EN_ID}", en_id, dummy_template)
+                # add generated xml in final container
+                xml += dummy_template
+                # add the id in the set of existing infos
+                calibInfos.add(en_id)
+        else:
+            GenieParticulateRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
+        
+        template = self._conf.get("ParticulateTemplatingSystem", "particulateResolutionCalTemplate")
+        
+        re_id = self._fetcher.get("%s_G_RESOLUTION_CAL" % (prefix), None)
+        
+        if re_id is not None: 
+            # add calib info if it isn't there already
+            if re_id not in calibInfos:
+                # get resolution calibration 
+                resolution = self._fetcher.get(re_id, {})
+        
+                dummy_template = re.sub("\${TERM0}", str(resolution.get('COEFF1', "None")), template)
+                dummy_template = re.sub("\${TERM1}", str(resolution.get('COEFF2', "None")), dummy_template)
+                dummy_template = re.sub("\${RE_ID}", re_id, dummy_template)
+        
+                # add generated xml in final container
+                xml += dummy_template
+    
+                # add the id in the set of existing infos
+                calibInfos.add(re_id)
+        else:
+            GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
+        
+        template = self._conf.get("ParticulateTemplatingSystem", "particulateEfficencyCalTemplate")
+        
+        eff_id = self._fetcher.get("%s_G_EFFICIENCY_CAL" % (prefix), None)
+        
+        
+        
+        if (eff_id is not None):
+            # add calib info if it isn't there already
+            if eff_id not in calibInfos:
+                # get efficiency calibration 
+                eff = self._fetcher.get(eff_id, {})
+        
+                dummy_template = re.sub("\${LN_TERM0}", str(eff.get('COEFF1', "None")), template)
+                dummy_template = re.sub("\${TERM0}", str(eff.get('COEFF2', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM1}", str(eff.get('COEFF3', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(eff.get('COEFF4', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM3}", str(eff.get('COEFF5', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM4}", str(eff.get('COEFF6', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM5}", str(eff.get('COEFF7', "None")), dummy_template)
+                dummy_template = re.sub("\${EF_ID}", eff_id, dummy_template)
+        
+                # add generated xml in final container
+                xml += dummy_template
+            
+                # add the id in the set of existing infos
+                calibInfos.add(eff_id)
+        
+        return xml
+    
+    def _fillCalibration(self):
+        """ Add the calibration parameters for each of the spectrum
+        
+            Args:
+               requestDict: dictionary representing the different elements of the request (analysis, spectrum, ...)
+            
+            Returns: Nothing
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        xml = ""
+        # list of ids added in the xml document
+        addedCalibrationIDs = set()
+        
+        for ty in self._fetcher.get('CONTENT_PRESENT', []):
+            
+            # treat preliminary samples differently as there is another indirection
+            if ty == 'PREL':
+                for prefix in self._fetcher.get('CURR_List_OF_PRELS', []):
+                    if prefix is None:
+                        raise CTBTOError(- 1, "Error when filling Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n" % (prefix, prefix))
+                
+                    xml += self._fillCalibrationCoeffs(prefix, addedCalibrationIDs)    
+            else:
+                prefix = self._fetcher.get(u'CURRENT_%s' % (ty), None)
+                if prefix is None:
+                    raise CTBTOError(- 1, "Error when fetching Calibration info for prefix %s, There is no CURRENT_%s in the dataBag\n" % (prefix, prefix))
+               
+                xml += self._fillCalibrationCoeffs(prefix, addedCalibrationIDs)      
+            
+        # out of the loop
+        self._populatedTemplate = re.sub("\${CALIBRATION}", xml, self._populatedTemplate)
+    
     
     def _fillData(self, requestDict):
         """ Insert the spectrum data expected as defined in the initial passed request
@@ -246,10 +540,9 @@ class SpalaxRenderer(BaseRenderer):
               
                 l = self._fetcher.get("%s_ALL_CALS" % (fname))
                 if l is None:
-                    SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                    SpalaxRenderer.c_log.warning("No calibration information for sample %s" % (ty))
                     l = []
-                        
-
+                
                 # add calibration info
                 spectrumTemplate = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), spectrumTemplate) #IGNORE:W0141
               
