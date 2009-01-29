@@ -1733,9 +1733,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 class SpalaxNobleGasDataFetcher(DBDataFetcher):
     """ Class for fetching SPALAX related data """
     
-      # Class members
+    # Class members
     c_log = logging.getLogger("datafetchers.SpalaxNobleGasDataFetcher")
     c_log.setLevel(logging.INFO)
+    
+    c_method_translation = { 11: 'Peak Fit Method', 12:'Decay Analysis Method'}
 
 
     def __init__(self,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
@@ -2111,6 +2113,31 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         self._dataBag[u'XE_NUCLIDE_LINES_LIB'] = res
         
         result.close()
+
+    def _fetchAutoSaintDefaultParams(self):
+        """ get the default params used by autosaint to run the analysis"""
+        
+        # return all gards_XE_NUCL_LIB
+        result = self._mainConnector.execute(sqlrequests.SQL_GET_AUTOSAINT_DEFAULT_PARAMS)
+        
+        rows = result.fetchall()
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        
+        # create a list of dicts
+        data = {}
+
+        for row in rows:
+            # copy row in a normal dict
+            data.update(row)
+            res.append(data)
+            data = {}
+        
+        # add in dataBag
+        self._dataBag[u'AUTOSAINT_DEFAULT_PARAMS'] = res
+        
+        result.close()
            
     def _fetchAnalysisResults(self,aParams=None):
         """ get the  sample categorization, activityConcentrationSummary, peaks results, parameters, flags"""
@@ -2121,6 +2148,8 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         self._fetchXeNuclideLinesLib()
         
         self._fetchXeRefLines()
+        
+        self._fetchAutoSaintDefaultParams()
            
         analyses = self._parser.parse(aParams,RequestParser.GAS).get(RequestParser.ANALYSIS,set())
        
@@ -2150,7 +2179,39 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
              
                 self._fetchFlags(sid,dataname)
         
-                #self._fetchParameters(sid,dataname)
+                self._fetchParameters(sid,dataname)
+    
+    def _fetchParameters(self,a_sid,a_dataname):
+        """ 
+           Get the parameters for a particular sample
+           
+            Args:
+               
+            Returns:  
+        
+            Raises:
+               exception
+        """
+        # get processing params and flags
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_PROCESSING_PARAMETERS%(a_sid))
+       
+        # only one row in result set
+        rows = result.fetchall()    
+        
+        # add results in a list which will become a list of dicts
+        res = []
+        data = {}
+        
+        for row in rows:
+            data.update(row.items())  
+          
+            res.append(data)
+            data = {}
+
+        # add in dataBag
+        self._dataBag[u'%s_PROC_PARAMS'%(a_dataname)] = res
+        
+        result.close()  
     
     def _fetchCategoryResults(self,a_sid,a_dataname):
         """ 
@@ -2166,10 +2227,55 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         
         # to be done when the category scheme is established
         
-    def _fetchFlags(self,sid,aDataname):
-        """ get the different flags """
+    def _fetchFlags(self,a_sid,a_dataname):
+        """ 
+           Get the different kind of flags (QC flags from GARDS_QC_RESULTS and Quality flags from GARDS_FLAGS)
+           
+            Args:
+                a_sid : the sample_id
+                a_dataname: name used to qualify the related sample in the data dict.
+               
+            Returns:   
         
-        self._fetchdataQualityFlags(sid,aDataname)
+            Raises:
+               exception
+        """
+        self._fetchdataQualityFlags(a_sid,a_dataname)
+        
+        self._fetchQCFlags(a_sid, a_dataname)
+    
+    def _fetchQCFlags(self,sid,dataname):
+        """ 
+           Get the QC flags as they have been stored in the DB by autoSaintXe
+           
+            Args:
+               
+            Returns:   = type of the spectrum (SPHD, PREL, QC, BK)
+        
+            Raises:
+               exception
+        """
+         # get MDA nuclides
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_QC_FLAGS%(sid))
+        
+        rows = result.fetchall()
+        
+        if len(rows):
+            data = {}
+        
+            res = []
+        
+            for row in rows:
+                # copy row in a normal dict
+                data.update(row)
+            
+                res.append(data)
+                data = {}
+               
+            # add in dataBag
+            # R is for Red and G for Green
+            self._dataBag[u'%s_QC_FLAGS'%(dataname)] = res    
+        
         
     def _fetchdataQualityFlags(self,sid,dataname):
         """ 
@@ -2227,13 +2333,21 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         for row in rows:
             data.update(row.items())  
             
+            # translate NID_FLAG to something humanely understandable
             nidflag = data.get(u'NID_FLAG',None)
-
             # check if there is NID key
             if nidflag is not None:
                 val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
                 data[u'NID_FLAG']     = val
                 data[u'NID_FLAG_NUM'] = nidflag
+            
+            # translate METHOD_ID to something humanely understandable
+            method_id = data.get(u'METHOD_ID',None)
+            # check if there is NID key
+            if nidflag is not None:
+                val = SpalaxNobleGasDataFetcher.c_method_translation.get(method_id,method_id)
+                data[u'METHOD']     = val
+                data[u'METHOD_ID'] = nidflag
         
             # add concentration error in percent
             if data.get(u'CONC',0) != 0:
