@@ -16,6 +16,7 @@ from org.ctbto.conf  import Conf
 
 from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer
+from ctbto.renderers import SpalaxRenderer
 from ctbto.transformer import XML2HTMLRenderer
 
 
@@ -427,7 +428,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-01',endDate='2009-12-12',spectralQualif='FULL',nbOfElem='200')
+        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-01',endDate='2009-12-12',spectralQualif='FULL',nbOfElem='2')
                
         # remove sampleID for which data isn't available
         #if "141372" in listOfSamplesToTest:
@@ -453,7 +454,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
             fetcher.fetch(request,'GAS')
                  
-            renderer = SaunaRenderer(fetcher)
+            renderer = SpalaxRenderer(fetcher)
    
             xmlStr = renderer.asXmlStr(request)
            
