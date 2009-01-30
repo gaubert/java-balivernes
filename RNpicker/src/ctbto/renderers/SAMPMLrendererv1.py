@@ -178,9 +178,36 @@ class SpalaxRenderer(BaseRenderer):
         """ return Categorization for the passed sample_id. Do nothing for the moment """
         return ""
     
+    def _build_xml_from_table_representation(self,table):
+        """ dynamically build the xml adding the parameters """
+        
+        xml=''
+        ignore_list = ['DBDefault','DBFile','DBPassword','DBServer','DBString','DBUser','Help','ManualDB','ManualDBUser','ManualDBPassword','RmsHome']
+        
+        for line in table:
+            name = line['NAME']
+            if name not in ignore_list:
+                xml += '<%s>%s</%s>'%(name,line['VALUE'],name)
+
+        return xml
+    
     def _getParameters(self, id): #IGNORE:W0613
-        """ return Categorization for the passed sample_id. Do nothing for the moment """
-        return ""
+        """ return the processing paramters
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        
+        # first add Quantified Nuclides
+        template = self._conf.get("SpalaxTemplatingSystem", "spalaxProcessingParametersTemplate")
+
+        return re.sub("\${PARAMETERS}",self._build_xml_from_table_representation(self._fetcher.get("%s_PROC_PARAMS" % (id), None)), template)
 
     def _getNuclides(self, id):
         """ fill the information regarding the analysed nuclides
