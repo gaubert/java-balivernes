@@ -221,7 +221,48 @@ class SpalaxRenderer(BaseRenderer):
             Raises:
                exception if issue fetching data (CTBTOError)
         """
-        return ""
+        result_str = ""
+        
+         # first get the template
+        nuclide_template          = self._conf.get("SpalaxTemplatingSystem", "spalaxNuclideTemplate")
+        
+        xeresults = self._fetcher.get("%s_XE_RESULTS"%(id),None)
+        
+        matrix_results = {}
+        
+        if xeresults is not None:
+            for result in xeresults:
+                method = result[u'METHOD']
+                # if the matrix doesn't exist add it in the results
+                if method not in matrix_results:
+                    matrix_results[method] = ""
+                
+                dummy_template = re.sub("\${METHOD}",result[u'METHOD'],nuclide_template)
+                dummy_template = re.sub("\${NAME}",result[u'NUCLIDE'],dummy_template)
+                dummy_template = re.sub("\${CONCENTRATION}", str(result['CONC']), dummy_template)
+                dummy_template = re.sub("\${CONCENTRATION_ERROR}", str(result['CONC_ERR']), dummy_template)
+                dummy_template = re.sub("\${CONCENTRATION_ERROR_PERC}", str(result.get('CONC_ERR_PERC', 'N/A')), dummy_template)
+                dummy_template = re.sub("\${MDI}", str(result['MDI']), dummy_template)
+                dummy_template = re.sub("\${MDC}", "%s" % (str(result['MDC'])), dummy_template)
+                # LC and LD in concentration
+                dummy_template = re.sub("\${LC}", "%s" % (str(result['LC'])), dummy_template)
+                dummy_template = re.sub("\${LD}", "%s" % (str(result['LD'])), dummy_template)
+                dummy_template = re.sub("\${ACTIVITY}", str(result['ACTIVITY']), dummy_template)
+                dummy_template = re.sub("\${ACTIVITY_ERROR}", str(result['ACTIVITY_ERR']), dummy_template)
+                dummy_template = re.sub("\${ACTIVITY_ERROR_PERC}", str(result.get('ACTIVITY_ERR_PERC', 'N/A')), dummy_template)
+                dummy_template = re.sub("\${LC_ACTIVITY}", str(result['LC_ACTIVITY']), dummy_template)
+                dummy_template = re.sub("\${LD_ACTIVITY}", str(result['LD_ACTIVITY']), dummy_template)
+            
+                dummy_template = re.sub("\${IDENTIFICATION_INDICATOR}", str(result['NID_FLAG']), dummy_template)
+                dummy_template = re.sub("\${IDENTIFICATION_NUM}", str(result['NID_FLAG_NUM']), dummy_template)
+            
+                matrix_results[method] += dummy_template
+        
+        # hopefully we should get two matrixes in matrix_results
+        for (method,nuclides) in matrix_results.items():
+            result_str += nuclides
+                
+        return result_str
     
     def _getXECovMatrix(self,id):
         """ fill the covariance matrix results
