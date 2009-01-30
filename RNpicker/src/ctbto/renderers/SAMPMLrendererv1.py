@@ -228,7 +228,7 @@ class SpalaxRenderer(BaseRenderer):
                
                 cells = matrix_results[method]
                
-                row     = re.sub("\${ROW}",str(result.get(u'NUCLIDE_ID','Error')) , cell_template)
+                row     = re.sub("\${ROW}",str(result.get(u'NUCLIDE','Error')) , cell_template)
                 
                 one_row = re.sub("\${COL}"  ,'XE_131M', row)
                 one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_131M','Error')) , one_row)
