@@ -2325,6 +2325,10 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
        
         # only one row in result set
         rows = result.fetchall()   
+        
+        # get the volume to comp[ute activity from concentration
+        # it is in m3
+        volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
        
         # add results in a list which will become a list of dicts
         res = []
@@ -2362,6 +2366,24 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             # add concentration error in percent
             if data.get(u'CONC',0) != 0:
                 data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
+                
+            # calculate volumes and concentration (need vol for that)
+            # get activity. If no volume or no activity results are 0
+            # if volume = 0 or ignore
+            if volume > 1:
+                data[u'ACTIVITY']     = data.get(u'CONC',0)*volume
+                data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
+                data[u'LC_ACTIVITY']  = data.get(u'LC',0)*volume  
+                data[u'LD_ACTIVITY']  = data.get(u'LD',0)*volume
+            else:
+                data[u'ACTIVITY']     = 'N/A'
+                data[u'ACTIVITY_ERR'] = 'N/A'
+                data[u'LC_ACTIVITY']  = 'N/A'  
+                data[u'LD_ACTIVITY']  = 'N/A'
+          
+            # to avoid div by 0 check that quotient is not nul
+            if data[u'ACTIVITY'] != 'N/A':
+                data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
           
             res.append(data)
             data = {}
