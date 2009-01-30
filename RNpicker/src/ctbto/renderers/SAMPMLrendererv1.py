@@ -286,6 +286,72 @@ class SpalaxRenderer(BaseRenderer):
                 
         return result_str
     
+    def _getDataQualityFlags(self,id):
+        """ Add the data quality flags
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        template = self._conf.get("SpalaxTemplatingSystem", "spalaxDataQualityFlagsTemplate")
+        
+        # add Data Quality Flags
+        dataQFlags = self._fetcher.get('%s_DATA_QUALITY_FLAGS' % (id), [])
+        
+        # list of all flags found
+        dq_xml = ""
+        
+        if len(dataQFlags) > 0:
+            for flag in dataQFlags:
+                name = flag['DQ_NAME']
+              
+                # check if it has a template if not ignore.
+                dummy_template = self._conf.get("SpalaxTemplatingSystem", "dataQFlags_%s_Template" % (name), None)
+                if dummy_template != None:
+                    dummy_template = re.sub("\${%s_VAL}" % (name), str(flag['DQ_VALUE']), dummy_template)
+                    dummy_template = re.sub("\${%s_PASS}" % (name), "true" if flag['DQ_RESULT'] == 0 else "false", dummy_template)
+                    dummy_template = re.sub("\${%s_THRESOLD}" % (name), str(flag['DQ_THRESHOLD']), dummy_template)
+                 
+                    # add non empty template to data flags
+                    dq_xml += dummy_template
+              
+        return re.sub("\${DQ_FLAGS}", dq_xml, template)
+    
+    def _getQCFlags(self,id):
+        """ Add the QC flags
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        template = self._conf.get("SpalaxTemplatingSystem", "spalaxQCFlagsTemplate")
+        
+        # add Data Quality Flags
+        dataQFlags = self._fetcher.get('%s_QC_FLAGS' % (id), [])
+        
+        xml = ''
+        
+        # get the template for a unique flag
+        one_flag = self._conf.get("SpalaxTemplatingSystem", "spalaxQCFlagTemplate")
+        
+        for dFlag in dataQFlags:
+            xml_f = re.sub("\${NAME}", dFlag[u'TEST_NAME'], one_flag)
+            xml_f = re.sub("\${COMMENT}",dFlag[u'QC_COMMENT'], xml_f)
+            xml_f = re.sub("\${PASS}","true" if dFlag[u'FLAG'] == 'G' else "false", xml_f)
+            xml += xml_f
+        
+        return  re.sub("\${QC_FLAGS}",xml,template)   
+    
     def _getFlags(self, id):
         """ create xml part with the flag info
         
@@ -298,7 +364,11 @@ class SpalaxRenderer(BaseRenderer):
             Raises:
                exception if issue fetching data (CTBTOError)
         """
-        return ""
+        xml = self._getDataQualityFlags(id)
+        
+        xml += self._getQCFlags(id)
+        
+        return xml
     
     def _fillAnalysisResults(self, requestDict):
         """ fill the analysis results for each result
