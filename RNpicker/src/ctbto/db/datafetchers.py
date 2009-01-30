@@ -2346,8 +2346,18 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             # check if there is NID key
             if nidflag is not None:
                 val = SpalaxNobleGasDataFetcher.c_method_translation.get(method_id,method_id)
-                data[u'METHOD']     = val
+                data[u'METHOD']    = val
                 data[u'METHOD_ID'] = nidflag
+                
+            # translate NUCLIDE_ID into a string
+            # use nuclide lib for translation
+            # beware the list index start at 0 and the nuclide_id start at 1
+            nuclide_id = data.get(u'NUCLIDE_ID',None)
+            nuclide_id = nuclide_id - 1
+            nuclide_lib = self._dataBag[u'XE_NUCL_LIB']
+            if nuclide_id is not None:
+                nucl = nuclide_lib[nuclide_id] if (nuclide_id < len(nuclide_lib)) and (nuclide_id >=0) else "Not Found"
+                data[u'NUCLIDE'] =  nucl[u'NAME']
         
             # add concentration error in percent
             if data.get(u'CONC',0) != 0:
