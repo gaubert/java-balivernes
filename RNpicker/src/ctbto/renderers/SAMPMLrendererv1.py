@@ -442,7 +442,7 @@ class SpalaxRenderer(BaseRenderer):
                 # for the moment only one result
                 dummy_template += template
     
-                spectrum_id = self._fetcher.get("%s_DATA_G_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "unknown")
+                spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "unknown")
              
                 # Add analysis identifier => SpectrumID prefixed by AN
                 dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_id), dummy_template)
@@ -531,6 +531,7 @@ class SpalaxRenderer(BaseRenderer):
         
                 dummy_template = re.sub("\${TERM0}", str(resolution.get('COEFF1', "None")), template)
                 dummy_template = re.sub("\${TERM1}", str(resolution.get('COEFF2', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(resolution.get('COEFF3', "None")), dummy_template)
                 dummy_template = re.sub("\${RE_ID}", re_id, dummy_template)
         
                 # add generated xml in final container
