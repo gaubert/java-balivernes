@@ -24,7 +24,8 @@ SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collec
 
 SQL_GETSAUNASAMPLEIDS  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (600,542,555,566,521,620,685,614,595) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+#SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (595,600,542,555,566,521,620,685,614) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (595) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
 def myBasicLoggingConfig():
     """
@@ -428,13 +429,13 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=CURR"
         
         # get full
-        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-01',endDate='2009-12-12',spectralQualif='FULL',nbOfElem='2')
+        listOfSamplesToTest = self.getListOfSpalaxSampleIDs('2009-01-20',endDate='2009-02-01',spectralQualif='FULL',nbOfElem='2')
                
         # remove sampleID for which data isn't available
         #if "141372" in listOfSamplesToTest:
         #    listOfSamplesToTest.remove("141372")
         #PREL 211385
-        #listOfSamplesToTest = ['263003']
+        listOfSamplesToTest = ['269892']
         TestSAMPMLCreator.c_log.info("list samples :%s"%(listOfSamplesToTest))
         
         cpt = 0

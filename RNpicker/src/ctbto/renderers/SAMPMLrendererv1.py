@@ -280,8 +280,8 @@ class SpalaxRenderer(BaseRenderer):
         result_str = ""
         
          # first get the template
-        cell_template          = self._conf.get("SpalaxTemplatingSystem", "spalaxCovMatrixCell")
-        method_matrix_template = self._conf.get("SpalaxTemplatingSystem", "spalaxMethodMatrix")
+        cell_template          = self._conf.get("SpalaxTemplatingSystem", "spalaxCovMatrixCellTemplate")
+        method_matrix_template = self._conf.get("SpalaxTemplatingSystem", "spalaxMethodMatrixTemplate")
         
         matrix_results = {}
         
