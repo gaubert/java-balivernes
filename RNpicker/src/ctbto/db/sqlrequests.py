@@ -119,7 +119,7 @@ SQL_SPALAX_GET_QC_SAMPLEID = "select * from \
                                       ) \
                                   where rownum = 1"
    
-SQL_SPALAX_GET_XE_RESULTS   = "select METHOD_ID,NUCLIDE_ID,CONC,CONC_ERR,MDC,MDI,NID_FLAG,LC,LD,SAMPLE_ACT,COV_XE_131M,COV_XE_133M,COV_XE_133,COV_XE_135,COV_RADON from RMSAUTO.GARDS_XE_RESULTS where sample_id=%s"                               
+SQL_SPALAX_GET_XE_RESULTS            = "select METHOD_ID,NUCLIDE_ID,CONC,CONC_ERR,MDC,MDI,NID_FLAG,LC,LD,SAMPLE_ACT,COV_XE_131M,COV_XE_133M,COV_XE_133,COV_XE_135,COV_RADON from RMSAUTO.GARDS_XE_RESULTS where sample_id=%s"                               
 
 SQL_SPALAX_GET_XE_REF_LINES          = "select * from RMSAUTO.GARDS_XE_REFLINE_MASTER order by refpeak_energy"
 
