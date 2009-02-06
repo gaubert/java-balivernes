@@ -300,7 +300,7 @@ class TestSAMPMLCreator(unittest.TestCase):
 
 
 
-    def ztestFullGenieParticulateSamples(self):
+    def testFullGenieParticulateSamples(self):
         """ 
            test Genie Particulate samples 
         """
@@ -308,10 +308,10 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full 2003-10-24 to 2003-10-26
-        listOfSamplesToTest = self.getListOfSampleIDs('2007-10-24',endDate='2008-10-26',spectralQualif='FULL',nbOfElem='2')
+        #listOfSamplesToTest = self.getListOfSampleIDs('2008-10-05',endDate='2008-10-06',spectralQualif='FULL',nbOfElem='2')
         
         # error
-        #listOfSamplesToTest = [ "700637" ]
+        listOfSamplesToTest = [ "916900" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
@@ -421,7 +421,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
-    def testSpalaxFullNobleGazSamples(self):
+    def ztestSpalaxFullNobleGazSamples(self):
         """ 
            Get Full Noble Gaz samples.
         """
