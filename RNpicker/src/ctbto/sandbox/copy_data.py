@@ -12,21 +12,7 @@ def copy_data(begin_date,end_date):
     begin = datetime.datetime.strptime(begin_date,'%Y-%m-%d')
     end   = datetime.datetime.strptime(end_date,'%Y-%m-%d')
     
-    end   = end + datetime.timedelta(1)
-    
-    beg_time_tuple = begin.timetuple()
-    end_time_tuple = end.timetuple()
-    
-    beg_year = beg_time_tuple[0]
-    end_year = end_time_tuple[0]
-
-    if beg_year != end_year:
-        raise Exception("Error for the moment cannot copy data from two different years. (beg = %d,end = %d)"%(beg_year,end_year))
-    
-    begin_day_num = begin.timetuple()[7]
-    end_day_num   = end.timetuple()[7]
-
-    print "Beg = %s , end = %s \n"%(begin_day_num,end_day_num)
+    current = begin
     
     processed = "/home/misc/rmsops/data/processed"
     
@@ -35,21 +21,24 @@ def copy_data(begin_date,end_date):
     # remove met, flow, rlr for the moment
     internal_dirs = ["alert","blank","cal","detbk","flow","gasbk","qc","sample","soh"]
     
-    for i_d in internal_dirs:
+    while current <= end:
         
-        # add year
-        path = "%s/%s/%s"%(processed,i_d,beg_year)
+        current_time_tuple = current.timetuple()   
+        current_day_num = current_time_tuple[7]
+        current_year    = current_time_tuple[0]
+    
+        for i_d in internal_dirs:
         
-        print("**************************************************\n")
-        print("Retrieve all data in %s\n"%(path))
+            # add year
+            path = "%s/%s/%s"%(processed,i_d,current_year)
+        
+            print("**************************************************\n")
+            print("Retrieve all data in %s\n"%(path))
     
-        command = ""
+            command = ""
     
-        l_days = xrange(begin_day_num,end_day_num)
-    
-        for day in l_days:
             # create root dir if it doesn't exists
-            orig_path_dir = "%s/%s"%(path,day)
+            orig_path_dir = "%s/%s"%(path,current_day_num)
          
             dest_path_dir = "%s/%s"%(root_dir,orig_path_dir)
          
@@ -69,6 +58,8 @@ def copy_data(begin_date,end_date):
                     print("Error when executing %s. See log files.\n"%(command))
                 
                 tries += 1
+                
+        current = current + datetime.timedelta(1)
 
 def copy_reports(begin_date,end_date):
     
@@ -120,8 +111,8 @@ def copy_reports(begin_date,end_date):
 
 if __name__ == '__main__':
     
-    copy_data('2008-10-01','2008-10-01')
+    copy_data('2008-10-01','2008-10-15')
     
-    copy_reports('2008-10-01','2008-10-01')
+    copy_reports('2008-10-01','2008-10-15')
    
    
