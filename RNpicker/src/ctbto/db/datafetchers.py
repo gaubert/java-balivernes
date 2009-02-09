@@ -595,7 +595,7 @@ class DBDataFetcher(object):
         hasFoundEOSpectrum = False
         
         for line in aInput:
-            if line.find('#') >= 0:
+            if line.find('#') >= 0 or line.find('STOP'):
                 # we have reached the end leave
                 hasFoundEOSpectrum = True
                 break

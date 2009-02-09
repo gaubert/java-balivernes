@@ -308,7 +308,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full 2003-10-24 to 2003-10-26
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-05',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='2')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-02',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='50')
         
         # error
         # these two are working
