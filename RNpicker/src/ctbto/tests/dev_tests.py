@@ -20,7 +20,7 @@ from ctbto.renderers import SpalaxRenderer
 from ctbto.transformer import XML2HTMLRenderer
 
 
-SQL_GETSAMPLEIDS = "select sample_id from RMSMAN.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
+SQL_GETSAMPLEIDS = "select sample_id from RMSAUTO.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
 
 SQL_GETSAUNASAMPLEIDS  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
@@ -150,7 +150,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
         self._setUpGenieParticulate()
         
-        self._setUpNobleGaz()
+        #self._setUpNobleGaz()
         
         
     def assertIfNoTagsLeft(self,path):
@@ -308,10 +308,11 @@ class TestSAMPMLCreator(unittest.TestCase):
         request="spectrum=ALL, analysis=ALL"
         
         # get full 2003-10-24 to 2003-10-26
-        #listOfSamplesToTest = self.getListOfSampleIDs('2008-10-05',endDate='2008-10-06',spectralQualif='FULL',nbOfElem='2')
+        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-05',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='2')
         
         # error
-        listOfSamplesToTest = [ "916900" ]
+        # these two are working
+        #listOfSamplesToTest = [ "916900","917873" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
