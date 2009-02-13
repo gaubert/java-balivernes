@@ -17,8 +17,7 @@ from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer
 from ctbto.renderers import SpalaxRenderer
 from ctbto.transformer import XML2HTMLRenderer
- 
- 
+
 SQL_GETSAMPLEIDS = "select sample_id from RMSAUTO.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and spectral_qualifier='%s' and ROWNUM <= %s"
  
 SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
