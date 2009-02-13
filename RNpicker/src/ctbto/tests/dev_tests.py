@@ -312,7 +312,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         # error
         # these two are working
-        #listOfSamplesToTest = [ "916900","917873" ]
+        listOfSamplesToTest = [ "916900","917873" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)
