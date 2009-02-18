@@ -130,7 +130,7 @@ class Tokenizer(object):
     
     def consume_token(self,what):
         if self._current.value != what :
-            raise LexerError("Error. Expected '%s' but found '%s'"%(what,self._current))
+            raise LexerError("Error. Expected '%s' but found '%s'"%(what,self._current.value))
         else:
             return self.next()
     
