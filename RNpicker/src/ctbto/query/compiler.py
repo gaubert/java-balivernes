@@ -278,7 +278,7 @@ class Compiler(object):
             Raises:
                exception 
         """ 
-        statement = DestinationStatement()
+        statement = OriginStatement()
         token = self._tokenizer.current_token()
         
         # after a destination statement, it is possible to have 
