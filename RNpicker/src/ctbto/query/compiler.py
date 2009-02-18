@@ -74,7 +74,41 @@ class CriteriaStatement(Statement):
             s += expr.get_execution_tree()
         
         return "( criteria %s )"%(s)
+ 
+class DestinationStatement(Statement):
+ 
+    def __init__(self):
         
+        super(DestinationStatement,self).__init__()
+        
+        self._type        = None
+        self._destination = None
+        
+    def add_destination(self,a_type,a_val):
+        
+        self._type         = a_type
+        self._val          = a_val
+        
+    def get_execution_tree(self):
+        return "( to ( type %s ) ( val %s ) )"%(self._type,self._val)    
+
+class OriginStatement(Statement):
+ 
+    def __init__(self):
+        
+        super(OriginStatement,self).__init__()
+        
+        self._type        = None
+        self._destination = None
+        
+    def add_destination(self,a_type,a_val):
+        
+        self._type         = a_type
+        self._val          = a_val
+        
+    def get_execution_tree(self):
+        return "( from ( type %s ) ( val %s ) )"%(self._type,self._val)      
+     
 class FilterStatement(Statement):
  
     def __init__(self):
@@ -196,16 +230,64 @@ class Compiler(object):
         
         token = self._tokenizer.current_token()
         
+        # Can have a destination or origin statement or nothing
         while token.type != 'ENDMARKER':
+            
             expr = self._expr_compiler.compile(self._tokenizer)
             print "expr = %s\n"%(expr)
             statement.add_criteria(expr)
             
             token = self._tokenizer.current_token()
+            # if find to or from there is a destination or origin statement
+            if token.value == 'to' or token.value == 'from':
+                break
                 
+        return statement
+    
+    def _read_destination_statement(self):
+        """ destination statement. This is where to store the data.
+        
+            Args:
+               None
+               
+            Returns:
+               return 
+        
+            Raises:
+               exception 
+        """ 
+        statement = DestinationStatement()
+        token = self._tokenizer.current_token()
+        
+        # after a destination statement, it is possible to have 
+        while token.type != 'ENDMARKER' or token.type != 'from':
+            expr = self._expr_compiler.compile(self._tokenizer)
+            print "expr = %s\n"%(expr)
         
         return statement
+    
+    def _read_origin_statement(self):
+        """ origin statement. This is where to store the data.
         
+            Args:
+               None
+               
+            Returns:
+               return 
+        
+            Raises:
+               exception 
+        """ 
+        statement = DestinationStatement()
+        token = self._tokenizer.current_token()
+        
+        # after a destination statement, it is possible to have 
+        while token.type != 'ENDMARKER' or token.type != 'from':
+            expr = self._expr_compiler.compile(self._tokenizer)
+            print "expr = %s\n"%(expr)
+        
+        return statement
+    
     def _read_filter_statement(self):
         """ private compilation method .
         
@@ -219,12 +301,12 @@ class Compiler(object):
                exception 
         """ 
         statement = FilterStatement()
-        # look for a filter statement s[a,v,b] , t[a,b,c] until where
+        # look for a filter statement s[a,v,b] , t[a,b,c] until with
         # for retrieve spectrum[CURR,BK], analysis[CURR,BK] where
         # we want to have (retrieve ( filter ( [ (literal spectrum) (literal CURR) ) ([ (literal analysis) (literal BK) ) )  
         token = self._tokenizer.next()
         
-        while token.value != 'where':
+        while token.value != 'with':
             if token.type == 'NAME':
                 filter_name = token.value
                 token = self._tokenizer.next()
@@ -267,15 +349,31 @@ class Compiler(object):
         # first read a 'filter' statement
         ret_statement.add(self._read_filter_statement())
        
-        # consume the where token
-        self._tokenizer.consume_token('where') 
+        # consume the with token
+        self._tokenizer.consume_token('with') 
         
         # read criteria statements
         ret_statement.add(self._read_criteria_statement())
         
         # read criteria statement
-        # look for where min(spectrum.A) , date = "20081203/20081205", date="20081203/to/20091203"
+        # look for with min(spectrum.A) , date = "20081203/20081205", date="20081203/to/20091203"
         # => parse expression, parse date (in date parse period, parse list of date, parse single dates)
+        
+        # if current_token 
+        token = self._tokenizer.current_token()
+        
+        if token.value == 'to':
+            # consume the token
+            self._tokenizer.consume_token('to')
+            # look for destination
+            ret_statement.add(self._read_destination_statement())
+        
+        if token.value == 'from':
+            # consume the token
+            self._tokenizer.consume_token('from')
+            # look for destination
+            ret_statement.add(self._read_origin_statement())
+        
         
         return ret_statement
     
@@ -315,12 +413,31 @@ class TestCompiler(unittest.TestCase):
          
         print " setup \n"
     
-    def testTokenizerCompiler(self):
+    def ztestTokenizerCompiler(self):
         
         c = Compiler()
         
         # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] where techno = radionuclide and mda < 10 and category > 2")
+        """
+           radionuclide products :  bulletins         data             observations
+                                    
+                                     RRR,ARR,SSREB     sampml           particulate, noble gas
+        """
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2")
+     
+        print "get_execution_tree program %s\n"%(program.get_execution_tree())
+    
+    def testCompleteExpression(self):
+        
+        c = Compiler()
+        
+        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
+        """
+           radionuclide products :  bulletins         data             observations
+                                    
+                                     RRR,ARR,SSREB     sampml           particulate, noble gas
+        """
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 to file='/tmp/data/data.bin'")
      
         print "get_execution_tree program %s\n"%(program.get_execution_tree())
    
