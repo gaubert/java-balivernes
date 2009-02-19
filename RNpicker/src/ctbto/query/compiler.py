@@ -74,40 +74,48 @@ class CriteriaStatement(Statement):
             s += expr.get_execution_tree()
         
         return "( criteria %s )"%(s)
+    
+class ContainerBaseStatement(Statement):
+    
+    def __init__(self):
+        
+        super(ContainerBaseStatement,self).__init__()
+        
+        self._type        = None
+        self._value       = None
+        self._format      = None
+    
+    def add_type(self,a_type):
+        
+        self._type         = a_type
+    
+    def add_value(self,a_value):
+        
+        self._value = a_value
+        
+    def add_format(self,a_format):
+        
+        self._format = a_format
+        
  
-class DestinationStatement(Statement):
+class DestinationStatement(ContainerBaseStatement):
  
     def __init__(self):
         
         super(DestinationStatement,self).__init__()
         
-        self._type        = None
-        self._destination = None
-        
-    def add_destination(self,a_type,a_val):
-        
-        self._type         = a_type
-        self._val          = a_val
-        
     def get_execution_tree(self):
-        return "( to ( type %s ) ( val %s ) )"%(self._type,self._val)    
+        
+        return "( to ( type %s ) ( val %s ) ( format %s ) )"%(self._type,self._value,self._format) if (self._format != None) else "( to ( type %s ) ( val %s ) )"%(self._type,self._value) 
 
-class OriginStatement(Statement):
+class OriginStatement(ContainerBaseStatement):
  
     def __init__(self):
         
         super(OriginStatement,self).__init__()
         
-        self._type        = None
-        self._destination = None
-        
-    def add_destination(self,a_type,a_val):
-        
-        self._type         = a_type
-        self._val          = a_val
-        
     def get_execution_tree(self):
-        return "( from ( type %s ) ( val %s ) )"%(self._type,self._val)      
+        return "( from ( type %s ) ( val %s ) ( format %s ) )"%(self._type,self._value,self._format) if (self._format != None) else "( from ( type %s ) ( val %s ) )"%(self._type,self._value)     
      
 class FilterStatement(Statement):
  
@@ -260,14 +268,46 @@ class Compiler(object):
         token = self._tokenizer.current_token()
         
         # after a destination statement, it is possible to have 
-        while token.type != 'ENDMARKER' or token.type != 'from':
-            expr = self._expr_compiler.compile(self._tokenizer)
-            print "expr = %s\n"%(expr)
+        while True:
+            
+            if token.type == 'ENDMARKER' or token.value == 'from':
+                # leave loop 
+                break
+            # for the moment look for file or format
+            elif token.value == 'file':
+                
+                statement.add_type(token.value)
+                
+                # next token and look for =
+                self._tokenizer.next()
+                token = self._tokenizer.consume_token('=')
+                
+                if token.type == 'STRING':
+                    statement.add_value(token.value)
+                else:
+                    raise ParsingError("Error expected a STRING type but instead got %s with type %s"%(token.value,token.type))
+            elif token.value == 'format':
+                 # next token and look for =
+                self._tokenizer.next()
+                token = self._tokenizer.consume_token('=')
+                
+                # if should be a name
+                if token.type == 'NAME':
+                    statement.add_format(token.value)
+                else:
+                    raise ParsingError("Error expected a NAME type but instead got %s with type %s"%(token.value,token.type))
+            elif token.value != ',':
+                raise ParsingError("Error expected a file or format parameter but instead got %s with type %s"%(token.value,token.type))
+            
+            # in case we have , do nothing eat it
+            
+            #get next token
+            token = self._tokenizer.next()
         
         return statement
     
     def _read_origin_statement(self):
-        """ origin statement. This is where to store the data.
+        """ origin statement. This is where to read the data.
         
             Args:
                None
@@ -282,9 +322,41 @@ class Compiler(object):
         token = self._tokenizer.current_token()
         
         # after a destination statement, it is possible to have 
-        while token.type != 'ENDMARKER' or token.type != 'from':
-            expr = self._expr_compiler.compile(self._tokenizer)
-            print "expr = %s\n"%(expr)
+        while True:
+            
+            if token.type == 'ENDMARKER' or token.value == 'to':
+                # leave loop 
+                break
+            # for the moment look for file or format
+            elif token.value == 'file':
+                
+                statement.add_type(token.value)
+                
+                # next token and look for =
+                self._tokenizer.next()
+                token = self._tokenizer.consume_token('=')
+                
+                if token.type == 'STRING':
+                    statement.add_value(token.value)
+                else:
+                    raise ParsingError("Error expected a STRING type but instead got %s with type %s"%(token.value,token.type))
+            elif token.value == 'format':
+                 # next token and look for =
+                self._tokenizer.next()
+                token = self._tokenizer.consume_token('=')
+                
+                # if should be a name
+                if token.type == 'NAME':
+                    statement.add_format(token.value)
+                else:
+                    raise ParsingError("Error expected a NAME type but instead got %s with type %s"%(token.value,token.type))
+            elif token.value != ',':
+                raise ParsingError("Error expected a file or format parameter but instead got %s with type %s"%(token.value,token.type))
+            
+            # in case we have , do nothing eat it
+            
+            #get next token
+            token = self._tokenizer.next()
         
         return statement
     
@@ -362,18 +434,22 @@ class Compiler(object):
         # if current_token 
         token = self._tokenizer.current_token()
         
-        if token.value == 'to':
-            # consume the token
-            self._tokenizer.consume_token('to')
-            # look for destination
-            ret_statement.add(self._read_destination_statement())
-        
-        if token.value == 'from':
-            # consume the token
-            self._tokenizer.consume_token('from')
-            # look for destination
-            ret_statement.add(self._read_origin_statement())
-        
+        #look for to or from construct
+        while token.type != 'ENDMARKER':
+            if token.value == 'to':
+                # consume the token
+                self._tokenizer.consume_token('to')
+                # look for destination
+                ret_statement.add(self._read_destination_statement())
+            
+            if token.value == 'from':
+                # consume the token
+                self._tokenizer.consume_token('from')
+                # look for destination
+                ret_statement.add(self._read_origin_statement())
+                
+            #update token variable
+            token = self._tokenizer.current_token()
         
         return ret_statement
     
@@ -427,7 +503,7 @@ class TestCompiler(unittest.TestCase):
      
         print "get_execution_tree program %s\n"%(program.get_execution_tree())
     
-    def testCompleteExpression(self):
+    def ztestExpressionWithTO(self):
         
         c = Compiler()
         
@@ -438,6 +514,34 @@ class TestCompiler(unittest.TestCase):
                                      RRR,ARR,SSREB     sampml           particulate, noble gas
         """
         program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 to file='/tmp/data/data.bin'")
+     
+        print "get_execution_tree program %s\n"%(program.get_execution_tree())
+    
+    def ztestExpressionWithFrom(self):
+        
+        c = Compiler()
+        
+        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
+        """
+           radionuclide products :  bulletins         data             observations
+                                    
+                                     RRR,ARR,SSREB     sampml           particulate, noble gas
+        """
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 from file='/tmp/data/data.bin'")
+     
+        print "get_execution_tree program %s\n"%(program.get_execution_tree())
+    
+    def testExpressionWithFromAndTo(self):
+        
+        c = Compiler()
+        
+        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
+        """
+           radionuclide products :  bulletins         data             observations
+                                    
+                                     RRR,ARR,SSREB     sampml           particulate, noble gas
+        """
+        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 from file='/tmp/data/data.bin' to file='/tmp/to_file.data',format=SAMPML")
      
         print "get_execution_tree program %s\n"%(program.get_execution_tree())
    
