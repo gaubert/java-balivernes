@@ -572,7 +572,9 @@ class TestCompiler(unittest.TestCase):
                                     
                                      RRR,ARR,SSREB     sampml           particulate, noble gas
         """
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 from file='/tmp/data/data.bin' to file='/tmp/to_file.data',format=SAMPML")
+        #program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide , mda < 10 and category > 2 from file='/tmp/data/data.bin' to file='/tmp/to_file.data',format=SAMPML")
+        
+        program = c.compile("retrieve spectrum[CURR] with tech = radionuclide , mda < 10")
      
         print "get_execution_tree program %s\n"%(program.get_execution_tree())
    

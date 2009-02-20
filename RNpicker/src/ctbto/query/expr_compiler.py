@@ -18,7 +18,7 @@ class OperatorTypes(object):
     c_comparative    = set(["<",">","=","<=",">=","<>"])
     c_power          = set(["^","**"])
     c_or             = set(["or","||"])
-    c_and            = set(["and","&&"])
+    c_and            = set(["and","&&",","])
     
     c_type = {
               "add":c_additive,
@@ -885,6 +885,7 @@ class OperationFactory(object):
                         "^"  :"PowExpression",
                         "&"  :"MergeExpression",
                         "&&" :"AndExpression",
+                        ","  :"AndExpression",
                         "and":"AndExpression",
                         "||" :"OrExpression",
                         "or" :"OrExpression"
