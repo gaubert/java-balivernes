@@ -144,7 +144,7 @@ class Tokenizer(object):
             Returns:
                return lookhead token
         """
-        return self._tokens[self._index+inc]
+        return self._tokens[self._index-1+inc]
      
     
             

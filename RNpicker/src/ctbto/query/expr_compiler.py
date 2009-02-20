@@ -798,6 +798,39 @@ class NameExpression(Expression):
     def get_priority(self):
         return Expression.c_priority["atom"]
 
+class ItemAssignementExpression(Expression):
+    """ 
+        ItemAssignementExpression
+    """
+    
+    # Class members
+    c_log = logging.getLogger("query.ItemAssignementExpression")
+    c_log.setLevel(logging.DEBUG)
+    
+    def __init__(self,a_variable,a_index):
+        """ constructor """
+        
+        super(ItemAssignementExpression,self).__init__()
+        
+        self._variable = a_variable
+        self._index    = a_index
+        
+    def __repr__(self):
+        
+        return "( item_assign %s ( index %s ) )"%(self._variable,self._index)
+
+    def get_name(self):
+        return "%item_assignment"
+    
+    def get_label(self):
+        return self.__repr__()
+
+    def get_variable(self):
+        return self._variable
+    
+    def get_priority(self):
+        return Expression.c_priority["atom"]
+
 class StringExpression(Expression):
     """ StringExpression
     """
@@ -943,7 +976,22 @@ class ExpressionCompiler(object):
             p = op 
         
         return p
-     
+
+    def _read_item_assignment(self):
+        """ read an item assignment expression """
+        
+        var = p = NameExpression(self._tokenizer.current_token().value)
+        
+        self._tokenizer.next()
+        
+        self._tokenizer.consume_token('[')
+        
+        index = self.read_expression()
+        
+        self._tokenizer.consume_token(']')
+        
+        return ItemAssignementExpression(var,index)
+        
     def _read_term(self):
         """ read term """
         p = self._read_factor()
@@ -999,6 +1047,8 @@ class ExpressionCompiler(object):
             if token.value == 'not':
                 self._tokenizer.next()
                 p = NotExpression(self._read_atom())
+            elif self._tokenizer.advance().value == '[':
+                p = self._read_item_assignment()
             else:
                 p = NameExpression(token.value)
                 self._tokenizer.next()
@@ -1335,7 +1385,7 @@ class TestExprCompiler(unittest.TestCase):
         
         self.assertEqual(7.0,result)
         
-    def testExcutionTreeWithTerms(self):
+    def testExecutionTreeWithTerms(self):
         
         c = ExpressionCompiler()
         tokenizer = Tokenizer()
@@ -1362,6 +1412,37 @@ class TestExprCompiler(unittest.TestCase):
         expr = c.compile(tokenizer)
         
         print "Execution Tree = %s\n"%(expr.get_execution_tree())
+        
+    
+    def testExecutionTreeWithItemAssignment(self):
+        
+        c = ExpressionCompiler()
+        tokenizer = Tokenizer()
+        
+        tokenizer.tokenize("A[B]= 1 + R")
+        
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        exec_tree = expr.get_execution_tree()
+        
+        print "Expression Tree %s\n"%(exec_tree)
+        
+        self.assertEqual("( = ( item_assign ( literal A ) ( index ( literal B ) ) ) ( + ( literal 1.0 ) ( literal R ) ) )",exec_tree)
+        
+        # a little bit more complex
+        tokenizer.tokenize("A[B+(C*3)+1]= 1 + R")
+        
+        tokenizer.next()
+        
+        expr = c.compile(tokenizer)
+        
+        exec_tree = expr.get_execution_tree()
+        
+        print "Expression Tree %s\n"%(exec_tree)
+        
+        self.assertEqual("( = ( item_assign ( literal A ) ( index ( + ( + ( literal B ) ( * ( literal C ) ( literal 3.0 ) ) ) ( literal 1.0 ) ) ) ) ( + ( literal 1.0 ) ( literal R ) ) )",exec_tree)
         
         
         

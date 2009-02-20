@@ -74,6 +74,37 @@ class CriteriaStatement(Statement):
             s += expr.get_execution_tree()
         
         return "( criteria %s )"%(s)
+
+class ItemAssignementStatement(Statement):
+    
+    def __init__(self):
+        
+        super(Statement,self).__init__()
+        
+        self._variable   = None
+        self._index      = None
+        self._expression = None 
+        
+    def add_variable(self,a_variable):
+        
+        self._variable = a_variable
+    
+    def add_index(self,a_index):
+        
+        self._index = a_index
+    
+    def add_expression(self,a_expr):
+        
+        self._expression = a_index    
+        
+    def get_execution_tree(self):
+        
+        s = ""
+        
+        for expr in self._criteria:
+            s += expr.get_execution_tree()
+        
+        return "( assign ( var %s ) ( index %s ) ( expr %s)"%(s)
     
 class ContainerBaseStatement(Statement):
     
