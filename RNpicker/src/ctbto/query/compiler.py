@@ -11,8 +11,20 @@ from expr_compiler import ExpressionCompiler
 class ParsingError(Exception):
     """Base class for All exceptions"""
 
-    def __init__(self,a_msg):
-        super(ParsingError,self).__init__(a_msg)
+    def __init__(self,a_msg,a_line=None,a_col=None):
+        
+        self._line = a_line
+        self._col  = a_col
+        
+        if self._line == None and self._col == None:
+            extra = "" 
+        else:
+            extra = "(line=%s,col=%s)"%(self._line,self._col)
+        
+        super(ParsingError,self).__init__("%s %s."%(a_msg,extra))
+    
+    #def __str__(self):
+    #    return "ParsingError (line:%s,col:%s) => %s"%()
         
 
 class Statement(object):
@@ -161,7 +173,7 @@ class FilterStatement(Statement):
         if name not in self._filters:
             self._filters[name] = values
         else:
-            raise ParsingError("Error filter %s already exists"%(name))
+            raise ParsingError("Filter %s already exists"%(name))
         
     def get_execution_tree(self):
         s = ""
@@ -316,7 +328,7 @@ class Compiler(object):
                 if token.type == 'STRING':
                     statement.add_value(token.value)
                 else:
-                    raise ParsingError("Error expected a STRING type but instead got %s with type %s"%(token.value,token.type))
+                    raise ParsingError("Expected a STRING type but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             elif token.value == 'format':
                  # next token and look for =
                 self._tokenizer.next()
@@ -326,9 +338,9 @@ class Compiler(object):
                 if token.type == 'NAME':
                     statement.add_format(token.value)
                 else:
-                    raise ParsingError("Error expected a NAME type but instead got %s with type %s"%(token.value,token.type))
+                    raise ParsingError("Expected a NAME type but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             elif token.value != ',':
-                raise ParsingError("Error expected a file or format parameter but instead got %s with type %s"%(token.value,token.type))
+                raise ParsingError("Expected a file or format parameter but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             
             # in case we have , do nothing eat it
             
@@ -370,7 +382,7 @@ class Compiler(object):
                 if token.type == 'STRING':
                     statement.add_value(token.value)
                 else:
-                    raise ParsingError("Error expected a STRING type but instead got %s with type %s"%(token.value,token.type))
+                    raise ParsingError("Expected a STRING type but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             elif token.value == 'format':
                  # next token and look for =
                 self._tokenizer.next()
@@ -380,9 +392,9 @@ class Compiler(object):
                 if token.type == 'NAME':
                     statement.add_format(token.value)
                 else:
-                    raise ParsingError("Error expected a NAME type but instead got %s with type %s"%(token.value,token.type))
+                    raise ParsingError("Expected a NAME type but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             elif token.value != ',':
-                raise ParsingError("Error expected a file or format parameter but instead got %s with type %s"%(token.value,token.type))
+                raise ParsingError("Expected a file or format parameter but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             
             # in case we have , do nothing eat it
             
@@ -422,7 +434,7 @@ class Compiler(object):
                     elif token.type == 'OP' and token.value == ',':
                         token = self._tokenizer.next()
                     else:
-                        raise ParsingError("Error expected a filter value but found %s with type %s"%(token.value,token.type))
+                        raise ParsingError("Expected a filter value but instead found %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
                 #consume ] to be sure
                 token = self._tokenizer.consume_token(']')  
                 statement.add_filter(filter_name,filter_values)
@@ -431,7 +443,7 @@ class Compiler(object):
                 #comma consume next token
                 token = self._tokenizer.consume_token(',')           
             else:
-                raise ParsingError("Error expected a filter name but found %s with type %s"%(token.value,token.type))
+                raise ParsingError("Expected a filter name but instead found %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             
         return statement
     
@@ -504,7 +516,7 @@ class Compiler(object):
         if token.value.lower() == 'retrieve':
             statements.append(self._read_retrieve_statement())
         else:
-            raise ParsingError("Error in parsing. non expected token %s in line %s, col %s"%(token.value,token.begin[1],token.begin[0])) 
+            raise ParsingError("Non expected token %s"%(token.value),token.begin[1],token.begin[0]) 
         
         return statements
         
