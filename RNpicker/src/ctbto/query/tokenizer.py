@@ -8,21 +8,31 @@ import token
 import StringIO
 
 class LexerError(Exception):
-    """Lexer error """
+    """Base class for All exceptions"""
 
-    def __init__(self,a_msg):
-        super(LexerError,self).__init__(a_msg)
+    def __init__(self,a_msg,a_line=None,a_col=None):
+        
+        self._line = a_line
+        self._col  = a_col
+        
+        if self._line == None and self._col == None:
+            extra = "" 
+        else:
+            extra = "(line=%s,col=%s)"%(self._line,self._col)
+        
+        super(LexerError,self).__init__("%s %s."%(a_msg,extra))
+    
 
 class Token(object):
     
-    def __init__(self,type,num,value,begin,end,line):
+    def __init__(self,type,num,value,begin,end,parsed_line):
         
         self._type  = type
         self._num   = num
         self._value = value
         self._begin = begin
         self._end   = end
-        self._line  = line
+        self._parsed_line  = parsed_line
     
     @property
     def type(self):
@@ -50,12 +60,12 @@ class Token(object):
         return self._end
     
     @property
-    def line(self):
+    def parsed_line(self):
         """ Return the token line """
-        return self._line
+        return self._parsed_line
     
     def __repr__(self):
-        return "[type,num]=[%s,%s],value=[%s],line=%s,[begin index,end index]=[%s,%s]"%(self._type,self._num,self._value,self._line,self._begin,self._end)
+        return "[type,num]=[%s,%s],value=[%s], parsed line=%s,[begin index,end index]=[%s,%s]"%(self._type,self._num,self._value,self._parsed_line,self._begin,self._end)
          
 
 class Tokenizer(object):
@@ -130,7 +140,7 @@ class Tokenizer(object):
     
     def consume_token(self,what):
         if self._current.value != what :
-            raise LexerError("Error. Expected '%s' but found '%s'"%(what,self._current.value))
+            raise LexerError("Expected '%s' but instead found '%s'"%(what,self._current.value))
         else:
             return self.next()
     
