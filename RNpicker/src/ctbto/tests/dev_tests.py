@@ -1,4 +1,3 @@
-
 import unittest
 import os
 import time
@@ -7,32 +6,31 @@ import logging.handlers
 import StringIO
 import re
 from lxml import etree
-
+ 
 import ctbto.common.utils as utils
 import ctbto.common.xml_utils
-
-from ctbto.db        import DatabaseConnector,DBDataFetcher
-from org.ctbto.conf  import Conf
-
+ 
+from ctbto.db import DatabaseConnector,DBDataFetcher
+from org.ctbto.conf import Conf
+ 
 from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer
 from ctbto.renderers import SpalaxRenderer
 from ctbto.transformer import XML2HTMLRenderer
 
-
-SQL_GETSAMPLEIDS = "select sample_id from RMSAUTO.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s"
-
-SQL_GETSAUNASAMPLEIDS  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
-
-#SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (595,600,542,555,566,521,620,685,614) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
-SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (595) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
-
+SQL_GETSAMPLEIDS = "select sample_id from RMSAUTO.GARDS_SAMPLE_Data where (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and spectral_qualifier='%s' and ROWNUM <= %s"
+ 
+SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+ 
+#SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (595,600,542,555,566,521,620,685,614) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSPALAXSAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (595) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+ 
 def myBasicLoggingConfig():
     """
-    Do basic configuration for the logging system by creating a
-    StreamHandler with a default Formatter and adding it to the
-    root logger.
-    """
+Do basic configuration for the logging system by creating a
+StreamHandler with a default Formatter and adding it to the
+root logger.
+"""
     if len(logging.root.handlers) == 0:
         hdlr = logging.handlers.RotatingFileHandler("/tmp/logging.log", "a", 5000000, 4)
         console = logging.StreamHandler()
@@ -45,7 +43,7 @@ def myBasicLoggingConfig():
         log = logging.getLogger("ROOT")
         log.setLevel(logging.INFO)
         log.info("Start")
-
+ 
 import ctbto.tests
 class TestSAMPMLCreator(unittest.TestCase):
     
@@ -65,7 +63,7 @@ class TestSAMPMLCreator(unittest.TestCase):
     def __init__(self,stuff):
         super(TestSAMPMLCreator,self).__init__(stuff)
         
-        myBasicLoggingConfig()  
+        myBasicLoggingConfig()
         
         os.environ['RNPICKER_CONF_DIR'] = self._get_tests_dir_path()
         
@@ -74,35 +72,35 @@ class TestSAMPMLCreator(unittest.TestCase):
         # create an empty shell Conf object
         self.conf = Conf.get_instance()
     
-        self.mainDatabase      = None
-        self.mainUser          = None
-        self.mainPassword      = None
-        self.mainConn          = None
+        self.mainDatabase = None
+        self.mainUser = None
+        self.mainPassword = None
+        self.mainConn = None
         self.mainActivateTimer = False
         
-        self.ParticulateArchiveDatabaseAccess      = None
-        self.archiveUser          = None
-        self.archivePassword      = None
+        self.ParticulateArchiveDatabaseAccess = None
+        self.archiveUser = None
+        self.archivePassword = None
         self.archiveActivateTimer = False
-        self.archConn             = None
+        self.archConn = None
         
-        self.xpath_calIDs      = None
-        self.xpath_specalIDs   = None
+        self.xpath_calIDs = None
+        self.xpath_specalIDs = None
         
-        self.nbDatabase        = None
-        self.nbUser            = None
-        self.nbPassword        = None
-        self.nbActivateTimer   = False
-        self.nbConn            = None
+        self.nbDatabase = None
+        self.nbUser = None
+        self.nbPassword = None
+        self.nbActivateTimer = False
+        self.nbConn = None
         
-        TestSAMPMLCreator.c_log.info("\n********************************************************************************\n  rnpicker modules are loaded from %s\n********************************************************************************\n"%(self._get_tests_dir_path()))
+        TestSAMPMLCreator.c_log.info("\n********************************************************************************\n rnpicker modules are loaded from %s\n********************************************************************************\n"%(self._get_tests_dir_path()))
     
     def _setUpGenieParticulate(self):
         
         
-        self.mainDatabase  = self.conf.get("ParticulateDatabaseAccess","hostname")
-        self.mainUser      = self.conf.get("ParticulateDatabaseAccess","user")
-        self.mainPassword  = self.conf.get("ParticulateDatabaseAccess","password")
+        self.mainDatabase = self.conf.get("ParticulateDatabaseAccess","hostname")
+        self.mainUser = self.conf.get("ParticulateDatabaseAccess","user")
+        self.mainPassword = self.conf.get("ParticulateDatabaseAccess","password")
         self.mainActivateTimer = self.conf.getboolean("ParticulateDatabaseAccess","activateTimer",True)
    
         TestSAMPMLCreator.c_log.info("")
@@ -113,10 +111,10 @@ class TestSAMPMLCreator(unittest.TestCase):
    
         self.mainConn.connect()
         
-        self.ParticulateArchiveDatabaseAccess  = self.conf.get("ParticulateArchiveDatabaseAccess","hostname")
-        self.archiveUser      = self.conf.get("ParticulateArchiveDatabaseAccess","user")
-        self.archivePassword  = self.conf.get("ParticulateArchiveDatabaseAccess","password")
-        self.archiveActivateTimer    = self.conf.getboolean("ParticulateArchiveDatabaseAccess","activateTimer",True)
+        self.ParticulateArchiveDatabaseAccess = self.conf.get("ParticulateArchiveDatabaseAccess","hostname")
+        self.archiveUser = self.conf.get("ParticulateArchiveDatabaseAccess","user")
+        self.archivePassword = self.conf.get("ParticulateArchiveDatabaseAccess","password")
+        self.archiveActivateTimer = self.conf.getboolean("ParticulateArchiveDatabaseAccess","activateTimer",True)
    
    
         TestSAMPMLCreator.c_log.info("Archive Database=%s"%(self.ParticulateArchiveDatabaseAccess))
@@ -127,15 +125,15 @@ class TestSAMPMLCreator(unittest.TestCase):
         self.archConn.connect()
         
         # compile xpath expressions used to check final product
-        self.xpath_calIDs      = etree.XPath("//*[local-name(.)='CalibrationInformation']/*[local-name(.)='Calibration']/@ID")
-        self.xpath_specalIDs   = etree.XPath("//*[local-name(.)='MeasuredInformation']/*[local-name(.)='Spectrum']/@calibrationIDs")
+        self.xpath_calIDs = etree.XPath("//*[local-name(.)='CalibrationInformation']/*[local-name(.)='Calibration']/@ID")
+        self.xpath_specalIDs = etree.XPath("//*[local-name(.)='MeasuredInformation']/*[local-name(.)='Spectrum']/@calibrationIDs")
     
     def _setUpNobleGaz(self):
            
-        self.nbDatabase        = self.conf.get("NobleGazDatabaseAccess","hostname")
-        self.nbUser            = self.conf.get("NobleGazDatabaseAccess","user")
-        self.nbPassword        = self.conf.get("NobleGazDatabaseAccess","password")
-        self.nbActivateTimer   = self.conf.getboolean("NobleGazDatabaseAccess","activateTimer",True)
+        self.nbDatabase = self.conf.get("NobleGazDatabaseAccess","hostname")
+        self.nbUser = self.conf.get("NobleGazDatabaseAccess","user")
+        self.nbPassword = self.conf.get("NobleGazDatabaseAccess","password")
+        self.nbActivateTimer = self.conf.getboolean("NobleGazDatabaseAccess","activateTimer",True)
    
    
         TestSAMPMLCreator.c_log.info("Noble Gaz Database=%s"%(self.nbDatabase))
@@ -155,8 +153,8 @@ class TestSAMPMLCreator(unittest.TestCase):
         
     def assertIfNoTagsLeft(self,path):
         """
-           Check that no tags are left in the XML
-        """
+Check that no tags are left in the XML
+"""
         
         # pattern for looking for tags
         pattern="\${\w*}"
@@ -174,16 +172,16 @@ class TestSAMPMLCreator(unittest.TestCase):
         
     def assertAllCalibrationInfo(self,path):
         """
-           Check that the calibration info is there
-        """
+Check that the calibration info is there
+"""
         
         tree = etree.parse(open(path,"r"))
         
         #xpath1 = etree.XPath("//CalibrationInformation/Calibration[@ID]")
         
-        calibrationIDs    = self.xpath_calIDs(tree)
-        specCalIDs        = self.xpath_specalIDs(tree)
-
+        calibrationIDs = self.xpath_calIDs(tree)
+        specCalIDs = self.xpath_specalIDs(tree)
+ 
         TestSAMPMLCreator.c_log.debug("spec cal = %s\n"%(specCalIDs))
         TestSAMPMLCreator.c_log.debug("calibrationIDs =%s\n"%(calibrationIDs))
         
@@ -196,12 +194,12 @@ class TestSAMPMLCreator(unittest.TestCase):
    
     def assertFileContentEquals(self,a_master_path,a_tocheck_path):
         """
-           check at the string level that the two files are identical otherwise fail
-        """
+check at the string level that the two files are identical otherwise fail
+"""
         TestSAMPMLCreator.c_log.info("Start bit checking")
         
         linenum = 1
-        master  = open(a_master_path,'r')
+        master = open(a_master_path,'r')
         tocheck = open(a_tocheck_path,'r')
         
         for m_line in master:
@@ -210,7 +208,7 @@ class TestSAMPMLCreator(unittest.TestCase):
             if m_line != c_line:
                 self.fail("line num %d is different on the master %s and on the file to check %s.\n master line:[%s]\n tcheck line:[%s]"%(linenum,a_master_path,a_tocheck_path,m_line,c_line))
           
-        TestSAMPMLCreator.c_log.info("End of bit checking") 
+        TestSAMPMLCreator.c_log.info("End of bit checking")
         
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):
         
@@ -260,8 +258,8 @@ class TestSAMPMLCreator(unittest.TestCase):
           
     def ztestGetOneParticulateSampleAndDoBitChecking(self):
         """
-           get a unique particulate sample and do a bit checking against a registered existing sample
-        """
+get a unique particulate sample and do a bit checking against a registered existing sample
+"""
         
         request="spectrum=CURR, analysis=CURR"
         cpt = 0
@@ -296,14 +294,14 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         total_t1 = time.time()
         
-        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
-
-
-
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+ 
+ 
+ 
     def testFullGenieParticulateSamples(self):
-        """ 
-           test Genie Particulate samples 
         """
+test Genie Particulate samples
+"""
          
         request="spectrum=ALL, analysis=ALL"
         
@@ -326,7 +324,7 @@ class TestSAMPMLCreator(unittest.TestCase):
         
         for sampleID in listOfSamplesToTest:
             
-            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    Start Test %d for SampleID %s.\n********************************************************************************\n"%(cpt,sampleID))
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n Start Test %d for SampleID %s.\n********************************************************************************\n"%(cpt,sampleID))
            
             t0 = time.time()
            
@@ -350,18 +348,18 @@ class TestSAMPMLCreator(unittest.TestCase):
            
             t1 = time.time()
            
-            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
                        
             cpt +=1
         
         total_t1 = time.time()
         
-        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
-
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+ 
     def ztestFullNobleGazSamples(self):
-        """ 
-           Get Full Noble Gaz samples.
         """
+Get Full Noble Gaz samples.
+"""
          
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
@@ -414,18 +412,18 @@ class TestSAMPMLCreator(unittest.TestCase):
             t1 = time.time()
            
             #TestSAMPMLCreator.c_log.info("End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0)))
-            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
            
             cpt +=1
         
         total_t1 = time.time()
         
-        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
     def ztestSpalaxFullNobleGazSamples(self):
-        """ 
-           Get Full Noble Gaz samples.
         """
+Get Full Noble Gaz samples.
+"""
          
         request="spectrum=ALL, analysis=CURR"
         
@@ -434,7 +432,7 @@ class TestSAMPMLCreator(unittest.TestCase):
                
         # remove sampleID for which data isn't available
         #if "141372" in listOfSamplesToTest:
-        #    listOfSamplesToTest.remove("141372")
+        # listOfSamplesToTest.remove("141372")
         #PREL 211385
         listOfSamplesToTest = ['269892']
         TestSAMPMLCreator.c_log.info("list samples :%s"%(listOfSamplesToTest))
@@ -479,20 +477,20 @@ class TestSAMPMLCreator(unittest.TestCase):
             t1 = time.time()
            
             #TestSAMPMLCreator.c_log.info("End of Test %d for SampleID %s.\nTest executed in %s seconds.\n\n**************************************************************** \n**************************************************************** \n"%(cpt,sampleID,(t1-t0)))
-            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n    End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
+            TestSAMPMLCreator.c_log.info("\n********************************************************************************\n End of Test %d for SampleID %s. Test executed in %s seconds.\n********************************************************************************\n"%(cpt,sampleID,(t1-t0)))
            
             cpt +=1
         
         total_t1 = time.time()
         
-        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
     
     
     def ztestGenerateNobleGasARR(self):
-        """ 
-           Generate a Noble Gaz ARR.
         """
+Generate a Noble Gaz ARR.
+"""
         
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
@@ -556,14 +554,16 @@ class TestSAMPMLCreator(unittest.TestCase):
            
         total_t1 = time.time()
         
-        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds   ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
+        TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
   
 def tests():
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSAMPMLCreator)
-    unittest.TextTestRunner(verbosity=2).run(suite)    
-
+    unittest.TextTestRunner(verbosity=2).run(suite)
+ 
 if __name__ == '__main__':
     
     tests()
     
     
+ 
+ 
