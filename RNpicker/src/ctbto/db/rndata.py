@@ -305,7 +305,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteArchiveDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize,aRemoteHostname=None):
+    def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize,aRemoteHostname=None,aRemoteScript=None,aRemoteUser=None,aLocalDir=None,a_DoNotUseCache=False,a_LocalFilename=None):
         
         # my variables
         super(RemoteArchiveDataSource,self).__init__(aDataPath,aID,aRemoteOffset,aRemoteSize)
@@ -313,17 +313,17 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         # get reference to the conf object
         self._conf              = Conf.get_instance()
         
-        self._remoteScript      = self._conf.get("RemoteAccess","archiveAccessScript")
+        self._remoteScript      = self._conf.get("RemoteAccess","archiveAccessScript") if aRemoteScript == None else aRemoteScript
         
         self._remoteHostname    = (self._conf.get("RemoteAccess","archiveAccessHost") if aRemoteHostname == None else aRemoteHostname)
         
-        self._remoteUser        = self._conf.get("RemoteAccess","archiveAccessUser",self._getCurrentUser())
+        self._remoteUser        = self._conf.get("RemoteAccess","archiveAccessUser",self._getCurrentUser()) if aRemoteUser == None else aRemoteUser
         
-        self._localDir          = self._conf.get("RemoteAccess","localDir")
+        self._localDir          = self._conf.get("RemoteAccess","localDir") if aLocalDir == None else aLocalDir
         
-        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if self._conf.has_option("RemoteAccess","cachingActivated") else False
+        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if (self._conf.has_option("RemoteAccess","cachingActivated") and a_DoNotUseCache == False) else False
         
-        self._localFilename     = "%s_%s.%s"%(os.path.basename(self._remotePath),self._id,self._getExtension(self._remotePath))
+        self._localFilename     = "%s_%s.%s"%(os.path.basename(self._remotePath),self._id,self._getExtension(self._remotePath)) if a_LocalFilename == None else a_LocalFilename
     
         self._getRemoteFile()
         
