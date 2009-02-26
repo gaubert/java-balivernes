@@ -1396,12 +1396,12 @@ class GenieParticulateRenderer(BaseRenderer):
         # If status == P only add AUTOMATIC CATEGORY
         # Possibly add status Processed, Released, Queued and Release Date
         if (status == 'R') or (status == 'Q') or (status == 'P'):
-            category = cat_dict.get(u'CAT_CATEGORY', "undefined")
-            comment = cat_dict.get(u'CAT_COMMENT', "No Comment")
-            auto_category = cat_dict.get(u'CAT_AUTO_CATEGORY', "undefined")
+            category = cat_dict.get(u'CAT_CATEGORY',None)
+            comment  = cat_dict.get(u'CAT_COMMENT', "No Comment")
+            auto_category = cat_dict.get(u'CAT_AUTO_CATEGORY',None)
             
             # if there is something fill the template otherwise do nothing
-            if category != "undefined":
+            if category != None:
                 # xml filler 
                 cat_template = self._conf.get("ParticulateTemplatingSystem", "particulateCategoryTemplate")
         
@@ -1409,10 +1409,10 @@ class GenieParticulateRenderer(BaseRenderer):
                 dummy_template = re.sub("\${CATEGORY_COMMENT}", comment, dummy_template)
                 dummy_template = re.sub("\${AUTO_CATEGORY}",str(auto_category),dummy_template)
                 
-            elif auto_category != "undefined":
+            elif auto_category != None:
                 # xml filler 
                 cat_template = self._conf.get("ParticulateTemplatingSystem", "particulateAutoCategoryTemplate")
-                dummy_template = re.sub("\${AUTO_CATEGORY}",str(auto_category),dummy_template)
+                dummy_template = re.sub("\${AUTO_CATEGORY}",str(auto_category),cat_template)
         
         return dummy_template
     

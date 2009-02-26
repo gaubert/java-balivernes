@@ -1,6 +1,7 @@
 import unittest
 import os
 import time
+import pickle
 import logging
 import logging.handlers
 import StringIO
@@ -298,7 +299,7 @@ get a unique particulate sample and do a bit checking against a registered exist
  
  
  
-    def testFullGenieParticulateSamples(self):
+    def ztestFullGenieParticulateSamples(self):
         """
 test Genie Particulate samples
 """
@@ -485,7 +486,46 @@ Get Full Noble Gaz samples.
         
         TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
-    
+    def testIterativeSampleIDRetrievals(self):
+        
+        beginDate = '2009-01-20T00:00:00'
+       
+        endDate   = '2009-01-21T00:00:00'
+       
+        d1 = ctbto.common.time_utils.getOracleDateFromISO8601(beginDate)
+        d2 = ctbto.common.time_utils.getOracleDateFromISO8601(endDate)
+       
+        new_list = self.getListOfSampleIDs(d1,d2,spectralQualif='FULL',nbOfElem='1000000')
+        # filename contains email+day
+        filename = "/tmp/guillaume.aubert@gmail.com.date"
+
+        list_of_data = []
+               
+        if os.path.exists(filename):
+            f = open(filename,"r")
+            list_of_data = pickle.load(f)
+            f.close()
+
+        nb_of_iter = len(list_of_data)  
+        
+        if nb_of_iter >0:
+            previous_set = list_of_data[nb_of_iter-1]
+            new_set  = set(new_list)
+            
+            diff_set = new_set.difference(previous_set)
+            
+            if len(diff_set) > 0:
+                TestSAMPMLCreator.c_log.info("list of new samples %s"%diff_set)
+                list_of_data.append(diff_set)
+            
+        else:
+            list_of_data.append(set(new_list))
+            
+        
+        f = open(filename,'w')
+        pickle.dump(list_of_data,f) 
+        f.close()
+       
     
     def ztestGenerateNobleGasARR(self):
         """
