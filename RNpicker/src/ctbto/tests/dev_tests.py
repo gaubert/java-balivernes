@@ -303,14 +303,14 @@ get a unique particulate sample and do a bit checking against a registered exist
 test Genie Particulate samples
 """
          
-        request="spectrum=ALL, analysis=ALL"
+        request="spectrum=CURR/QC/BK, analysis=CURR"
         
         # get full 2003-10-24 to 2003-10-26
-        listOfSamplesToTest = self.getListOfSampleIDs('2008-10-02',endDate='2008-10-15',spectralQualif='FULL',nbOfElem='50')
+        listOfSamplesToTest = self.getListOfSampleIDs('2007-01-04',endDate='2007-01-15',spectralQualif='FULL',nbOfElem='5')
         
         # error
         # these two are working
-        listOfSamplesToTest = [ "916900","917873" ]
+        #listOfSamplesToTest = [ "916900","917873" ]
                
         #transform in numbers and retransform in str to remove the 0 at the beginning of the number"
         #intifiedlist = map(int,listOfSamplesToTest)

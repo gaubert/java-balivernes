@@ -1391,7 +1391,7 @@ class GenieParticulateRenderer(BaseRenderer):
         # get the status. If it is R or Q get category otherwise it isn't defined yet
         status = cat_dict.get(u'CAT_STATUS', "")
         
-        if (status == 'R') or (status == 'Q'):
+        if (status == 'R') or (status == 'Q') or (status == 'P'):
             category = cat_dict.get(u'CAT_CATEGORY', "undefined")
             comment = cat_dict.get(u'CAT_COMMENT', "No Comment")
 
