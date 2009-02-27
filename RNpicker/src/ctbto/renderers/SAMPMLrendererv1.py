@@ -15,6 +15,32 @@ class BaseRenderer(object):
     c_log = logging.getLogger("SAMPMLrendererv1.BaseRenderer")
     c_log.setLevel(logging.INFO)
     
+    def getRenderer(cls,aDataFetcher):
+        """ Factory method returning the right Renderer \
+            First it gets the sample type in order to instantiate the right DataFetcher => SAUNA, SPALAX, GenieParticulate, ...
+           """
+       
+        # check preconditions
+        if aDataFetcher is None: raise CTBTOError(-1,"passed argument aDataFetcher is null")
+       
+        # use the sample type to create the right renderer for the moment
+        type = aDataFetcher.get('SAMPLE_TYPE')
+       
+        cls.c_log.debug("Type = %s"%(type))
+       
+        cls.c_log.debug("Klass = %s"%(RENDERER_TYPE.get(type,None)))
+        
+        klass = RENDERER_TYPE.get(type,None)
+        if klass is None: 
+            raise CTBTOError(-1,"There is no renderer for the following type"%(type))
+
+        inst = klass(aDataFetcher)
+    
+        return inst
+       
+    #class method binding
+    getRenderer = classmethod(getRenderer)
+    
     def __init__(self, aDataFetcher):
         
         self._conf = Conf.get_instance()
@@ -1909,5 +1935,7 @@ class GenieParticulateRenderer(BaseRenderer):
        
        
        
-       
+""" Dictionary used to map Sample type with the right renderer """ #IGNORE:W0105
+RENDERER_TYPE = {'SAUNA':SaunaRenderer, 'ARIX-4':SaunaRenderer, 'SPALAX':SpalaxRenderer, 'PARTICULATE':GenieParticulateRenderer,None:None}
+              
        
