@@ -192,12 +192,13 @@ def parse_arguments(a_args):
     result = {}
     
     # add defaults
-    result['dir']                 = "/tmp/samples"
-    result['verbose']             = 1
-    result['clean_cache']         = False
-    result['automatic_tests']     = False
-    result['clean_local_spectra'] = False
-    result['station_types']       = ['SAUNA','SPALAX']
+    result['dir']                   = "/tmp/samples"
+    result['verbose']               = 1
+    result['clean_cache']           = False
+    result['automatic_tests']       = False
+    result['clean_local_spectra']   = False
+    result['station_types']         = ['SAUNA','SPALAX']
+    result['always_recreate_files'] = True
     
     try:
         reassoc_args = reassociate_arguments(a_args)
@@ -627,6 +628,7 @@ class Runner(object):
         Runner.c_log.info("*************************************************************\n")
         
         to_ignore = self._conf.getlist('IgnoreSamples','noblegazSamples')
+        always_recreate_files = a_args['always_recreate_files']
     
         for sid in sids:
             
@@ -640,40 +642,46 @@ class Runner(object):
             Runner.c_log.info("*************************************************************")
             Runner.c_log.info("Fetch data and build SAMPML data file for %s"%(sid))
             
-            # fetch noble gaz or particulate
-            fetcher = DBDataFetcher.getDataFetcher(self._ngMainConn,self._ngArchConn,sid)
-   
-            #modify remoteHost
-            fetcher.setRemoteHost(self._conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
+            # if the right flag is set and the file already exists do not recreate it
+            if not always_recreate_files and not os.path.exists("%s/ARR/ARR-%s.html"%(dir,sid)):
             
-            fetcher.fetch(request,'GAS')
+                # fetch noble gaz or particulate
+                fetcher = DBDataFetcher.getDataFetcher(self._ngMainConn,self._ngArchConn,sid)
+   
+                #modify remoteHost
+                fetcher.setRemoteHost(self._conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
+            
+                fetcher.fetch(request,'GAS')
                  
-            renderer = BaseRenderer.getRenderer(fetcher)
+                renderer = BaseRenderer.getRenderer(fetcher)
    
-            xmlStr = renderer.asXmlStr(request)
+                xmlStr = renderer.asXmlStr(request)
            
-            path = "%s/samples/sampml-full-%s.xml"%(dir,sid)
+                path = "%s/samples/sampml-full-%s.xml"%(dir,sid)
    
-            Runner.c_log.info("Save SAMPML data in %s"%(path))
+                Runner.c_log.info("Save SAMPML data in %s"%(path))
             
-            # pretty print and save in file
-            ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+                # pretty print and save in file
+                ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
             
-            if fetcher.get('SAMPLE_TYPE') == 'SPALAX':
-                Runner.c_log.info("No ARR For Spalax at the moment")
-                continue
+                if fetcher.get('SAMPLE_TYPE') == 'SPALAX':
+                    Runner.c_log.info("No ARR For Spalax at the moment")
+                    continue
             
-            Runner.c_log.info("Create ARR from SAMPML data file for %s"%(sid))
+                Runner.c_log.info("Create ARR from SAMPML data file for %s"%(sid))
            
-            r = XML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'ArrHtml.html')
+                r = XML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'ArrHtml.html')
     
-            result = r.render(path)
+                result = r.render(path)
             
-            path = "%s/ARR/ARR-%s.html"%(dir,sid)
+                path = "%s/ARR/ARR-%s.html"%(dir,sid)
             
-            Runner.c_log.info("save file in %s"%(path))
+                Runner.c_log.info("save file in %s"%(path))
             
-            ctbto.common.utils.printInFile(result,path)
+                ctbto.common.utils.printInFile(result,path)
+            
+            else:
+                Runner.c_log.info("products are already existing in %s for %s"%(dir,sid)) 
             
             Runner.c_log.info("*************************************************************\n")
 
@@ -683,6 +691,47 @@ def run_automatic_tests():
     import ctbto.tests.run_tests as auto_tests
     auto_tests.tests()
     sys.exit(0)
+
+def run_with_args(a_args,exit_on_success=False):
+    
+    try:
+        parsed_args = a_args
+        runner = Runner(parsed_args)
+        runner.execute(parsed_args) 
+    except ParsingError, e:
+        # Not Runner set print
+        print("Error - %s"%(e.get_message_error()))
+        usage() 
+        sys.exit(2)
+    except ConfAccessError, e:
+        # Not Runner set print
+        print("Error - %s"%(e.get_message_error())) 
+        if parsed_args.get('verbose',1) == 3:
+            print("Traceback: %s."%(get_exception_traceback()))
+        usage() 
+        sys.exit(2)
+    except LoggingSetupError, e:
+        # Not Runner set print
+        print("Error - %s"%(e.get_message_error())) 
+        sys.exit(2)
+    except Exception, e: #IGNORE:W0703,W0702
+        try:
+            Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            if parsed_args.get('verbose',1) == 3:
+                a_logger = Runner.c_log.error
+            else:
+                a_logger = Runner.log_in_file
+           
+            a_logger("Traceback: %s."%(get_exception_traceback()))
+        except: 
+            print("Fatal error that could not be logged properly. print Traceback in stdout: %s."%(get_exception_traceback())) #IGNORE:W0702
+        finally:
+            sys.exit(3)
+    
+    if exit_on_success:
+        sys.exit(0)
+    else:
+        return
 
 def run():
     parsed_args = {}
