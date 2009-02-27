@@ -1,6 +1,5 @@
 import datetime
 import time
-
 from ctbto.common import scanf
 
 def getToday():
@@ -13,6 +12,12 @@ def getYesterday():
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(1)
     return yesterday.isoformat()
+
+def getTomorrow():
+    """ return tomorrow in so format """
+    today = datetime.date.today()
+    tomorrow = today + datetime.timedelta(1)
+    return tomorrow.isoformat()
 
 def getDateTimeFromISO8601(aISOStr):
     """ transform a datetime object in ISO 8601 string """

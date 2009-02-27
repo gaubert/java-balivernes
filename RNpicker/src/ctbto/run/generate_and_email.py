@@ -17,7 +17,7 @@ import ctbto.common.time_utils
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector,DBDataFetcher
-from ctbto.renderers   import BaseRenderer,SpalaxRenderer,SaunaRenderer
+from ctbto.renderers   import SaunaRenderer
 from ctbto.transformer import XML2HTMLRenderer
 
 NAME        = "generate_arr"
@@ -30,12 +30,12 @@ def usage():
 Usage: generate_arr [options] 
 
   Mandatory Options:
-  --sids           (-i)   Retrieve the data and create the ARR of the following sample ids.
+  --sids           (-s)   Retrieve the data and create the ARR of the following sample ids.
                           If --sids and --from or --end are used only the information provided 
                           with --sids will be used.
   or
   
-  --from           (-f)   Get all the sample ids corresponding to the from date (00H00m00s) until the end date (00H00m00s). (default=today).
+  --from           (-f)   Get all the sample ids corresponding to the from date until the end date. (default=today).
                           The date is in the YYYY-MM-DD form (ex: 2008-08-22).
   --end            (-e)   Get all the sample ids created during the from and end period.            (default=yesterday).
                           The date is in the YYYY-MM-DD form (ex: 2008-08-22).
@@ -189,19 +189,19 @@ def parse_arguments(a_args):
                exception
     """
     
+    # --id 
+    # look for list for the current day and compute it
+    
     result = {}
     
     # add defaults
-    result['dir']                 = "/tmp/samples"
+    result['dir']                 = "/tmp/sync"
     result['verbose']             = 1
-    result['clean_cache']         = False
     result['automatic_tests']     = False
-    result['clean_local_spectra'] = False
-    result['station_types']       = ['SAUNA','SPALAX']
     
     try:
         reassoc_args = reassociate_arguments(a_args)
-        (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:i:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
+        (opts,_) = getopt.gnu_getopt(reassoc_args, "hi:d:c:v3", ["help","id=","dir=","conf_dir=","version","vvv","automatic_tests"])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -214,59 +214,14 @@ def parse_arguments(a_args):
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
-        elif o in ("-i", "--sids"):
-            # if there is a comma try to build a list
-            if a.find(',') != -1:
-                sids = a.split(',')
-                # insure that each sid only contains digits
-                good_sids = []
-                for s in sids:
-                    s=s.strip()
-                    if len(s) == 0:
-                        continue
-                    if not s.isdigit():
-                        raise ParsingError("Error passed sid [%s] (with --sids or -s) is not a number"%(s)) 
-                    else:
-                        good_sids.append(s)
-                result['sids'] = good_sids   
-            elif a.isdigit():
-                result['sids'] = [a]                
-            else:
-                raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(a))
-             
-        elif o in ("-s", "--stations"):
-            # if there is a comma try to build a list
-            if a.find(',') != -1:
-                stations = a.split(',')
-                
-                l = []
-                for elem in stations:
-                    l.append("\'%s\'"%(elem.strip()))
-                
-                # insure that each sid only contains digits    
-                result['stations'] = l  
-            else:
-                result['stations'] = ["\'%s\'"%(a.strip())]                
+        elif o in ("-i", "--id"):
+            result['id'] = a         
         elif o in ("-d", "--dir"):
             # try to make the dir if necessary
             ctbto.common.utils.makedirs(a)
             result['dir'] = a   
         elif o in ("-3","--vvv"):
             result['verbose'] = 3 
-        elif o in ("-f", "--from"):
-            try:
-                #check that the passed string a date
-                datetime.datetime.strptime(a,DATE_FORMAT)
-                result['from'] = a
-            except:
-                raise ParsingError("Invalid --from or -f date %s"%(a))
-        elif o in ("-e", "--end"):
-            try:
-                #check that the passed string a date
-                datetime.datetime.strptime(a,DATE_FORMAT)
-                result['end'] = a
-            except:
-                raise ParsingError("Invalid --from or -f date %s"%(a))
         elif o in ("-c", "--conf_dir"):
             try:
                 #check that it is a dir
@@ -280,29 +235,20 @@ def parse_arguments(a_args):
                 result['automatic_tests'] = True
             except:
                 raise ParsingError("Invalid --automatic_tests or -a %s"%(a))
-        elif o in ("-l", "--clean_cache"):
-            try:
-                result['clean_cache'] = True
-            except:
-                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
-        elif o in ("-o", "--clean_local_spectra"):
-            try:
-                result['clean_local_spectra'] = True
-            except:
-                raise ParsingError("Invalid --clean_local_spectra or -o %s"%(a))
         else:
             raise ParsingError("Unknown option %s = %s"%(o,a))
     
     return result
 
+#SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETSAMPLEIDS                   = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETALLSAUNASTATIONCODES        = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
+SQL_GETALLSAUNASTATIONCODES = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
 
-SQL_GETALLSPALAXSTATIONCODES       = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SPALAX'"
+SQL_GETALLSAUNASTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
 
-SQL_GETALLSTATIONIDSFROMCODES      = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
+#SQL_GETSAUNASAMPLEIDS2  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in () RMSMAN.GARDS_STATIONS"
 
 class CLIError(Exception):
     """ Base class exception """
@@ -452,6 +398,7 @@ class Runner(object):
             Raises:
                exception
         """
+        
         #read from command_line
         dir = a_args.get('conf_dir',None)
         
@@ -471,7 +418,25 @@ class Runner(object):
             return Conf.get_instance()
         else:
             raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
+    
+    def _create_results_directories(self,dir):
         
+        # TODO need to fix that as there are some issues with the permissions checking
+        #if os.path.exists(dir) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK |os.X_OK):
+        #    raise Exception("Do not have the right permissions to write in result's directory %s.Please choose another result's SAMPML directory."%(dir))
+        
+        #if os.path.exists('%s/samples'%(dir)) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK):
+        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/samples'%(dir)))
+
+        #if os.path.exists('%s/ARR'%(dir)) and not os.access('%s/ARR'%(dir),os.R_OK | os.W_OK):
+        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/ARR'%(dir)))
+            
+        # try to make the dir if necessary
+        ctbto.common.utils.makedirs('%s/samples'%(dir))
+        
+        # try to make the dir if necessary
+        ctbto.common.utils.makedirs('%s/ARR'%(dir))  
+    
     def _get_list_of_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
         
         l = ','.join(map(str,stations)) #IGNORE:W0141
@@ -488,25 +453,8 @@ class Runner(object):
         Runner.c_log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
         self.log_in_file("list of sampleIDs to fetch: %s"%(sampleIDs))
         
-        return sampleIDs
-    
-    def _get_stations_ids(self,a_station_codes):
-        
-        result = self._ngMainConn.execute(SQL_GETALLSTATIONIDSFROMCODES%(','.join(a_station_codes)))
-        
-        sta_ids    = []
-        
-        rows   = result.fetchall()
-        
-        for row in rows:
-            sta_ids.append(row[0])
-            
-        # Error message is no ids found for the stations
-        if len(sta_ids) == 0:
-            raise Exception("Cannot find any sample ids for the stations %s. Are you sure they are valid station codes ?"%(a_station_codes))
-            
-        return sta_ids
-    
+        return sampleIDs 
+
     def _get_all_stations(self,a_stations_types):
         
         sta_ids    = []
@@ -530,44 +478,67 @@ class Runner(object):
             self.log_in_file("Found the following %s stations: %s."%(type,sta_codes))
         
         return sta_ids
-    
-    def _create_results_directories(self,dir):
         
-        # TODO need to fix that as there are some issues with the permissions checking
-        #if os.path.exists(dir) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK |os.X_OK):
-        #    raise Exception("Do not have the right permissions to write in result's directory %s.Please choose another result's SAMPML directory."%(dir))
+    def _get_list_of_new_samples_to_email(self,db_dict,beginDate,endDate,station_types,spectralQualif='FULL',nbOfElem='10000000'):
+       
+        d1 = ctbto.common.time_utils.getOracleDateFromISO8601(beginDate)
+        d2 = ctbto.common.time_utils.getOracleDateFromISO8601(endDate)
         
-        #if os.path.exists('%s/samples'%(dir)) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK):
-        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/samples'%(dir)))
-
-        #if os.path.exists('%s/ARR'%(dir)) and not os.access('%s/ARR'%(dir),os.R_OK | os.W_OK):
-        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/ARR'%(dir)))
+        stations = self._get_all_stations(station_types)
+        
+        current_list     = self._get_list_of_sampleIDs(stations,d1,d2)
+       
+       if d1 in db_dict:
+          prev_list        = db_dict[d1]
+        
+          curr_set  = set(current_list)
+          prev_set
             
-        # try to make the dir if necessary
-        ctbto.common.utils.makedirs('%s/samples'%(dir))
+        diff_set = new_set.difference(previous_set)
+            
+            if len(diff_set) > 0:
+                TestSAMPMLCreator.c_log.info("list of new samples %s"%diff_set)
+                list_of_data.append(diff_set)
+            
+        else:
+            list_of_data.append(set(new_list))
+            
         
-        # try to make the dir if necessary
-        ctbto.common.utils.makedirs('%s/ARR'%(dir))  
+        f = open(filename,'w')
+        pickle.dump(list_of_data,f) 
+        f.close()
         
-
-    def _clean_cache(self):
-        """ clean the cache directory """
+    def _get_id_database(self,a_id):
+        """
+            return a persistent list if it was stored previously in the db dir. This file should contain the list of last five email shots
         
-        path = self._conf.get('Caching','dir',None)
+            Args:
+               None 
+               
+            Returns:
+               return list object
         
-        Runner.c_log.info("Clean the cached data under %s"%(path))
+            Raises:
+               exception
+        """
         
-        if path is not None:
-            ctbto.common.utils.delete_all_under(path)
-    
-    def _clean_cached_spectrum(self):
-        """ clean the cached spectrum """
-        path = self._conf.get('RemoteAccess','localdir',None)
+        # to get in conf
+        dir = self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp')
         
-        Runner.c_log.info("Clean the cached spectra under %s"%(path))
+        # create dir if it doesn't exist
+        self._create_results_directories(dir)
         
-        if path is not None:
-            ctbto.common.utils.delete_all_under(path)
+        filename = "%s/%s.emaildb"%(dir,a_id)
+        
+        list_of_data = []
+        
+        if os.path.exists(filename):
+            f = open(filename)
+            list_of_data = pickle.load(f)
+            f.close()
+            
+        return list_of_data
+        
 
     def execute(self,a_args):
     
@@ -584,19 +555,9 @@ class Runner(object):
         cache_cleaned         = False
         local_spectra_cleaned = False
         
-        # check if we need to clean the cache
-        if a_args['clean_cache']:
-            self._clean_cache()
-            cache_cleaned = True
-        
-        if a_args['clean_local_spectra']:
-            self._clean_cached_spectrum()
-            local_spectra_cleaned = True
-        
         # check if we can write in case the dir already exists    
         dir = a_args['dir']
         self._create_results_directories(dir)
-        
         
         # default request => do not retrieve PREL but all the rest
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
@@ -604,85 +565,16 @@ class Runner(object):
         # check if we have some sids or we get it from some dates
         Runner.c_log.info("*************************************************************")
         
-        if 'sids' in a_args:
-            sids    = a_args['sids']
-        elif 'from' in a_args or 'end' in a_args or 'stations' in a_args:
-            begin    = a_args.get('from',ctbto.common.time_utils.getYesterday())
-            end      = a_args.get('end',ctbto.common.time_utils.getToday())
-            stations = a_args.get('stations',None)
-            if stations != None:
-                stations = self._get_stations_ids(stations)
-            else:
-                stations = self._get_all_stations(a_args['station_types'])
-            sids     = self._get_list_of_sampleIDs(stations,begin, end)
-        else:
-            # if the cache has been clean then exit quietly as one action has been performed
-            if cache_cleaned or local_spectra_cleaned:
-                return
-            else:  
-                # no actions performed error
-                raise Exception('need either a sid or some dates or a station name')
-        
-        Runner.c_log.info("Start the product generation")
-        Runner.c_log.info("*************************************************************\n")
-        
-        to_ignore = self._conf.getlist('IgnoreSamples','noblegazSamples')
-    
-        for sid in sids:
+        if not 'id' in a_args:
+            # no actions performed error
+            raise Exception('No id given. Need a user id') 
+        else:  
             
-            if str(sid) in to_ignore:
-                Runner.c_log.info("*************************************************************")
-                Runner.c_log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
-                Runner.c_log.info("*************************************************************\n")
-                #skip this iteration
-                continue
-    
-            Runner.c_log.info("*************************************************************")
-            Runner.c_log.info("Fetch data and build SAMPML data file for %s"%(sid))
-            
-            # fetch noble gaz or particulate
-            fetcher = DBDataFetcher.getDataFetcher(self._ngMainConn,self._ngArchConn,sid)
-   
-            #modify remoteHost
-            fetcher.setRemoteHost(self._conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
-            
-            fetcher.fetch(request,'GAS')
-                 
-            renderer = BaseRenderer.getRenderer(fetcher)
-   
-            xmlStr = renderer.asXmlStr(request)
-           
-            path = "%s/samples/sampml-full-%s.xml"%(dir,sid)
-   
-            Runner.c_log.info("Save SAMPML data in %s"%(path))
-            
-            # pretty print and save in file
-            ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
-            
-            if fetcher.get('SAMPLE_TYPE') == 'SPALAX':
-                Runner.c_log.info("No ARR For Spalax at the moment")
-                continue
-            
-            Runner.c_log.info("Create ARR from SAMPML data file for %s"%(sid))
-           
-            r = XML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'ArrHtml.html')
-    
-            result = r.render(path)
-            
-            path = "%s/ARR/ARR-%s.html"%(dir,sid)
-            
-            Runner.c_log.info("save file in %s"%(path))
-            
-            ctbto.common.utils.printInFile(result,path)
-            
-            Runner.c_log.info("*************************************************************\n")
-
-def run_automatic_tests():
-    """ run the automatic test suite """
-    
-    import ctbto.tests.run_tests as auto_tests
-    auto_tests.tests()
-    sys.exit(0)
+            db_list = self._get_id_database(a_args['id'])
+             
+            list_of_samples_to_produce = self._get_list_of_new_samples_to_email(db_list,ctbto.common.time_utils.getToday(),ctbto.common.time_utils.getTomorrow())     
+       
+        Runner.c_log.info("list of samples: %s"%(list_of_samples_to_produce))
 
 def run():
     parsed_args = {}
