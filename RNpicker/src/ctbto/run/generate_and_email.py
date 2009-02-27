@@ -5,8 +5,9 @@
 """
 
 import getopt, sys
-import datetime
 import os
+import tarfile
+import pickle
 import logging
 import logging.handlers
 import StringIO
@@ -16,9 +17,9 @@ import ctbto.common.xml_utils
 import ctbto.common.time_utils
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
-from ctbto.db          import DatabaseConnector,DBDataFetcher
-from ctbto.renderers   import SaunaRenderer
-from ctbto.transformer import XML2HTMLRenderer
+from ctbto.db          import DatabaseConnector
+import ctbto.run.generate_arr as arr_generator
+from ctbto.email import DataEmailer
 
 NAME        = "generate_arr"
 VERSION     = "1.0"
@@ -198,6 +199,7 @@ def parse_arguments(a_args):
     result['dir']                 = "/tmp/sync"
     result['verbose']             = 1
     result['automatic_tests']     = False
+    result['station_types']       = ['SAUNA','SPALAX']
     
     try:
         reassoc_args = reassociate_arguments(a_args)
@@ -240,15 +242,14 @@ def parse_arguments(a_args):
     
     return result
 
-#SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSAMPLEIDS                   = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETALLSAUNASTATIONCODES        = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
 
-SQL_GETALLSAUNASTATIONCODES = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
+SQL_GETALLSPALAXSTATIONCODES       = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SPALAX'"
 
-SQL_GETALLSAUNASTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
+SQL_GETALLSTATIONIDSFROMCODES      = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
 
-#SQL_GETSAUNASAMPLEIDS2  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in () RMSMAN.GARDS_STATIONS"
 
 class CLIError(Exception):
     """ Base class exception """
@@ -421,16 +422,6 @@ class Runner(object):
     
     def _create_results_directories(self,dir):
         
-        # TODO need to fix that as there are some issues with the permissions checking
-        #if os.path.exists(dir) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK |os.X_OK):
-        #    raise Exception("Do not have the right permissions to write in result's directory %s.Please choose another result's SAMPML directory."%(dir))
-        
-        #if os.path.exists('%s/samples'%(dir)) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK):
-        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/samples'%(dir)))
-
-        #if os.path.exists('%s/ARR'%(dir)) and not os.access('%s/ARR'%(dir),os.R_OK | os.W_OK):
-        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/ARR'%(dir)))
-            
         # try to make the dir if necessary
         ctbto.common.utils.makedirs('%s/samples'%(dir))
         
@@ -484,33 +475,50 @@ class Runner(object):
         d1 = ctbto.common.time_utils.getOracleDateFromISO8601(beginDate)
         d2 = ctbto.common.time_utils.getOracleDateFromISO8601(endDate)
         
-        stations = self._get_all_stations(station_types)
+        stations      = self._get_all_stations(station_types)
         
-        current_list     = self._get_list_of_sampleIDs(stations,d1,d2)
-       
-       if d1 in db_dict:
-          prev_list        = db_dict[d1]
+        current_list  = self._get_list_of_sampleIDs(stations,d1,d2,spectralQualif,nbOfElem)
         
-          curr_set  = set(current_list)
-          prev_set
-            
-        diff_set = new_set.difference(previous_set)
-            
-            if len(diff_set) > 0:
-                TestSAMPMLCreator.c_log.info("list of new samples %s"%diff_set)
-                list_of_data.append(diff_set)
-            
+        curr_set      = set(current_list)
+        
+        date_id = '%s-%s'%(beginDate,endDate)
+        
+        if date_id in db_dict:
+            prev_list  = db_dict[date_id]
+            prev_set   = set(prev_list) 
         else:
-            list_of_data.append(set(new_list))
+            prev_set   = set()
+        
+        diff_set  = curr_set.difference(prev_set)
             
+        return list(diff_set)
+    
+    def _save_in_id_database(self,id,db_dict,beginDate,endDate,emailed_list):
+        
+        key = '%s-%s'%(beginDate,endDate)
+        
+        l = db_dict.get(key,[])
+        
+        l.extend(emailed_list) 
+        
+        db_dict[key] = l
+        
+        # to get in conf
+        dir = self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp')
+        
+        # create dir if it doesn't exist
+        self._create_results_directories(dir)
+        
+        filename = "%s/%s.emaildb"%(dir,id)
         
         f = open(filename,'w')
-        pickle.dump(list_of_data,f) 
+        pickle.dump(db_dict,f) 
         f.close()
+        
         
     def _get_id_database(self,a_id):
         """
-            return a persistent list if it was stored previously in the db dir. This file should contain the list of last five email shots
+            return a persistent list if it was stored previously in the db dir. This file should contain a dict of the last five email shots
         
             Args:
                None 
@@ -530,16 +538,15 @@ class Runner(object):
         
         filename = "%s/%s.emaildb"%(dir,a_id)
         
-        list_of_data = []
+        data = {}
         
         if os.path.exists(filename):
             f = open(filename)
-            list_of_data = pickle.load(f)
+            data = pickle.load(f)
             f.close()
             
-        return list_of_data
-        
-
+        return data
+    
     def execute(self,a_args):
     
         if a_args == None or a_args == {}:
@@ -551,17 +558,11 @@ class Runner(object):
         Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
         
         Runner.c_log.info("*************************************************************\n")
-        
-        cache_cleaned         = False
-        local_spectra_cleaned = False
-        
+          
         # check if we can write in case the dir already exists    
         dir = a_args['dir']
         self._create_results_directories(dir)
-        
-        # default request => do not retrieve PREL but all the rest
-        request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
-        
+          
         # check if we have some sids or we get it from some dates
         Runner.c_log.info("*************************************************************")
         
@@ -570,22 +571,60 @@ class Runner(object):
             raise Exception('No id given. Need a user id') 
         else:  
             
-            db_list = self._get_id_database(a_args['id'])
+            id = a_args['id']
+            
+            db_dict = self._get_id_database(id)
+            
+            begin_date = ctbto.common.time_utils.getYesterday()
+            end_date   = ctbto.common.time_utils.getToday()
              
-            list_of_samples_to_produce = self._get_list_of_new_samples_to_email(db_list,ctbto.common.time_utils.getToday(),ctbto.common.time_utils.getTomorrow())     
+            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,begin_date,end_date,a_args['station_types']) 
+        
+        if len(list_to_fetch) > 0:    
        
-        Runner.c_log.info("list of samples: %s"%(list_of_samples_to_produce))
+            Runner.c_log.info("Needs to fetch the following samples: %s"%(list_to_fetch))
+        
+            # Call the data fetcher with the right arguments
+            args = {}
+        
+            args['dir']                     = "/tmp/tosend"
+            args['verbose']                 = 1
+            a_args['always_recreate_files'] = False
+            args['clean_cache']             = False
+            args['automatic_tests']         = False
+            args['clean_local_spectra']     = False
+            args['sids']                    = list_to_fetch
+        
+            Runner.c_log.info("*************************************************************\n")
+            Runner.c_log.info("*************************************************************")
+            Runner.c_log.info("Call product generator")
+            Runner.c_log.info("*************************************************************")
+        
+            arr_generator.run_with_args(args)
+        
+            Runner.c_log.info("*************************************************************")
+            Runner.c_log.info("Create Tar the file")
+            Runner.c_log.info("*************************************************************")
+        
+            t = tarfile.open(name = "/tmp/samplesABC.tar.gz", mode = 'w:gz')
+            t.add("/tmp/tosend/samples",arcname=os.path.basename("/tmp/tosend/samples"))
+            t.close()
+        
+            # send email
+            s = DataEmailer('malta14.office.ctbto.org')
+            s.connect('aubert','ernest25')
+        
+            s.send_email_attached_files('guillaume.aubert@ctbto.org','guillaume.aubert@gmail.com',["/tmp/samplesABC.tar.gz"], 'sampml from this period until this one')
+        
+            self._save_in_id_database(id,db_dict,begin_date,end_date,list_to_fetch)
+        else:
+            Runner.c_log.info("No new products to send for group %s"%(id))
 
 def run():
     parsed_args = {}
     
     try:
         parsed_args = parse_arguments(sys.argv[1:])
-         
-        # very special case: run the automatic case
-        # the Runner is bypassed
-        if parsed_args['automatic_tests']:
-            run_automatic_tests()
          
         runner = Runner(parsed_args)
         runner.execute(parsed_args) 
