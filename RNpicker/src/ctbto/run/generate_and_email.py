@@ -200,10 +200,11 @@ def parse_arguments(a_args):
     result['verbose']             = 1
     result['automatic_tests']     = False
     result['station_types']       = ['SAUNA','SPALAX']
+    result['force_send']          = False
     
     try:
         reassoc_args = reassociate_arguments(a_args)
-        (opts,_) = getopt.gnu_getopt(reassoc_args, "hi:d:c:v3", ["help","id=","dir=","conf_dir=","version","vvv","automatic_tests"])
+        (opts,_) = getopt.gnu_getopt(reassoc_args, "hg:d:c:fv3", ["help","force","group=","dir=","conf_dir=","version","vvv","automatic_tests"])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -216,14 +217,16 @@ def parse_arguments(a_args):
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
-        elif o in ("-i", "--id"):
-            result['id'] = a         
+        elif o in ("-g", "--group"):
+            result['id'] =  a     
         elif o in ("-d", "--dir"):
             # try to make the dir if necessary
             ctbto.common.utils.makedirs(a)
             result['dir'] = a   
         elif o in ("-3","--vvv"):
-            result['verbose'] = 3 
+            result['verbose'] = 3
+        elif o in ("-f","--force"):
+            result['force_send'] = True 
         elif o in ("-c", "--conf_dir"):
             try:
                 #check that it is a dir
@@ -470,7 +473,7 @@ class Runner(object):
         
         return sta_ids
         
-    def _get_list_of_new_samples_to_email(self,db_dict,beginDate,endDate,station_types,spectralQualif='FULL',nbOfElem='10000000'):
+    def _get_list_of_new_samples_to_email(self,db_dict,beginDate,endDate,station_types,force_resend=False,spectralQualif='FULL',nbOfElem='10000000'):
        
         d1 = ctbto.common.time_utils.getOracleDateFromISO8601(beginDate)
         d2 = ctbto.common.time_utils.getOracleDateFromISO8601(endDate)
@@ -489,8 +492,13 @@ class Runner(object):
         else:
             prev_set   = set()
         
-        diff_set  = curr_set.difference(prev_set)
-            
+        # if the force_resend flag is there, we do a union instead of difference
+        if not force_resend:
+            diff_set  = curr_set.difference(prev_set)
+        else:
+            #resend old and new elements
+            diff_set  = curr_set.union(prev_set)
+        
         return list(diff_set)
     
     def _save_in_id_database(self,id,a_dir,db_dict,beginDate,endDate,emailed_list):
@@ -583,7 +591,7 @@ class Runner(object):
             
             end_date   = ctbto.common.time_utils.getToday()
              
-            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,begin_date,end_date,a_args['station_types']) 
+            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,begin_date,end_date,a_args['station_types'],a_args['force_send']) 
         
         if len(list_to_fetch) > 0:    
        
@@ -613,33 +621,33 @@ class Runner(object):
         
             Runner.c_log.info("*************************************************************")
             Runner.c_log.info("Create Tar the file")
-            Runner.c_log.info("*************************************************************")
+            Runner.c_log.info("*************************************************************\n")
         
             tarfile_name = "%s/batch-to-send.tar.gz"%(dir)
             t = tarfile.open(name = tarfile_name, mode = 'w:gz')
             t.add(dir_data,arcname=os.path.basename(dir_data))
             t.close()
             
-            groups = ['test']
+            groups = [id]
             
             # send email
             emailer = DataEmailer(self._conf.get('AutomaticEmailingInformation','host'),self._conf.get('AutomaticEmailingInformation','port'))
                 
             emailer.connect(self._conf.get('AutomaticEmailingInformation','user'),self._conf.get('AutomaticEmailingInformation','password'))
-        
             
+            sender = self._conf.get('AutomaticEmailingInformation','sender',None)
+        
             for group in groups:
             
-                Runner.c_log.info("*************************************************************")
-                Runner.c_log.info("Send Email to group %"%(groups))
-                Runner.c_log.info("*************************************************************")
-                
                 emails = self._conf.get('AutomaticEmailingGroups',group,None)
-                
                 if emails is None:
                     raise Exception('group %s is None in [AutomaticEmailingGroups]'%(group))
-        
-                s.send_email_attached_files('data.delivery@ctbto.org',emails,[tarfile_name], 'sampml from this period until this one')
+                
+                Runner.c_log.info("*************************************************************")
+                Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
+                Runner.c_log.info("*************************************************************")
+                
+                emailer.send_email_attached_files(sender,emails,[tarfile_name], 'sampml from this period until this one')
         
                 self._save_in_id_database(id,dir,db_dict,begin_date,end_date,list_to_fetch)
         else:

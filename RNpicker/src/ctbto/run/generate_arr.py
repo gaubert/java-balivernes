@@ -244,7 +244,6 @@ def parse_arguments(a_args):
                 for elem in stations:
                     l.append("\'%s\'"%(elem.strip()))
                 
-                # insure that each sid only contains digits    
                 result['stations'] = l  
             else:
                 result['stations'] = ["\'%s\'"%(a.strip())]                
