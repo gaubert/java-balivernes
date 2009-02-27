@@ -28,7 +28,7 @@ DATE_FORMAT = "%Y-%m-%d"
 def usage():
     
     usage_string = """
-Usage: generate_arr [options] 
+Usage: generate_and_email [options] 
 
   Mandatory Options:
   --sids           (-s)   Retrieve the data and create the ARR of the following sample ids.
@@ -504,7 +504,7 @@ class Runner(object):
         db_dict[key] = l
         
         # to get in conf
-        dir = self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp')
+        dir = "%s/db"%(self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp'))
         
         # create dir if it doesn't exist
         self._create_results_directories(dir)
@@ -512,7 +512,9 @@ class Runner(object):
         filename = "%s/%s.emaildb"%(dir,id)
         
         f = open(filename,'w')
+        
         pickle.dump(db_dict,f) 
+        
         f.close()
         
         
@@ -536,7 +538,7 @@ class Runner(object):
         # create dir if it doesn't exist
         self._create_results_directories(dir)
         
-        filename = "%s/%s.emaildb"%(dir,a_id)
+        filename = "%s/db/%s.emaildb"%(dir,a_id)
         
         data = {}
         
@@ -587,9 +589,9 @@ class Runner(object):
             # Call the data fetcher with the right arguments
             args = {}
         
-            args['dir']                     = "/tmp/tosend"
+            args['dir']                     = "%s/to_send"%(dir)
             args['verbose']                 = 1
-            a_args['always_recreate_files'] = False
+            args['always_recreate_files']   = False
             args['clean_cache']             = False
             args['automatic_tests']         = False
             args['clean_local_spectra']     = False
