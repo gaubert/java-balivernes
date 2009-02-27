@@ -31,23 +31,11 @@ def usage():
 Usage: generate_and_email [options] 
 
   Mandatory Options:
-  --sids           (-s)   Retrieve the data and create the ARR of the following sample ids.
-                          If --sids and --from or --end are used only the information provided 
-                          with --sids will be used.
-  or
-  
-  --from           (-f)   Get all the sample ids corresponding to the from date until the end date. (default=today).
-                          The date is in the YYYY-MM-DD form (ex: 2008-08-22).
-  --end            (-e)   Get all the sample ids created during the from and end period.            (default=yesterday).
-                          The date is in the YYYY-MM-DD form (ex: 2008-08-22).
-  or
-  
-  --stations       (-t)   Get all the sample ids belonging to the passed stations code.             (default=all SAUNA stations)
-                          ex: --stations USX74,CAL05.
-             
-
+  --group          (-g)   The email group (or alias) as defined in the configuration group
+                          [AutomaticEmailingGroups]. This group defines a set of emails
+                          to whom send the data once generated         
   Extra Options:
-  --dir             (-d)  Destination directory where the data will be written.                     (default=/tmp/samples)
+  --dir             (-d)  Destination directory where the data will be written.                     (default="/tmp/generate_and_email_data")
                           The SAMPML files will be added under DIR/samples and the ARR
                           under DIR/ARR. 
                           The directories will be created if not present.
@@ -58,38 +46,20 @@ Usage: generate_and_email [options]
                           in the stdout.  
   
   Advanced Options:
-  --clean_cache         (-l)  Clean the caching area as defined in the configuration file.
+  --force           (-l)  force resending the previous batch of data with any new incoming data.
   
-  --clean_local_spectra (-o)  Clean the directory containing the spectra cached locally
-                              as defined in the configuration file.
-  
-  --automatic_tests     (-a)  Run the automatic tests and exit.
+  --clean_group_db  (-o)  Delete the group database file that keeps track of what has been sent the
+                          group defined by --group or -g option.
 
 
   Help Options:
    --help     Show this usage information.
 
   Examples:
-  >./generate_arr --sids 211384,248969 --dir ./results 
+  >./generate_and_email --group test --dir ./test-data 
   
-  Get the SAMPML and ARR files for the sample ids 211384 and 248969 and store them in ./results.
+  Get all SAUNA and SPALAX data and send them to the users in the group test.
   
-  >./generate_arr --stations USX74,CAL05 --dir ./results 
-  
-  Get the SAMPML and ARR files for the samples belonging to the stations USX75 and CAL05
-  from yesterday to today.
-  
-  >./generate_arr --from 2009-01-15 --stations CNX22,USX75
-  
-  Get the SAMPML and ARR files for the samples belonging to the stations CNX22 and USX75
-  and produced from the 15 of Jan 2009 until today.
-  
-  >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
-  
-  Get the SAMPML and ARR files for the samples belonging to all the SAUNA stations for the passed
-  period. The configuration file rnpicker.config under ../conf will be used to get the configuration
-  information.
- 
   """
        
     print(usage_string)
@@ -196,15 +166,16 @@ def parse_arguments(a_args):
     result = {}
     
     # add defaults
-    result['dir']                 = "/tmp/sync"
+    result['dir']                 = "/tmp/generate_and_email_data"
     result['verbose']             = 1
     result['automatic_tests']     = False
     result['station_types']       = ['SAUNA','SPALAX']
     result['force_send']          = False
+    result['clean_group_db']      = False
     
     try:
         reassoc_args = reassociate_arguments(a_args)
-        (opts,_) = getopt.gnu_getopt(reassoc_args, "hg:d:c:fv3", ["help","force","group=","dir=","conf_dir=","version","vvv","automatic_tests"])
+        (opts,_) = getopt.gnu_getopt(reassoc_args, "hog:d:c:fv3", ["help","force","clean_group_db","group=","dir=","conf_dir=","version","vvv"])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -226,7 +197,9 @@ def parse_arguments(a_args):
         elif o in ("-3","--vvv"):
             result['verbose'] = 3
         elif o in ("-f","--force"):
-            result['force_send'] = True 
+            result['force_send'] = True
+        elif o in ("-o","--clean_group_db"):
+            result['clean_group_db'] = True  
         elif o in ("-c", "--conf_dir"):
             try:
                 #check that it is a dir
@@ -557,6 +530,13 @@ class Runner(object):
             f.close()
             
         return data
+
+    def _clean_group_db(self,a_dir,a_id):
+        """ clean group db """
+        
+        Runner.c_log.info("Clean file %s"%("%s/db/%s.emaildb"%(a_dir,id)))
+        
+        ctbto.common.utils.delete_all_under("%s/db/%s.emaildb"%(a_dir,id))
     
     def execute(self,a_args):
     
@@ -574,7 +554,7 @@ class Runner(object):
         dir = a_args['dir']
         
         self._create_results_directories(dir)
-          
+        
         # check if we have some sids or we get it from some dates
         Runner.c_log.info("*************************************************************")
         
@@ -584,6 +564,9 @@ class Runner(object):
         else:  
             
             id = a_args['id']
+            
+            if a_args['clean_group_db']:
+                self._clean_group_db(a_dir, a_id) 
             
             db_dict = self._get_id_database(dir,id)
             
