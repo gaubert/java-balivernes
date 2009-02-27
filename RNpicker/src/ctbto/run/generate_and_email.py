@@ -493,7 +493,7 @@ class Runner(object):
             
         return list(diff_set)
     
-    def _save_in_id_database(self,id,db_dict,beginDate,endDate,emailed_list):
+    def _save_in_id_database(self,id,a_dir,db_dict,beginDate,endDate,emailed_list):
         
         key = '%s-%s'%(beginDate,endDate)
         
@@ -504,12 +504,12 @@ class Runner(object):
         db_dict[key] = l
         
         # to get in conf
-        dir = "%s/db"%(self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp'))
+        #dir = "%s/db"%(self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp'))
         
         # create dir if it doesn't exist
         self._create_results_directories(dir)
         
-        filename = "%s/%s.emaildb"%(dir,id)
+        filename = "%s/db/%s.emaildb"%(a_dir,id)
         
         f = open(filename,'w')
         
@@ -518,7 +518,7 @@ class Runner(object):
         f.close()
         
         
-    def _get_id_database(self,a_id):
+    def _get_id_database(self,a_dir,a_id):
         """
             return a persistent list if it was stored previously in the db dir. This file should contain a dict of the last five email shots
         
@@ -533,12 +533,13 @@ class Runner(object):
         """
         
         # to get in conf
-        dir = self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp')
+        #TODO check if emaildb could be somewhere else than under top main generation dir
+        #dir = self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp')
         
         # create dir if it doesn't exist
-        self._create_results_directories(dir)
+        self._create_results_directories("%s/db"%(a_dir))
         
-        filename = "%s/db/%s.emaildb"%(dir,a_id)
+        filename = "%s/db/%s.emaildb"%(a_dir,a_id)
         
         data = {}
         
@@ -563,6 +564,7 @@ class Runner(object):
           
         # check if we can write in case the dir already exists    
         dir = a_args['dir']
+        
         self._create_results_directories(dir)
           
         # check if we have some sids or we get it from some dates
@@ -575,9 +577,10 @@ class Runner(object):
             
             id = a_args['id']
             
-            db_dict = self._get_id_database(id)
+            db_dict = self._get_id_database(dir,id)
             
             begin_date = ctbto.common.time_utils.getYesterday()
+            
             end_date   = ctbto.common.time_utils.getToday()
              
             list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,begin_date,end_date,a_args['station_types']) 
@@ -587,7 +590,7 @@ class Runner(object):
             Runner.c_log.info("Needs to fetch the following samples: %s"%(list_to_fetch))
         
             # Call the data fetcher with the right arguments
-            args = {}
+            args = {}                      
         
             args['dir']                     = "%s/to_send"%(dir)
             args['verbose']                 = 1
@@ -596,8 +599,12 @@ class Runner(object):
             args['automatic_tests']         = False
             args['clean_local_spectra']     = False
             args['sids']                    = list_to_fetch
+            
+            # directory containing the data
+            dir_data = "%s/to_send/samples"%(dir)
         
             Runner.c_log.info("*************************************************************\n")
+            
             Runner.c_log.info("*************************************************************")
             Runner.c_log.info("Call product generator")
             Runner.c_log.info("*************************************************************")
@@ -608,17 +615,33 @@ class Runner(object):
             Runner.c_log.info("Create Tar the file")
             Runner.c_log.info("*************************************************************")
         
-            t = tarfile.open(name = "/tmp/samplesABC.tar.gz", mode = 'w:gz')
-            t.add("/tmp/tosend/samples",arcname=os.path.basename("/tmp/tosend/samples"))
+            tarfile_name = "%s/batch-to-send.tar.gz"%(dir)
+            t = tarfile.open(name = tarfile_name, mode = 'w:gz')
+            t.add(dir_data,arcname=os.path.basename(dir_data))
             t.close()
-        
+            
+            groups = ['test']
+            
             # send email
-            s = DataEmailer('malta14.office.ctbto.org')
-            s.connect('aubert','ernest25')
+            emailer = DataEmailer(self._conf.get('AutomaticEmailingInformation','host'),self._conf.get('AutomaticEmailingInformation','port'))
+                
+            emailer.connect(self._conf.get('AutomaticEmailingInformation','user'),self._conf.get('AutomaticEmailingInformation','password'))
         
-            s.send_email_attached_files('guillaume.aubert@ctbto.org','guillaume.aubert@gmail.com',["/tmp/samplesABC.tar.gz"], 'sampml from this period until this one')
+            
+            for group in groups:
+            
+                Runner.c_log.info("*************************************************************")
+                Runner.c_log.info("Send Email to group %"%(groups))
+                Runner.c_log.info("*************************************************************")
+                
+                emails = self._conf.get('AutomaticEmailingGroups',group,None)
+                
+                if emails is None:
+                    raise Exception('group %s is None in [AutomaticEmailingGroups]'%(group))
         
-            self._save_in_id_database(id,db_dict,begin_date,end_date,list_to_fetch)
+                s.send_email_attached_files('data.delivery@ctbto.org',emails,[tarfile_name], 'sampml from this period until this one')
+        
+                self._save_in_id_database(id,dir,db_dict,begin_date,end_date,list_to_fetch)
         else:
             Runner.c_log.info("No new products to send for group %s"%(id))
 
