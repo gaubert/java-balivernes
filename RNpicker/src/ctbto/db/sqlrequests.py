@@ -130,11 +130,11 @@ SQL_SPALAX_GET_EFFICIENCY_CAL = "select * from RMSAUTO.GARDS_EFFICIENCY_CAL wher
  
 SQL_SPALAX_GET_DATA_QUALITY_FLAGS = "select gflags.flag_id as dq_flag_id, result as dq_result, value as dq_value, name as dq_name, threshold as dq_threshold, units as dq_units, test as dq_test from RMSAUTO.GARDS_SAMPLE_FLAGS sflags,RMSMAN.GARDS_FLAGS gflags where sample_id=%s and sflags.FLAG_ID = gflags.FLAG_ID"
  
-SQL_SPALAX_GET_QC_FLAGS = "select TEST_NAME,FLAG,QC_COMMENT from GARDS_QC_RESULTS where sample_id=%s"
+SQL_SPALAX_GET_QC_FLAGS = "select TEST_NAME,FLAG,QC_COMMENT from RMSAUTO.GARDS_QC_RESULTS where sample_id=%s"
  
-SQL_SPALAX_GET_PROCESSING_PARAMETERS = "select NAME,VALUE from GARDS_SAINT_PROCESS_PARAMS where sample_id=%s"
+SQL_SPALAX_GET_PROCESSING_PARAMETERS = "select NAME,VALUE from RMSAUTO.GARDS_SAINT_PROCESS_PARAMS where sample_id=%s"
  
-SQL_GET_AUTOSAINT_DEFAULT_PARAMS = "select NAME,VALUE from GARDS_SAINT_DEFAULT_PARAMS"
+SQL_GET_AUTOSAINT_DEFAULT_PARAMS = "select NAME,VALUE from RMSAUTO.GARDS_SAINT_DEFAULT_PARAMS"
  
 """ ************************************ Sauna Part ************************************************ """
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """

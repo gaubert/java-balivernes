@@ -17,7 +17,7 @@ import ctbto.common.time_utils
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector,DBDataFetcher
-from ctbto.renderers   import SaunaRenderer
+from ctbto.renderers   import BaseRenderer,SpalaxRenderer,SaunaRenderer
 from ctbto.transformer import XML2HTMLRenderer
 
 NAME        = "generate_arr"
@@ -30,7 +30,7 @@ def usage():
 Usage: generate_arr [options] 
 
   Mandatory Options:
-  --sids           (-s)   Retrieve the data and create the ARR of the following sample ids.
+  --sids           (-i)   Retrieve the data and create the ARR of the following sample ids.
                           If --sids and --from or --end are used only the information provided 
                           with --sids will be used.
   or
@@ -197,10 +197,11 @@ def parse_arguments(a_args):
     result['clean_cache']         = False
     result['automatic_tests']     = False
     result['clean_local_spectra'] = False
+    result['station_types']       = ['SAUNA','SPALAX']
     
     try:
         reassoc_args = reassociate_arguments(a_args)
-        (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
+        (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:i:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -213,7 +214,7 @@ def parse_arguments(a_args):
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
-        elif o in ("-s", "--sids"):
+        elif o in ("-i", "--sids"):
             # if there is a comma try to build a list
             if a.find(',') != -1:
                 sids = a.split(',')
@@ -233,7 +234,7 @@ def parse_arguments(a_args):
             else:
                 raise ParsingError("Error passed sid %s (with --sids or -s) is not a number"%(a))
              
-        elif o in ("-t", "--stations"):
+        elif o in ("-s", "--stations"):
             # if there is a comma try to build a list
             if a.find(',') != -1:
                 stations = a.split(',')
@@ -278,7 +279,7 @@ def parse_arguments(a_args):
             try:
                 result['automatic_tests'] = True
             except:
-                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
+                raise ParsingError("Invalid --automatic_tests or -a %s"%(a))
         elif o in ("-l", "--clean_cache"):
             try:
                 result['clean_cache'] = True
@@ -288,21 +289,20 @@ def parse_arguments(a_args):
             try:
                 result['clean_local_spectra'] = True
             except:
-                raise ParsingError("Invalid --conf_dir or -d %s"%(a))
+                raise ParsingError("Invalid --clean_local_spectra or -o %s"%(a))
         else:
             raise ParsingError("Unknown option %s = %s"%(o,a))
     
     return result
 
-#SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (522, 684) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETSAUNASAMPLEIDS = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSAMPLEIDS                   = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 
-SQL_GETALLSAUNASTATIONCODES = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
+SQL_GETALLSAUNASTATIONCODES        = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"
 
-SQL_GETALLSAUNASTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
+SQL_GETALLSPALAXSTATIONCODES       = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SPALAX'"
 
-#SQL_GETSAUNASAMPLEIDS2  = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in () RMSMAN.GARDS_STATIONS"
+SQL_GETALLSTATIONIDSFROMCODES = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
 
 class CLIError(Exception):
     """ Base class exception """
@@ -473,11 +473,11 @@ class Runner(object):
         else:
             raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
         
-    def _get_list_of_sauna_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
+    def _get_list_of_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
         
         l = ','.join(map(str,stations)) #IGNORE:W0141
         
-        result = self._ngMainConn.execute(SQL_GETSAUNASAMPLEIDS%(l,beginDate,endDate,spectralQualif,nbOfElem))
+        result = self._ngMainConn.execute(SQL_GETSAMPLEIDS%(l,beginDate,endDate,spectralQualif,nbOfElem))
         
         sampleIDs= []
         
@@ -493,7 +493,7 @@ class Runner(object):
     
     def _get_stations_ids(self,a_station_codes):
         
-        result = self._ngMainConn.execute(SQL_GETALLSAUNASTATIONIDSFROMCODES%(','.join(a_station_codes)))
+        result = self._ngMainConn.execute(SQL_GETALLSTATIONIDSFROMCODES%(','.join(a_station_codes)))
         
         sta_ids    = []
         
@@ -508,34 +508,41 @@ class Runner(object):
             
         return sta_ids
     
-    def _get_all_stations(self):
+    def _get_all_stations(self,a_stations_types):
         
-        result = self._ngMainConn.execute(SQL_GETALLSAUNASTATIONCODES)
-        
-        sta_codes  = []
         sta_ids    = []
         
-        rows   = result.fetchall()
+        for type in a_stations_types:
         
-        for row in rows:
-            sta_codes.append(row[0])
-            sta_ids.append(row[1])
+            if   type == 'SAUNA':
+                result = self._ngMainConn.execute(SQL_GETALLSAUNASTATIONCODES)
+            elif type == 'SPALAX':
+                result = self._ngMainConn.execute(SQL_GETALLSPALAXSTATIONCODES)
+        
+            sta_codes  = []
+           
+            rows   = result.fetchall()
+        
+            for row in rows:
+                sta_codes.append(row[0])
+                sta_ids.append(row[1])
             
-        Runner.c_log.info("Found %d SAUNA stations."%(len(sta_codes)))
-        self.log_in_file("Found the following SAUNA stations: %s."%(sta_codes))
+            Runner.c_log.info("Found %d %s stations."%(len(sta_codes),type))
+            self.log_in_file("Found the following %s stations: %s."%(type,sta_codes))
         
         return sta_ids
     
     def _create_results_directories(self,dir):
         
-        if os.path.exists(dir) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK |os.X_OK):
-            raise Exception("Do not have the right permissions to write in result's directory %s.Please choose another result's SAMPML directory."%(dir))
+        # TODO need to fix that as there are some issues with the permissions checking
+        #if os.path.exists(dir) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK |os.X_OK):
+        #    raise Exception("Do not have the right permissions to write in result's directory %s.Please choose another result's SAMPML directory."%(dir))
         
-        if os.path.exists('%s/samples'%(dir)) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK):
-            raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/samples'%(dir)))
+        #if os.path.exists('%s/samples'%(dir)) and not os.access('%s/samples'%(dir),os.R_OK | os.W_OK):
+        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/samples'%(dir)))
 
-        if os.path.exists('%s/ARR'%(dir)) and not os.access('%s/ARR'%(dir),os.R_OK | os.W_OK):
-            raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/ARR'%(dir)))
+        #if os.path.exists('%s/ARR'%(dir)) and not os.access('%s/ARR'%(dir),os.R_OK | os.W_OK):
+        #    raise Exception("Do not have the right permissions to write in result's SAMPML directory %s.Please choose another result's SAMPML directory."%('%s/ARR'%(dir)))
             
         # try to make the dir if necessary
         ctbto.common.utils.makedirs('%s/samples'%(dir))
@@ -608,7 +615,7 @@ class Runner(object):
                 stations = self._get_stations_ids(stations)
             else:
                 stations = self._get_all_stations()
-            sids     = self._get_list_of_sauna_sampleIDs(stations,begin, end)
+            sids     = self._get_list_of_sampleIDs(stations,begin, end)
         else:
             # if the cache has been clean then exit quietly as one action has been performed
             if cache_cleaned or local_spectra_cleaned:
@@ -642,7 +649,7 @@ class Runner(object):
             
             fetcher.fetch(request,'GAS')
                  
-            renderer = SaunaRenderer(fetcher)
+            renderer = BaseRenderer.getRenderer(fetcher)
    
             xmlStr = renderer.asXmlStr(request)
            
@@ -650,7 +657,13 @@ class Runner(object):
    
             Runner.c_log.info("Save SAMPML data in %s"%(path))
             
+            # pretty print and save in file
             ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
+            
+            if fetcher.get('SAMPLE_TYPE') == 'SPALAX':
+                Runner.c_log.info("No ARR For Spalax at the moment")
+                continue
+            
             
             Runner.c_log.info("Create ARR from SAMPML data file for %s"%(sid))
            
