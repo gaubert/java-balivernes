@@ -8,6 +8,7 @@ import getopt, sys
 import os
 import tarfile
 import pickle
+import datetime
 import logging
 import logging.handlers
 import StringIO
@@ -21,8 +22,8 @@ from ctbto.db          import DatabaseConnector
 import ctbto.run.generate_arr as arr_generator
 from ctbto.email import DataEmailer
 
-NAME        = "generate_arr"
-VERSION     = "1.0"
+NAME        = "generate_and_email"
+VERSION     = "0.5"
 DATE_FORMAT = "%Y-%m-%d"
 
 def usage():
@@ -46,7 +47,7 @@ Usage: generate_and_email [options]
                           in the stdout.  
   
   Advanced Options:
-  --force           (-l)  force resending the previous batch of data with any new incoming data.
+  --force           (-l)  force resending the previous batch of data with any new incoming data for a particular day
   
   --clean_group_db  (-o)  Delete the group database file that keeps track of what has been sent the
                           group defined by --group or -g option.
@@ -58,7 +59,7 @@ Usage: generate_and_email [options]
   Examples:
   >./generate_and_email --group test --dir ./test-data 
   
-  Get all SAUNA and SPALAX data and send them to the users in the group test.
+  Get all SAUNA and SPALAX data and send them to the users in the group test starting from today - 1 day
   
   """
        
@@ -226,6 +227,8 @@ SQL_GETALLSPALAXSTATIONCODES       = "select STATION_CODE,STATION_ID from RMSMAN
 
 SQL_GETALLSTATIONIDSFROMCODES      = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
 
+SAMPLES_KEY    = "sent_samples"
+HISTORY_KEY    = "history_sendings"
 
 class CLIError(Exception):
     """ Base class exception """
@@ -446,21 +449,65 @@ class Runner(object):
         
         return sta_ids
         
-    def _get_list_of_new_samples_to_email(self,db_dict,beginDate,endDate,station_types,force_resend=False,spectralQualif='FULL',nbOfElem='10000000'):
-       
-        d1 = ctbto.common.time_utils.getOracleDateFromISO8601(beginDate)
-        d2 = ctbto.common.time_utils.getOracleDateFromISO8601(endDate)
+    def _get_list_of_new_samples_to_email(self,a_db_dict,a_searched_day,a_station_types,a_force_resend=False,a_spectralQualif='FULL',a_nbOfElem='10000000'):
+        """
+            Method returning what samples needs to be sent an fetched for a particular day.
+            The day is designated by searched_day.
         
-        stations      = self._get_all_stations(station_types)
+            Args:
+               a_db_dict       : Persistent dictionary containing what has already been sent
+               a_searched_day  : Searched day (usually dd:mm:yyT00:00:00). It is a datetime object
+               
+            Returns:
+               return a conf object
         
-        current_list  = self._get_list_of_sampleIDs(stations,d1,d2,spectralQualif,nbOfElem)
+            Raises:
+               exception
+        """
+        # get all related stations
+        stations      = self._get_all_stations(a_station_types)
+        
+        # begin_date search_dayT00h00m00s
+        begin_date = a_searched_day
+        
+        one_day_before = a_searched_day - datetime.timedelta(day=1)
+        
+        # end_date search_day + 1 day to born the searched day 
+        # if means that we have passed a new day and haven't finished to fetch data for
+        # previous day.
+        # get the missing sample_ids 
+        end_date = a_searched_day + datetime.timedelta(day=1)
+        
+        missed_samples_set = set()
+        
+        if one_day_before in db_dict:
+            d1 = ctbto.common.time_utils.getOracleDateFromISO8601(one_day_before)
+            d2 = ctbto.common.time_utils.getOracleDateFromISO8601(a_searched_day)
+            
+            # get list of samples for the day before
+            l        = self._get_list_of_sampleIDs(stations,d1,d2,a_spectralQualif,a_nbOfElem)
+            l_set    = set(l)
+            l_prev_set = set(db_dict[one_day_before][SAMPLES_KEY])
+            missed_samples_set = l_set.difference(l_prev_set)
+            
+            # remove from db_dict one_day_before
+            del db_dict[one_day_before]
+           
+        # now get it for the searched_day
+        
+        # get them in Oracle format
+        d1 = ctbto.common.time_utils.getOracleDateFromISO8601(begin_date)
+        d2 = ctbto.common.time_utils.getOracleDateFromISO8601(end_date)
+        
+        # get all samples for this particular stations
+        current_list  = self._get_list_of_sampleIDs(stations,d1,d2,a_spectralQualif,a_nbOfElem)
         
         curr_set      = set(current_list)
         
-        date_id = '%s-%s'%(beginDate,endDate)
+        date_id = '%s'%(a_searched_day)
         
         if date_id in db_dict:
-            prev_list  = db_dict[date_id]
+            prev_list  = db_dict[date_id][SAMPLES_KEY]
             prev_set   = set(prev_list) 
         else:
             prev_set   = set()
@@ -472,29 +519,58 @@ class Runner(object):
             #resend old and new elements
             diff_set  = curr_set.union(prev_set)
         
+        # add any potential missing samples
+        diff_set = diff_set.union(missed_samples_set)
+        
         return list(diff_set)
     
-    def _save_in_id_database(self,id,a_dir,db_dict,beginDate,endDate,emailed_list):
+    def _save_in_id_database(self,a_id,a_dir,a_db_dict,a_emailed_list,a_searched_day,a_sending_time_stamp):
+        """
+            Save the information related to the current batch in the db_dict.
+            
+            Args:
+               a_id                 : email group name,
+               a_dir                : directory where the db_dict is going to be stored,
+               a_db_dict            : Persistent dictionary containing what has already been sent,
+               a_emailed_list       : Searched day (usually dd:mm:yyT00:00:00). It is a datetime object,
+               a_searched_day       : the day for which the samples are retrieved (key in db_dict)
+               a_sending_time_stamp : timestamp when the data was sent (key for the history) 
+               
+            Returns:
+               None
         
-        key = '%s-%s'%(beginDate,endDate)
+            Raises:
+               exception
+        """
+        key = '%s'%(a_searched_day)
         
-        l = db_dict.get(key,[])
+        # if it doesn't exist, initialize the structure
+        if a_db_dict.get(key,None) == None:
+            a_db_dict[key] = {}
+            a_db_dict[key][SAMPLES_KEY] = []
+            a_db_dict[key][HISTORY_KEY] = {}
+            
+        info_dict = a_db_dict.get(key,{})
         
-        l.extend(emailed_list) 
+        l = info_dict.get(SAMPLES_KEY,[])
         
-        db_dict[key] = l
+        l.extend(a_emailed_list) 
         
-        # to get in conf
-        #dir = "%s/db"%(self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp'))
+        a_db_dict[key][SAMPLES_KEY] = l
         
+        # Add history info
+        hist_d = info_dict[HISTORY_KEY]
+        
+        hist_d[a_sending_time_stamp] = a_emailed_list
+          
         # create dir if it doesn't exist
-        self._create_results_directories(dir)
+        self._create_results_directories(a_dir)
         
-        filename = "%s/db/%s.emaildb"%(a_dir,id)
+        filename = "%s/db/%s.emaildb"%(a_dir,a_id)
         
         f = open(filename,'w')
         
-        pickle.dump(db_dict,f) 
+        pickle.dump(a_db_dict,f) 
         
         f.close()
         
@@ -534,11 +610,13 @@ class Runner(object):
     def _clean_group_db(self,a_dir,a_id):
         """ clean group db """
         
-        Runner.c_log.info("Clean file %s"%("%s/db/%s.emaildb"%(a_dir,id)))
+        Runner.c_log.info("Clean file %s"%("%s/db/%s.emaildb"%(a_dir,a_id)))
         
-        ctbto.common.utils.delete_all_under("%s/db/%s.emaildb"%(a_dir,id))
+        ctbto.common.utils.delete_all_under("%s/db/%s.emaildb"%(a_dir,a_id))
     
     def execute(self,a_args):
+        # TODO Support sending in non-continous mode a specific period of date (check tarfile size)
+        # TODO Test in reallife (test change of day)
     
         if a_args == None or a_args == {}:
             raise Exception('No commands passed. See usage message.')
@@ -570,11 +648,11 @@ class Runner(object):
             
             db_dict = self._get_id_database(dir,id)
             
-            begin_date = ctbto.common.time_utils.getYesterday()
-            
-            end_date   = ctbto.common.time_utils.getToday()
+            # always look one day before to retrieve some day
+            # between yesterday and today => it is yesterday
+            searched_day = ctbto.common.time_utils.getYesterday()
              
-            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,begin_date,end_date,a_args['station_types'],a_args['force_send']) 
+            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,searched_day,a_args['station_types'],a_args['force_send']) 
         
         if len(list_to_fetch) > 0:    
        
@@ -606,7 +684,10 @@ class Runner(object):
             Runner.c_log.info("Create Tar the file")
             Runner.c_log.info("*************************************************************\n")
         
-            tarfile_name = "%s/batch-to-send.tar.gz"%(dir)
+            # create sending timestamp (used in the tar.gz file name)
+            sending_time_stamp = '%s'%(db_datetime.datetime.now())
+            
+            tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_time_stamp)
             t = tarfile.open(name = tarfile_name, mode = 'w:gz')
             t.add(dir_data,arcname=os.path.basename(dir_data))
             t.close()
@@ -632,7 +713,7 @@ class Runner(object):
                 
                 emailer.send_email_attached_files(sender,emails,[tarfile_name], 'sampml from this period until this one')
         
-                self._save_in_id_database(id,dir,db_dict,begin_date,end_date,list_to_fetch)
+                self._save_in_id_database(id,dir,db_dict,list_to_fetch,searched_day,sending_timestamp)
         else:
             Runner.c_log.info("No new products to send for group %s"%(id))
 
