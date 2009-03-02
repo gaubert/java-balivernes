@@ -3,7 +3,7 @@ import time
 from ctbto.common import scanf
 
 def getToday():
-    """ return today in so format """
+    """ return today in iso format """
     today = datetime.date.today()
     return today.isoformat()
 
@@ -88,17 +88,17 @@ def getSecondsInFormattedTime(aSec):
         rest = rest % a_day
  
     if rest > 0:
-      # divide by hours
-      div = rest/an_hr
-      if div != 0:
-         nb_of_hours = div
-         rest = rest % an_hr
+        # divide by hours
+        div = rest/an_hr
+        if div != 0:
+            nb_of_hours = div
+            rest = rest % an_hr
          
     if rest > 0:
-       nb_of_min = rest/a_min
-       nb_of_sec = rest % a_min
+        nb_of_min = rest/a_min
+        nb_of_sec = rest % a_min
     else:
-       nb_of_sec = rest
+        nb_of_sec = rest
        
     
     days_str  = "%s d"%(nb_of_days) if (nb_of_days > 0) else ""
