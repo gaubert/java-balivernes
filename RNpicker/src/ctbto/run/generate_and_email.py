@@ -228,7 +228,7 @@ SQL_GETALLSPALAXSTATIONCODES       = "select STATION_CODE,STATION_ID from RMSMAN
 SQL_GETALLSTATIONIDSFROMCODES      = "select STATION_ID from RMSMAN.GARDS_STATIONS where station_code in (%s)"
 
 SAMPLES_KEY    = "sent_samples"
-HISTORY_KEY    = "history_sendings"
+HISTORY_KEY    = "history"
 
 class CLIError(Exception):
     """ Base class exception """
@@ -469,52 +469,50 @@ class Runner(object):
         stations      = self._get_all_stations(a_station_types)
         
         # begin_date search_dayT00h00m00s
-        begin_date = a_searched_day
+        begin_date = ctbto.common.time_utils.getDateTimeFromISO8601(a_searched_day)
         
-        one_day_before = a_searched_day - datetime.timedelta(day=1)
+        one_day_before = begin_date - datetime.timedelta(days=1)
         
         # end_date search_day + 1 day to born the searched day 
         # if means that we have passed a new day and haven't finished to fetch data for
         # previous day.
         # get the missing sample_ids 
-        end_date = a_searched_day + datetime.timedelta(day=1)
+        end_date = begin_date + datetime.timedelta(days=1)
         
         missed_samples_set = set()
         
-        if one_day_before in db_dict:
-            d1 = ctbto.common.time_utils.getOracleDateFromISO8601(one_day_before)
-            d2 = ctbto.common.time_utils.getOracleDateFromISO8601(a_searched_day)
+        if ctbto.common.time_utils.getISO8601fromDateTime(one_day_before) in a_db_dict:
+            d1 = ctbto.common.time_utils.getOracleDateFromDateTime(one_day_before)
+            d2 = ctbto.common.time_utils.getOracleDateFromDateTime(begin_date)
             
             # get list of samples for the day before
             l        = self._get_list_of_sampleIDs(stations,d1,d2,a_spectralQualif,a_nbOfElem)
             l_set    = set(l)
-            l_prev_set = set(db_dict[one_day_before][SAMPLES_KEY])
+            l_prev_set = set(a_db_dict[one_day_before][SAMPLES_KEY])
             missed_samples_set = l_set.difference(l_prev_set)
             
-            # remove from db_dict one_day_before
-            del db_dict[one_day_before]
+            # remove from a_db_dict one_day_before
+            del a_db_dict[one_day_before]
            
         # now get it for the searched_day
         
         # get them in Oracle format
-        d1 = ctbto.common.time_utils.getOracleDateFromISO8601(begin_date)
-        d2 = ctbto.common.time_utils.getOracleDateFromISO8601(end_date)
+        d1 = ctbto.common.time_utils.getOracleDateFromDateTime(begin_date)
+        d2 = ctbto.common.time_utils.getOracleDateFromDateTime(end_date)
         
         # get all samples for this particular stations
         current_list  = self._get_list_of_sampleIDs(stations,d1,d2,a_spectralQualif,a_nbOfElem)
         
         curr_set      = set(current_list)
         
-        date_id = '%s'%(a_searched_day)
-        
-        if date_id in db_dict:
-            prev_list  = db_dict[date_id][SAMPLES_KEY]
+        if a_searched_day in a_db_dict:
+            prev_list  = a_db_dict[a_searched_day][SAMPLES_KEY]
             prev_set   = set(prev_list) 
         else:
             prev_set   = set()
         
         # if the force_resend flag is there, we do a union instead of difference
-        if not force_resend:
+        if not a_force_resend:
             diff_set  = curr_set.difference(prev_set)
         else:
             #resend old and new elements
@@ -686,9 +684,9 @@ class Runner(object):
             Runner.c_log.info("*************************************************************\n")
         
             # create sending timestamp (used in the tar.gz file name)
-            sending_time_stamp = '%s'%(db_datetime.datetime.now())
+            sending_timestamp = '%s'%(datetime.datetime.now())
             
-            tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_time_stamp)
+            tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_timestamp)
             t = tarfile.open(name = tarfile_name, mode = 'w:gz')
             t.add(dir_data,arcname=os.path.basename(dir_data))
             t.close()

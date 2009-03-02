@@ -5,24 +5,30 @@ from ctbto.common import scanf
 def getToday():
     """ return today in iso format """
     today = datetime.date.today()
-    return today.isoformat()
+    return today.strftime('%Y-%m-%dT%H:%M:%S')
 
 def getYesterday():
     """ return yesterday in so format """
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(1)
-    return yesterday.isoformat()
+    return yesterday.strftime('%Y-%m-%dT%H:%M:%S')
 
 def getTomorrow():
     """ return tomorrow in so format """
     today = datetime.date.today()
     tomorrow = today + datetime.timedelta(1)
-    return tomorrow.isoformat()
+    return tomorrow.strftime('%Y-%m-%dT%H:%M:%S')
 
 def getDateTimeFromISO8601(aISOStr):
     """ transform a datetime object in ISO 8601 string """
+
+    # if there is a no T, there is no time component add it T00:00:00 to the date
+    if not aISOStr.find('T'):
+        the_str = '%sT00:00:00'
+    else:
+        the_str = aISOStr
     
-    return datetime.datetime.strptime(aISOStr,'%Y-%m-%dT%H:%M:%S')
+    return datetime.datetime.strptime(the_str,'%Y-%m-%dT%H:%M:%S')
     
 def getOracleDateFromISO8601(aISOStr):
     """ transform an ISO8601 date into an Oracle compatible date.
