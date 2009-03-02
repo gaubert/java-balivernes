@@ -13,6 +13,7 @@ import logging
 import logging.handlers
 import StringIO
 import traceback
+import shutil
 
 import ctbto.common.xml_utils
 import ctbto.common.time_utils
@@ -400,13 +401,13 @@ class Runner(object):
         else:
             raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
     
-    def _create_results_directories(self,dir):
+    def _create_directories(self,dir):
         
         # try to make the dir if necessary
-        ctbto.common.utils.makedirs('%s/samples'%(dir))
+        ctbto.common.utils.makedirs('%s/data'%(dir))
         
         # try to make the dir if necessary
-        ctbto.common.utils.makedirs('%s/ARR'%(dir))  
+        ctbto.common.utils.makedirs('%s/db'%(dir))   
     
     def _get_list_of_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
         
@@ -561,9 +562,6 @@ class Runner(object):
         hist_d = info_dict[HISTORY_KEY]
         
         hist_d[a_sending_time_stamp] = a_emailed_list
-          
-        # create dir if it doesn't exist
-        self._create_results_directories(a_dir)
         
         filename = "%s/db/%s.emaildb"%(a_dir,a_id)
         
@@ -587,14 +585,6 @@ class Runner(object):
             Raises:
                exception
         """
-        
-        # to get in conf
-        #TODO check if emaildb could be somewhere else than under top main generation dir
-        #dir = self._conf.get('AutomaticEmailingInformation','databaseDir','/tmp')
-        
-        # create dir if it doesn't exist
-        self._create_results_directories("%s/db"%(a_dir))
-        
         filename = "%s/db/%s.emaildb"%(a_dir,a_id)
         
         data = {}
@@ -605,6 +595,52 @@ class Runner(object):
             f.close()
             
         return data
+    
+    def _move_sent_files_to_files_db(self,a_origin_dir,a_destination_dir):
+        """
+           move all files from a_origin_dir in a_destination_dir and delete the a_origin_dir
+        """
+        try:
+            for root,dirs,_ in os.walk(a_origin_dir):
+                for dir in dirs:
+                    if dir in ['ARR','samples']:
+                        dest = '%s/%s'%(a_destination_dir,dir)
+                        for i_r,_,i_files in os.walk('%s/%s'%(root,dir)):
+                            # only consider files in ARR and in samples
+                            for filename in i_files:
+                                shutil.move('%s/%s'%(i_r,filename),dest)
+             
+        except Exception, e: #IGNORE:W0703,W0702
+            # hide error in logs because it is a minor error
+            Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(a_origin_dir,e))
+        finally:
+            try:
+                # try to delete a_origin_dir even if there was an error
+                ctbto.common.utils.delete_all_under(a_origin_dir)
+            except Exception, e: #IGNORE:W0703,W0702
+                # hide error in logs because it is a minor error
+                Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
+           
+    def _move_sent_tarfile_to_files_db(self,a_tarfile,a_destination_dir,dir_to_delete):
+        """
+           move the a_origin_dir in a_destination_dir and delete the a_origin_dir
+        """
+        try:
+            if os.path.exists(a_tarfile):
+                shutil.move(a_tarfile,a_destination_dir)
+        except Exception, e: #IGNORE:W0703,W0702
+            # hide error in logs because it is a minor error
+            Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(a_origin_dir,a_destination_dir,e))
+        finally:
+            try:
+                # try to delete a_origin_dir even if there was an error
+                ctbto.common.utils.delete_all_under(dir_to_delete,delete_top_dir=True)
+            except Exception, e: #IGNORE:W0703,W0702
+                # hide error in logs because it is a minor error
+                Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
+           
+     
+            
 
     def _clean_group_db(self,a_dir,a_id):
         """ clean group db """
@@ -628,9 +664,22 @@ class Runner(object):
         Runner.c_log.info("*************************************************************\n")
           
         # check if we can write in case the dir already exists    
-        dir = a_args['dir']
+        dir           = a_args['dir']
+        # kind of historic of what has been sent
+        dir_files_db  = "%s/data"%(dir)
         
-        self._create_results_directories(dir)
+        # timestamps for create the batch name
+        # create sending timestamp (used in the tar.gz file name)
+        sending_timestamp = '%s'%(datetime.datetime.now())
+        # replace spaces with T and : with nothing
+        sending_timestamp = sending_timestamp.replace(' ','T')
+        sending_timestamp = sending_timestamp.replace(':','')
+            
+        dir_to_send   = "%s/%s"%(dir,sending_timestamp)
+        
+        tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_timestamp)
+        
+        self._create_directories(dir)
         
         # check if we have some sids or we get it from some dates
         Runner.c_log.info("*************************************************************")
@@ -660,7 +709,7 @@ class Runner(object):
             # Call the data fetcher with the right arguments
             args = {}                      
         
-            args['dir']                     = "%s/to_send"%(dir)
+            args['dir']                     = dir_to_send
             args['verbose']                 = 1
             args['always_recreate_files']   = False
             args['clean_cache']             = False
@@ -668,9 +717,6 @@ class Runner(object):
             args['clean_local_spectra']     = False
             args['sids']                    = list_to_fetch
             
-            # directory containing the data
-            dir_data = "%s/to_send/samples"%(dir)
-        
             Runner.c_log.info("*************************************************************\n")
             
             Runner.c_log.info("*************************************************************")
@@ -683,10 +729,10 @@ class Runner(object):
             Runner.c_log.info("Create Tar the file")
             Runner.c_log.info("*************************************************************\n")
         
-            # create sending timestamp (used in the tar.gz file name)
-            sending_timestamp = '%s'%(datetime.datetime.now())
-            
-            tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_timestamp)
+            # directory containing the data
+            # restrict to samples
+            dir_data = "%s/samples"%(dir_to_send)
+        
             t = tarfile.open(name = tarfile_name, mode = 'w:gz')
             t.add(dir_data,arcname=os.path.basename(dir_data))
             t.close()
@@ -712,9 +758,14 @@ class Runner(object):
                 
                 emailer.send_email_attached_files(sender,emails,[tarfile_name], 'sampml from this period until this one')
         
-                self._save_in_id_database(id,dir,db_dict,list_to_fetch,searched_day,sending_timestamp)
+                self._save_in_id_database(group,dir,db_dict,list_to_fetch,searched_day,sending_timestamp)
+                
+                
         else:
             Runner.c_log.info("No new products to send for group %s"%(id))
+        
+        # cleaning
+        self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
 
 def run():
     parsed_args = {}
