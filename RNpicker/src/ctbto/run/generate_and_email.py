@@ -312,7 +312,8 @@ class Runner(object):
             Args:
                None 
                
-            Returns:
+            Returns: if a_args['clean_group_db']:
+            self._clean_group_db(a_dir, a_id) 
                return a conf object
         
             Raises:
