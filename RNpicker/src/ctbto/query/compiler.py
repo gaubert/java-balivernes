@@ -26,7 +26,6 @@ class ParsingError(Exception):
     #def __str__(self):
     #    return "ParsingError (line:%s,col:%s) => %s"%()
         
-
 class Statement(object):
     """Base Class used for all statements """
     
