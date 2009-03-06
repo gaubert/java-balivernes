@@ -678,6 +678,7 @@ class Runner(object):
         dir_to_send   = "%s/%s"%(dir,sending_timestamp)
         
         tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_timestamp)
+  
         
         self._create_directories(dir)
         
@@ -686,10 +687,13 @@ class Runner(object):
         
         if not 'id' in a_args:
             # no actions performed error
-            raise Exception('No id given. Need a user id') 
+            raise Exception('No groups given. Need a group name') 
         else:  
             
             id = a_args['id']
+            
+            if not self._conf.has_option('AutomaticEmailingGroups',id):
+                raise Exception('There is no email groups in the configuration ([AutomaticEmailingGroups]) with value %s.'%(id))
             
             if a_args['clean_group_db']:
                 self._clean_group_db(a_dir, a_id) 
