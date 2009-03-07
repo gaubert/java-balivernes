@@ -579,13 +579,30 @@ def send_img_as_attachment():
     s.sendmail(sender, [receiver], msg.as_string())
     s.close()
 
+def test_date_pattern_matching():
 
+    #strToParse = "2009-01-31T13:12:59"
+    # the date-time pattern 
+    #pattern ="((19|20)\d\d)[-/.]?(0[1-9]|1[012])[-/.]?(0[1-9]|[12][0-9]|3[01])(T([0-1][0-9]|2[0-3])([.:]([0-5][0-9]))?([.:]([0-5][0-9]))?)?"
+   
+    strToParse = 'WITH'
+    pattern    = '[Ww][Ii][Tt][Hh]'
+   
+    #reSpec = re.compile(pattern, re.IGNORECASE)
+    reSpec = re.compile(pattern)
+    
+    m = reSpec.match(strToParse)
+    
+    if m != None:
+        print "m = %s"%(m.group())
+    else:
+        print "not matched\n"
 
 
 if __name__ == '__main__':
     
    #email_test()
-   send_html_as_attachment()
+   test_date_pattern_matching()
    
     
     
