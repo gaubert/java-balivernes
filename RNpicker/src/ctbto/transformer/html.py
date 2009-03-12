@@ -322,7 +322,12 @@ class XML2HTMLRenderer(object):
                     d['name']  = timeflag.tag
                
                 d['result'] = timeflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['value']  = utils.round_as_string(timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,HDIGITS)
+                try:
+                    d['value']  = utils.round_as_string(timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,HDIGITS)
+                except Exception, e:
+                    #cannot convert this number value so put the string as it is
+                    d['value']  = timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                    
                 d['test']   = timeflag.find('{%s}Test'%(XML2HTMLRenderer.c_namespaces['sml'])).text
             
                 flags.append(d)
