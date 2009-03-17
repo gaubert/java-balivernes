@@ -320,9 +320,7 @@ class Runner(object):
             Args:
                None 
                
-            Returns: if a_args['clean_group_db']:
-            self._clean_group_db(a_dir, a_id) 
-               return a conf object
+            Returns: 
         
             Raises:
                exception
@@ -493,11 +491,11 @@ class Runner(object):
             # get list of samples for the day before
             l        = self._get_list_of_sampleIDs(stations,d1,d2,a_spectralQualif,a_nbOfElem)
             l_set    = set(l)
-            l_prev_set = set(a_db_dict[one_day_before][SAMPLES_KEY])
+            l_prev_set = set(a_db_dict[ctbto.common.time_utils.getISO8601fromDateTime(one_day_before)][SAMPLES_KEY])
             missed_samples_set = l_set.difference(l_prev_set)
             
             # remove from a_db_dict one_day_before
-            del a_db_dict[one_day_before]
+            del a_db_dict[ctbto.common.time_utils.getISO8601fromDateTime(one_day_before)]
            
         # now get it for the searched_day
         
@@ -510,8 +508,8 @@ class Runner(object):
         
         curr_set      = set(current_list)
         
-        if a_searched_day in a_db_dict:
-            prev_list  = a_db_dict[a_searched_day][SAMPLES_KEY]
+        if ctbto.common.time_utils.getISO8601fromDateTime(a_searched_day) in a_db_dict:
+            prev_list  = a_db_dict[ctbto.common.time_utils.getISO8601fromDateTime(a_searched_day)][SAMPLES_KEY]
             prev_set   = set(prev_list) 
         else:
             prev_set   = set()
@@ -546,7 +544,7 @@ class Runner(object):
             Raises:
                exception
         """
-        key = '%s'%(a_searched_day)
+        key = ctbto.common.time_utils.getISO8601fromDateTime(a_searched_day)
         
         # if it doesn't exist, initialize the structure
         if a_db_dict.get(key,None) == None:
@@ -651,7 +649,7 @@ class Runner(object):
         
         Runner.c_log.info("Clean file %s"%("%s/db/%s.emaildb"%(a_dir,a_id)))
         
-        ctbto.common.utils.delete_all_under("%s/db/%s.emaildb"%(a_dir,a_id))
+        os.remove("%s/db/%s.emaildb"%(a_dir,a_id))
     
     def execute(self,a_args):
         # TODO Support sending in non-continous mode a specific period of date (check tarfile size)
@@ -700,13 +698,17 @@ class Runner(object):
                 raise Exception('There is no email groups in the configuration ([AutomaticEmailingGroups]) with value %s.'%(id))
             
             if a_args['clean_group_db']:
-                self._clean_group_db(a_dir, a_id) 
+                self._clean_group_db(dir,id) 
             
             db_dict = self._get_id_database(dir,id)
             
             # always look one day before to retrieve some day
             # between yesterday and today => it is yesterday
-            searched_day = ctbto.common.time_utils.getYesterday()
+            #searched_day = ctbto.common.time_utils.getYesterday()
+            searched_day = ctbto.common.time_utils.getToday()
+            
+            # it will be used in the email
+            date_of_the_searched_day = searched_day.split('T')[0]
              
             list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,searched_day,a_args['station_types'],a_args['force_send']) 
         
@@ -752,7 +754,10 @@ class Runner(object):
                 
             emailer.connect(self._conf.get('AutomaticEmailingInformation','user'),self._conf.get('AutomaticEmailingInformation','password'))
             
-            sender = self._conf.get('AutomaticEmailingInformation','sender',None)
+            sender  = self._conf.get('AutomaticEmailingInformation','sender',None)
+            
+            # the text message that will apear in the email
+            text_message = 'The following %d samples are in the attached tar file %s'%(len(list_to_fetch),list_to_fetch)
         
             for group in groups:
             
@@ -764,7 +769,7 @@ class Runner(object):
                 Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
                 Runner.c_log.info("*************************************************************")
                 
-                emailer.send_email_attached_files(sender,emails,[tarfile_name], 'sampml from this period until this one')
+                emailer.send_email_attached_files(sender,emails,[tarfile_name], '%d samples retrieved for %s'%(len(list_to_fetch),date_of_the_searched_day),text_message)
         
                 self._save_in_id_database(group,dir,db_dict,list_to_fetch,searched_day,sending_timestamp)
                 
