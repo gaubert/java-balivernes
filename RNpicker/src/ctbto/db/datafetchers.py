@@ -338,8 +338,9 @@ class DBDataFetcher(object):
             return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
         elif aDataType == 'G' and aSpectralQualifier == 'FULL':
             return (("GASBK_%s"%(aSampleID)).strip(),'GASBK')
-       # elif aDataType == 'G' and aSpectralQualifier == 'PREL':
-       #     return (("GSPHD_%s"%(aSampleID)).strip(),'PSPHD')
+        #TODO Check diff between background and gas background
+        elif aDataType == 'B' and aSpectralQualifier == 'FULL':
+            return (("BAK_%s"%(aSampleID)).strip(),'BAK')
         else:
             raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
