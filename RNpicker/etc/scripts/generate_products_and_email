@@ -5,7 +5,7 @@
 #################################
 ## RNPicker Distribution home directory
 #################################
-RNPICKER_HOME=/tmp/new-env
+RNPICKER_HOME=/home/aubert/RNPickerEnv/new-env
 #RNPICKER_HOME=..
 
 #################################

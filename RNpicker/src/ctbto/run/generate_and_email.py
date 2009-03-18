@@ -570,7 +570,7 @@ class Runner(object):
         
         hist_d[a_sending_time_stamp] = a_emailed_list
         
-        filename = "%s/db/%s.emaildb"%(a_dir,a_id)
+        filename = "%s/%s.emaildb"%(a_dir,a_id)
         
         f = open(filename,'w')
         
@@ -592,7 +592,7 @@ class Runner(object):
             Raises:
                exception
         """
-        filename = "%s/db/%s.emaildb"%(a_dir,a_id)
+        filename = "%s/%s.emaildb"%(a_dir,a_id)
         
         data = {}
         
@@ -654,7 +654,7 @@ class Runner(object):
         
         Runner.c_log.info("Clean file %s"%("%s/db/%s.emaildb"%(a_dir,a_id)))
         
-        path = "%s/db/%s.emaildb"%(a_dir,a_id)
+        path = "%s/%s.emaildb"%(a_dir,a_id)
         
         if os.path.exists(path):
             os.remove(path)
@@ -678,6 +678,9 @@ class Runner(object):
         # kind of historic of what has been sent
         dir_files_db  = "%s/data"%(dir)
         
+        # the dir for the group db. If there is no dir defined in config then take dir as the root dir
+        dir_group_db  = "%s/db"%(self._conf.get("AutomaticEmailingInformation","groupDBPath",dir))
+        
         # timestamps for create the batch name
         # create sending timestamp (used in the tar.gz file name)
         sending_timestamp = '%s'%(datetime.datetime.now())
@@ -689,8 +692,8 @@ class Runner(object):
         
         tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_timestamp)
   
-        
         self._create_directories(dir)
+        self._create_directories(dir_group_db)
         
         # check if we have some sids or we get it from some dates
         Runner.c_log.info("*************************************************************")
@@ -704,11 +707,11 @@ class Runner(object):
             
             if not self._conf.has_option('AutomaticEmailingGroups',id):
                 raise Exception('There is no email groups in the configuration ([AutomaticEmailingGroups]) with value %s.'%(id))
-            
+        
             if a_args['clean_group_db']:
-                self._clean_group_db(dir,id) 
+                self._clean_group_db(dir_group_db,id) 
             
-            db_dict = self._get_id_database(dir,id)
+            db_dict = self._get_id_database(dir_group_db,id)
             
             # always look one day before to retrieve some day
             # between yesterday and today => it is yesterday
@@ -779,7 +782,7 @@ class Runner(object):
                 
                 emailer.send_email_attached_files(sender,emails,[tarfile_name], '%d samples retrieved for %s'%(len(list_to_fetch),date_of_the_searched_day),text_message)
         
-                self._save_in_id_database(group,dir,db_dict,list_to_fetch,searched_day,sending_timestamp)
+                self._save_in_id_database(group,dir_group_db,db_dict,list_to_fetch,searched_day,sending_timestamp)
                 
                 
         else:
