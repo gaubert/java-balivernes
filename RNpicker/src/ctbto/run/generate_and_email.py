@@ -427,7 +427,9 @@ class Runner(object):
         Runner.c_log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
         self.log_in_file("list of sampleIDs to fetch: %s"%(sampleIDs))
         
-        return sampleIDs 
+        sampleIDs.sort()
+        
+        return  sampleIDs
 
     def _get_all_stations(self,a_stations_types):
         
@@ -524,7 +526,10 @@ class Runner(object):
         # add any potential missing samples
         diff_set = diff_set.union(missed_samples_set)
         
-        return list(diff_set)
+        l = list(diff_set)
+        l.sort()
+        
+        return l
     
     def _save_in_id_database(self,a_id,a_dir,a_db_dict,a_emailed_list,a_searched_day,a_sending_time_stamp):
         """
@@ -649,7 +654,10 @@ class Runner(object):
         
         Runner.c_log.info("Clean file %s"%("%s/db/%s.emaildb"%(a_dir,a_id)))
         
-        os.remove("%s/db/%s.emaildb"%(a_dir,a_id))
+        path = "%s/db/%s.emaildb"%(a_dir,a_id)
+        
+        if os.path.exists(path):
+            os.remove(path)
     
     def execute(self,a_args):
         # TODO Support sending in non-continous mode a specific period of date (check tarfile size)
