@@ -607,8 +607,8 @@ class Runner(object):
         if 'sids' in a_args:
             sids    = a_args['sids']
         elif 'from' in a_args or 'end' in a_args or 'stations' in a_args:
-            begin    = a_args.get('from',ctbto.common.time_utils.getYesterday())
-            end      = a_args.get('end',ctbto.common.time_utils.getToday())
+            begin    = a_args.get('from',ctbto.common.time_utils.getOracleDateFromISO8601(ctbto.common.time_utils.getYesterday()))
+            end      = a_args.get('end',ctbto.common.time_utils.getOracleDateFromISO8601(ctbto.common.time_utils.getToday()))
             stations = a_args.get('stations',None)
             if stations != None:
                 stations = self._get_stations_ids(stations)
@@ -642,7 +642,7 @@ class Runner(object):
             Runner.c_log.info("Fetch data and build SAMPML data file for %s"%(sid))
             
             # if the right flag is set and the file already exists do not recreate it
-            if not always_recreate_files and not os.path.exists("%s/ARR/ARR-%s.html"%(dir,sid)):
+            if always_recreate_files or not os.path.exists("%s/ARR/ARR-%s.html"%(dir,sid)):
             
                 # fetch noble gaz or particulate
                 fetcher = DBDataFetcher.getDataFetcher(self._ngMainConn,self._ngArchConn,sid)
