@@ -695,7 +695,7 @@ class SpalaxRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${ARRIVAL_DATE}", str(self._fetcher.get("%s_TRANSMIT_DTG" % (fname))), spectrumTemplate)
               
                 spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DECAY_TIME" % (fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}", str(self._fetcher.get("%s_SPECTRAL_QUALIFIER" % (fname))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SPECTRUM_TYPE}", str(self._fetcher.get("%s_SPECTRAL_QUALIFIER" % (fname))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}", str(self._fetcher.get("%s_DATA_TYPE" % (fname))), spectrumTemplate)
                 # add quantity and geometry
                 spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_SAMPLE_QUANTITY" % (fname))), spectrumTemplate)
@@ -1193,7 +1193,7 @@ class SaunaRenderer(BaseRenderer):
                     spectrumTemplate = re.sub("\${ARRIVAL_DATE}", str(self._fetcher.get("%s_DATA_TRANSMIT_DTG" % (ty))), spectrumTemplate)
               
                     spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DATA_DECAY_TIME" % (ty))), spectrumTemplate)
-                    spectrumTemplate = re.sub("\${SAMPLE_TYPE}", str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
+                    spectrumTemplate = re.sub("\${SPECTRUM_TYPE}", str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
                     spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}", str(self._fetcher.get("%s_DATA_DATA_TYPE" % (ty))), spectrumTemplate)
                     # add quantity and geometry
                     spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
@@ -1247,7 +1247,7 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC" % (ty))), spectrumTemplate)
               
                 spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DATA_DECAY_TIME" % (ty))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}", str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SPECTRUM_TYPE}", str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}", str(self._fetcher.get("%s_DATA_DATA_TYPE" % (ty))), spectrumTemplate)
               
                 # add quantity and geometry
@@ -1370,7 +1370,7 @@ class GenieParticulateRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}", str(self._fetcher.get("%s_ACQ_LIVE_SEC" % (fname))), spectrumTemplate)
               
                 spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DECAY_TIME" % (fname))), spectrumTemplate)
-                spectrumTemplate = re.sub("\${SAMPLE_TYPE}", str(self._fetcher.get("%s_SPECTRAL_QUALIFIER" % (fname))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${SPECTRUM_TYPE}", str(self._fetcher.get("%s_SPECTRAL_QUALIFIER" % (fname))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}", str(self._fetcher.get("%s_DATA_TYPE" % (fname))), spectrumTemplate)
               
                 # add quantity and geometry

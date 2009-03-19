@@ -205,7 +205,8 @@ class TestSAMPMLCreator(unittest.TestCase):
             
             if m_line != c_line:
                 self.fail("line num %d is different on the master %s and on the file to check %s.\n master line:[%s]\n tcheck line:[%s]"%(linenum,a_master_path,a_tocheck_path,m_line,c_line))
-          
+            linenum += 1
+            
         TestSAMPMLCreator.c_log.info("End of bit checking") 
         
     def getListOfSampleIDs(self,beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='100'):

@@ -25,7 +25,7 @@
         <SamplingTime>PT86400S</SamplingTime>
         <DecayTime>PT86406S</DecayTime>
         <MeasurementType>S</MeasurementType>
-        <SampleType>FULL</SampleType>
+        <SpectrumType>FULL</SpectrumType>
         <Data gammaChannelSpan="8191" gammaEnergySpan="166682" format="IMS2.0">
                 0          0          0          0          0          
                 0          0          0          0          0          
@@ -1679,8 +1679,7 @@
           <Comments>Old version</Comments>
         </Software>
         <Categorization>
-          <Category>2</Category>
-          <CategoryComment>No Comment</CategoryComment>
+          <AutomaticCategory>1</AutomaticCategory>
         </Categorization>
         <IdedNuclides>
           <Nuclide quantifiable="true" reportMDA="false">
