@@ -1178,6 +1178,17 @@ class SaunaRenderer(BaseRenderer):
                     # insert spectrum ID
                     spectrumTemplate = re.sub("\${SPECTRUM_ID}", self._fetcher.get("%s_ID" % (fname)), spectrumTemplate)
             
+                    #insert energy type (beta or gamma)
+                    s_type = 'gamma'
+                    if fname.find('_DATA_G') >= 0:
+                        s_type = 'gamma'
+                    elif fname.find('_DATA_B') >= 0:
+                        s_type = 'beta'
+                    else:
+                        raise Exception("Error the type should always contain _DATA_G or _DATA_B")
+                        
+                    spectrumTemplate = re.sub("\${S_TYPE}", s_type, spectrumTemplate)
+            
                     # insert energy and channel span
                     spectrumTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}", str(self._fetcher.get("%s_CHANNEL_SPAN" % (fname))), spectrumTemplate)
                     spectrumTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}", str(self._fetcher.get("%s_ENERGY_SPAN" % (fname))), spectrumTemplate)
