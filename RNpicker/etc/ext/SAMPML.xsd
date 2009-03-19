@@ -47,10 +47,9 @@
       </element>
       <element minOccurs="0" maxOccurs="1" name="DetectorInformation" type="sml:detectorInformationType">
         <annotation>
-          <documentation>
-						Information related to the detector used in the
-						station (geometry, ?)
-					   </documentation>
+           <documentation>
+				Information related to the detector used in the station
+		   </documentation>
         </annotation>
       </element>
       <element minOccurs="1" maxOccurs="1" name="SampleType" type="sml:enumSampleType">
@@ -156,16 +155,24 @@
 			</documentation>
     </annotation>
     <sequence>
-      <element minOccurs="1" maxOccurs="unbounded" name="Spectrum" type="spectrumType" />
+      <element minOccurs="1" maxOccurs="unbounded" name="Spectrum" type="sml:spectrumType" />
     </sequence>
   </complexType>
+  
   <complexType name="spectrumType">
     <annotation>
       <documentation>
-				Sampled information sent by the station
+				Raw data information for a spectrum
 			</documentation>
     </annotation>
     <sequence>
+      <element minOccurs="1" maxOccurs="1" name="Geometry" type="string">
+        <annotation>
+          <documentation>
+				detector geometry (should be moved in detector)
+		  </documentation>
+        </annotation>
+      </element>
       <element minOccurs="1" maxOccurs="1" name="CollectionStart" type="dateTime">
         <annotation>
           <documentation>
@@ -216,7 +223,7 @@
           <documentation>
 						Effective duration (i.e., live time) of each
 						sample measurement
-					</documentation>
+		  </documentation>
         </annotation>
       </element>
       <element minOccurs="1" maxOccurs="1" name="DecayTime" type="duration">
@@ -227,14 +234,14 @@
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="SourceType" type="enumSourceType">
+      <element minOccurs="1" maxOccurs="1" name="SpectrumType" type="sml:enumSpectrumType">
         <annotation>
-          <documentation>
-						Source kind: background, Sample, ...
-					</documentation>
+           <documentation>
+				FULL or PREL
+		   </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="Data" type="channelDataType">
+      <element minOccurs="1" maxOccurs="1" name="Data" type="sml:spectrumDataType">
         <annotation>
           <documentation>
 						the data, spectrum
@@ -242,15 +249,25 @@
         </annotation>
       </element>
     </sequence>
-    <attribute name="calibrationIDs" type="stringListType">
+    <attribute name="id" type="string">
+      <annotation>
+        <documentation>
+					Unique identifier for the spectrum
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="calibrationIDs" type="sml:stringListType">
       <annotation>
         <documentation>
 					Unique identifier(s) for this measurement
 				</documentation>
       </annotation>
     </attribute>
-    <anyAttribute namespace="##other" processContents="lax" />
+    <!--<anyAttribute namespace="##other" processContents="lax" /> -->
   </complexType>
+  
+  
+  
   <group name="particulateAnalysisResultsType">
     <sequence>
       <annotation>
@@ -299,8 +316,8 @@
 			</documentation>
     </annotation>
     <choice>
-      <group ref="particulateAnalysisResultsType" />
-      <group ref="nobleGasAnalysisResultsType" />
+      <group ref="sml:particulateAnalysisResultsType" />
+      <group ref="sml:nobleGasAnalysisResultsType" />
     </choice>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
@@ -618,6 +635,7 @@
       <element name="ToBeDefined" type="boolean" />
     </sequence>
   </group>
+  
   <complexType name="flagsType">
     <annotation>
       <documentation>
@@ -625,8 +643,8 @@
 			</documentation>
     </annotation>
     <choice>
-      <group ref="flags_Genie_RRR_v1.0Type" />
-      <group ref="flags_BGAnalyze_RRR_v1.0Type" />
+      <group ref="sml:flags_Genie_RRR_v1.0Type" />
+      <group ref="sml:flags_BGAnalyze_RRR_v1.0Type" />
     </choice>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
@@ -741,8 +759,8 @@
 			</documentation>
     </annotation>
     <choice>
-      <group ref="updateParam_Genie_RRR_v1.0Type" />
-      <group ref="updateParam_Autosaint_RRR_v1.0Type" />
+      <group ref="sml:updateParam_Genie_RRR_v1.0Type" />
+      <group ref="sml:updateParam_Autosaint_RRR_v1.0Type" />
     </choice>
     <attribute name="software" type="string" use="required">
       <annotation>
@@ -768,10 +786,10 @@
 			</documentation>
     </annotation>
     <choice>
-      <group ref="procParam_Genie_RRR_v1.0Type" />
-      <group ref="procParam_Autosaint_None_v1.0Type" />
-      <group ref="procParam_BGAnalyze_SSM_v1.0Type" />
-      <group ref="procParam_BGAnalyze_NCC_v1.0Type" />
+      <group ref="sml:procParam_Genie_RRR_v1.0Type" />
+      <group ref="sml:procParam_Autosaint_None_v1.0Type" />
+      <group ref="sml:procParam_BGAnalyze_SSM_v1.0Type" />
+      <group ref="sml:procParam_BGAnalyze_NCC_v1.0Type" />
     </choice>
     <attribute name="software" type="string" use="required">
       <annotation>
@@ -804,7 +822,7 @@
 			</documentation>
          </annotation>
          <sequence>
-            <element minOccurs="1" maxOccurs="1" name="Category"           type="enumCategoryType" />
+            <element minOccurs="1" maxOccurs="1" name="Category"           type="sml:enumCategoryType" />
             <element minOccurs="1" maxOccurs="1" name="Nuclide"             type="string" />
             <element minOccurs="0" maxOccurs="1" name="CategoryComment"     type="string" />
          </sequence>
@@ -916,6 +934,8 @@
       </element>
     </sequence>
   </complexType>
+  
+  
   <complexType name="calibrationInformationType">
     <annotation>
       <documentation>Calibration equations</documentation>
@@ -961,19 +981,19 @@
       </element>
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
-    <attribute name="Type" type="enumCalibrationType" use="required">
+    <attribute name="Type" type="sml:enumCalibrationType" use="required">
       <annotation>
         <documentation>
 					Calibration type (e.g., energy, FWHM, ...)
 				</documentation>
       </annotation>
     </attribute>
-    <attribute name="EnergyUnits" type="enumEnergyUnits">
+    <attribute name="EnergyUnits" type="sml:enumEnergyUnits">
       <annotation>
         <documentation>Energy units</documentation>
       </annotation>
     </attribute>
-    <attribute name="FWHMUnits" type="enumFWHMUnits">
+    <attribute name="FWHMUnits" type="sml:enumFWHMUnits">
       <annotation>
         <documentation>
 					Detector resolution units
@@ -991,14 +1011,14 @@
     </annotation>
     <sequence>
       <element minOccurs="0" name="Remark" type="string" />
-      <element maxOccurs="unbounded" name="Coefficients" type="coefficientsType">
+      <element maxOccurs="unbounded" name="Coefficients" type="sml:coefficientsType">
         <annotation>
           <documentation>
 						The coefficients of the equation
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="0" name="CovarianceMatrix" type="doubleListType">
+      <element minOccurs="0" name="CovarianceMatrix" type="sml:doubleListType">
         <annotation>
           <documentation>
 						The covariance matrix for the equation
@@ -1008,7 +1028,7 @@
       </element>
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
-    <attribute name="Model" type="enumEquationType" use="required">
+    <attribute name="Model" type="sml:enumEquationType" use="required">
       <annotation>
         <documentation>
 					Type of equation (polynomial, etc.)
@@ -1109,11 +1129,12 @@
     </sequence>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  <complexType name="channelDataType">
+  
+  
+  <complexType name="rawDataType">
     <annotation>
       <documentation>
-				The spectrum: counts vs. channel for the entire spectrum
-				or a region of interest
+				This regroup histogram, an spectra structures for the moment
 			</documentation>
     </annotation>
     <simpleContent>
@@ -1229,6 +1250,17 @@
       <enumeration value="3" />
       <enumeration value="4" />
       <enumeration value="5" />
+    </restriction>
+  </simpleType>
+  
+  <simpleType name="enumSpectrumType">
+    <annotation>
+      <documentation>Spectrum type (FULL,PREL)</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="FULL" />
+      <enumeration value="PREL" />
+      <enumeration value="Other" />
     </restriction>
   </simpleType>
   <simpleType name="enumSourceType">
@@ -1358,7 +1390,7 @@
 			</documentation>
     </annotation>
     <restriction base="string">
-      <enumeration value="Particulate" />
+      <enumeration value="PARTICULATE" />
       <enumeration value="SAUNA" />
       <enumeration value="SPALAX" />
     </restriction>
