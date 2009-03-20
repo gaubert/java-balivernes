@@ -16,7 +16,7 @@ from ctbto.query import RequestParser
 from ctbto.common   import CTBTOError
 from org.ctbto.conf import Conf
 
-
+UNDEFINED="N/A"
 
 
 class DBDataFetcher(object):
@@ -240,12 +240,17 @@ class DBDataFetcher(object):
             
     
     def _transformResults(self,aDataDict):
-        """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers """
+        """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers
+            - change datetime format to isoformat
+            - change None Value to N/A (non available)
+        """
         
         # transform date information
         for (key,value) in aDataDict.items():
             if str(value.__class__) == "<type 'datetime.datetime'>" :
                 aDataDict[key]= value.isoformat() 
+            if value == None:
+                aDataDict[key] = UNDEFINED
               
         return aDataDict
     
@@ -338,7 +343,6 @@ class DBDataFetcher(object):
             return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
         elif aDataType == 'G' and aSpectralQualifier == 'FULL':
             return (("GASBK_%s"%(aSampleID)).strip(),'GASBK')
-        #TODO Check diff between background and gas background
         elif aDataType == 'B' and aSpectralQualifier == 'FULL':
             return (("BAK_%s"%(aSampleID)).strip(),'BAK')
         else:
@@ -375,7 +379,7 @@ class DBDataFetcher(object):
         b = rows[0]['DATA_COLLECT_STOP']
        
         if a is None or b is None:
-            data[u'DATA_DECAY_TIME'] = "Unknown"
+            data[u'DATA_DECAY_TIME'] = "N/A"
         else:   
             # retrun difference in seconds
             dc = ctbto.common.time_utils.getDifferenceInTime(b,a)
@@ -385,7 +389,7 @@ class DBDataFetcher(object):
         b = rows[0]['DATA_COLLECT_START']
        
         if a is None or b is None:
-            data[u'DATA_SAMPLING_TIME'] = "Unknown"
+            data[u'DATA_SAMPLING_TIME'] = "N/A"
         else:
             # sampling time in secondds
             dc =  ctbto.common.time_utils.getDifferenceInTime(b,a)
