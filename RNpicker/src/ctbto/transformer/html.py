@@ -232,7 +232,7 @@ class XML2HTMLRenderer(object):
         
             # Add ROI results
             # get ROIInfo
-            res = analysis_elem.find("{%s}ROIInfo"%(XML2HTMLRenderer.c_namespaces['sml']))    
+            res = analysis_elem.find("{%s}RoiInfo"%(XML2HTMLRenderer.c_namespaces['sml']))    
            
             # iterate over RoiNetCount
             roi_results    = []

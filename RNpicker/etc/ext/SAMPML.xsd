@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<schema xmlns="http://www.w3.org/2001/XMLSchema" 
-           attributeFormDefault="unqualified" 
-           elementFormDefault="qualified" 
-           targetNamespace="http://www.ctbto.org/SAMPML/0.5" 
-           xmlns:sml="http://www.ctbto.org/SAMPML/0.5"
-           id="sampml">
-           
-   
-  
-  
+<!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
+<schema xmlns:sml="http://www.ctbto.org/SAMPML/0.5" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.5" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
   <annotation>
     <documentation>
 			SAMPML IDC Format for describing RN Sample information
@@ -29,8 +20,7 @@
         <element minOccurs="1" maxOccurs="unbounded" name="SampleInformation" type="sml:sampleInformationType" />
       </sequence>
     </complexType>
-  </element> 
-  
+  </element>
   <complexType name="sampleInformationType">
     <annotation>
       <documentation>
@@ -45,17 +35,16 @@
 					   </documentation>
         </annotation>
       </element>
-      <element minOccurs="0" maxOccurs="1" name="DetectorInformation" type="sml:detectorInformationType">
+      <element minOccurs="1" maxOccurs="1" name="DetectorInformation" type="sml:detectorInformationType">
         <annotation>
-           <documentation>
+          <documentation>
 				Information related to the detector used in the station
 		   </documentation>
         </annotation>
       </element>
       <element minOccurs="1" maxOccurs="1" name="SampleType" type="sml:enumSampleType">
         <annotation>
-          <documentation>
-					 </documentation>
+          <documentation />
         </annotation>
       </element>
       <element minOccurs="1" maxOccurs="1" name="MeasuredInformation" type="sml:measuredInformationType">
@@ -68,11 +57,11 @@
       <element minOccurs="1" maxOccurs="1" name="Analyses">
         <complexType>
           <sequence>
-             <element minOccurs="1" maxOccurs="unbounded" name="Analysis" type="sml:analysisResultsType"/>
+            <element minOccurs="1" maxOccurs="unbounded" name="Analysis" type="sml:analysisResultsType" />
           </sequence>
         </complexType>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="CalibrationInformation" type="sml:calibrationInformationType"/>
+      <element minOccurs="1" maxOccurs="1" name="CalibrationInformation" type="sml:calibrationInformationType" />
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
     <attribute name="UUID" type="string">
@@ -84,20 +73,18 @@
     </attribute>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  
-  
   <complexType name="stationInformationType">
     <sequence>
       <element minOccurs="0" maxOccurs="1" name="StationLocation" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="StationCode"     type="string">
+      <element minOccurs="0" maxOccurs="1" name="StationCode" type="string">
         <annotation>
-            <documentation>
+          <documentation>
 						It should be part of an enumerate containing all
 						station codes (gazeteer)
 		    </documentation>
         </annotation>
       </element>
-      <element minOccurs="0" maxOccurs="1" name="CountryCode"     type="string">
+      <element minOccurs="0" maxOccurs="1" name="CountryCode" type="string">
         <annotation>
           <documentation>
 						It should be part of an enumerate containing all
@@ -116,72 +103,90 @@
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
   </complexType>
-  
   <complexType name="detectorInformationType">
     <annotation>
       <documentation> detector code and description </documentation>
     </annotation>
     <sequence>
-      <element name="DetectorCode"        type="string" />
+      <element name="DetectorCode" type="string" />
       <element name="DetectorDescription" type="string" />
     </sequence>
   </complexType>
-  
   <complexType name="measuredInformationType">
     <annotation>
       <documentation>
 				Sampled information sent by the station
 			</documentation>
     </annotation>
-    <sequence>
-      <element minOccurs="1" maxOccurs="unbounded" name="Spectrum"  type="sml:spectrumType" />
-      <element minOccurs="1" maxOccurs="unbounded" name="Histogram" type="sml:histogramType" />
-    </sequence>
+    <choice>
+      <group minOccurs="1" maxOccurs="unbounded" ref="sml:saunaDataType" />
+    </choice>
   </complexType>
-  
   <complexType name="spectrumType">
     <annotation>
       <documentation>
 				Raw data information for a spectrum
-			</documentation>
+			
+&amp;lt;anyAttribute namespace=&amp;quot;##other&amp;quot; processContents=&amp;quot;lax&amp;quot; /&gt; </documentation>
     </annotation>
     <sequence>
       <element minOccurs="1" maxOccurs="1" name="Geometry" type="string">
+        <annotation>
+          <documentation>
+				Quantity of air sucked
+		  </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="Quantity" type="sml:physicalValueType">
         <annotation>
           <documentation>
 				detector geometry (should be moved in detector)
 		  </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="CollectionStart" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="FlowRate" type="sml:physicalValueType">
+        <annotation>
+          <documentation>
+				Flow rate of air sucked
+		  </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="CollectionStart" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Measurement start date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="CollectionStop" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="CollectionStop" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Measurement stop date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="AcquisitionStart" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="AcquisitionStart" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Acquition start date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="AcquisitionStop" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="AcquisitionStop" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Acquition stop date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="RealAcquisitionTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="ArrivalDate" type="sml:dateTimeType">
+        <annotation>
+          <documentation>
+				Arrival Date
+			 </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="RealAcquisitionTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Duration of each sample measurement/interval at
@@ -190,7 +195,7 @@
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="LiveAcquisitionTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="LiveAcquisitionTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Duration of each sample measurement/interval at
@@ -198,7 +203,7 @@
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="SamplingTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="SamplingTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Effective duration (i.e., live time) of each
@@ -206,7 +211,7 @@
 		  </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="DecayTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="DecayTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Effective duration (i.e., live time) of each
@@ -214,9 +219,16 @@
 					</documentation>
         </annotation>
       </element>
+      <element minOccurs="1" maxOccurs="1" name="MeasurementType" type="string">
+        <annotation>
+          <documentation>
+				S for SPHD, B for background, G for gas background
+		   </documentation>
+        </annotation>
+      </element>
       <element minOccurs="1" maxOccurs="1" name="SpectrumType" type="sml:enumSpectrumType">
         <annotation>
-           <documentation>
+          <documentation>
 				FULL or PREL
 		   </documentation>
         </annotation>
@@ -243,14 +255,13 @@
 				</documentation>
       </annotation>
     </attribute>
-    <!--<anyAttribute namespace="##other" processContents="lax" /> -->
   </complexType>
-  
   <complexType name="histogramType">
     <annotation>
       <documentation>
 				Raw data information for an histogram
-			</documentation>
+			
+&amp;lt;anyAttribute namespace=&amp;quot;##other&amp;quot; processContents=&amp;quot;lax&amp;quot; /&gt; </documentation>
     </annotation>
     <sequence>
       <element minOccurs="1" maxOccurs="1" name="Geometry" type="string">
@@ -260,35 +271,56 @@
 		  </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="CollectionStart" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="Quantity" type="sml:physicalValueType">
+        <annotation>
+          <documentation>
+				detector geometry (should be moved in detector)
+		  </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="FlowRate" type="sml:physicalValueType">
+        <annotation>
+          <documentation>
+				Flow rate of air sucked
+		  </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="CollectionStart" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Measurement start date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="CollectionStop" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="CollectionStop" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Measurement stop date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="AcquisitionStart" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="AcquisitionStart" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Acquition start date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="AcquisitionStop" type="dateTime">
+      <element minOccurs="1" maxOccurs="1" name="AcquisitionStop" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Acquition stop date/time
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="RealAcquisitionTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="ArrivalDate" type="sml:dateTimeType">
+        <annotation>
+          <documentation>
+				Arrival Date
+			 </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="RealAcquisitionTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Duration of each sample measurement/interval at
@@ -297,7 +329,7 @@
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="LiveAcquisitionTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="LiveAcquisitionTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Duration of each sample measurement/interval at
@@ -305,7 +337,7 @@
 					</documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="SamplingTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="SamplingTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Effective duration (i.e., live time) of each
@@ -313,7 +345,7 @@
 		  </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="DecayTime" type="duration">
+      <element minOccurs="1" maxOccurs="1" name="DecayTime" type="sml:durationType">
         <annotation>
           <documentation>
 						Effective duration (i.e., live time) of each
@@ -321,9 +353,16 @@
 					</documentation>
         </annotation>
       </element>
+      <element minOccurs="1" maxOccurs="1" name="MeasurementType" type="string">
+        <annotation>
+          <documentation>
+				S for SPHD, B for background, G for gas background
+		   </documentation>
+        </annotation>
+      </element>
       <element minOccurs="1" maxOccurs="1" name="SpectrumType" type="sml:enumSpectrumType">
         <annotation>
-           <documentation>
+          <documentation>
 				FULL or PREL
 		   </documentation>
         </annotation>
@@ -350,9 +389,7 @@
 				</documentation>
       </annotation>
     </attribute>
-    <!--<anyAttribute namespace="##other" processContents="lax" /> -->
   </complexType>
-  
   <complexType name="analysisResultsType">
     <annotation>
       <documentation>
@@ -360,35 +397,35 @@
 			</documentation>
     </annotation>
     <choice>
-      <!--  <group ref="sml:particulateAnalysisResultsType" /> -->
-      <group ref="sml:nobleGasAnalysisResultsType" />
+      <group ref="sml:nobleGasAnalysisResultsType">
+        <annotation>
+          <documentation>  &amp;lt;group ref=&amp;quot;sml:particulateAnalysisResultsType&amp;quot; /&gt; </documentation>
+        </annotation>
+      </group>
     </choice>
     <attribute name="id" type="string">
-        <annotation>
-          <documentation>
+      <annotation>
+        <documentation>
 			List of used calibration equation IDs	
 		  </documentation>
-        </annotation>
-      </attribute>
-      
-      <attribute name="calibrationIDs" type="sml:stringListType">
-        <annotation>
-          <documentation>
+      </annotation>
+    </attribute>
+    <attribute name="calibrationIDs" type="sml:stringListType">
+      <annotation>
+        <documentation>
 			List of used calibration equation IDs	
 		  </documentation>
-        </annotation>
-      </attribute>
-      
-      <attribute name="spectrumIDs" type="sml:stringListType">
-        <annotation>
-          <documentation>
+      </annotation>
+    </attribute>
+    <attribute name="spectrumIDs" type="sml:stringListType">
+      <annotation>
+        <documentation>
 			List of used calibration equation IDs	
 		  </documentation>
-        </annotation>
-      </attribute>
+      </annotation>
+    </attribute>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  
   <group name="nobleGasAnalysisResultsType">
     <sequence>
       <annotation>
@@ -397,12 +434,13 @@
 		</documentation>
       </annotation>
       <choice>
-         <group ref="sml:saunaAnalysisResultsType" />
-         <!-- <group ref="sml:spalaxAnalysisResultsType" /> -->
+        <annotation>
+          <documentation> &amp;lt;group ref=&amp;quot;sml:spalaxAnalysisResultsType&amp;quot; /&gt; </documentation>
+        </annotation>
+        <group ref="sml:saunaAnalysisResultsType" />
       </choice>
     </sequence>
   </group>
-  
   <group name="saunaAnalysisResultsType">
     <sequence>
       <annotation>
@@ -410,97 +448,111 @@
 					Analysis results for noble gas
 				</documentation>
       </annotation>
-      
-      <element minOccurs="1" maxOccurs="1" name="Software"       type="sml:softwareType" />
+      <element minOccurs="1" maxOccurs="1" name="Software" type="sml:softwareType" />
       <element minOccurs="1" maxOccurs="1" name="Categorization" type="sml:categorizationType" />
-      <element minOccurs="1" maxOccurs="1" name="IdedNuclide">
-         <complexType>
-           <sequence> 
-              <element minOccurs="0" maxOccurs="unbounded" name="Nuclide"  type="sml:saunaNuclideType" />
-           </sequence>
-         </complexType>
+      <element minOccurs="1" maxOccurs="1" name="IdedNuclides">
+        <complexType>
+          <sequence>
+            <element minOccurs="0" maxOccurs="unbounded" name="Nuclide" type="sml:saunaNuclideType" />
+          </sequence>
+        </complexType>
       </element>
       <element minOccurs="1" maxOccurs="1" name="RoiInfo">
-         <complexType>
-           <sequence> 
-              <element minOccurs="0" maxOccurs="unbounded" name="RoiNetCount"    type="sml:RoiNetCountType" />
-              <element minOccurs="0" maxOccurs="unbounded" name="RoiBoundaries"  type="sml:RoiBoundariesType" />
-           </sequence>
-         </complexType>
+        <complexType>
+          <sequence>
+            <element minOccurs="0" maxOccurs="unbounded" name="RoiNetCount" type="sml:RoiNetCountType" />
+            <element minOccurs="0" maxOccurs="unbounded" name="RoiBoundaries" type="sml:RoiBoundariesType" />
+          </sequence>
+        </complexType>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="Parameters" >
-         <!--  Empty for the moment -->
-         <complexType>
-           <sequence> 
-              <element minOccurs="0" maxOccurs="unbounded" name="empty"    type="string" />
-           </sequence>
-         </complexType>
+      <element minOccurs="1" maxOccurs="1" name="Parameters">
+        <complexType>
+          <annotation>
+            <documentation>  Empty for the moment </documentation>
+          </annotation>
+          <sequence>
+            <element minOccurs="0" maxOccurs="unbounded" name="empty" type="string" />
+          </sequence>
+        </complexType>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="Flags" >
-         <!--  Empty for the moment -->
-         <complexType>
-           <sequence> 
-              <element minOccurs="0" maxOccurs="1" name="TimelinessAndAvailabilityFlags"    type="sml:saunaTFlags" />
-              <element minOccurs="0" maxOccurs="1" name="DataQualityFlags"                  type="sml:saunaDQFlags" />
-           </sequence>
-         </complexType>
+      <element minOccurs="1" maxOccurs="1" name="Flags">
+        <complexType>
+          <annotation>
+            <documentation>  Empty for the moment </documentation>
+          </annotation>
+          <sequence>
+            <element minOccurs="0" maxOccurs="1" name="TimelinessAndAvailabilityFlags" type="sml:saunaTFlags" />
+            <element minOccurs="0" maxOccurs="1" name="DataQualityFlags" type="sml:saunaDQFlags" />
+          </sequence>
+        </complexType>
       </element>
     </sequence>
   </group>
-  
-   <complexType name="softwareType">
+  <complexType name="softwareType">
     <annotation>
-        <documentation>
+      <documentation>
 		  describe the software used for the analysis
 		</documentation>
     </annotation>
-    <sequence> 
-      <element minOccurs="1" maxOccurs="1" name="Name"         type="string" />
-      <element minOccurs="1" maxOccurs="1" name="Version"      type="string" />
-      <element minOccurs="1" maxOccurs="1" name="Method"       type="string" />
-      <element minOccurs="0" maxOccurs="1" name="Comments"     type="string" />
+    <sequence>
+      <element minOccurs="1" maxOccurs="1" name="Name" type="string" />
+      <element minOccurs="1" maxOccurs="1" name="Version" type="string" />
+      <element minOccurs="1" maxOccurs="1" name="Method" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="Comments" type="string" />
     </sequence>
   </complexType>
-  
+  <complexType name="nuclideIdentificationIndicatorType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="numericVal" type="integer">
+          <annotation>
+            <documentation>
+							Index of the subequation to which this set
+							of coefficients applies
+						</documentation>
+          </annotation>
+        </attribute>
+        <anyAttribute namespace="##other" processContents="lax" />
+      </extension>
+    </simpleContent>
+  </complexType>
   <complexType name="categorizationType">
     <annotation>
-        <documentation>
+      <documentation>
 		  automatic and reviewed categories
 		</documentation>
     </annotation>
-    <sequence> 
-      <element minOccurs="0" maxOccurs="1" name="AutomaticCategory"  type="sml:enumCategoryType" />
-      <element minOccurs="0" maxOccurs="1" name="ReviewedCategory"   type="sml:enumCategoryType" />
+    <sequence>
+      <element minOccurs="0" maxOccurs="1" name="AutomaticCategory" type="sml:enumCategoryType" />
+      <element minOccurs="0" maxOccurs="1" name="ReviewedCategory" type="sml:enumCategoryType" />
     </sequence>
   </complexType>
-  
   <complexType name="saunaNuclideType">
     <sequence>
       <annotation>
-          <documentation>
+        <documentation>
 					Nuclide Type. Contains all the activity information
 					regarding a specific nuclide
 		 </documentation>
       </annotation>
-      <element minOccurs="1" maxOccurs="1" name="Name" type="string"/>
-      <element minOccurs="0" maxOccurs="1" name="Type" type="sml:enumNuclideType"/>
-      <element minOccurs="0" maxOccurs="1" name="HalfLife" type="duration"/>
-      <element minOccurs="0" maxOccurs="1" name="Concentration"                        type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="AbsoluteConcentrationError"           type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="RelativeConcentrationError"           type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="Activity"                             type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="AbsoluteActivityError"                type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="RelativeActivityError"                type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="MDC"                                  type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="LC"                                   type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="LD"                                   type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="LCActivity"                           type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="LDActivity"                           type="sml:physicalValueType"/>
-      <element minOccurs="0" maxOccurs="1" name="NuclideIdentificationIndicator"       type="sml:physicalValueType"/>
+      <element minOccurs="1" maxOccurs="1" name="Name" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="Type" type="sml:enumNuclideType" />
+      <element minOccurs="0" maxOccurs="1" name="HalfLife" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="Concentration" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="AbsoluteConcentrationError" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="RelativeConcentrationError" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="Activity" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="AbsoluteActivityError" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="RelativeActivityError" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="MDC" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="LC" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="LD" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="LCActivity" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="LDActivity" type="sml:physicalValueType" />
+      <element minOccurs="0" maxOccurs="1" name="NuclideIdentificationIndicator" type="sml:nuclideIdentificationIndicatorType" />
     </sequence>
-      <attribute name="quantifiable"  type="boolean" />
+    <attribute name="quantifiable" type="boolean" />
   </complexType>
-  
   <complexType name="RoiNetCountType">
     <annotation>
       <documentation>
@@ -508,32 +560,30 @@
 		</documentation>
     </annotation>
     <sequence>
-        <element minOccurs="1" maxOccurs="1" name="RoiNumber"                type="positiveInteger" />
-        <element minOccurs="1" maxOccurs="1" name="Name"                     type="string" />
-        <element minOccurs="1" maxOccurs="1" name="NetCounts"                type="sml:doubleUnc" />
-        <element minOccurs="1" maxOccurs="1" name="LC"                       type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="LD"                       type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="MDC"                      type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="DetBackgroundCounts"      type="sml:doubleUnc" />
-        <element minOccurs="1" maxOccurs="1" name="GasBackgroundCounts"      type="sml:doubleUnc" />
-        <element minOccurs="1" maxOccurs="1" name="Efficiency"               type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="AbsoluteEfficiencyError"  type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="RelativeEfficiencyError"  type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="RoiNumber" type="positiveInteger" />
+      <element minOccurs="1" maxOccurs="1" name="Name" type="string" />
+      <element minOccurs="1" maxOccurs="1" name="NetCounts" type="sml:doubleUnc" />
+      <element minOccurs="1" maxOccurs="1" name="LC" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="LD" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="MDC" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="DetBackgroundCounts" type="sml:doubleUnc" />
+      <element minOccurs="1" maxOccurs="1" name="GasBackgroundCounts" type="sml:doubleUnc" />
+      <element minOccurs="1" maxOccurs="1" name="Efficiency" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="AbsoluteEfficiencyError" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="RelativeEfficiencyError" type="sml:physicalValueType" />
     </sequence>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-    
   <complexType name="RoiBoundariesType">
     <sequence>
-        <element minOccurs="1" maxOccurs="1" name="RoiNumber"                type="positiveInteger" />
-        <element minOccurs="1" maxOccurs="1" name="GammaLow"                 type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="GammaHigh"                type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="BetaLow"                  type="sml:physicalValueType" />
-        <element minOccurs="1" maxOccurs="1" name="BetaHigh"                 type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="RoiNumber" type="positiveInteger" />
+      <element minOccurs="1" maxOccurs="1" name="GammaLow" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="GammaHigh" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="BetaLow" type="sml:physicalValueType" />
+      <element minOccurs="1" maxOccurs="1" name="BetaHigh" type="sml:physicalValueType" />
     </sequence>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  
   <complexType name="saunaTFlags">
     <annotation>
       <documentation>
@@ -541,14 +591,19 @@
 		</documentation>
     </annotation>
     <sequence>
-        <element minOccurs="1" maxOccurs="1" name="CollectionTime"           type="sml:dataQualityType" />
-        <element minOccurs="1" maxOccurs="1" name="AcquisitionTime"          type="sml:dataQualityType" />
-        <element minOccurs="1" maxOccurs="1" name="DecayTime"                type="sml:dataQualityType" />
-        <element minOccurs="1" maxOccurs="1" name="ResponseTime"             type="sml:dataQualityType" />
+      <element minOccurs="1" maxOccurs="1" name="CollectionTime" type="sml:dataQualityType" />
+      <element minOccurs="1" maxOccurs="1" name="AcquisitionTime" type="sml:dataQualityType" />
+      <element minOccurs="1" maxOccurs="1" name="DecayTime" type="sml:dataQualityType" />
+      <element minOccurs="1" maxOccurs="1" name="ResponseTime" type="sml:dataQualityType" />
     </sequence>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  
+  <group name="saunaDataType">
+    <sequence>
+      <element minOccurs="2" maxOccurs="2" name="Spectrum" type="sml:spectrumType" />
+      <element minOccurs="1" maxOccurs="1" name="Histogram" type="sml:histogramType" />
+    </sequence>
+  </group>
   <complexType name="saunaDQFlags">
     <annotation>
       <documentation>
@@ -556,19 +611,17 @@
 		</documentation>
     </annotation>
     <sequence>
-        <element minOccurs="1" maxOccurs="1" name="XeVolume"           type="sml:dataQualityType" />
+      <element minOccurs="1" maxOccurs="1" name="XeVolume" type="sml:dataQualityType" />
     </sequence>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  
   <complexType name="dataQualityType">
     <sequence>
+      <element minOccurs="1" maxOccurs="1" name="Flag" type="string" />
       <element minOccurs="1" maxOccurs="1" name="Value" type="sml:physicalValueType" />
-      <element minOccurs="1" maxOccurs="1" name="Flag"  type="string" />
-      <element minOccurs="1" maxOccurs="1" name="Test"  type="string"/>
+      <element minOccurs="1" maxOccurs="1" name="Test" type="string" />
     </sequence>
   </complexType>
- 
   <complexType name="calibrationInformationType">
     <annotation>
       <documentation>Calibration equations</documentation>
@@ -577,14 +630,13 @@
       <element minOccurs="1" maxOccurs="unbounded" name="Calibration" type="sml:calibrationType" />
     </sequence>
   </complexType>
-  
   <complexType name="calibrationType">
     <annotation>
       <documentation>Calibration data</documentation>
     </annotation>
     <sequence>
       <element minOccurs="0" name="Remark" type="string" />
-      <element minOccurs="0" name="CalibrationCreationDate" type="dateTime">
+      <element minOccurs="0" name="CalibrationCreationDate" type="sml:dateTimeType">
         <annotation>
           <documentation>
 						Date/time at which the calibration was created (question: what does "created" mean ??)
@@ -615,7 +667,7 @@
       </element>
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
-    <attribute name="Type" type="sml:enumCalibrationType" use="required">
+    <attribute name="Type" type="string" use="required">
       <annotation>
         <documentation>
 					Calibration type (e.g., energy, FWHM, ...)
@@ -763,8 +815,6 @@
     </sequence>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  
-  
   <complexType name="rawDataType">
     <annotation>
       <documentation>
@@ -801,7 +851,7 @@
 						</documentation>
           </annotation>
         </attribute>
-         <attribute name="format" type="string" use="optional">
+        <attribute name="format" type="string" use="optional">
           <annotation>
             <documentation>
 				In case a particular format is used to encode the data
@@ -849,7 +899,7 @@
 						</documentation>
           </annotation>
         </attribute>
-        <attribute name="Time" type="dateTime">
+        <attribute name="Time" type="sml:dateTimeType">
           <annotation>
             <documentation>
 							Date/time of coordinates measurement
@@ -886,7 +936,6 @@
       <enumeration value="5" />
     </restriction>
   </simpleType>
-  
   <simpleType name="enumSpectrumType">
     <annotation>
       <documentation>Spectrum type (FULL,PREL)</documentation>
@@ -957,7 +1006,7 @@
     <annotation>
       <documentation>List of durations</documentation>
     </annotation>
-    <list itemType="duration" />
+    <list itemType="sml:durationType" />
   </simpleType>
   <simpleType name="nonNegativeIntegerList">
     <annotation>
@@ -1017,7 +1066,7 @@
       <enumeration value="fps" />
     </restriction>
   </simpleType>
-  <simpleType     name="enumSampleType">
+  <simpleType name="enumSampleType">
     <annotation>
       <documentation>
 				Different kind of samples
@@ -1064,21 +1113,7 @@
       <enumeration value="Natural" />
       <enumeration value="Activation" />
       <enumeration value="Fission" />
-      <enumeration value="Other" />
-    </restriction>
-  </simpleType>
-  <simpleType name="enumCalibrationType">
-    <annotation>
-      <documentation>Calibration type</documentation>
-    </annotation>
-    <restriction base="string">
-      <enumeration value="Energy" />
-      <enumeration value="AbsoluteEfficiency" />
-      <enumeration value="EnergyToChannels" />
-      <enumeration value="BetaEnergyToChannels" />
-      <enumeration value="GammaEnergyToChannels" />
-      <enumeration value="ResolutionToEnergy" />
-      <enumeration value="EfficiencyToEnergy" />
+      <enumeration value="FISSION (G)" />
       <enumeration value="Other" />
     </restriction>
   </simpleType>
@@ -1092,6 +1127,35 @@
     <restriction base="string">
       <enumeration value="None" />
       <enumeration value="CountedZeroes" />
+      <enumeration value="Zip" />
     </restriction>
+  </simpleType>
+  <simpleType name="durationType">
+    <union>
+      <simpleType>
+        <restriction base="duration" />
+      </simpleType>
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="None" />
+          <enumeration value="Unknown" />
+          <enumeration value="N/A" />
+        </restriction>
+      </simpleType>
+    </union>
+  </simpleType>
+  <simpleType name="dateTimeType">
+    <union>
+      <simpleType>
+        <restriction base="dateTime" />
+      </simpleType>
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="None" />
+          <enumeration value="Unknown" />
+          <enumeration value="N/A" />
+        </restriction>
+      </simpleType>
+    </union>
   </simpleType>
 </schema>

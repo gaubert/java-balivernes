@@ -121,7 +121,7 @@ class BaseRenderer(object):
             if val == "TEMPLATE_COMMAND_NOTHING":
                 self._populatedTemplate = re.sub(pattern, "", self._populatedTemplate)
             
-            self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val, "None")), self._populatedTemplate)
+            self._populatedTemplate = re.sub(pattern, str(self._fetcher.get(val, "N/A")), self._populatedTemplate)
             
     def asXml(self):
         """  """
@@ -468,7 +468,7 @@ class SpalaxRenderer(BaseRenderer):
                 # for the moment only one result
                 dummy_template += template
     
-                spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "unknown")
+                spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "n/a")
              
                 # Add analysis identifier => SpectrumID prefixed by AN
                 dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_id), dummy_template)
@@ -533,10 +533,10 @@ class SpalaxRenderer(BaseRenderer):
             # add calib info if it isn't there already
             if en_id not in calibInfos:
                 energy = self._fetcher.get(en_id, {})
-                dummy_template = re.sub("\${TERM0}", str(energy.get(u'COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM1}", str(energy.get(u'COEFF2', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(energy.get(u'COEFF3', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM3}", str(energy.get(u'COEFF4', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM0}", str(energy.get(u'COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM1}", str(energy.get(u'COEFF2', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(energy.get(u'COEFF3', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM3}", str(energy.get(u'COEFF4', "N/A")), dummy_template)
                 dummy_template = re.sub("\${EN_ID}", en_id, dummy_template)
                 # add generated xml in final container
                 xml += dummy_template
@@ -555,9 +555,9 @@ class SpalaxRenderer(BaseRenderer):
                 # get resolution calibration 
                 resolution = self._fetcher.get(re_id, {})
         
-                dummy_template = re.sub("\${TERM0}", str(resolution.get('COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM1}", str(resolution.get('COEFF2', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(resolution.get('COEFF3', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM0}", str(resolution.get('COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM1}", str(resolution.get('COEFF2', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(resolution.get('COEFF3', "N/A")), dummy_template)
                 dummy_template = re.sub("\${RE_ID}", re_id, dummy_template)
         
                 # add generated xml in final container
@@ -580,13 +580,13 @@ class SpalaxRenderer(BaseRenderer):
                 # get efficiency calibration 
                 eff = self._fetcher.get(eff_id, {})
         
-                dummy_template = re.sub("\${LN_TERM0}", str(eff.get('COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM0}", str(eff.get('COEFF2', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM1}", str(eff.get('COEFF3', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(eff.get('COEFF4', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM3}", str(eff.get('COEFF5', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM4}", str(eff.get('COEFF6', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM5}", str(eff.get('COEFF7', "None")), dummy_template)
+                dummy_template = re.sub("\${LN_TERM0}", str(eff.get('COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM0}", str(eff.get('COEFF2', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM1}", str(eff.get('COEFF3', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(eff.get('COEFF4', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM3}", str(eff.get('COEFF5', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM4}", str(eff.get('COEFF6', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM5}", str(eff.get('COEFF7', "N/A")), dummy_template)
                 dummy_template = re.sub("\${EF_ID}", eff_id, dummy_template)
         
                 # add generated xml in final container
@@ -827,9 +827,9 @@ class SaunaRenderer(BaseRenderer):
             # add calib info if it isn't there already
             if en_id not in calibInfos:
                 energy = self._fetcher.get(en_id, {})
-                dummy_template = re.sub("\${TERM0}", str(energy.get(u'BETA_COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM1}", str(energy.get(u'BETA_COEFF2', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(energy.get(u'BETA_COEFF3', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM0}", str(energy.get(u'BETA_COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM1}", str(energy.get(u'BETA_COEFF2', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(energy.get(u'BETA_COEFF3', "N/A")), dummy_template)
                 dummy_template = re.sub("\${EN_ID}", en_id, dummy_template)
                 dummy_template = re.sub("\${EN_TYPE}", "Beta", dummy_template)
                 # add generated xml in final container
@@ -1069,7 +1069,7 @@ class SaunaRenderer(BaseRenderer):
                 # for the moment only one result
                 dummy_template += template
     
-                spectrum_id = self._fetcher.get("%s_DATA_G_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "unknown")
+                spectrum_id = self._fetcher.get("%s_DATA_G_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "n/a")
              
                 # Add analysis identifier => SpectrumID prefixed by AN
                 dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_id), dummy_template)
@@ -1256,6 +1256,7 @@ class SaunaRenderer(BaseRenderer):
                 spectrumTemplate = re.sub("\${SAMPLING_TIME}", str(self._fetcher.get("%s_DATA_SAMPLING_TIME" % (ty))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${REAL_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC" % (ty))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC" % (ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${ARRIVAL_DATE}", str(self._fetcher.get("%s_DATA_TRANSMIT_DTG" % (ty))), spectrumTemplate)
               
                 spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DATA_DECAY_TIME" % (ty))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${SPECTRUM_TYPE}", str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
@@ -1263,6 +1264,7 @@ class SaunaRenderer(BaseRenderer):
               
                 # add quantity and geometry
                 spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
+                spectrumTemplate = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_DATA_FLOW_RATE" % (ty))), spectrumTemplate)
                 spectrumTemplate = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY" % (ty))), spectrumTemplate)
               
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))
@@ -1580,10 +1582,10 @@ class GenieParticulateRenderer(BaseRenderer):
             dummy_template = re.sub("\${LC}", str(peak['LC']), dummy_template)
             
             # to be checked with Romano
-            dummy_template = re.sub("\${LD}", "None", dummy_template)
-            dummy_template = re.sub("\${DETECTIBILITY}", str(peak.get('DETECTABILITY', "None")), dummy_template)
+            dummy_template = re.sub("\${LD}", "N/A", dummy_template)
+            dummy_template = re.sub("\${DETECTIBILITY}", str(peak.get('DETECTABILITY', "N/A")), dummy_template)
             
-            dummy_template = re.sub("\${NUCLIDE}", "None", dummy_template)
+            dummy_template = re.sub("\${NUCLIDE}", "N/A", dummy_template)
             # to be checked
             dummy_template = re.sub("\${NUCLIDE_PERCENTAGE}", str(100), dummy_template)
             
@@ -1616,21 +1618,21 @@ class GenieParticulateRenderer(BaseRenderer):
         parameters = self._fetcher.get("%s_PROCESSING_PARAMETERS" % (id), None)
         
         if (parameters is not None) and (len(parameters) > 0) :
-            dummy_template = re.sub("\${THRESHOLD}", parameters.get('THRESHOLD', "None"), template)
-            dummy_template = re.sub("\${PEAK_START}", str(parameters.get('PEAK_START', "None")), dummy_template)
-            dummy_template = re.sub("\${PEAK_END}", str(parameters.get('PEAK_END', "None")), dummy_template)
-            dummy_template = re.sub("\${LEFT_FWHM}", str(parameters.get('LEFT_FWHM_LIM', "None")), dummy_template)
-            dummy_template = re.sub("\${RIGHT_FWHM}", str(parameters.get('RIGHT_FWHM_LIM', "None")), dummy_template)
-            dummy_template = re.sub("\${MULTI_FWHM}", str(parameters.get('FWHM_MULT_WIDTH', "None")), dummy_template)
-            dummy_template = re.sub("\${FIT_SINGLETS}", str(parameters.get('FIT_SINGLETS', "None")), dummy_template)
-            dummy_template = re.sub("\${CRITICAL_LEV_TEST}", str(parameters.get('CRIT_LEVEL', "None")), dummy_template)
-            dummy_template = re.sub("\${ESTIMATED_PEAK_WIDTHS}", str(parameters.get('MDC_WIDTH', "None")), dummy_template)
-            dummy_template = re.sub("\${BASELINE_TYPE}", str(parameters.get('BACK_TYPE', "None")), dummy_template)
-            dummy_template = re.sub("\${BASELINE_CHANNELS}", str(parameters.get('BACK_CHAN', "None")), dummy_template)
-            dummy_template = re.sub("\${SUBSTRACTION}", str(parameters.get('ToBeDefined', "None")), dummy_template)
-            dummy_template = re.sub("\${ENERGY_TOLERANCE}", str(parameters.get('ENERGY_TOL', "None")), dummy_template)
-            dummy_template = re.sub("\${CONFIDENCE_THRESHOLD}", str(parameters.get('NID_CONFID', "None")), dummy_template)
-            dummy_template = re.sub("\${RISK_LEVEL}", str(parameters.get('ToBeDefined', "None")), dummy_template)
+            dummy_template = re.sub("\${THRESHOLD}", parameters.get('THRESHOLD', "N/A"), template)
+            dummy_template = re.sub("\${PEAK_START}", str(parameters.get('PEAK_START', "N/A")), dummy_template)
+            dummy_template = re.sub("\${PEAK_END}", str(parameters.get('PEAK_END', "N/A")), dummy_template)
+            dummy_template = re.sub("\${LEFT_FWHM}", str(parameters.get('LEFT_FWHM_LIM', "N/A")), dummy_template)
+            dummy_template = re.sub("\${RIGHT_FWHM}", str(parameters.get('RIGHT_FWHM_LIM', "N/A")), dummy_template)
+            dummy_template = re.sub("\${MULTI_FWHM}", str(parameters.get('FWHM_MULT_WIDTH', "N/A")), dummy_template)
+            dummy_template = re.sub("\${FIT_SINGLETS}", str(parameters.get('FIT_SINGLETS', "N/A")), dummy_template)
+            dummy_template = re.sub("\${CRITICAL_LEV_TEST}", str(parameters.get('CRIT_LEVEL', "N/A")), dummy_template)
+            dummy_template = re.sub("\${ESTIMATED_PEAK_WIDTHS}", str(parameters.get('MDC_WIDTH', "N/A")), dummy_template)
+            dummy_template = re.sub("\${BASELINE_TYPE}", str(parameters.get('BACK_TYPE', "N/A")), dummy_template)
+            dummy_template = re.sub("\${BASELINE_CHANNELS}", str(parameters.get('BACK_CHAN', "N/A")), dummy_template)
+            dummy_template = re.sub("\${SUBSTRACTION}", str(parameters.get('ToBeDefined', "N/A")), dummy_template)
+            dummy_template = re.sub("\${ENERGY_TOLERANCE}", str(parameters.get('ENERGY_TOL', "N/A")), dummy_template)
+            dummy_template = re.sub("\${CONFIDENCE_THRESHOLD}", str(parameters.get('NID_CONFID', "N/A")), dummy_template)
+            dummy_template = re.sub("\${RISK_LEVEL}", str(parameters.get('ToBeDefined', "N/A")), dummy_template)
                
         # add generated xml in final container
         xml_parameters += dummy_template
@@ -1644,20 +1646,20 @@ class GenieParticulateRenderer(BaseRenderer):
         parameters = self._fetcher.get("%s_UPDATE_PARAMETERS" % (id), {})
         
         if (parameters is not None) and (len(parameters) > 0):
-            dummy_template = re.sub("\${USE_MRP}", str(parameters.get('MRP_USED', "None")), template)
-            dummy_template = re.sub("\${MRP_SAMPLEID}", str(parameters.get('MRP_SAMPLE_ID', "None")), dummy_template)
-            dummy_template = re.sub("\${GAIN_SHIFT}", str(parameters.get('GAINSHIFT', "None")), dummy_template)
-            dummy_template = re.sub("\${ZERO_SHIFT}", str(parameters.get('ZEROSHIFT', "None")), dummy_template)
-            dummy_template = re.sub("\${AREA_LIMIT}", str(parameters.get('AREA_LIM', "None")), dummy_template)
-            dummy_template = re.sub("\${USE_WEIGHT}", str(parameters.get('USE_WEIGHT', "None")), dummy_template)
-            dummy_template = re.sub("\${USE_MULTIPLET}", str(parameters.get('USE_MULT', "None")), dummy_template)
-            dummy_template = re.sub("\${FORCE_LINEAR}", str(parameters.get('F_LINEAR', "None")), dummy_template)
-            dummy_template = re.sub("\${IGNORE_PREVIOUS_ECR}", str(parameters.get('BOOTSTRAP', "None")), dummy_template)
-            dummy_template = re.sub("\${MINIMUM_LIB_LOOKUP_TOLERANCE}", str(parameters.get('MIN_LOOKUP', "None")), dummy_template)
-            dummy_template = re.sub("\${RER_INTERCEPT}", str(parameters.get('RER_INTERCEPT', "None")), dummy_template)
-            dummy_template = re.sub("\${RER_SLOPE}", str(parameters.get('RER_SLOPE', "None")), dummy_template)
-            dummy_template = re.sub("\${ECR_SLOPE}", str(parameters.get('ECR_SLOPE', "None")), dummy_template)
-            dummy_template = re.sub("\${DO_RESOLUTION_UPDATE}", str(parameters.get('DO_RERU', "None")), dummy_template)
+            dummy_template = re.sub("\${USE_MRP}", str(parameters.get('MRP_USED', "N/A")), template)
+            dummy_template = re.sub("\${MRP_SAMPLEID}", str(parameters.get('MRP_SAMPLE_ID', "N/A")), dummy_template)
+            dummy_template = re.sub("\${GAIN_SHIFT}", str(parameters.get('GAINSHIFT', "N/A")), dummy_template)
+            dummy_template = re.sub("\${ZERO_SHIFT}", str(parameters.get('ZEROSHIFT', "N/A")), dummy_template)
+            dummy_template = re.sub("\${AREA_LIMIT}", str(parameters.get('AREA_LIM', "N/A")), dummy_template)
+            dummy_template = re.sub("\${USE_WEIGHT}", str(parameters.get('USE_WEIGHT', "N/A")), dummy_template)
+            dummy_template = re.sub("\${USE_MULTIPLET}", str(parameters.get('USE_MULT', "N/A")), dummy_template)
+            dummy_template = re.sub("\${FORCE_LINEAR}", str(parameters.get('F_LINEAR', "N/A")), dummy_template)
+            dummy_template = re.sub("\${IGNORE_PREVIOUS_ECR}", str(parameters.get('BOOTSTRAP', "N/A")), dummy_template)
+            dummy_template = re.sub("\${MINIMUM_LIB_LOOKUP_TOLERANCE}", str(parameters.get('MIN_LOOKUP', "N/A")), dummy_template)
+            dummy_template = re.sub("\${RER_INTERCEPT}", str(parameters.get('RER_INTERCEPT', "N/A")), dummy_template)
+            dummy_template = re.sub("\${RER_SLOPE}", str(parameters.get('RER_SLOPE', "N/A")), dummy_template)
+            dummy_template = re.sub("\${ECR_SLOPE}", str(parameters.get('ECR_SLOPE', "N/A")), dummy_template)
+            dummy_template = re.sub("\${DO_RESOLUTION_UPDATE}", str(parameters.get('DO_RERU', "N/A")), dummy_template)
             
         # add generated xml in final container
         xml_parameters += dummy_template
@@ -1760,7 +1762,7 @@ class GenieParticulateRenderer(BaseRenderer):
                 # for the moment only one result
                 dummy_template += template
         
-                spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "unknown")
+                spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "n/a")
              
                 # Add analysis identifier => SpectrumID prefixed by AN
                 dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_id), dummy_template)
@@ -1825,10 +1827,10 @@ class GenieParticulateRenderer(BaseRenderer):
             # add calib info if it isn't there already
             if en_id not in calibInfos:
                 energy = self._fetcher.get(en_id, {})
-                dummy_template = re.sub("\${TERM0}", str(energy.get(u'COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM1}", str(energy.get(u'COEFF2', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(energy.get(u'COEFF3', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM3}", str(energy.get(u'COEFF4', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM0}", str(energy.get(u'COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM1}", str(energy.get(u'COEFF2', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(energy.get(u'COEFF3', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM3}", str(energy.get(u'COEFF4', "N/A")), dummy_template)
                 dummy_template = re.sub("\${EN_ID}", en_id, dummy_template)
                 # add generated xml in final container
                 xml += dummy_template
@@ -1847,8 +1849,8 @@ class GenieParticulateRenderer(BaseRenderer):
                 # get resolution calibration 
                 resolution = self._fetcher.get(re_id, {})
         
-                dummy_template = re.sub("\${TERM0}", str(resolution.get('COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM1}", str(resolution.get('COEFF2', "None")), dummy_template)
+                dummy_template = re.sub("\${TERM0}", str(resolution.get('COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM1}", str(resolution.get('COEFF2', "N/A")), dummy_template)
                 dummy_template = re.sub("\${RE_ID}", re_id, dummy_template)
         
                 # add generated xml in final container
@@ -1871,13 +1873,13 @@ class GenieParticulateRenderer(BaseRenderer):
                 # get efficiency calibration 
                 eff = self._fetcher.get(eff_id, {})
         
-                dummy_template = re.sub("\${LN_TERM0}", str(eff.get('COEFF1', "None")), template)
-                dummy_template = re.sub("\${TERM0}", str(eff.get('COEFF2', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM1}", str(eff.get('COEFF3', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(eff.get('COEFF4', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM3}", str(eff.get('COEFF5', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM4}", str(eff.get('COEFF6', "None")), dummy_template)
-                dummy_template = re.sub("\${TERM5}", str(eff.get('COEFF7', "None")), dummy_template)
+                dummy_template = re.sub("\${LN_TERM0}", str(eff.get('COEFF1', "N/A")), template)
+                dummy_template = re.sub("\${TERM0}", str(eff.get('COEFF2', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM1}", str(eff.get('COEFF3', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM2}", str(eff.get('COEFF4', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM3}", str(eff.get('COEFF5', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM4}", str(eff.get('COEFF6', "N/A")), dummy_template)
+                dummy_template = re.sub("\${TERM5}", str(eff.get('COEFF7', "N/A")), dummy_template)
                 dummy_template = re.sub("\${EF_ID}", eff_id, dummy_template)
         
                 # add generated xml in final container
