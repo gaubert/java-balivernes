@@ -468,10 +468,12 @@ class SpalaxRenderer(BaseRenderer):
                 # for the moment only one result
                 dummy_template += template
     
-                spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "n/a")
-             
+                #spectrum_id = self._fetcher.get("%s_G_DATA_ID" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "n/a")
+                # get the spectrum gid
+                spectrum_gid = self._fetcher.get("%s_DATA_NAME" % (self._fetcher.get("CURRENT_%s" % (ty), '')), "n/a")
+                
                 # Add analysis identifier => SpectrumID prefixed by AN
-                dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_id), dummy_template)
+                dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_gid), dummy_template)
         
                 dummy_template = re.sub("\${SPECTRUM_ID}", spectrum_id, dummy_template)
         
@@ -633,7 +635,7 @@ class SpalaxRenderer(BaseRenderer):
         self._populatedTemplate = re.sub("\${CALIBRATION}", xml, self._populatedTemplate)
     
     
-    def _fillData(self, requestDict):
+    def _oldfillData(self, requestDict):
         """ Insert the spectrum data expected as defined in the initial passed request
         
             Args:
@@ -716,6 +718,97 @@ class SpalaxRenderer(BaseRenderer):
                     spectrumTemplate = re.sub("\${COMPRESS}", "compress=\"base64,zip\"", spectrumTemplate)
                 else:
                     spectrumTemplate = re.sub("\${COMPRESS}", "", spectrumTemplate)
+                     
+                # add fill spectrum template in global template 
+                finalTemplate += spectrumTemplate
+        
+        self._populatedTemplate = re.sub("\${DATA}", finalTemplate, self._populatedTemplate)
+
+    def _fillData(self, requestDict):
+        """ Insert the spectrum data expected as defined in the initial passed request
+        
+            Args:
+               requestDict: dictionary representing the different elements of the request (analysis, spectrum, ...)
+            
+            Returns: Nothing
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+    
+        # check if there is a spectrum in the hashtable. If not replace ${SPECTRUM} by an empty string ""
+        requestedTypes = requestDict[RequestParser.SPECTRUM]
+        
+        if 'PREL' in requestedTypes:
+            # add all prels found in CURR_List_OF_PRELS in the set
+            requestedTypes.remove('PREL')
+            requestedTypes.update(self._fetcher.get(u'CURR_List_OF_PRELS', []))
+        
+        spectrums = self._sortSpectrumsSet(requestedTypes)
+        
+        
+        finalTemplate = ""
+        
+        for ty in spectrums:
+            
+            #group Template            
+            spectrumTemplate = self._conf.get("spalaxTemplatingSystem", "spalaxSpectrumGroupTemplate")
+            
+            # add the general parameters
+            spectrumTemplate = re.sub("\${SPECTRUM_GROUP_ID}",self._fetcher.get("%s_DATA_NAME" % (ty)), spectrumTemplate)
+            spectrumTemplate = re.sub("\${COL_START}", str(self._fetcher.get("%s_DATA_COLLECT_START" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${COL_STOP}", str(self._fetcher.get("%s_DATA_COLLECT_STOP" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${ACQ_START}", str(self._fetcher.get("%s_DATA_ACQ_START" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${ACQ_STOP}", str(self._fetcher.get("%s_DATA_ACQ_STOP" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${SAMPLING_TIME}", str(self._fetcher.get("%s_DATA_SAMPLING_TIME" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${REAL_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${ARRIVAL_DATE}", str(self._fetcher.get("%s_DATA_TRANSMIT_DTG" % (ty))), spectrumTemplate)
+              
+            spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DATA_DECAY_TIME" % (ty))), spectrumTemplate)
+             
+            spectrumTemplate = re.sub("\${SPECTRUM_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE" % (ty))), spectrumTemplate)
+            # add quantity and geometry
+            spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_DATA_FLOW_RATE" % (ty))), spectrumTemplate)
+                
+            spectrumTemplate = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY" % (ty))), spectrumTemplate)
+            
+            # add the calibration info
+            l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))
+            if l is None:
+                SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                l = []
+            
+            spectrumTemplate = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), spectrumTemplate) #IGNORE:W0141
+              
+            dataTemplate=""
+            # add spectra
+            l = ["%s_DATA_G" % (ty), "%s_DATA_B" % (ty)]
+            for fname in l:
+                data = self._fetcher.get(fname, None)
+                if data is not None:
+                    # add gamma Spectrum
+                    sTemplate = self._conf.get("SaunaTemplatingSystem", "saunaSpectrumTemplate")
+                    # insert energy and channel span
+                    sTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}", str(self._fetcher.get("%s_CHANNEL_SPAN" % (fname))), sTemplate)
+                    sTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",  str(self._fetcher.get("%s_ENERGY_SPAN" % (fname))) , sTemplate)
+                    # insert spectrum ID
+                    sTemplate = re.sub("\${SPECTRUM_ID}", self._fetcher.get("%s_ID" % (fname)), sTemplate)
+                    sTemplate = re.sub("\${S_TYPE}", self._fetcher.get("%s_TY" % (fname)), sTemplate)
+                    
+                    # insert data
+                    sTemplate = re.sub("\${SPECTRUM_DATA}", data, sTemplate)
+                    
+                    # TODO to remove just there for testing, deal with the compression flag
+                    if self._fetcher.get("%s_COMPRESSED" % (fname), False):
+                        sTemplate = re.sub("\${COMPRESS}", "compress=\"base64,zip\"", sTemplate)
+                    else:
+                        sTemplate = re.sub("\${COMPRESS}", "", sTemplate)
+            
+                    dataTemplate += sTemplate
                      
                 # add fill spectrum template in global template 
                 finalTemplate += spectrumTemplate
@@ -1162,7 +1255,6 @@ class SaunaRenderer(BaseRenderer):
         
         finalTemplate = ""
         
-        ####### NEW PART
         for ty in spectrums:
             
             #group Template            

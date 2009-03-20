@@ -2011,6 +2011,9 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SPALAX_GET_RAW_SPECTRUM%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
         elif nbResults > 1:
             ParticulateDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+            
+        # add spectrum group name
+        self._dataBag[u"%s_DATA_NAME"%(dataname)]   = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
         
         for row in rows:
             (anInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
