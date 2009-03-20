@@ -1117,7 +1117,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
         data = {}
         
-        
+        self._dataBag[u"%s_DATA_NAME"%(dataname)]   = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+
         for row in rows:
             (theInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
             
@@ -1140,7 +1141,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
                 self._dataBag[u"%s"%(spec_id)]                = data
                 # create a unique id for the extract data
-                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_ID"%(spec_id)]   = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_TY"%(spec_id)]   = "%s-B"%(ty)
                   
             elif filename.endswith("g.s") or filename.endswith("g.archs"):
                 spec_id = "%s_DATA_G"%(dataname)
@@ -1154,7 +1156,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
                 self._dataBag[u"%s"%(spec_id)]                = data
                 # create a unique id for the extract data
-                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_ID"%(spec_id)]   = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_TY"%(spec_id)]   = "%s-G"%(ty)
                
             elif filename.endswith(".h") or filename.endswith(".archhist"):
                 spec_id = "%s_DATA_H"%(dataname)
@@ -1180,6 +1183,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                
                 # create a unique id for the extracted data
                 self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_TY"%(spec_id)]   = "%s-H"%(ty)
                
             elif filename.endswith(".msg") or filename.endswith(".archmsg"):
                 # Here whe should extract the 3 components
@@ -2042,6 +2046,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
             # create a unique id for the extract data
             self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+            self._dataBag[u"%s_TY"%(sid)]   = "%s-G"%(ty)
         
         return (dataname,ty)
     
@@ -2609,6 +2614,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
             # create a unique id for the extract data
             self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+            self._dataBag[u"%s_TY"%(sid)]   = "%s-G"%(ty)
         
         return (dataname,ty)
         

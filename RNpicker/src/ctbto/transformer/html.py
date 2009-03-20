@@ -125,7 +125,7 @@ class XML2HTMLRenderer(object):
         curr_spectrum_id     = None
  
         # res is Element Spectrum 
-        res = root.xpath(dateExpr,suffix = 'SPHD-G',name   = 'Spectrum')
+        res = root.xpath(dateExpr,suffix = 'SPHD',name   = 'SpectrumGroup')
         if len(res) > 0:
             elem = res[0]
             # get attribute id
