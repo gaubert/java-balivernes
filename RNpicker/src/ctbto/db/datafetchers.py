@@ -2341,7 +2341,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         
         # get the volume to comp[ute activity from concentration
         # it is in m3
-        volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
+        volume = self._dataBag.get('%s_G_DATA_SAMPLE_QUANTITY'%(dataname),0)
        
         # add results in a list which will become a list of dicts
         res = []
@@ -2359,7 +2359,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 data[u'NID_FLAG_NUM'] = nidflag
             
             # translate METHOD_ID to something humanely understandable
-            method_id = data.get(u'METHOD_ID',None)
+            method_id = data.get(u'METHOD_ID',UNDEFINED)
             # check if there is NID key
             if nidflag is not None:
                 val = SpalaxNobleGasDataFetcher.c_method_translation.get(method_id,method_id)
@@ -2373,7 +2373,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             nuclide_id = nuclide_id - 1
             nuclide_lib = self._dataBag[u'XE_NUCL_LIB']
             if nuclide_id is not None:
-                nucl = nuclide_lib[nuclide_id] if (nuclide_id < len(nuclide_lib)) and (nuclide_id >=0) else "Not Found"
+                nucl = nuclide_lib[nuclide_id] if (nuclide_id < len(nuclide_lib)) and (nuclide_id >=0) else UNDEFINED
                 data[u'NUCLIDE'] =  nucl[u'NAME']
         
             # add concentration error in percent
@@ -2382,20 +2382,20 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 
             # calculate volumes and concentration (need vol for that)
             # get activity. If no volume or no activity results are 0
-            # if volume = 0 or ignore
-            if volume > 1:
+            # if volume = 0 (I think that 1 m3 means nothing)
+            if volume >= 0:
                 data[u'ACTIVITY']     = data.get(u'CONC',0)*volume
                 data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
                 data[u'LC_ACTIVITY']  = data.get(u'LC',0)*volume  
                 data[u'LD_ACTIVITY']  = data.get(u'LD',0)*volume
             else:
-                data[u'ACTIVITY']     = 'N/A'
-                data[u'ACTIVITY_ERR'] = 'N/A'
-                data[u'LC_ACTIVITY']  = 'N/A'  
-                data[u'LD_ACTIVITY']  = 'N/A'
+                data[u'ACTIVITY']     = UNDEFINED
+                data[u'ACTIVITY_ERR'] = UNDEFINED
+                data[u'LC_ACTIVITY']  = UNDEFINED  
+                data[u'LD_ACTIVITY']  = UNDEFINED
           
             # to avoid div by 0 check that quotient is not nul
-            if data[u'ACTIVITY'] != 'N/A':
+            if data[u'ACTIVITY'] != UNDEFINED:
                 data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
           
             res.append(data)
