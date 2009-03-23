@@ -80,19 +80,28 @@ class BaseRenderer(object):
         results = []
         
         if 'CURR' in aSpectrums:
-            results.append(self._fetcher.get(u'CURRENT_CURR', None))
+            id = self._fetcher.get(u'CURRENT_CURR', None)
+            if id != None:
+                results.append(id)
+                
             aSpectrums.remove('CURR')
         
         if 'DETBK' in aSpectrums:
-            results.append(self._fetcher.get(u'CURRENT_DETBK', None))
+            id = self._fetcher.get(u'CURRENT_BK', None)
+            if id != None:
+                results.append(id)
+                
             aSpectrums.remove('DETBK')
         
         if 'GASBK' in aSpectrums:
-            results.append(self._fetcher.get(u'CURRENT_GASBK', None))
+            id = self._fetcher.get(u'CURRENT_GASBK', None)
+            if id != None:
+                results.append(id)
             aSpectrums.remove('GASBK')
         
         if 'QC' in aSpectrums:
-            results.append(self._fetcher.get(u'CURRENT_QC', None))
+            if id != None:
+                results.append(self._fetcher.get(u'CURRENT_QC', None))
             aSpectrums.remove('QC')
             
         # for the rest alphabetical order sorting
@@ -475,7 +484,7 @@ class SpalaxRenderer(BaseRenderer):
                 # Add analysis identifier => SpectrumID prefixed by AN
                 dummy_template = re.sub("\${ANALYSISID}", "AN-%s" % (spectrum_gid), dummy_template)
         
-                dummy_template = re.sub("\${SPECTRUM_ID}", spectrum_id, dummy_template)
+                dummy_template = re.sub("\${SPECTRUM_ID}", spectrum_gid, dummy_template)
         
                 dummy_template = re.sub("\${CATEGORY}", self._getCategory(sindict_id), dummy_template)
         
@@ -753,28 +762,28 @@ class SpalaxRenderer(BaseRenderer):
         for ty in spectrums:
             
             #group Template            
-            spectrumTemplate = self._conf.get("spalaxTemplatingSystem", "spalaxSpectrumGroupTemplate")
+            group_spec_template = self._conf.get("SpalaxTemplatingSystem", "spalaxSpectrumGroupTemplate")
             
             # add the general parameters
-            spectrumTemplate = re.sub("\${SPECTRUM_GROUP_ID}",self._fetcher.get("%s_DATA_NAME" % (ty)), spectrumTemplate)
-            spectrumTemplate = re.sub("\${COL_START}", str(self._fetcher.get("%s_DATA_COLLECT_START" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${COL_STOP}", str(self._fetcher.get("%s_DATA_COLLECT_STOP" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${ACQ_START}", str(self._fetcher.get("%s_DATA_ACQ_START" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${ACQ_STOP}", str(self._fetcher.get("%s_DATA_ACQ_STOP" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${SAMPLING_TIME}", str(self._fetcher.get("%s_DATA_SAMPLING_TIME" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${REAL_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_REAL_SEC" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${LIVE_ACQ_TIME}", str(self._fetcher.get("%s_DATA_ACQ_LIVE_SEC" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${ARRIVAL_DATE}", str(self._fetcher.get("%s_DATA_TRANSMIT_DTG" % (ty))), spectrumTemplate)
+            group_spec_template = re.sub("\${SPECTRUM_GROUP_ID}",self._fetcher.get("%s_DATA_NAME" % (ty)), group_spec_template)
+            group_spec_template = re.sub("\${COL_START}", str(self._fetcher.get("%s_G_DATA_COLLECT_START" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${COL_STOP}", str(self._fetcher.get("%s_G_DATA_COLLECT_STOP" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${ACQ_START}", str(self._fetcher.get("%s_G_DATA_ACQ_START" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${ACQ_STOP}", str(self._fetcher.get("%s_G_DATA_ACQ_STOP" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${SAMPLING_TIME}", str(self._fetcher.get("%s_G_DATA_SAMPLING_TIME" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${REAL_ACQ_TIME}", str(self._fetcher.get("%s_G_DATA_ACQ_REAL_SEC" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${LIVE_ACQ_TIME}", str(self._fetcher.get("%s_G_DATA_ACQ_LIVE_SEC" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${ARRIVAL_DATE}", str(self._fetcher.get("%s_G_DATA_TRANSMIT_DTG" % (ty))), group_spec_template)
               
-            spectrumTemplate = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_DATA_DECAY_TIME" % (ty))), spectrumTemplate)
+            group_spec_template = re.sub("\${DECAY_TIME}", str(self._fetcher.get("%s_G_DATA_DECAY_TIME" % (ty))), group_spec_template)
              
-            spectrumTemplate = re.sub("\${SPECTRUM_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE" % (ty))), spectrumTemplate)
+            group_spec_template = re.sub("\${SPECTRUM_TYPE}",str(self._fetcher.get("%s_G_DATA_SPECTRAL_QUALIFIER" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_G_DATA_DATA_TYPE" % (ty))), group_spec_template)
             # add quantity and geometry
-            spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
-            spectrumTemplate = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_DATA_FLOW_RATE" % (ty))), spectrumTemplate)
+            group_spec_template = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_G_DATA_SAMPLE_QUANTITY" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_G_DATA_FLOW_RATE" % (ty))), group_spec_template)
                 
-            spectrumTemplate = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY" % (ty))), spectrumTemplate)
+            group_spec_template = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_G_DATA_SAMPLE_GEOMETRY" % (ty))), group_spec_template)
             
             # add the calibration info
             l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))
@@ -782,36 +791,40 @@ class SpalaxRenderer(BaseRenderer):
                 SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
                 l = []
             
-            spectrumTemplate = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), spectrumTemplate) #IGNORE:W0141
+            group_spec_template = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), group_spec_template) #IGNORE:W0141
               
             dataTemplate=""
             # add spectra
-            l = ["%s_DATA_G" % (ty), "%s_DATA_B" % (ty)]
-            for fname in l:
-                data = self._fetcher.get(fname, None)
-                if data is not None:
-                    # add gamma Spectrum
-                    sTemplate = self._conf.get("SaunaTemplatingSystem", "saunaSpectrumTemplate")
-                    # insert energy and channel span
-                    sTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}", str(self._fetcher.get("%s_CHANNEL_SPAN" % (fname))), sTemplate)
-                    sTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",  str(self._fetcher.get("%s_ENERGY_SPAN" % (fname))) , sTemplate)
-                    # insert spectrum ID
-                    sTemplate = re.sub("\${SPECTRUM_ID}", self._fetcher.get("%s_ID" % (fname)), sTemplate)
-                    sTemplate = re.sub("\${S_TYPE}", self._fetcher.get("%s_TY" % (fname)), sTemplate)
+            fname = "%s_G_DATA" % (ty)
+
+            data = self._fetcher.get(fname, None)
+            if data is not None:
+                # add gamma Spectrum
+                sTemplate = self._conf.get("SaunaTemplatingSystem", "saunaSpectrumTemplate")
+                # insert energy and channel span
+                sTemplate = re.sub("\${SPECTRUM_DATA_CHANNEL_SPAN}", str(self._fetcher.get("%s_CHANNEL_SPAN" % (fname))), sTemplate)
+                sTemplate = re.sub("\${SPECTRUM_DATA_ENERGY_SPAN}",  str(self._fetcher.get("%s_ENERGY_SPAN" % (fname))) , sTemplate)
+                # insert spectrum ID
+                sTemplate = re.sub("\${SPECTRUM_ID}", self._fetcher.get("%s_ID" % (fname)), sTemplate)
+                sTemplate = re.sub("\${S_TYPE}", self._fetcher.get("%s_TY" % (fname)), sTemplate)
                     
-                    # insert data
-                    sTemplate = re.sub("\${SPECTRUM_DATA}", data, sTemplate)
+                # insert data
+                sTemplate = re.sub("\${SPECTRUM_DATA}", data, sTemplate)
                     
-                    # TODO to remove just there for testing, deal with the compression flag
-                    if self._fetcher.get("%s_COMPRESSED" % (fname), False):
-                        sTemplate = re.sub("\${COMPRESS}", "compress=\"base64,zip\"", sTemplate)
-                    else:
-                        sTemplate = re.sub("\${COMPRESS}", "", sTemplate)
+                # TODO to remove just there for testing, deal with the compression flag
+                if self._fetcher.get("%s_COMPRESSED" % (fname), False):
+                    sTemplate = re.sub("\${COMPRESS}", "compress=\"base64,zip\"", sTemplate)
+                else:
+                    sTemplate = re.sub("\${COMPRESS}", "", sTemplate)
             
-                    dataTemplate += sTemplate
+                dataTemplate += sTemplate
                      
-                # add fill spectrum template in global template 
-                finalTemplate += spectrumTemplate
+            #Add all found data in group Spectrum
+            group_spec_template = re.sub("\${GSPECTRUMDATA}",dataTemplate,group_spec_template)
+            
+            
+            # add groupTemplate in finalTemplate
+            finalTemplate += group_spec_template
         
         self._populatedTemplate = re.sub("\${DATA}", finalTemplate, self._populatedTemplate)
         
