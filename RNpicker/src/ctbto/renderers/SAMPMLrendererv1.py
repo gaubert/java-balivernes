@@ -88,7 +88,7 @@ class BaseRenderer(object):
             aSpectrums.remove('CURR')
         
         if 'DETBK' in aSpectrums:
-            id = self._fetcher.get(u'CURRENT_BK', None)
+            id = self._fetcher.get(u'CURRENT_DETBK', None)
             if id != None:
                 results.append(id)
                 
@@ -101,8 +101,9 @@ class BaseRenderer(object):
             aSpectrums.remove('GASBK')
         
         if 'QC' in aSpectrums:
+            id = self._fetcher.get(u'CURRENT_QC', None)
             if id != None:
-                results.append(self._fetcher.get(u'CURRENT_QC', None))
+                results.append(id)
             aSpectrums.remove('QC')
             
         # for the rest alphabetical order sorting
@@ -173,6 +174,46 @@ class SpalaxRenderer(BaseRenderer):
         self._substitutionDict.update(dummy_dict)
         
         self._xe_lib = set()
+        
+    def _sortSpectrumsSet(self, aSpectrums):
+        
+        results = []
+        
+        if 'CURR' in aSpectrums:
+            id = self._fetcher.get(u'CURRENT_CURR', None)
+            if id != None:
+                results.append(id)
+                
+            aSpectrums.remove('CURR')
+        
+        if 'DETBK' in aSpectrums:
+            id = self._fetcher.get(u'CURRENT_BK', None)
+            if id != None:
+                results.append(id)
+                
+            aSpectrums.remove('DETBK')
+        
+        if 'GASBK' in aSpectrums:
+            id = self._fetcher.get(u'CURRENT_GASBK', None)
+            if id != None:
+                results.append(id)
+            aSpectrums.remove('GASBK')
+        
+        if 'QC' in aSpectrums:
+            id = self._fetcher.get(u'CURRENT_QC', None)
+            if id != None:
+                results.append(id)
+            aSpectrums.remove('QC')
+            
+        # for the rest alphabetical order sorting
+        l = []
+        for e in aSpectrums:
+            l.append(e)
+        
+        l.sort()
+        results.extend(l)
+        
+        return results
     
     def _createTemplate(self):
         """ Read the template from a file. Old method now everything is read from the conf """
@@ -514,10 +555,10 @@ class SpalaxRenderer(BaseRenderer):
                     dummy_template = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), dummy_template) #IGNORE:W0141
         
                 # add software method version info
-                dummy_template = re.sub("\${SOFTWARE}", "bg_analyse", dummy_template)
-                dummy_template = re.sub("\${METHOD}", "standard", dummy_template)
-                dummy_template = re.sub("\${VERSION}", "1.0", dummy_template)
-                dummy_template = re.sub("\${SOFTCOMMENTS}", "Old version", dummy_template)
+                dummy_template = re.sub("\${SOFTWARE}", "AutoSaint", dummy_template)
+                dummy_template = re.sub("\${METHOD}",   "standard", dummy_template)
+                dummy_template = re.sub("\${VERSION}",  "1.0", dummy_template)
+                dummy_template = re.sub("\${SOFTCOMMENTS}", "", dummy_template)
              
                 all_analyses_xml += dummy_template
         
@@ -1214,10 +1255,10 @@ class SaunaRenderer(BaseRenderer):
                     dummy_template = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), dummy_template) #IGNORE:W0141
         
                 # add software method version info
-                dummy_template = re.sub("\${SOFTWARE}", "bg_analyse", dummy_template)
+                dummy_template = re.sub("\${SOFTWARE}", "BG_ANALYSE", dummy_template)
                 dummy_template = re.sub("\${METHOD}", "standard", dummy_template)
                 dummy_template = re.sub("\${VERSION}", "1.0", dummy_template)
-                dummy_template = re.sub("\${SOFTCOMMENTS}", "Old version", dummy_template)
+                dummy_template = re.sub("\${SOFTCOMMENTS}", "", dummy_template)
              
                 all_analyses_xml += dummy_template
         
@@ -1878,10 +1919,10 @@ class GenieParticulateRenderer(BaseRenderer):
                     dummy_template = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), dummy_template) #IGNORE:W0141
         
                 # add software method version info
-                dummy_template = re.sub("\${SOFTWARE}", "genie", dummy_template)
-                dummy_template = re.sub("\${METHOD}", "standard", dummy_template)
+                dummy_template = re.sub("\${SOFTWARE}", "Genie", dummy_template)
+                dummy_template = re.sub("\${METHOD}",   "standard", dummy_template)
                 dummy_template = re.sub("\${VERSION}", "1.0", dummy_template)
-                dummy_template = re.sub("\${SOFTCOMMENTS}", "Old version", dummy_template)
+                dummy_template = re.sub("\${SOFTCOMMENTS}", "", dummy_template)
              
                 all_analyses_xml += dummy_template
         

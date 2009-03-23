@@ -19,7 +19,7 @@ class XML2HTMLRenderer(object):
     # Class members
     c_log = logging.getLogger("html.XML2HTMLRenderer")
     
-    c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.5'}
+    c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.6'}
     
     def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates',TemplateName='ArrHtml.html'):
         
