@@ -53,6 +53,7 @@ def read_sampml_file(filePath = None):
         if not os.path.exists(filePath):
             raise CTBTOError(-1,"the file %s does not exits"%(filePath))
     
+    #schema_file = "SAMPML-Full.xsd"
     schema_file = "SAMPML.xsd"
     
     #schema_file = "test.xsd"
@@ -89,7 +90,7 @@ def read_sampml_file(filePath = None):
 
 
 def main():
-    read_sampml_file("/home/aubert/Desktop/sampml-working-with-xsd.xml")
+    read_sampml_file("/tmp/15Jan_NobleGas/samples/sampml-full-253305.xml")
     
     #read_sampml_file("/home/aubert/ecmwf/workspace/RNpicker/etc/ext/TestGeneratedRNParticulateSample.xml")
     
