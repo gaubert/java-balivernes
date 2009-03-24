@@ -111,10 +111,17 @@ def main():
         schema_file = "SAMPML.xsd"
      
         validator = XSDValidator("/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/xsd/%s"%(schema_file))
-     
-        validator.validate_xml("/tmp/15Jan_NobleGas/samples/sampml-full-253305.xml")
         
-        validator.validate_xml("/tmp/15Jan_NobleGas/samples/sampml-full-254121.xml")
+        dir = "/tmp/15Jan_NobleGas/samples/"
+        dirList=os.listdir(dir)
+        
+        for path in dirList:
+            if path.find(".xml") > -1:
+                print "validate %s"%(path)
+                validator.validate_xml("%s/%s"%(dir,path))
+        #validator.validate_xml("/tmp/15Jan_NobleGas/samples/sampml-full-253305.xml")
+        
+        #validator.validate_xml("/tmp/15Jan_NobleGas/samples/sampml-full-254121.xml")
     except Exception,e:
         print("Exception %s message = [%s]"%(type(e),e))
 

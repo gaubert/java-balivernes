@@ -68,10 +68,9 @@
     <sequence>
       <element minOccurs="1" maxOccurs="1" name="Parameters">
         <complexType>
-          <choice>
-            <element name="ProcessingParameters" type="sml:spalaxProcessingParametersType" />
-            <element minOccurs="0" name="dummyElement" type="string" />
-          </choice>
+          <sequence>
+            <element name="ProcessingParameters" type="sml:nobleGasProcessingParametersType" />
+          </sequence>
         </complexType>
       </element>
       <element minOccurs="1" maxOccurs="1" name="Flags">
@@ -372,16 +371,28 @@
     </attribute>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
-  <complexType name="spalaxProcessingParametersType">
-    <all>
+  <group name="spalaxProcessingParametersGroup">
+    <sequence>
       <element minOccurs="0" maxOccurs="1" name="AverageEnergyCalibration" type="string" />
       <element minOccurs="0" maxOccurs="1" name="CompetitionMaxEnergy" type="double" />
       <element minOccurs="0" maxOccurs="1" name="CompetitionMinEnergy" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="ConfidenceLevel" type="positiveInteger" />
+      <element minOccurs="0" maxOccurs="1" name="EffVgslPairs" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="EmpiricalEnergyErrorFactor" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="EmpiricalFwhmErrorFactor" type="double" />
       <element minOccurs="0" maxOccurs="1" name="EnergyIdTolerance" type="double" />
       <element minOccurs="0" maxOccurs="1" name="MinCalibrationPeaks" type="integer" />
       <element minOccurs="0" maxOccurs="1" name="Overwrite" type="string" />
       <element minOccurs="0" maxOccurs="1" name="QAreaThreshold" type="double" />
       <element minOccurs="0" maxOccurs="1" name="QCATime" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCAirVolume" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCCTime" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCCat" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCCollectionGaps" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCDTime" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCDrift10D" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCDriftMRP" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCEcr" type="string" />
       <element minOccurs="0" maxOccurs="1" name="QCFlags" type="string" />
       <element minOccurs="0" maxOccurs="1" name="QCFlow" type="string" />
       <element minOccurs="0" maxOccurs="1" name="QCFlow500" type="string" />
@@ -394,24 +405,38 @@
       <element minOccurs="0" name="ReflineThresholdB" type="double" />
       <element minOccurs="0" maxOccurs="1" name="RiskLevelIndex" type="double" />
       <element minOccurs="0" maxOccurs="1" name="SAreaThreshold" type="double" />
-      <element minOccurs="0" maxOccurs="1" name="XeSigmaFactor" type="double" />
       <element minOccurs="0" maxOccurs="1" name="SkipCategorization" type="string" />
       <element minOccurs="0" maxOccurs="1" name="UseMRPPairs" type="string" />
       <element minOccurs="0" maxOccurs="1" name="XeGammaFactor" type="double" />
-      <element minOccurs="0" maxOccurs="1" name="ConfidenceLevel" type="positiveInteger" />
-      <element minOccurs="0" maxOccurs="1" name="EffVgslPairs" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="EmpiricalEnergyErrorFactor" type="double" />
-      <element minOccurs="0" maxOccurs="1" name="EmpiricalFwhmErrorFactor" type="double" />
-      <element minOccurs="0" maxOccurs="1" name="QCAirVolume" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCCat" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCCollectionGaps" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCCTime" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCDrift10D" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCDriftMRP" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCDTime" type="string" />
-      <element minOccurs="0" maxOccurs="1" name="QCEcr" type="string" />
-    </all>
+      <element minOccurs="0" maxOccurs="1" name="XeSigmaFactor" type="double" />
+    </sequence>
+  </group>
+  <complexType name="nobleGasProcessingParametersType">
+    <choice>
+      <group ref="sml:spalaxProcessingParametersGroup" />
+      <group ref="sml:saunaProcessingParametersType" />
+    </choice>
   </complexType>
+  <group name="saunaProcessingParametersType">
+    <sequence>
+      <element minOccurs="0" maxOccurs="1" name="BetaEcrOrder" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="BinBetaStart" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="BinGammaStart" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="BinMaxVectorSize" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="BinMinCount" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="BinRows" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="DetBkgndId" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="DetBkgndUsed" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="GammaEcrOrder" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="GasBkgndId" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="GasBkgndUsed" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="LcAbscissa" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="MaxQcDev" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="QcBThreshold" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="QcId" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="XeInAir" type="double" />
+    </sequence>
+  </group>
   <complexType name="xeCovarianceMatrixType">
     <sequence>
       <element minOccurs="1" maxOccurs="unbounded" name="Cell" type="sml:cellType" />
@@ -561,25 +586,25 @@
 				Spalax QC Flags
 		</documentation>
     </annotation>
-    <sequence>
+    <all>
+      <element minOccurs="1" maxOccurs="1" name="Ba-140_MDA" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="Be7_FWHM" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="Cat" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="ECR" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="Gap" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="PRELs" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="QC10D" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="QCMRP" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="Volume" type="sml:spalaxQCFlagType" />
       <element minOccurs="1" maxOccurs="1" name="atime" type="sml:spalaxQCFlagType" />
       <element minOccurs="1" maxOccurs="1" name="ctime" type="sml:spalaxQCFlagType" />
       <element minOccurs="1" maxOccurs="1" name="dtime" type="sml:spalaxQCFlagType" />
       <element minOccurs="1" maxOccurs="1" name="rtime" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="Volume" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="Gap" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="PRELs" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="Be7_FWHM" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="Ba-140_MDA" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="sohFR500" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="sohFlowData" type="sml:spalaxQCFlagType" />
       <element minOccurs="1" maxOccurs="1" name="sohBlowerOn" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="sohFlowData" type="sml:spalaxQCFlagType" />
+      <element minOccurs="1" maxOccurs="1" name="sohFR500" type="sml:spalaxQCFlagType" />
       <element minOccurs="1" maxOccurs="1" name="sohQuantity" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="QCMRP" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="QC10D" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="Cat" type="sml:spalaxQCFlagType" />
-      <element minOccurs="1" maxOccurs="1" name="ECR" type="sml:spalaxQCFlagType" />
-    </sequence>
+    </all>
     <anyAttribute namespace="##other" processContents="lax" />
   </complexType>
   <complexType name="spalaxQCFlagType">
