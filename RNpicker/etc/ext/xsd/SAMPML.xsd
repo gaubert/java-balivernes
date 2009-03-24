@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
 <schema xmlns:sml="http://www.ctbto.org/SAMPML/0.6" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.6" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
-  <include schemaLocation="SAMPML-general.xsd"/>
+  <include schemaLocation="SAMPML-general.xsd" />
   <annotation>
     <documentation>
 			SAMPML IDC Format for describing RN Sample information
@@ -67,12 +68,10 @@
     <sequence>
       <element minOccurs="1" maxOccurs="1" name="Parameters">
         <complexType>
-          <annotation>
-            <documentation>  Empty for the moment </documentation>
-          </annotation>
-          <sequence>
-            <any minOccurs="0" />
-          </sequence>
+          <choice>
+            <element name="ProcessingParameters" type="sml:spalaxProcessingParametersType" />
+            <element minOccurs="0" name="dummyElement" type="string" />
+          </choice>
         </complexType>
       </element>
       <element minOccurs="1" maxOccurs="1" name="Flags">
@@ -372,6 +371,46 @@
       </annotation>
     </attribute>
     <anyAttribute namespace="##other" processContents="lax" />
+  </complexType>
+  <complexType name="spalaxProcessingParametersType">
+    <all>
+      <element minOccurs="0" maxOccurs="1" name="AverageEnergyCalibration" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="CompetitionMaxEnergy" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="CompetitionMinEnergy" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="EnergyIdTolerance" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="MinCalibrationPeaks" type="integer" />
+      <element minOccurs="0" maxOccurs="1" name="Overwrite" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QAreaThreshold" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="QCATime" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCFlags" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCFlow" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCFlow500" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCFlowGaps" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCFlowZero" type="string" />
+      <element minOccurs="0" name="QCIDs" type="string" />
+      <element minOccurs="0" name="QCPreliminarySamples" type="string" />
+      <element minOccurs="0" name="QCRTime" type="string" />
+      <element minOccurs="0" name="ReflineThresholdA" type="double" />
+      <element minOccurs="0" name="ReflineThresholdB" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="RiskLevelIndex" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="SAreaThreshold" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="XeSigmaFactor" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="SkipCategorization" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="UseMRPPairs" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="XeGammaFactor" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="ConfidenceLevel" type="positiveInteger" />
+      <element minOccurs="0" maxOccurs="1" name="EffVgslPairs" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="EmpiricalEnergyErrorFactor" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="EmpiricalFwhmErrorFactor" type="double" />
+      <element minOccurs="0" maxOccurs="1" name="QCAirVolume" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCCat" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCCollectionGaps" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCCTime" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCDrift10D" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCDriftMRP" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCDTime" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="QCEcr" type="string" />
+    </all>
   </complexType>
   <complexType name="xeCovarianceMatrixType">
     <sequence>
