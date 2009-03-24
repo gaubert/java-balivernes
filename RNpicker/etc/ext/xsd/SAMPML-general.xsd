@@ -127,7 +127,7 @@
 			</documentation>
     </annotation>
     <restriction base="sml:decimalList">
-      <minLength value="2" />
+      <minLength value="0" />
       <maxLength value="3" />
     </restriction>
   </simpleType>
@@ -145,7 +145,7 @@
     </annotation>
     <simpleContent>
       <extension base="sml:coordinateList">
-        <attribute name="Datum" type="positiveInteger">
+        <attribute name="Datum" type="positiveInteger" use="optional">
           <annotation>
             <documentation>
 							EPSG map datum reference identification
@@ -153,7 +153,7 @@
 						</documentation>
           </annotation>
         </attribute>
-        <attribute name="Time" type="sml:dateTimeType">
+        <attribute name="Time" type="sml:dateTimeType" use="optional">
           <annotation>
             <documentation>
 							Date/time of coordinates measurement
