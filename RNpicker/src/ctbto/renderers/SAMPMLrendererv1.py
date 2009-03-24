@@ -1124,13 +1124,24 @@ class SaunaRenderer(BaseRenderer):
     def _getFlags(self, id):
         """create xml part with the flag info """
         
-        # first add timeliness Flags
-        template = self._conf.get("SaunaTemplatingSystem", "saunaTimelinessFlagsTemplate")
-        
         xml = ""
         dummy_template = ""
-        dummy_template += template
+        
+        # Data Quality Flags
+        dummy_template = self._conf.get("SaunaTemplatingSystem", "saunaDataQualityFlagsTemplate")    
+        
+        # Xenon Vol Flag
+        dummy_template = re.sub("\${XeVolumeFlag}", self._fetcher.get('%s_VOLUME_FLAG' % (id), UNDEFINED), dummy_template)
+        dummy_template = re.sub("\${XeVolumeValueUnit}", 'ml', dummy_template)
+        dummy_template = re.sub("\${XeVolumeValue}", str(self._fetcher.get('%s_VOLUME_VAL' % (id), UNDEFINED)), dummy_template)
+        dummy_template = re.sub("\${XeVolumeTest}", self._fetcher.get('%s_VOLUME_TEST' % (id), UNDEFINED), dummy_template)
+       
+        # add generated xml in final container
+        xml += dummy_template
           
+        # add timeliness Flags
+        dummy_template = self._conf.get("SaunaTemplatingSystem", "saunaTimelinessFlagsTemplate")
+        
         # Collection flags or sampling flags
         dummy_template = re.sub("\${CollectionTimeFlag}", self._fetcher.get('%s_TIME_FLAGS_COLLECTION_FLAG' % (id), UNDEFINED), dummy_template)
         
@@ -1187,19 +1198,6 @@ class SaunaRenderer(BaseRenderer):
         
         xml += dummy_template
             
-        # Data Quality Flags
-        template = self._conf.get("SaunaTemplatingSystem", "saunaDataQualityFlagsTemplate")    
-        dummy_template = template
-        
-        # Xenon Vol Flag
-        dummy_template = re.sub("\${XeVolumeFlag}", self._fetcher.get('%s_VOLUME_FLAG' % (id), UNDEFINED), dummy_template)
-        dummy_template = re.sub("\${XeVolumeValueUnit}", 'ml', dummy_template)
-        dummy_template = re.sub("\${XeVolumeValue}", str(self._fetcher.get('%s_VOLUME_VAL' % (id), UNDEFINED)), dummy_template)
-        dummy_template = re.sub("\${XeVolumeTest}", self._fetcher.get('%s_VOLUME_TEST' % (id), UNDEFINED), dummy_template)
-       
-        # add generated xml in final container
-        xml += dummy_template
-        
         return xml
     
     def _fillAnalysisResults(self, requestDict):

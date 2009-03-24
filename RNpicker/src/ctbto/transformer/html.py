@@ -321,7 +321,7 @@ class XML2HTMLRenderer(object):
                     XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
                     d['name']  = timeflag.tag
                
-                d['result'] = timeflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['result'] = timeflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 try:
                     d['value']  = utils.round_as_string(timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,HDIGITS)
                 except Exception, e:
@@ -344,7 +344,7 @@ class XML2HTMLRenderer(object):
                     XML2HTMLRenderer.c_log.error("Unknown DataQuality Flag: %s"%(dqflag.tag))   
                     d['name']  = dqflag.tag
                
-                d['result'] = dqflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['result'] = dqflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 d['value']  = utils.round_as_string(dqflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,3)
                 d['test']   = dqflag.find('{%s}Test'%(XML2HTMLRenderer.c_namespaces['sml'])).text
             
