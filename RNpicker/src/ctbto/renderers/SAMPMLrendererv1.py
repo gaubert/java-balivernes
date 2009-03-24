@@ -260,12 +260,14 @@ class SpalaxRenderer(BaseRenderer):
         
         xml=''
         # add technical stuff to ignore_list
-        ignore_list = ['DBDefault','DBFile','DBPassword','DBServer','DBString','DBUser','Help','ManualDB','ManualDBUser','ManualDBPassword','RmsHome',]
+        ignore_list = ['DBDefault','DBFile','DBPassword','DBServer','DBString','DBUser','Help','ManualDB','ManualDBUser','ManualDBPassword','RmsHome','ScacDir','LogLevel','SampleID','Version','BaselineDir']
         # add calibration info as it is somewhere else in the file
         ignore_list.extend(['EfficiencyCalibrationCoeffs','EfficiencyCalPolyDegree','EfficiencyCoeffs','EnergyCalibrationCoeffs','EnergyCalPolyDegree','EnergyCoeffs','ResolutionCalibrationCoeffs','ResolutionCalPolyDegree','ResolutionCoeffs'])
         
         name = ''
         value  = None
+        
+        table.sort()
         
         for line in table:
             name   = line['NAME']
