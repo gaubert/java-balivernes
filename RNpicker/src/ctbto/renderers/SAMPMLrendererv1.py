@@ -278,7 +278,7 @@ class SpalaxRenderer(BaseRenderer):
         return xml
     
     def _getParameters(self, id): #IGNORE:W0613
-        """ return the processing paramters
+        """ return the processing parameters
         
             Args:
                id: Analysis id
@@ -1095,9 +1095,56 @@ class SaunaRenderer(BaseRenderer):
         """ return Categorization for the passed sample_id. Do nothing for the moment """
         return ""
     
+    def _format_parameter_name(self,name):
+        """ eat _ and then CamelCase the words """
+        res =''
+        
+        if name.find('_') != -1:
+            l = name.split('_')
+            for e in l:
+                res += e[0].upper() + e[1:].lower()
+        else:
+            res = name[0].upper() + name[1:].lower()
+        
+        return res
+    
     def _getParameters(self, id): #IGNORE:W0613
-        """ return Categorization for the passed sample_id. Do nothing for the moment """
-        return ""
+        """ return the processing paramters
+        
+            Args:
+               id: Analysis id
+            
+            Returns: the populated template
+              
+              
+            Raises:
+               exception if issue fetching data (CTBTOError)
+        """
+        
+        # first add Quantified Nuclides
+        template = self._conf.get("SaunaTemplatingSystem", "saunaProcessingParametersTemplate")
+        
+        result = ""
+        
+        # add technical stuff to ignore_list
+        ignore_list = ['MODDATE','SAMPLE_ID','METHOD']
+  
+        params = self._fetcher.get("%s_PROC_PARAMS" % (id), None)
+        
+        cpt = 0
+        
+        if params != None:
+            xml=""
+            l = params[0].items()
+            l.sort()
+            for key,value in l:
+                if key not in ignore_list and value != None:
+                    tag = self._format_parameter_name(key)
+                    xml += "<%s>%s</%s>\n"%(str(tag),value,str(tag))
+            result = re.sub("\${PARAMETERS}",xml,template)
+            
+            
+        return result
     
     def _getROIBoundaries(self, id):
         """ fill and return the information regarding the Region of Interest (ROI) Boundaries"""
