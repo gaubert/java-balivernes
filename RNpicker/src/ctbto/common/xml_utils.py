@@ -116,7 +116,8 @@ def main():
         dirList=os.listdir(dir)
         
         for path in dirList:
-            if path.find(".xml") > -1:
+            _, extension = path.split('.')
+            if extension != None and extension == 'xml':
                 print "validate %s/%s"%(dir,path)
                 validator.validate_xml("%s/%s"%(dir,path))
         #validator.validate_xml("/tmp/15Jan_NobleGas/samples/sampml-full-253305.xml")
