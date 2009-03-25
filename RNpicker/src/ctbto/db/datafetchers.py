@@ -383,7 +383,13 @@ class DBDataFetcher(object):
         else:   
             # retrun difference in seconds
             dc = ctbto.common.time_utils.getDifferenceInTime(b,a)
-            data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
+            
+            # Handle negative values: check that it is neg or not
+            if dc < 0:
+                data[u'DATA_DECAY_TIME'] = "-PT%dS"%(abs(dc))
+                DBDataFetcher.c_log.error("Decay time for %s is negative: %s !! \n"%(aSampleID,data[u'DATA_DECAY_TIME']))
+            else:
+                data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
        
         a = rows[0][u'DATA_COLLECT_STOP']
         b = rows[0]['DATA_COLLECT_START']
@@ -393,7 +399,11 @@ class DBDataFetcher(object):
         else:
             # sampling time in secondds
             dc =  ctbto.common.time_utils.getDifferenceInTime(b,a)
-            data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
+            if dc < 0:
+                data[u'DATA_SAMPLING_TIME'] = "-PT%dS"%(abs(dc))
+                DBDataFetcher.c_log.error("Sampling time for %s is negative: %s !! \n"%(aSampleID,data[u'DATA_SAMPLING_TIME']))
+            else:
+                data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
        
         data[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(data['DATA_ACQ_LIVE_SEC']) if data['DATA_ACQ_LIVE_SEC'] is not None else ""
         data[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(data['DATA_ACQ_REAL_SEC']) if data['DATA_ACQ_REAL_SEC'] is not None else ""

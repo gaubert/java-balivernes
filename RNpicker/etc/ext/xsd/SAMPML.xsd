@@ -69,7 +69,7 @@
       <element minOccurs="1" maxOccurs="1" name="Parameters">
         <complexType>
           <sequence>
-            <element name="ProcessingParameters" type="sml:nobleGasProcessingParametersType" />
+            <element minOccurs="0" maxOccurs="1" name="ProcessingParameters" type="sml:nobleGasProcessingParametersType" />
           </sequence>
         </complexType>
       </element>
