@@ -234,6 +234,7 @@ SQL_GETALLSTATIONIDSFROMCODES      = "select STATION_ID from RMSMAN.GARDS_STATIO
 
 SAMPLES_KEY    = "sent_samples"
 HISTORY_KEY    = "history"
+LAST_TIME_SENT = "last_time"
 
 class CLIError(Exception):
     """ Base class exception """
@@ -454,8 +455,53 @@ class Runner(object):
             self.log_in_file("Found the following %s stations: %s."%(type,sta_codes))
         
         return sta_ids
+    
+    def _get_list_of_days_to_search(self,a_db_dict):
+        """ 
+           return list of days to search using the db_dict content.
+           If there are some days in db_dict set the from_date from this point.
+           If not use today
         
-    def _get_list_of_new_samples_to_email(self,a_db_dict,a_searched_day,a_station_types,a_force_resend=False,a_spectralQualif='FULL',a_nbOfElem='10000000'):
+           Args:
+               a_db_dict       : Persistent dictionary containing what has already been sent
+               
+            Returns:
+               
+        
+            Raises:
+               exception
+        """
+        list_of_days = []
+        iso_from_day = None
+        
+        if a_db_dict != None:
+            l_keys = a_db_dict.keys()
+            if len(l_keys) > 0:
+                iso_from_day = min(l_keys)
+            else:
+                iso_from_day = ctbto.common.time_utils.getToday() 
+        
+        from_datetime = ctbto.common.time_utils.getDateTimeFromISO8601(iso_from_day)
+        
+        now_datetime  = datetime.datetime.today()
+        
+        nb_days = (now_datetime - from_datetime).days
+        
+        # normal case nb_days is >= 0
+        if nb_days >= 0:
+            # iterate over the date days
+            cpt = 0
+            temp_datetime = from_datetime
+            while cpt <= nb_days:
+                list_of_days.append(ctbto.common.time_utils.getISO8601fromDateTime(temp_datetime))
+                temp_datetime = temp_datetime + datetime.timedelta(days=1)
+                cpt += 1
+        else:
+            Runner.c_log.info("Error nb_days should >=0")
+            
+        return list_of_days
+    
+    def _get_list_of_new_samples_to_email(self,a_db_dict,a_list_of_days,a_station_types,a_force_resend=False,a_spectralQualif='FULL',a_nbOfElem='10000000'):
         """
             Method returning what samples needs to be sent an fetched for a particular day.
             The day is designated by searched_day.
@@ -465,7 +511,57 @@ class Runner(object):
                a_searched_day  : Searched day (usually dd:mm:yyT00:00:00). It is a datetime object
                
             Returns:
-               return a conf object
+              
+        
+            Raises:
+               exception
+        """
+        
+        # get all related stations
+        stations      = self._get_all_stations(a_station_types)
+        
+        result = {}
+        
+        # for each day check if there is more samples to retrieve that what is in the db
+        # if yes add the new samples to the list of samples to fetch
+        for day in a_list_of_days:
+            
+            begin_date = ctbto.common.time_utils.getDateTimeFromISO8601(day)
+            end_date   = begin_date + datetime.timedelta(days=1)
+            
+            # get them in Oracle format
+            d1 = ctbto.common.time_utils.getOracleDateFromDateTime(begin_date)
+            d2 = ctbto.common.time_utils.getOracleDateFromDateTime(end_date)
+            
+            # get list of samples for the chosen day
+            l        = self._get_list_of_sampleIDs(stations,d1,d2,a_spectralQualif,a_nbOfElem)
+            l_set    = set(l)
+            
+            # get previous list
+            if day in a_db_dict:
+                l_prev_set = set(a_db_dict[day][SAMPLES_KEY])
+                new_samples_set = l_set.difference(l_prev_set)
+            else:
+                new_samples_set = l_set
+            
+            if len(new_samples_set) > 0:
+                l = list(new_samples_set)
+                l.sort()
+                result[day] = l
+        
+        return result
+               
+    def _old_get_list_of_new_samples_to_email(self,a_db_dict,a_searched_day,a_station_types,a_force_resend=False,a_spectralQualif='FULL',a_nbOfElem='10000000'):
+        """
+            Method returning what samples needs to be sent an fetched for a particular day.
+            The day is designated by searched_day.
+        
+            Args:
+               a_db_dict       : Persistent dictionary containing what has already been sent
+               a_searched_day  : Searched day (usually dd:mm:yyT00:00:00). It is a datetime object
+               
+            Returns:
+              
         
             Raises:
                exception
@@ -690,6 +786,148 @@ class Runner(object):
             
         dir_to_send   = "%s/%s"%(dir,sending_timestamp)
         
+        tarfile_name_prefix = "%s/samples_%s"%(dir,sending_timestamp)
+  
+        self._create_directories(dir)
+        self._create_directories(dir_group_db)
+        
+        # check if we have some sids or we get it from some dates
+        Runner.c_log.info("*************************************************************")
+        
+        if not 'id' in a_args:
+            # no actions performed error
+            raise Exception('No groups given. Need a group name') 
+        else:  
+            
+            id = a_args['id']
+            
+            if not self._conf.has_option('AutomaticEmailingGroups',id):
+                raise Exception('There is no email groups in the configuration ([AutomaticEmailingGroups]) with value %s.'%(id))
+        
+            if a_args['clean_group_db']:
+                self._clean_group_db(dir_group_db,id) 
+            
+            db_dict = self._get_id_database(dir_group_db,id)
+            
+            list_of_searched_days = self._get_list_of_days_to_search(db_dict)
+            
+            # it will be used in the email
+            #date_of_the_searched_day = searched_day.split('T')[0]
+             
+            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,list_of_searched_days,a_args['station_types'],a_args['force_send']) 
+        
+        if len(list_to_fetch) > 0:    
+            
+            # send a separate email for each day 
+            keys = list_to_fetch.keys()
+            keys.sort()
+            for key in keys:
+                self._send_products_for_each_day(key,list_to_fetch[key],tarfile_name_prefix,dir_to_send,id)
+                #self._save_in_id_database(group,dir_group_db,db_dict,list_to_fetch,searched_day,sending_timestamp)
+        
+                
+        else:
+            Runner.c_log.info("No new products to send for group %s"%(id))
+        
+        # cleaning
+        self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
+
+    def _send_products_for_each_day(self,day,list_to_fetch,tarfile_name_prefix,dir_to_send,id):
+        
+        Runner.c_log.info("Needs to fetch the following samples: %s that arrived the %s"%(list_to_fetch,day))
+        
+        # Call the data fetcher with the right arguments
+        args = {}                      
+        
+        args['dir']                     = dir_to_send
+        args['verbose']                 = 1
+        args['always_recreate_files']   = False
+        args['clean_cache']             = False
+        args['automatic_tests']         = False
+        args['clean_local_spectra']     = False
+        args['sids']                    = list_to_fetch
+            
+        Runner.c_log.info("*************************************************************\n")
+            
+        Runner.c_log.info("*************************************************************")
+        Runner.c_log.info("Call product generator")
+        Runner.c_log.info("*************************************************************")
+        
+        arr_generator.run_with_args(args)
+        
+        Runner.c_log.info("*************************************************************")
+        Runner.c_log.info("Create Tar the file")
+        Runner.c_log.info("*************************************************************\n")
+        
+        # directory containing the data
+        # restrict to samples
+        dir_data = "%s/samples"%(dir_to_send)
+        
+        tarfile_name = "%s-%s.tar.gz"%(tarfile_name_prefix,day)
+        
+        t = tarfile.open(name = tarfile_name, mode = 'w:gz')
+        t.add(dir_data,arcname=os.path.basename(dir_data))
+        t.close()
+            
+        groups = [id]
+        
+        # keep only the date part
+        printable_day = day.split('T')[0]
+            
+        # send email
+        emailer = DataEmailer(self._conf.get('AutomaticEmailingInformation','host'),self._conf.get('AutomaticEmailingInformation','port'))
+                
+        emailer.connect(self._conf.get('AutomaticEmailingInformation','user'),self._conf.get('AutomaticEmailingInformation','password'))
+            
+        sender  = self._conf.get('AutomaticEmailingInformation','sender',None)
+            
+        # the text message that will apear in the email
+        text_message = 'The following %d samples from day %s are in the attached tar file %s\nList of samples : %s'%(len(list_to_fetch),printable_day,tarfile_name,list_to_fetch)
+        
+        for group in groups:
+            
+            emails = self._conf.get('AutomaticEmailingGroups',group,None)
+            if emails is None:
+                raise Exception('group %s is None in [AutomaticEmailingGroups]'%(group))
+                
+            Runner.c_log.info("*************************************************************")
+            Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
+            Runner.c_log.info("*************************************************************")
+                
+            emailer.send_email_attached_files(sender,emails,[tarfile_name], '%d samples retrieved for %s in %s'%(len(list_to_fetch),printable_day,tarfile_name),text_message)
+        
+               
+    def old_execute(self,a_args):
+        # TODO Support sending in non-continous mode a specific period of date (check tarfile size)
+        # TODO Test in reallife (test change of day)
+    
+        if a_args == None or a_args == {}:
+            raise Exception('No commands passed. See usage message.')
+        
+        Runner.c_log.info("*************************************************************")
+        Runner.c_log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
+        
+        Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
+        
+        Runner.c_log.info("*************************************************************\n")
+          
+        # check if we can write in case the dir already exists    
+        dir           = a_args['dir']
+        # kind of historic of what has been sent
+        dir_files_db  = "%s/data"%(dir)
+        
+        # the dir for the group db. If there is no dir defined in config then take dir as the root dir
+        dir_group_db  = "%s/db"%(self._conf.get("AutomaticEmailingInformation","groupDBPath",dir))
+        
+        # timestamps for create the batch name
+        # create sending timestamp (used in the tar.gz file name)
+        sending_timestamp = '%s'%(datetime.datetime.now())
+        # replace spaces with T and : with nothing
+        sending_timestamp = sending_timestamp.replace(' ','T')
+        sending_timestamp = sending_timestamp.replace(':','')
+            
+        dir_to_send   = "%s/%s"%(dir,sending_timestamp)
+        
         tarfile_name = "%s/samples_%s.tar.gz"%(dir,sending_timestamp)
   
         self._create_directories(dir)
@@ -717,7 +955,7 @@ class Runner(object):
             # For testing
             #searched_day = ctbto.common.time_utils.getYesterday()
             #searched_day = '2009-03-18T00:00:00'
-            #look from today
+            #look from today 
             searched_day = ctbto.common.time_utils.getToday()
             
             # it will be used in the email
