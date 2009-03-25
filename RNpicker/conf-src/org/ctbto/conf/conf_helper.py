@@ -18,6 +18,7 @@
 
 import os
 import re
+import types
 
 import resource
 
@@ -219,6 +220,12 @@ class Conf(object):
             Raises:
                exception NoOptionError if fail_if_missing is True
         """
+        
+        # assert that the passed option is a string
+        t = type(option)
+        if t is not types.StringType and t is not types.UnicodeType:
+            raise NoOptionError("the passed option %s is not a string ?"%(option))
+            
         # all options are kept in lowercase
         opt = self.optionxform(option)
         
