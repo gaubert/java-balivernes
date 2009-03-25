@@ -713,9 +713,11 @@ class Runner(object):
             
             db_dict = self._get_id_database(dir_group_db,id)
             
-            # always look one day before to retrieve some day
-            # between yesterday and today => it is yesterday
+            
+            # For testing
             #searched_day = ctbto.common.time_utils.getYesterday()
+            #searched_day = '2009-03-18T00:00:00'
+            #look from today
             searched_day = ctbto.common.time_utils.getToday()
             
             # it will be used in the email
