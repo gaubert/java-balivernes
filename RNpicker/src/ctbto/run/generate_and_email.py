@@ -645,6 +645,94 @@ class Runner(object):
             Raises:
                exception
         """
+        key = a_searched_day
+        
+        # if it doesn't exist, initialize the structure
+        if key not in a_db_dict:
+            a_db_dict[key] = {}
+            a_db_dict[key][SAMPLES_KEY]    = []
+            a_db_dict[key][HISTORY_KEY]    = {}
+            a_db_dict[key][LAST_TIME_SENT] = None
+            
+            
+        info_dict = a_db_dict.get(key,{})
+        
+        l = info_dict.get(SAMPLES_KEY,[])
+        
+        l.extend(a_emailed_list) 
+        
+        a_db_dict[key][SAMPLES_KEY] = l
+        
+        # Add history info
+        hist_d = info_dict[HISTORY_KEY]
+        
+        hist_d[a_sending_time_stamp] = a_emailed_list
+        
+        a_db_dict[key][LAST_TIME_SENT] = a_sending_time_stamp
+        
+        filename = "%s/%s.emaildb"%(a_dir,a_id)
+        
+        f = open(filename,'w')
+        
+        pickle.dump(a_db_dict,f) 
+        
+        f.close()
+        
+    def _remove_expired_days_from_db_dict(self,a_db_dict,a_dir,a_id):
+        """ 
+            remove all samples that are older than the limit given in the config file 
+        """
+        
+        limit = self._conf.get('AutomaticEmailingInformation','expirationDate',20)
+            
+        keys = a_db_dict.keys()
+        
+        keys.sort()
+        
+        now_datetime  = datetime.datetime.today()
+        
+        #for key in keys:
+        #    a_db_dict[key][LAST_TIME_SENT] = '2009-03-25T000000'
+            
+        #    filename = "%s/%s.emaildb"%(a_dir,a_id)
+        
+        #    f = open(filename,'w')
+        
+        #   pickle.dump(a_db_dict,f) 
+            
+        #    f.close()
+            
+        
+        for key in keys:
+            # get a datetime so nothing to do
+            timestamp = a_db_dict[key][LAST_TIME_SENT]
+        
+            d = datetime.datetime.strptime(timestamp,'%Y-%m-%dT%H%M%S')
+        
+            diff = now_datetime - d
+            
+            if diff.days >= limit:
+                del a_db_dict[key]
+        
+    
+    def _old_save_in_id_database(self,a_id,a_dir,a_db_dict,a_emailed_list,a_searched_day,a_sending_time_stamp):
+        """
+            Save the information related to the current batch in the db_dict.
+            
+            Args:
+               a_id                 : email group name,
+               a_dir                : directory where the db_dict is going to be stored,
+               a_db_dict            : Persistent dictionary containing what has already been sent,
+               a_emailed_list       : Searched day (usually dd:mm:yyT00:00:00). It is a datetime object,
+               a_searched_day       : the day for which the samples are retrieved (key in db_dict)
+               a_sending_time_stamp : timestamp when the data was sent (key for the history) 
+               
+            Returns:
+               None
+        
+            Raises:
+               exception
+        """
         key = ctbto.common.time_utils.getISO8601fromDateTime(a_searched_day)
         
         # if it doesn't exist, initialize the structure
@@ -735,14 +823,13 @@ class Runner(object):
             # hide error in logs because it is a minor error
             Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(a_origin_dir,a_destination_dir,e))
         finally:
+            # clean the dirs
             try:
                 # try to delete a_origin_dir even if there was an error
-                ctbto.common.utils.delete_all_under(dir_to_delete,delete_top_dir=True)
+                ctbto.common.utils.delete_all_under(dir_to_send,delete_top_dir=True)
             except Exception, e: #IGNORE:W0703,W0702
                 # hide error in logs because it is a minor error
                 Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
-           
-     
             
 
     def _clean_group_db(self,a_dir,a_id):
@@ -756,9 +843,6 @@ class Runner(object):
             os.remove(path)
     
     def execute(self,a_args):
-        # TODO Support sending in non-continous mode a specific period of date (check tarfile size)
-        # TODO Test in reallife (test change of day)
-    
         if a_args == None or a_args == {}:
             raise Exception('No commands passed. See usage message.')
         
@@ -809,6 +893,9 @@ class Runner(object):
             
             db_dict = self._get_id_database(dir_group_db,id)
             
+            # remove expired days 
+            self._remove_expired_days_from_db_dict(db_dict,dir_group_db,id)
+            
             list_of_searched_days = self._get_list_of_days_to_search(db_dict)
             
             # it will be used in the email
@@ -822,17 +909,15 @@ class Runner(object):
             keys = list_to_fetch.keys()
             keys.sort()
             for key in keys:
-                self._send_products_for_each_day(key,list_to_fetch[key],tarfile_name_prefix,dir_to_send,id)
-                #self._save_in_id_database(group,dir_group_db,db_dict,list_to_fetch,searched_day,sending_timestamp)
-        
+                self._send_products_for_each_day(key,list_to_fetch[key],tarfile_name_prefix,dir_to_send,id,dir_files_db)
                 
+                self._save_in_id_database(id,dir_group_db,db_dict,list_to_fetch[key],key,sending_timestamp)
+                     
         else:
             Runner.c_log.info("No new products to send for group %s"%(id))
-        
-        # cleaning
-        self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
+           
 
-    def _send_products_for_each_day(self,day,list_to_fetch,tarfile_name_prefix,dir_to_send,id):
+    def _send_products_for_each_day(self,day,list_to_fetch,tarfile_name_prefix,dir_to_send,id,dir_files_db):
         
         Runner.c_log.info("Needs to fetch the following samples: %s that arrived the %s"%(list_to_fetch,day))
         
@@ -896,6 +981,8 @@ class Runner(object):
                 
             emailer.send_email_attached_files(sender,emails,[tarfile_name], '%d samples retrieved for %s in %s'%(len(list_to_fetch),printable_day,tarfile_name),text_message)
         
+        # cleaning the file business
+        self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
                
     def old_execute(self,a_args):
         # TODO Support sending in non-continous mode a specific period of date (check tarfile size)
