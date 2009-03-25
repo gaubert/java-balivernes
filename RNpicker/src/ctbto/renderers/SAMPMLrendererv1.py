@@ -1052,7 +1052,7 @@ class SaunaRenderer(BaseRenderer):
         
         cpt = 0
         
-        if params != None:
+        if params != None and len(params) > 0:
             xml=""
             l = params[0].items()
             l.sort()
