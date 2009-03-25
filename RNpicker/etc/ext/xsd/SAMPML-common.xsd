@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <schema xmlns:sml="http://www.ctbto.org/SAMPML/0.6" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.6" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+    	<documentation>
+			SAMPML IDC Format for describing RN Sample information
+			Version: 0.6
+			SAMPML Common Types to all different formats (Noble Gas, Particulate)
+		</documentation>
+  </annotation>
+  
   <simpleType name="dateTimeType">
     <union>
       <simpleType>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
 <schema xmlns:sml="http://www.ctbto.org/SAMPML/0.6" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.6" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
-  <include schemaLocation="SAMPML-general.xsd" />
+  <include schemaLocation="SAMPML-common.xsd" />
   <annotation>
     <documentation>
 			SAMPML IDC Format for describing RN Sample information
