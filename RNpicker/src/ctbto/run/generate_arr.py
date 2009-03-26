@@ -577,7 +577,9 @@ class Runner(object):
         Runner.c_log.info("*************************************************************")
         Runner.c_log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
         
-        Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
+        # _log_path can be null if the logger has been installed by another object
+        if self._log_path != None:
+            Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
         
         Runner.c_log.info("*************************************************************\n")
         
