@@ -571,7 +571,7 @@ class Runner(object):
                         l.sort()
                         
                         if len(l) > 0:
-                            Runner.c_log.info("Will fetch the %d new products for %s."%(len(l),day))
+                            Runner.c_log.info("%d new products to be retrieved for %s."%(len(l),day))
         
                         result[day] = l
             else:
