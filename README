@@ -1,3 +1,27 @@
+[26.03.08] Release of RNPicker-v1.2-20090326
+List of changes:
+1) SAMPML Format refactoring
+
+- introduce <SpectrumGroup> that regroup all data from the same sample (spectrum, histogram)
+- Harmonize defaults value. A missing value is always described as N/A (Non Available)
+- Streamlining of the <Analysis> tag (spectrumIDs references the SecptrumGroup Id), clean  <IdedNuclides> and <Nuclide> tags
+- Many more little bugs have been corrected
+
+2) Validation using an XSD validator
+
+- The format is described using XSD (see SAMPML.xsd and SAMPML-common.xsd)
+- This first version validates SAUNA and SPALAX samples
+- Validation and check are automatically performed in the product generation
+- This has been heavily tested as 3 months of data have been retrieved and successfully validated
+
+3) product generation and distribution tools refactoring
+
+- An incremental method is now used to find new samples that have not been sent to a particular distribution group
+- If the acquisition pipeline is stopped or unavailable for a while, after its restoraiton, the production generation and distribution sfotware will send
+  all unsent samples
+- Instrumentation to have the possibility to send samples from an older day and to force the resending of any days 
+
+
 [23.02.08]
 Experiment with megring and branching
 
