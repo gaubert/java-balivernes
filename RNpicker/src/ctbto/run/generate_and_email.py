@@ -820,7 +820,7 @@ class Runner(object):
             Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
             Runner.c_log.info("*************************************************************")
                 
-            emailer.send_email_attached_files(sender,emails,[tarfile_name], '[%s]. %d samples retrieved for %s'%(timestamp_id,len(list_to_fetch),printable_day),text_message)
+            emailer.send_email_attached_files(sender,emails,[tarfile_name], '[%s:%s]. %d samples retrieved for %s'%(group,timestamp_id,len(list_to_fetch),printable_day),text_message)
         
         # cleaning the file business
         self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
