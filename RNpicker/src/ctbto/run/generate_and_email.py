@@ -425,8 +425,8 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        Runner.c_log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
-        self.log_in_file("list of sampleIDs to fetch: %s"%(sampleIDs))
+        Runner.c_log.info("Need to fetch %d products (samples) for the %s."%(len(sampleIDs),beginDate.split(' ')[0]))
+        self.log_in_file("List of sampleIDs to fetch: %s"%(sampleIDs))
         
         sampleIDs.sort()
         
@@ -501,7 +501,7 @@ class Runner(object):
             
         return list_of_days
     
-    def _get_list_of_new_samples_to_email(self,a_db_dict,a_list_of_days,a_station_types,a_force_resend=False,a_spectralQualif='FULL',a_nbOfElem='10000000'):
+    def _get_list_of_new_samples_to_email(self, a_db_dict, a_list_of_days, a_station_types, a_force_resend=False, a_spectralQualif='FULL', a_nbOfElem='10000000'):
         """
             Method returning what samples needs to be sent an fetched for a particular day.
             The day is designated by searched_day.
@@ -682,8 +682,9 @@ class Runner(object):
         """ 
             remove all samples that are older than the limit given in the config file 
         """
+        Runner.c_log.info("Remove information from the group database %s/%s.emaildb if expired"%(a_dir,a_id))
         
-        limit = self._conf.get('AutomaticEmailingInformation','expirationDate',20)
+        limit = self._conf.getint('AutomaticEmailingInformation','expirationDate',20)
             
         keys = a_db_dict.keys()
         
@@ -691,27 +692,35 @@ class Runner(object):
         
         now_datetime  = datetime.datetime.today()
         
-        #for key in keys:
-        #    a_db_dict[key][LAST_TIME_SENT] = '2009-03-25T000000'
+        '''
+        for key in keys:
+            a_db_dict[key][LAST_TIME_SENT] = '2009-03-25T173546'
             
-        #    filename = "%s/%s.emaildb"%(a_dir,a_id)
+            filename = "%s/%s.emaildb"%(a_dir,a_id)
         
-        #    f = open(filename,'w')
+            f = open(filename,'w')
         
-        #   pickle.dump(a_db_dict,f) 
+            pickle.dump(a_db_dict,f) 
             
-        #    f.close()
+            f.close()
+        '''
             
         
         for key in keys:
             # get a datetime so nothing to do
-            timestamp = a_db_dict[key][LAST_TIME_SENT]
+            timestamp = a_db_dict[key].get(LAST_TIME_SENT,None)
+            
+            # to be compatible with the previous version
+            # if no LAST_TIME_SENT get now time
+            if timestamp == None:
+                timestamp = self._get_now_timestamp()
+                a_db_dict[key][LAST_TIME_SENT] = timestamp
         
             d = datetime.datetime.strptime(timestamp,'%Y-%m-%dT%H%M%S')
         
             diff = now_datetime - d
-            
             if diff.days >= limit:
+                Runner.c_log.info("Remove %s day information from the group database as now sending have been done for the last %s days."%(key,limit))
                 del a_db_dict[key]
         
     
@@ -826,7 +835,7 @@ class Runner(object):
             # clean the dirs
             try:
                 # try to delete a_origin_dir even if there was an error
-                ctbto.common.utils.delete_all_under(dir_to_send,delete_top_dir=True)
+                ctbto.common.utils.delete_all_under(dir_to_delete,delete_top_dir=True)
             except Exception, e: #IGNORE:W0703,W0702
                 # hide error in logs because it is a minor error
                 Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
@@ -841,6 +850,19 @@ class Runner(object):
         
         if os.path.exists(path):
             os.remove(path)
+    
+    def _get_now_timestamp(self):
+        
+        # timestamps for create the batch name
+        # create sending timestamp (used in the tar.gz file name)
+        sending_timestamp = '%s'%(datetime.datetime.now())
+        # replace spaces with T and : with nothing
+        sending_timestamp = sending_timestamp.replace(' ','T')
+        sending_timestamp = sending_timestamp.replace(':','')
+        # remove milliseconds
+        sending_timestamp = sending_timestamp.split('.')[0]
+        
+        return sending_timestamp
     
     def execute(self,a_args):
         if a_args == None or a_args == {}:
@@ -861,12 +883,7 @@ class Runner(object):
         # the dir for the group db. If there is no dir defined in config then take dir as the root dir
         dir_group_db  = "%s/db"%(self._conf.get("AutomaticEmailingInformation","groupDBPath",dir))
         
-        # timestamps for create the batch name
-        # create sending timestamp (used in the tar.gz file name)
-        sending_timestamp = '%s'%(datetime.datetime.now())
-        # replace spaces with T and : with nothing
-        sending_timestamp = sending_timestamp.replace(' ','T')
-        sending_timestamp = sending_timestamp.replace(':','')
+        sending_timestamp = self._get_now_timestamp()
             
         dir_to_send   = "%s/%s"%(dir,sending_timestamp)
         
