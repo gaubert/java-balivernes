@@ -576,6 +576,15 @@ class Runner(object):
                 if len(l) > 0:
                     Runner.c_log.info("Will fetch the %d new products for %s."%(len(l),day))
                 result[day] = l
+                
+        # print all values
+        full_list = []
+        for value in result.itervalues():
+            full_list.extend(value)
+        
+        if len(full_list) > 0:
+            full_list.sort()
+            Runner.log_in_file("Will fetch the following sampleIDs"%(full_list))
         
         return result
                
@@ -760,6 +769,8 @@ class Runner(object):
         # keep only the date part
         printable_day = day.split('T')[0]
         
+        Runner.c_log.info("*************************************************************\n")
+        
         Runner.c_log.info("[%s] Get following new samples: %s."%(printable_day,list_to_fetch))
         
         # Call the data fetcher with the right arguments
@@ -772,8 +783,6 @@ class Runner(object):
         args['automatic_tests']         = False
         args['clean_local_spectra']     = False
         args['sids']                    = list_to_fetch
-            
-        Runner.c_log.info("*************************************************************\n")
             
         Runner.c_log.info("*************************************************************")
         Runner.c_log.info("Call product generator")
@@ -889,9 +898,6 @@ class Runner(object):
             self._remove_expired_days_from_db_dict(db_dict,dir_group_db,id)
             
             list_of_searched_days = self._get_list_of_days_to_search(db_dict,a_args['from'])
-            
-            # it will be used in the email
-            #date_of_the_searched_day = searched_day.split('T')[0]
              
             list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,list_of_searched_days,a_args['station_types'],a_args['force_send']) 
         
