@@ -643,7 +643,7 @@ class SpalaxRenderer(BaseRenderer):
         else:
             GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
         
-        template = self._conf.get("ParticulateTemplatingSystem", "spalaxEfficencyCalTemplate")
+        template = self._conf.get("SpalaxTemplatingSystem", "spalaxEfficencyCalTemplate")
         
         eff_id = self._fetcher.get("%s_G_EFFICIENCY_CAL" % (prefix), None)
         
