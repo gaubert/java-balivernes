@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
+<schema xmlns:sml="http://www.ctbto.org/SAMPML/0.6.1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.6.1" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
+  <annotation>
+    <documentation>
+			SAMPML IDC Format for describing RN Sample information
+			Version: 0.6.1
+			SAMPML Common Types to all different formats (Noble Gas, Particulate)
+		</documentation>
+  </annotation>
+  <simpleType name="dateTimeType">
+    <union>
+      <simpleType>
+        <restriction base="dateTime" />
+      </simpleType>
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="None" />
+          <enumeration value="Unknown" />
+          <enumeration value="N/A" />
+        </restriction>
+      </simpleType>
+    </union>
+  </simpleType>
+  <simpleType name="stringListType">
+    <annotation>
+      <documentation>List of strings</documentation>
+    </annotation>
+    <list itemType="string" />
+  </simpleType>
+  <simpleType name="enumSpectrumCompressionType">
+    <annotation>
+      <documentation>
+				The algorithm (if any) by which the spectrum has been
+				compressed
+			</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="None" />
+      <enumeration value="CountedZeroes" />
+      <enumeration value="Zip" />
+    </restriction>
+  </simpleType>
+  <simpleType name="durationList">
+    <annotation>
+      <documentation>List of durations</documentation>
+    </annotation>
+    <list itemType="sml:durationType" />
+  </simpleType>
+  <simpleType name="durationType">
+    <union>
+      <simpleType>
+        <restriction base="duration" />
+      </simpleType>
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="None" />
+          <enumeration value="Unknown" />
+          <enumeration value="N/A" />
+        </restriction>
+      </simpleType>
+    </union>
+  </simpleType>
+  <simpleType name="enumSampleType">
+    <annotation>
+      <documentation>
+				Different kind of samples
+			</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="PARTICULATE" />
+      <enumeration value="SAUNA" />
+      <enumeration value="SPALAX" />
+    </restriction>
+  </simpleType>
+  <simpleType name="enumEquationType">
+    <annotation>
+      <documentation>Equation type</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="Polynomial" />
+      <enumeration value="Pade" />
+      <enumeration value="Exponential" />
+      <enumeration value="PolyLogarithmic" />
+      <enumeration value="FullRangeFraction" />
+      <enumeration value="Other" />
+    </restriction>
+  </simpleType>
+  <simpleType name="enumNuclideType">
+    <annotation>
+      <documentation>Nuclide type</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="Natural" />
+      <enumeration value="Activation" />
+      <enumeration value="Fission" />
+      <enumeration value="FISSION (G)" />
+      <enumeration value="Other" />
+    </restriction>
+  </simpleType>
+  <simpleType name="enumFWHMUnits">
+    <annotation>
+      <documentation>
+				FWHM (Full Width at Half-Maximum) (i.e., resolution)
+				units
+			</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="Energy" />
+      <enumeration value="Channels" />
+    </restriction>
+  </simpleType>
+  <simpleType name="enumEnergyUnits">
+    <annotation>
+      <documentation>Energy units</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="eV" />
+      <enumeration value="keV" />
+      <enumeration value="MeV" />
+    </restriction>
+  </simpleType>
+  <simpleType name="doubleListType">
+    <annotation>
+      <documentation>List of doubles</documentation>
+    </annotation>
+    <list itemType="double" />
+  </simpleType>
+  <simpleType name="coordinateList">
+    <annotation>
+      <documentation>
+				Geographic coordinates: first two entries are latitude
+				and longitude; third entry is elevation in
+				meters relative to the specified ellipsoid.
+			</documentation>
+    </annotation>
+    <restriction base="sml:decimalList">
+      <minLength value="0" />
+      <maxLength value="3" />
+    </restriction>
+  </simpleType>
+  <simpleType name="decimalList">
+    <annotation>
+      <documentation>List of decimals</documentation>
+    </annotation>
+    <list itemType="decimal" />
+  </simpleType>
+  <complexType name="coordinatesType">
+    <annotation>
+      <documentation>
+				Geographical coordinates (latitude, longitude, elevation)
+			</documentation>
+    </annotation>
+    <simpleContent>
+      <extension base="sml:coordinateList">
+        <attribute name="Datum" type="positiveInteger" use="optional">
+          <annotation>
+            <documentation>
+							EPSG map datum reference identification
+							number (see www.epsg.org)
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="Time" type="sml:dateTimeType" use="optional">
+          <annotation>
+            <documentation>
+							Date/time of coordinates measurement
+						</documentation>
+          </annotation>
+        </attribute>
+        <anyAttribute namespace="##other" processContents="lax" />
+      </extension>
+    </simpleContent>
+  </complexType>
+  <simpleType name="enumSpectrumType">
+    <annotation>
+      <documentation>Spectrum type (FULL,PREL)</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="FULL" />
+      <enumeration value="PREL" />
+      <enumeration value="Other" />
+    </restriction>
+  </simpleType>
+  <simpleType name="enumCategoryType">
+    <annotation>
+      <documentation>
+				The category classification
+			</documentation>
+    </annotation>
+    <restriction base="positiveInteger">
+      <enumeration value="1" />
+      <enumeration value="2" />
+      <enumeration value="3" />
+      <enumeration value="4" />
+      <enumeration value="5" />
+    </restriction>
+  </simpleType>
+  <simpleType name="doubleUnc">
+    <annotation>
+      <documentation>
+				Double value with uncertainty: first entry is value,
+				second entry is uncertainty (absolute error, one
+				standard deviation)
+			</documentation>
+    </annotation>
+    <restriction base="sml:doubleListType">
+      <length value="2" />
+    </restriction>
+  </simpleType>
+  <complexType name="physicalValueType">
+    <annotation>
+      <documentation>
+				Describe a physical quantity with a unit (any type for
+				the moment)
+			</documentation>
+    </annotation>
+    <simpleContent>
+      <extension base="string">
+        <attribute name="unit" type="anySimpleType" use="optional" />
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="calibrationType">
+    <annotation>
+      <documentation>Calibration data</documentation>
+    </annotation>
+    <sequence>
+      <element minOccurs="0" name="Remark" type="string" />
+      <element minOccurs="0" name="CalibrationCreationDate" type="sml:dateTimeType">
+        <annotation>
+          <documentation>
+						Date/time at which the calibration was created (question: what does "created" mean ??)
+					</documentation>
+        </annotation>
+      </element>
+      <element minOccurs="0" maxOccurs="unbounded" name="CalibrationMeasurementUUID" type="string">
+        <annotation>
+          <documentation>
+						Unique identifier of the measurement(s) used to
+						develop this calibrations
+					</documentation>
+        </annotation>
+      </element>
+      <element minOccurs="0" maxOccurs="unbounded" name="Equation" type="sml:equationType">
+        <annotation>
+          <documentation>
+						The equation governing this calibration
+					</documentation>
+        </annotation>
+      </element>
+      <element minOccurs="0" name="ArrayXY" type="sml:arrayXYType">
+        <annotation>
+          <documentation>
+						Calibration data as ordinal pairs
+					</documentation>
+        </annotation>
+      </element>
+      <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
+    </sequence>
+    <attribute name="Type" type="string" use="required">
+      <annotation>
+        <documentation>
+					Calibration type (e.g., energy, FWHM, ...)
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="EnergyUnits" type="sml:enumEnergyUnits">
+      <annotation>
+        <documentation>Energy units</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="FWHMUnits" type="sml:enumFWHMUnits">
+      <annotation>
+        <documentation>
+					Detector resolution units
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="ID" type="ID" />
+    <anyAttribute namespace="##other" processContents="lax" />
+  </complexType>
+  <complexType name="equationType">
+    <annotation>
+      <documentation>
+				Encapsulates an equation and its coefficients
+			</documentation>
+    </annotation>
+    <sequence>
+      <element minOccurs="0" name="Remark" type="string" />
+      <element maxOccurs="unbounded" name="Coefficients" type="sml:coefficientsType">
+        <annotation>
+          <documentation>
+						The coefficients of the equation
+					</documentation>
+        </annotation>
+      </element>
+      <element minOccurs="0" name="CovarianceMatrix" type="sml:doubleListType">
+        <annotation>
+          <documentation>
+						The covariance matrix for the equation
+						coefficients
+					</documentation>
+        </annotation>
+      </element>
+      <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
+    </sequence>
+    <attribute name="Model" type="sml:enumEquationType" use="required">
+      <annotation>
+        <documentation>
+					Type of equation (polynomial, etc.)
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="Form" type="string">
+      <annotation>
+        <documentation>
+					Description of the form of the equation
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="LowerLimit" type="double">
+      <annotation>
+        <documentation>
+					Lower bound of validity of the abscissa
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="UpperLimit" type="double">
+      <annotation>
+        <documentation>
+					Upper bound of validity of the abscissa
+				</documentation>
+      </annotation>
+    </attribute>
+    <anyAttribute namespace="##other" processContents="lax" />
+  </complexType>
+  <complexType name="coefficientsType">
+    <annotation>
+      <documentation>Equation coefficients</documentation>
+    </annotation>
+    <simpleContent>
+      <extension base="sml:doubleListType">
+        <attribute name="Subequation" type="positiveInteger">
+          <annotation>
+            <documentation>
+							Index of the subequation to which this set
+							of coefficients applies
+						</documentation>
+          </annotation>
+        </attribute>
+        <anyAttribute namespace="##other" processContents="lax" />
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="arrayXYType">
+    <annotation>
+      <documentation>Array of ordinal pairs</documentation>
+    </annotation>
+    <sequence>
+      <element minOccurs="0" name="Remark" type="string" />
+      <element minOccurs="1" maxOccurs="unbounded" name="PointXY" type="sml:pointXYType">
+        <annotation>
+          <documentation>
+						An (abcsissa, ordinate) pair
+					</documentation>
+        </annotation>
+      </element>
+      <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
+    </sequence>
+    <attribute name="X" type="string">
+      <annotation>
+        <documentation>
+					Abscissa data description
+				</documentation>
+      </annotation>
+    </attribute>
+    <attribute name="Y" type="string">
+      <annotation>
+        <documentation>
+					Ordinate data description
+				</documentation>
+      </annotation>
+    </attribute>
+    <anyAttribute namespace="##other" processContents="lax" />
+  </complexType>
+  <complexType name="pointXYType">
+    <annotation>
+      <documentation>
+				An (abscissa, ordinate) pair
+			</documentation>
+    </annotation>
+    <sequence>
+      <element minOccurs="0" name="Remark" type="string" />
+      <element name="X" type="sml:doubleUnc">
+        <annotation>
+          <documentation>Abscissa value</documentation>
+        </annotation>
+      </element>
+      <element name="Y" type="sml:doubleUnc">
+        <annotation>
+          <documentation>Ordinate value</documentation>
+        </annotation>
+      </element>
+      <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
+    </sequence>
+    <anyAttribute namespace="##other" processContents="lax" />
+  </complexType>
+  <complexType name="softwareType">
+    <annotation>
+      <documentation>
+		  describe the software used for the analysis
+		</documentation>
+    </annotation>
+    <sequence>
+      <element minOccurs="1" maxOccurs="1" name="Name" type="string" />
+      <element minOccurs="1" maxOccurs="1" name="Version" type="string" />
+      <element minOccurs="0" maxOccurs="1" name="Comments" type="string" />
+    </sequence>
+  </complexType>
+  <complexType name="calibrationInformationType">
+    <annotation>
+      <documentation>Calibration equations</documentation>
+    </annotation>
+    <sequence>
+      <element minOccurs="1" maxOccurs="unbounded" name="Calibration" type="sml:calibrationType" />
+    </sequence>
+  </complexType>
+  <complexType name="histogramType">
+    <annotation>
+      <documentation>
+				This regroup histogram, an spectra structures for the moment
+			</documentation>
+    </annotation>
+    <simpleContent>
+      <extension base="sml:doubleListType">
+        <attribute name="id" type="string" use="required">
+          <annotation>
+            <documentation>
+						Numbers of beta channels
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="gammaChannelSpan" type="positiveInteger" use="required">
+          <annotation>
+            <documentation>
+						Numbers of gamma channels
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="gammaEnergySpan" type="positiveInteger" use="required">
+          <annotation>
+            <documentation>
+						Energy span for gamma rays
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="betaChannelSpan" type="positiveInteger" use="required">
+          <annotation>
+            <documentation>
+						Numbers of beta channels
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="betaEnergySpan" type="positiveInteger" use="required">
+          <annotation>
+            <documentation>
+						Energy span for beta rays
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="type" type="string" use="required" />
+        <attribute name="format" type="string" use="optional">
+          <annotation>
+            <documentation>
+				In case a particular format is used to encode the data
+			</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="compression" type="sml:enumSpectrumCompressionType" use="optional">
+          <annotation>
+            <documentation>
+							The algorithm used to compress the channel
+							data
+						</documentation>
+          </annotation>
+        </attribute>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="spectrumType">
+    <annotation>
+      <documentation>
+				This regroup histogram, an spectra structures for the moment
+			</documentation>
+    </annotation>
+    <simpleContent>
+      <extension base="sml:doubleListType">
+        <attribute name="id" type="string" use="required" />
+        <attribute name="channelSpan" type="positiveInteger" use="required">
+          <annotation>
+            <documentation>
+						Numbers of gamma channels
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="energySpan" type="positiveInteger" use="required">
+          <annotation>
+            <documentation>
+						Energy span for beta rays
+						</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="type" type="string" use="required" />
+        <attribute name="format" type="string" use="optional">
+          <annotation>
+            <documentation>
+				In case a particular format is used to encode the data
+			</documentation>
+          </annotation>
+        </attribute>
+        <attribute name="compression" type="sml:enumSpectrumCompressionType" use="optional">
+          <annotation>
+            <documentation>
+							The algorithm used to compress the channel
+							data
+						</documentation>
+          </annotation>
+        </attribute>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="nuclideIdentificationIndicatorType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="numericVal" type="integer">
+          <annotation>
+            <documentation>
+							Index of the subequation to which this set
+							of coefficients applies
+						</documentation>
+          </annotation>
+        </attribute>
+        <anyAttribute namespace="##other" processContents="lax" />
+      </extension>
+    </simpleContent>
+  </complexType>
+</schema>
