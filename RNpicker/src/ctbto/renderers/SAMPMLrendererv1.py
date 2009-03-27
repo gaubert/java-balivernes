@@ -463,6 +463,9 @@ class SpalaxRenderer(BaseRenderer):
         """
         template = self._conf.get("SpalaxTemplatingSystem", "spalaxQCFlagsTemplate")
         
+        ignore_list = ['Be7_FWHM','Ba-140_MDA','sohFR500','sohFlowData','sohBlowerOn','sohQuantity']
+      
+        
         # add Data Quality Flags
         dataQFlags = self._fetcher.get('%s_QC_FLAGS' % (id), [])
         
@@ -476,10 +479,11 @@ class SpalaxRenderer(BaseRenderer):
         l = []
         
         for dFlag in dataQFlags:
-            xml_f = re.sub("\${NAME}", dFlag[u'TEST_NAME'], one_flag)
-            xml_f = re.sub("\${COMMENT}",dFlag[u'QC_COMMENT'], xml_f)
-            xml_f = re.sub("\${PASS}","true" if dFlag[u'FLAG'] == 'G' else "false", xml_f)
-            l.append(xml_f)
+            if dFlag[u'TEST_NAME'] not in ignore_list:
+                xml_f = re.sub("\${NAME}", dFlag[u'TEST_NAME'], one_flag)
+                xml_f = re.sub("\${COMMENT}",dFlag[u'QC_COMMENT'], xml_f)
+                xml_f = re.sub("\${PASS}","true" if dFlag[u'FLAG'] == 'G' else "false", xml_f)
+                l.append(xml_f)
         
         # sort the list l alphabetically 
         l.sort() 
@@ -591,7 +595,7 @@ class SpalaxRenderer(BaseRenderer):
         """
         
         # first add Energy Cal
-        template = self._conf.get("ParticulateTemplatingSystem", "particulateEnergyCalTemplate")
+        template = self._conf.get("SpalaxTemplatingSystem", "spalaxEnergyCalTemplate")
         
         xml = ""
         dummy_template = ""
@@ -616,7 +620,7 @@ class SpalaxRenderer(BaseRenderer):
         else:
             GenieParticulateRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
-        template = self._conf.get("ParticulateTemplatingSystem", "particulateResolutionCalTemplate")
+        template = self._conf.get("SpalaxTemplatingSystem", "spalaxResolutionCalTemplate")
         
         re_id = self._fetcher.get("%s_G_RESOLUTION_CAL" % (prefix), None)
         
@@ -639,7 +643,7 @@ class SpalaxRenderer(BaseRenderer):
         else:
             GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
         
-        template = self._conf.get("ParticulateTemplatingSystem", "particulateEfficencyCalTemplate")
+        template = self._conf.get("ParticulateTemplatingSystem", "spalaxEfficencyCalTemplate")
         
         eff_id = self._fetcher.get("%s_G_EFFICIENCY_CAL" % (prefix), None)
         
