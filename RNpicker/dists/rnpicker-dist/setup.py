@@ -3,7 +3,7 @@ import os
 from distutils.core import setup
 
 
-version = '1.2.1'
+version = '1.2.2'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 setup(name='RNPicker',
