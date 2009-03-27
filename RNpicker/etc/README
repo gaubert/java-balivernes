@@ -1,4 +1,12 @@
+REMARK ON INSTALLATION
+----------------------
 
 if we have export TNS_ADMIN=/home/aubert accessible it will work otherwise issue
 
 need libclntsh.so.10.1 as LD_LIBRARY_PATH
+
+RNDigger v1.2.1
+---------------
+
+- Fix bug in incremental sending. (This was causing any new samples to not be sent once the first parcel for a day was sent)
+

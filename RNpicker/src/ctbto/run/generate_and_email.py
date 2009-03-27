@@ -566,14 +566,11 @@ class Runner(object):
                 else:
                     new_samples_set = l_set
             
-                    if len(new_samples_set) > 0:
-                        l = list(new_samples_set)
-                        l.sort()
-                        
-                        if len(l) > 0:
-                            Runner.c_log.info("%d new products to be retrieved for %s."%(len(l),day))
-        
-                        result[day] = l
+                if len(new_samples_set) > 0:
+                    l = list(new_samples_set)
+                    l.sort()   
+                    Runner.c_log.info("%d new products to be retrieved for %s."%(len(l),day))
+                    result[day] = l
             else:
                 l.sort()
                 if len(l) > 0:
