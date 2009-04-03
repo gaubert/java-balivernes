@@ -75,8 +75,8 @@ def main():
     # cheat and always ask for 5 MB
     remote_file_size =5 * 1024 * 1024
     
-    #fd = get_list_messages_to_copy(conf.get("RemoteAccess","getRequestMessage"), conf.get("RemoteAccess","devlanAccessHost"),"/ops/data/shared/messages/2009/034",local_dir,conf.get("RemoteAccess","devlanAccessUser"))
-    fd = open('/tmp/req_messages/result.msgs','r')
+    fd = get_list_messages_to_copy(conf.get("RemoteAccess","getRequestMessage"), conf.get("RemoteAccess","devlanAccessHost"),"/ops/data/shared/messages/2009/075",local_dir,conf.get("RemoteAccess","devlanAccessUser"))
+    #fd = open('/tmp/req_messages/result.msgs','r')
 
     cpt = 0
     for line in fd:

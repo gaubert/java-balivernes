@@ -3,7 +3,7 @@
     Use this to export Classes public to the package (used outside of the package)
 '''
 __all__ = []
-for subpackage in ['conf_helper','exceptions','resource','scanf_util']:
+for subpackage in ['data_calculation']:
     try:
         exec 'import ' + subpackage     #IGNORE:W0122
         exec 'from ' + subpackage + ' import *' #IGNORE:W0122
