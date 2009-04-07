@@ -11,6 +11,10 @@ Module containing different kind of operations that can be performed on the data
 import logging
 
 import ctbto.common.scanf_util
+import ctbto.common.time_utils as time_utils
+
+from decimal import *
+import math
 
 
 class NobleGasDecayCorrector(object):
@@ -20,9 +24,22 @@ class NobleGasDecayCorrector(object):
     c_log = logging.getLogger("NobleGasDecayCorrector")
     c_log.setLevel(logging.INFO)
 
-    def __init__(self):
+    def __init__(self,a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_live=0):
+        """ Constructor. 
+            
+            Args:
+            a_coll_start,a_coll_stop,a_acq_start,a_acq_stop as ISO String Dates
+            a_live as ISO Period
+               
+            Returns:
+                a Decimal to avoid carrying numerical arithemic inprecision errors
+                To get a float do float(Decimal) and To get an int int(Decimal)
+         
+            Raises:
+            exception if cannot connect to the server
+        """
         
-        super(NobleGasDecayCorrector,self).__init__(a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_live=0)
+        super(NobleGasDecayCorrector,self).__init__()
         
         self._coll_stop  = a_coll_stop
         self._coll_start = a_coll_start
@@ -40,22 +57,69 @@ class NobleGasDecayCorrector(object):
     def _calculate_time_coeffs(self):
         """"""
         
-        self._t_count = self._coll_stop - self._coll_start
-        self._t_prep  = self._acq_start - self._coll_stop
-        self._t_real  = self._acq_stop  - self._acq_start
-        self._t_live  = self._a_live
+        self._t_count = str(time_utils.getDifferenceInTime(self._coll_start,self._coll_stop))
+        self._t_prep  = str(time_utils.getDifferenceInTime(self._coll_stop,self._acq_start))
+        self._t_real  = str(time_utils.getDifferenceInTime(self._acq_start,self._acq_stop))
+        self._t_live  = str(self._a_live)
         
-    def _calculate_fi(self,a_half_life):
+    def _calculate_fi(self,a_half_life_string):
         """ calculate f(i) = A^2/(1-exp(-A*tcount)*exp(-A*tprep)*(1-exp(-A*treal) 
-            with A = ln(2)/half-life iso in sec
+            with A = ln(2)/half-life iso in sec.
+            
+            Args:
+            a_half_life_string  : the half life value as a string
+               
+            Returns:
+                a Decimal to avoid carrying numerical arithemic inprecision errors
+                To get a float do float(Decimal) and To get an int int(Decimal)
+         
+            Raises:
+            exception if cannot connect to the server
         """
         
-    
+        # get a Decimal object 
+        half_life   = convert_half_life_in_sec(a_half_life_string)
+        
+        A_coeff     = Decimal(2).ln() / half_life
+        
+        A_tcount    = A_coeff * Decimal(self._t_count)
+        A_tprep     = A_coeff * Decimal(self._t_prep)
+        A_treal     = A_coeff * Decimal(self._t_real)
+        
+        first_exp = (1-math.exp(-A_tcount))
+        sec_exp   = math.exp(-A_tprep)
+        third_exp = (1-math.exp(-A_treal))
+        
+        f_divider   = (first_exp*sec_exp*third_exp)
+        str_divider = str(f_divider)
+        
+        fi_result   = (pow(A_coeff,2) / Decimal(str_divider) )
+                                         
+        return fi_result
+        
     def decay_correct(self,a_isotope_name,a_values):
         """ decay correct the values passed """
         
+        method = computation_method.get(a_isotope_name,"unknown")
+        
+        if method == "unknown":
+            raise Exception("Isotope %s is unknown"%(a_isotope_name))
+        elif method == 'm1':
+            # case for XE135, XE131m and XE133m
+            # just do 
+            print "compute method 1"
+        elif method == 'm2':
+            print "compute method 2"
+        
         
    
+computation_method  = {
+             'XE135':'m1',
+             'XE131m':'m1',
+             'XE133m':'m1',
+             'XE133':'m2',
+             
+             }
 
 
 time_unit_to_sec = { 'S' : 1 ,
@@ -72,16 +136,18 @@ def convert_half_life_in_sec(a_half_life_string):
         With time unit equal to S or M or H or D or Y.
         
         Args:
-                a_half_life_string  : the half life value as a string
+            a_half_life_string  : the half life value as a string
                
-            Returns:
+        Returns:
+                a Decimal to avoid carrying numerical arithemic inprecision errors
+                To get a float do float(Decimal) and To get an int int(Decimal)
         
-            Raises:
-               exception if cannot connect to the server
+        Raises:
+            None
     """
     
     #use scanf to parse the string
-    scan_result = ctbto.common.scanf_util.scanf("%f %c", a_half_life_string)
+    scan_result = ctbto.common.scanf_util.scanf("%s %c", a_half_life_string)
     
     if len(scan_result) != 2:
         raise Exception("Did not recognise the following string as a valid half-life")
@@ -89,7 +155,7 @@ def convert_half_life_in_sec(a_half_life_string):
     number,time_unit = scan_result
     
     # if this is zero then there is a problem
-    result = time_unit_to_sec.get(time_unit,0) * number
+    result = Decimal(time_unit_to_sec.get(time_unit,0)) * Decimal(number)
     
     if result == 0:
         raise Exception("The value %s in %s cannot be used as a time_unit"%(time_unit,a_half_life_string))
@@ -149,11 +215,25 @@ class TestDataModule(unittest.TestCase):
        
         r = convert_half_life_in_sec("5.243 D")
        
-        self.assertEqual(452995.2,r)
+        self.assertEqual(452995.2,float(r))
        
         r = convert_half_life_in_sec("22.300 Y")
        
-        self.assertEqual(703719449.80000007,r)
+        self.assertEqual(703719449.800,float(r))
+    
+    def testCalculateFi(self):
+        
+        coll_start = time_utils.getDateTimeFromISO8601('2009-03-29T16:57:00')
+        coll_stop  = time_utils.getDateTimeFromISO8601('2009-03-30T04:57:00')
+        
+        acq_start = time_utils.getDateTimeFromISO8601('2009-03-30T12:00:19')
+        acq_stop  = time_utils.getDateTimeFromISO8601('2009-03-30T23:10:20')
+        
+        live = 40201
+                                            #(a_coll_start=0,         a_coll_stop=0,        a_acq_start=0         a_acq_stop=0,       a_live=0)
+        nbCorrector = NobleGasDecayCorrector(coll_start,coll_stop,acq_start,acq_stop,live)
+        
+        nbCorrector._calculate_fi("5.243 D")
    
 
 if __name__ == '__main__':
