@@ -8,6 +8,7 @@ Module containing different kind of operations that can be performed on the data
 @author: Guillaume Aubert
          
 '''
+
 import logging
 
 import ctbto.common.scanf_util
@@ -23,6 +24,20 @@ class NobleGasDecayCorrector(object):
     # Class members
     c_log = logging.getLogger("NobleGasDecayCorrector")
     c_log.setLevel(logging.INFO)
+    
+    c_default_half_life = {
+            'XE-131M' : '11.900 D',
+            'XE-133M' : '2.190 D',
+            'XE-133'  : '5.243 D',
+            'XE-135'  : '9.140 H'
+        }      
+   
+    c_computation_method  =  {
+            'XE-135' :'m1'  ,
+            'XE-131M':'m1'  ,
+            'XE-133M':'m1'  ,
+            'XE-133' :'m2'  ,
+        }
 
     def __init__(self,a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_live=0):
         """ Constructor. 
@@ -41,19 +56,33 @@ class NobleGasDecayCorrector(object):
         
         super(NobleGasDecayCorrector,self).__init__()
         
-        self._coll_stop  = a_coll_stop
-        self._coll_start = a_coll_start
-        self._acq_stop   = a_acq_stop
-        self._acq_start  = a_acq_start
-        self._a_live     = a_live
+        self._coll_stop  = -1
+        self._coll_start = -1
+        self._acq_stop   = -1
+        self._acq_start  = -1
+        self._a_live     = -1
         
         self._t_count    = -1
         self._t_real     = -1
         self._t_live     = -1
         self._t_prep     = -1
         
+        self.set_time_information(a_coll_start, a_coll_stop, a_acq_start, a_acq_stop, a_live)
+        
+        
+    def set_time_information(self,a_coll_start,a_coll_stop,a_acq_start,a_acq_stop,a_live):
+        """
+           add the necessary time info
+        """
+        self._coll_stop  = a_coll_stop
+        self._coll_start = a_coll_start
+        self._acq_stop   = a_acq_stop
+        self._acq_start  = a_acq_start
+        self._a_live     = a_live
+        
         self._calculate_time_coeffs()
-    
+        
+        
     def _calculate_time_coeffs(self):
         """"""
         
@@ -97,30 +126,33 @@ class NobleGasDecayCorrector(object):
                                          
         return fi_result
         
-    def decay_correct(self,a_isotope_name,a_values):
+    def undecay_correct(self,a_isotope_name,a_activity_concentration):
         """ decay correct the values passed """
+         
+        half_life_string = NobleGasDecayCorrector.c_default_half_life.get(a_isotope_name,None)
         
-        method = computation_method.get(a_isotope_name,"unknown")
+        if half_life_string == None:
+            raise Exception("No defined half_life for %s"%(a_isotope_name))
+       
+        fi = self._calculate_fi(half_life_string)
         
-        if method == "unknown":
-            raise Exception("Isotope %s is unknown"%(a_isotope_name))
-        elif method == 'm1':
-            # case for XE135, XE131m and XE133m
-            # just do 
-            print "compute method 1"
-        elif method == 'm2':
-            print "compute method 2"
+        return Decimal(str(a_activity_concentration)) / fi 
+    
+    def undecay_correct_XE133(self,a_XE133_activity_concentration,a_XE133M_activity_concentration):
+        """ undecay correction for XE133 is special due to the metastable isotopes """
         
+        XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133',None)
+        XE133M_half_life_string = NobleGasDecayCorrector.c_default_half_life.get('XE-133M',None)
         
-   
-computation_method  = {
-             'XE135':'m1',
-             'XE131m':'m1',
-             'XE133m':'m1',
-             'XE133':'m2',
-             
-             }
-
+        fi_XE133  = self._calculate_fi(XE133_half_life_string)
+        fi_XE133M = self._calculate_fi(XE133M_half_life_string)
+        
+        lambda3_coeff   = Decimal(2).ln() / convert_half_life_in_sec(XE133_half_life_string)
+        lambda6_coeff   = Decimal(2).ln() / convert_half_life_in_sec(XE133M_half_life_string)
+        
+        lbdas = lambda3_coeff / (lambda6_coeff - lambda3_coeff)
+        
+        return (1/fi_XE133) * Decimal(str(a_XE133_activity_concentration)) + (lbdas*((1/fi_XE133) - (1/fi_XE133M))*Decimal(str(a_XE133M_activity_concentration)))
 
 time_unit_to_sec = { 'S' : 1 ,
                'M' : 60,
@@ -145,7 +177,6 @@ def convert_half_life_in_sec(a_half_life_string):
         Raises:
             None
     """
-    
     #use scanf to parse the string
     scan_result = ctbto.common.scanf_util.scanf("%s %c", a_half_life_string)
     
@@ -223,17 +254,22 @@ class TestDataModule(unittest.TestCase):
     
     def testCalculateFi(self):
         
-        coll_start = time_utils.getDateTimeFromISO8601('2009-03-29T16:57:00')
-        coll_stop  = time_utils.getDateTimeFromISO8601('2009-03-30T04:57:00')
+        coll_start = time_utils.getDateTimeFromISO8601('2009-04-06T08:48:00')
+        coll_stop  = time_utils.getDateTimeFromISO8601('2009-04-06T20:48:00')
         
-        acq_start = time_utils.getDateTimeFromISO8601('2009-03-30T12:00:19')
-        acq_stop  = time_utils.getDateTimeFromISO8601('2009-03-30T23:10:20')
+        acq_start = time_utils.getDateTimeFromISO8601('2009-04-07T03:48:58')
+        acq_stop  = time_utils.getDateTimeFromISO8601('2009-04-07T14:58:58')
         
         live = 40201
+        
+        #activity concentration
+        XE_131M_conc = 3.7163183341225325
                                             #(a_coll_start=0,         a_coll_stop=0,        a_acq_start=0         a_acq_stop=0,       a_live=0)
         nbCorrector = NobleGasDecayCorrector(coll_start,coll_stop,acq_start,acq_stop,live)
         
-        nbCorrector._calculate_fi("5.243 D")
+        v = nbCorrector.undecay_correct('XE-131M', XE_131M_conc)
+        
+        print "V = %f"%(float(v)) 
    
 
 if __name__ == '__main__':
