@@ -264,7 +264,7 @@ class TestDataModule(unittest.TestCase):
         
         #activity concentration
         #XE_135_conc = 0.23472596729190701
-        XE_135_conc = 3
+        XE_135_conc = 0.23472596729190701
                                             #(a_coll_start=0,         a_coll_stop=0,        a_acq_start=0         a_acq_stop=0,       a_live=0)
         nbCorrector = NobleGasDecayCorrector(coll_start,coll_stop,acq_start,acq_stop,live)
         
