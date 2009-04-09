@@ -39,7 +39,7 @@ class NobleGasDecayCorrector(object):
             'XE-133' :'m2'  ,
         }
 
-    def __init__(self,a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_live=0):
+    def __init__(self,a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_real=0):
         """ Constructor. 
             
             Args:
@@ -60,17 +60,17 @@ class NobleGasDecayCorrector(object):
         self._coll_start = -1
         self._acq_stop   = -1
         self._acq_start  = -1
-        self._a_live     = -1
+        self._a_real     = -1
         
         self._t_count    = -1
         self._t_real     = -1
         self._t_live     = -1
         self._t_prep     = -1
         
-        self.set_time_information(a_coll_start, a_coll_stop, a_acq_start, a_acq_stop, a_live)
+        self.set_time_information(a_coll_start, a_coll_stop, a_acq_start, a_acq_stop, a_real)
         
         
-    def set_time_information(self,a_coll_start,a_coll_stop,a_acq_start,a_acq_stop,a_live):
+    def set_time_information(self,a_coll_start,a_coll_stop,a_acq_start,a_acq_stop,a_real):
         """
            add the necessary time info
         """
@@ -78,7 +78,7 @@ class NobleGasDecayCorrector(object):
         self._coll_start = a_coll_start
         self._acq_stop   = a_acq_stop
         self._acq_start  = a_acq_start
-        self._a_live     = a_live
+        self._a_real     = a_real
         
         self._calculate_time_coeffs()
         
@@ -89,7 +89,7 @@ class NobleGasDecayCorrector(object):
         self._t_count = str(time_utils.getDifferenceInTime(self._coll_start,self._coll_stop))
         self._t_prep  = str(time_utils.getDifferenceInTime(self._coll_stop,self._acq_start))
         self._t_real  = str(time_utils.getDifferenceInTime(self._acq_start,self._acq_stop))
-        self._t_live  = str(self._a_live)
+        self._t_real  = str(self._a_real)
         
     def _calculate_fi(self,a_half_life_string):
         """ calculate f(i) = A^2/(1-exp(-A*tcount)*exp(-A*tprep)*(1-exp(-A*treal) 
@@ -263,11 +263,12 @@ class TestDataModule(unittest.TestCase):
         live = 40201
         
         #activity concentration
-        XE_131M_conc = 3.7163183341225325
+        #XE_135_conc = 0.23472596729190701
+        XE_135_conc = 3
                                             #(a_coll_start=0,         a_coll_stop=0,        a_acq_start=0         a_acq_stop=0,       a_live=0)
         nbCorrector = NobleGasDecayCorrector(coll_start,coll_stop,acq_start,acq_stop,live)
         
-        v = nbCorrector.undecay_correct('XE-131M', XE_131M_conc)
+        v = nbCorrector.undecay_correct('XE-135', XE_135_conc)
         
         print "V = %f"%(float(v)) 
    
