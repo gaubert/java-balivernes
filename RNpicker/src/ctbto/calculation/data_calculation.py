@@ -92,7 +92,11 @@ class NobleGasDecayCorrector(object):
         self._t_real  = str(self._a_real)
         
     def _calculate_fi(self,a_half_life_string):
-        """ calculate f(i) = A^2/(1-exp(-A*tcount)*exp(-A*tprep)*(1-exp(-A*treal) 
+        """ calculate f(i) = f(1)*f(2)*f(3)
+            with 
+            f(1) = (half-life/ln(2)/tcount)*(1-exp(-tcount*A))
+            f(2) = (exp(-tprep*ln(2)/half-life)
+            f(3) = (half-life/ln(2)/treal)*(1-exp(-treal*A)
             with A = ln(2)/half-life iso in sec.
             
             Args:
@@ -110,24 +114,22 @@ class NobleGasDecayCorrector(object):
         half_life   = convert_half_life_in_sec(a_half_life_string)
         
         A_coeff     = Decimal(2).ln() / half_life
+        B_coeff     = half_life/Decimal(2).ln()
         
-        A_tcount    = A_coeff * Decimal(self._t_count)
-        A_tprep     = A_coeff * Decimal(self._t_prep)
-        A_treal     = A_coeff * Decimal(self._t_real)
-        
-        first_exp = (1-math.exp(-A_tcount))
-        sec_exp   = math.exp(-A_tprep)
-        third_exp = (1-math.exp(-A_treal))
+        first_exp   =  Decimal(str((1-math.exp(-Decimal(self._t_count)*A_coeff))))*(B_coeff/Decimal(self._t_count))
+        sec_exp     =  Decimal(str(math.exp(-(Decimal(self._t_prep))*A_coeff)))
+        third_exp   =  (B_coeff/Decimal(self._t_real))*Decimal(str((1-math.exp(-Decimal(self._t_real)*A_coeff))))
         
         f_divider   = (first_exp*sec_exp*third_exp)
-        str_divider = str(f_divider)
-        
-        fi_result   = (pow(A_coeff,2) / Decimal(str_divider) )
+    
+        fi_result = Decimal(str(first_exp*sec_exp*third_exp))
                                          
         return fi_result
         
     def undecay_correct(self,a_isotope_name,a_activity_concentration):
-        """ decay correct the values passed """
+        """ decay correct the values passed 
+            ACuncorr = ACorr*f(i)
+        """
          
         half_life_string = NobleGasDecayCorrector.c_default_half_life.get(a_isotope_name,None)
         
@@ -136,7 +138,7 @@ class NobleGasDecayCorrector(object):
        
         fi = self._calculate_fi(half_life_string)
         
-        return Decimal(str(a_activity_concentration)) / fi 
+        return Decimal(str(a_activity_concentration)) * fi 
     
     def undecay_correct_XE133(self,a_XE133_activity_concentration,a_XE133M_activity_concentration):
         """ undecay correction for XE133 is special due to the metastable isotopes """
@@ -263,14 +265,13 @@ class TestDataModule(unittest.TestCase):
         live = 40201
         
         #activity concentration
-        #XE_135_conc = 0.23472596729190701
-        XE_135_conc = 0.23472596729190701
+        XE_135_conc = 1.465804
                                             #(a_coll_start=0,         a_coll_stop=0,        a_acq_start=0         a_acq_stop=0,       a_live=0)
         nbCorrector = NobleGasDecayCorrector(coll_start,coll_stop,acq_start,acq_stop,live)
         
         v = nbCorrector.undecay_correct('XE-135', XE_135_conc)
         
-        print "V = %f"%(float(v)) 
+        print "corrected value = %f, uncorrected value = %f"%(XE_135_conc,float(v)) 
    
 
 if __name__ == '__main__':
