@@ -201,6 +201,8 @@ language_keywords = (
                      'PROD_ID',
                      'TIME',
                      'TIME_STAMP',
+                     'LAT',
+                     'LON',
                      'STA_LIST',
                      'HELP',
                     )
@@ -216,13 +218,15 @@ for r in reserved:
 # lexing rules
 tokens = reserved + ( 
     # Literals (identifier, number, DATETIME, string)
-    'MSGFORMAT', 'ID','DATETIME', 'NUMBER',
+    'MSGFORMAT', 'ID','DATETIME', 'NUMBER', 'MINUS',
     
     'EMAIL','FTP',
     
     # NEWLINE (might not be needed)
     'NEWLINE'
 ) 
+
+t_MINUS            = r'-'
 
 # date time pattern
 # With the separator between years,months and days being either - or / or nothing or .
