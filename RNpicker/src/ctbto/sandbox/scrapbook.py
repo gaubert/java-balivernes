@@ -579,13 +579,26 @@ def send_img_as_attachment():
     s.sendmail(sender, [receiver], msg.as_string())
     s.close()
 
+def group(*choices)   : return '(' + '|'.join(choices) + ')'
 
+msgformat1 = "[A-Za-z]{3}"
+msgformat2 = "[A-Za-z]{3}\d+"
+msgformat3 = "[A-Za-z]{3}\d+\.\d+"
+
+msgformat_regexpr = re.compile(group(msgformat1,msgformat2,msgformat3))
+
+def check_regexpr():
+    
+    res = msgformat_regexpr.findall('IMS12')
+    
+    print "res = %s\n"%(res)
 
 
 if __name__ == '__main__':
     
    #email_test()
-   send_html_as_attachment()
+   #send_html_as_attachment()
+   check_regexpr()
    
     
     
