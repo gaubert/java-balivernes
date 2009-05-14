@@ -220,18 +220,24 @@ tokens = reserved + (
     # Literals (identifier, number, DATETIME, string)
     'MSGFORMAT', 'ID','DATETIME', 'NUMBER', 'MINUS',
     
+    # Transports
     'EMAIL','FTP',
+    
+    # Separator
+    'COMMA','STAR',
     
     # NEWLINE (might not be needed)
     'NEWLINE'
 ) 
 
 t_MINUS            = r'-'
+t_COMMA            = r','
+t_STAR             = r'\*'
 
 # date time pattern
 # With the separator between years,months and days being either - or / or nothing or .
-#YYYY-MM-DDTHH:MM:SS
-DateTime ="((19|20|21)\d\d)[-/.]?(0[1-9]|1[012])[-/.]?(0[1-9]|[12][0-9]|3[01])([tT]([0-1][0-9]|2[0-3])([.:]([0-5][0-9]))?([.:]([0-5][0-9]))?)?"
+# Format supported YYYY[-/.]MM[-/.]DD[tT ]HH:MM:SS.s
+DateTime ="((19|20|21)\d\d)[-/.]?(0[1-9]|1[012])[-/.]?(0[1-9]|[12][0-9]|3[01])([tT ]([0-1][0-9]|2[0-3])([:]([0-5][0-9]))?([:]([0-5][0-9]))?([.]([0-9])+)?)?"
 
 @TOKEN(DateTime)
 def t_DATE_TIME(t):
