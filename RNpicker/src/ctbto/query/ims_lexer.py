@@ -218,26 +218,63 @@ for r in reserved:
 # lexing rules
 tokens = reserved + ( 
     # Literals (identifier, number, DATETIME, string)
-    'MSGFORMAT', 'ID','DATETIME', 'NUMBER', 'MINUS',
+    'MSGFORMAT', 'ID','WCID','DATA','DATETIME', 'NUMBER',
     
     # Transports
     'EMAIL','FTP',
     
     # Separator
-    'COMMA','STAR',
+    'COMMA','SLASH','COLON','ROUNDBRA', 'ROUNDKET', 'SQUAREBRA', 'SQUAREKET','POINTYBRA','POINTYKET',
     
     # NEWLINE (might not be needed)
-    'NEWLINE'
+    'NEWLINE',
+    
+    # Stop support extra lines added by mailer MessageSize, Sender and =
+    'EQUAL','MINUS'
 ) 
 
-t_MINUS            = r'-'
+#Only to support extra lines added by mailer
+t_EQUAL            = r'='
+
 t_COMMA            = r','
-t_STAR             = r'\*'
+t_SLASH            = r'/'
+t_COLON            = r':'
+t_MINUS            = r'-'
+
+@TOKEN(r'\(')
+def t_ROUNDBRA(t):
+    t.lexer.paren_count += 1
+    return t
+
+@TOKEN(r'\)')
+def t_ROUNDKET(t):
+    t.lexer.paren_count -= 1
+    return t
+
+@TOKEN(r'\[')
+def t_SQUAREBRA(t):
+    t.lexer.paren_count += 1
+    return t
+
+@TOKEN(r'\]')
+def t_SQUAREKET(t):
+    t.lexer.paren_count -= 1
+    return t
+
+@TOKEN(r'\<')
+def t_POINTYBRA(t):
+    t.lexer.paren_count += 1
+    return t
+
+@TOKEN(r'\>')
+def t_POINTYKET(t):
+    t.lexer.paren_count -= 1
+    return t
 
 # date time pattern
 # With the separator between years,months and days being either - or / or nothing or .
 # Format supported YYYY[-/.]MM[-/.]DD[tT ]HH:MM:SS.s
-DateTime ="((19|20|21)\d\d)[-/.]?(0[1-9]|1[012])[-/.]?(0[1-9]|[12][0-9]|3[01])([tT ]([0-1][0-9]|2[0-3])([:]([0-5][0-9]))?([:]([0-5][0-9]))?([.]([0-9])+)?)?"
+DateTime ="((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?"
 
 @TOKEN(DateTime)
 def t_DATE_TIME(t):
@@ -248,10 +285,9 @@ def t_DATE_TIME(t):
     return t
 
 # Take the numbering system from tokenize module
-Hexnumber = r'0[xX][\da-fA-F]*[lL]?'
 Octnumber = r'0[0-7]*[lL]?'
 Decnumber = r'[1-9]\d*[lL]?'
-Intnumber = group(Hexnumber, Octnumber, Decnumber)
+Intnumber = group(Decnumber)
 Exponent = r'[eE][-+]?\d+'
 Pointfloat = group(r'\d+\.\d*', r'\.\d+') + maybe(Exponent)
 Expfloat = r'\d+' + Exponent
@@ -277,18 +313,6 @@ def t_IMAG_NUMBER(t):
 def t_FLOAT_NUMBER(t):
     t.type = "NUMBER"
     t.value = (float(t.value), t.value)
-    return t
-
-@TOKEN(Hexnumber)
-def t_HEX_NUMBER(t):
-    t.type = "NUMBER"
-    value = t.value
-    if value[-1] in "lL":
-        value = value[:-1]
-        f = long
-    else:
-        f = int
-    t.value = (f(value, 16), t.value)
     return t
 
 @TOKEN(Octnumber)
@@ -331,12 +355,24 @@ def t_EMAIL(t):
 
 # Identifiers and reserved words
 def t_ID(t):
-    r'[A-Za-z_][\w_\.@]*'
-    t.type = reserved_map.get(t.value.lower(),"ID")
+    r'[\*A-Za-z_+][\w_\.@\*+-]*'   
+    
+    # if string is longer than 55 bytes, it is most probably a data
+    if len(t.value) > 55:
+        t.type = 'DATA'
+    # check if it contains a * if yes then type=WCID (wildcard ID) 
+    elif t.value.lower().find('*') >= 0:
+        t.type = "WCID"
+        # if this is a minus
+    elif t.value.lower().find('-') >= 0:
+        t.type = 'DATA'
+    else:
+        t.type = reserved_map.get(t.value.lower(),"ID")
     return t
 
+
 def t_NEWLINE(t):
-    r'\n+'
+    r'\n+|(\r\n)+'
     t.lexer.lineno += len(t.value)
     t.type = "NEWLINE"
     if t.lexer.paren_count == 0:
