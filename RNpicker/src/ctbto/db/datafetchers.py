@@ -1318,9 +1318,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # only one row in result set
         rows = result.fetchall()   
        
-        # get the volume to comp[ute activity from concentration
-        # it is in m3
-        volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
+        # get the volume of mesured xenon to compute activities from concentration
+        # it is in m3 and in the AUXILIARY_INFO
+        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
+        # we need to a correction coefficient 0.087 according to Matthias
+        volume = aux.get('XE_VOLUME',0)
         
         # add results in a list which will become a list of dicts
         res = []

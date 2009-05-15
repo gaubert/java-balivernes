@@ -204,6 +204,7 @@ language_keywords = (
                      'LAT',
                      'LON',
                      'STA_LIST',
+                     'CHAN_LIST',
                      'HELP',
                     )
 
@@ -224,32 +225,20 @@ tokens = reserved + (
     'EMAIL','FTP',
     
     # Separator
-    'COMMA','SLASH','COLON','ROUNDBRA', 'ROUNDKET', 'SQUAREBRA', 'SQUAREKET','POINTYBRA','POINTYKET',
+    'COMMA','SLASH','COLON', 'SQUAREBRA', 'SQUAREKET',
     
     # NEWLINE (might not be needed)
     'NEWLINE',
     
     # Stop support extra lines added by mailer MessageSize, Sender and =
-    'EQUAL','MINUS'
+    'MINUS'
 ) 
 
 #Only to support extra lines added by mailer
-t_EQUAL            = r'='
-
 t_COMMA            = r','
 t_SLASH            = r'/'
 t_COLON            = r':'
 t_MINUS            = r'-'
-
-@TOKEN(r'\(')
-def t_ROUNDBRA(t):
-    t.lexer.paren_count += 1
-    return t
-
-@TOKEN(r'\)')
-def t_ROUNDKET(t):
-    t.lexer.paren_count -= 1
-    return t
 
 @TOKEN(r'\[')
 def t_SQUAREBRA(t):
@@ -258,16 +247,6 @@ def t_SQUAREBRA(t):
 
 @TOKEN(r'\]')
 def t_SQUAREKET(t):
-    t.lexer.paren_count -= 1
-    return t
-
-@TOKEN(r'\<')
-def t_POINTYBRA(t):
-    t.lexer.paren_count += 1
-    return t
-
-@TOKEN(r'\>')
-def t_POINTYKET(t):
     t.lexer.paren_count -= 1
     return t
 
@@ -355,8 +334,8 @@ def t_EMAIL(t):
 
 # Identifiers and reserved words
 def t_ID(t):
-    r'[\*A-Za-z_+][\w_\.@\*+-]*'   
-    
+    r'[\*A-Za-z_+\(\)\<\>=][\<\>\(\)\w_\.@\*+-=]*'   
+    #r'[\*A-Za-z_+][\w_\.@\*+-]*'
     # if string is longer than 55 bytes, it is most probably a data
     if len(t.value) > 55:
         t.type = 'DATA'

@@ -687,14 +687,14 @@ class LexerTest(TestCase):
         #fd = open('/tmp/req_messages/34366629.msg')
     
         #fd = open('/tmp/req_messages/34383995.msg')
-        fd  = open('/tmp/req_messages/34378173.msg')
+        fd  = open('/tmp/req_messages/34368614.msg')
         msg = email.message_from_file(fd)
     
         #print("msg = %s\n"%(msg))
     
         if not msg.is_multipart():
             to_parse = msg.get_payload()
-            #print("to_parse %s\n"%(to_parse))
+            print("to_parse %s\n"%(to_parse))
                 
             index = to_parse.lower().find('begin')
                 
@@ -704,7 +704,7 @@ class LexerTest(TestCase):
                 lexer.input(to_parse[index:])
                 cpt = 0
                 for token in lexer:
-                    #print("\nToken = %s"%(token))
+                    print("\nToken = %s"%(token))
                     cpt +=1
             else:
                 print("Cannot find begin")
@@ -723,7 +723,7 @@ class LexerTest(TestCase):
                         lexer.input(to_parse)
                         cpt = 0
                         for token in lexer:
-                            #print("\nToken = %s"%(token))
+                            print("\nToken = %s"%(token))
                             cpt +=1  
                     else:
                         print("Cannot find begin")
