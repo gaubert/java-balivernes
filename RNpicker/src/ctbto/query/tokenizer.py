@@ -98,10 +98,13 @@ class Tokenizer(object):
             Raises:
                exception CTBTOError if the syntax of the aString string is incorrect
         """
+        
+        
         g = tokenize.generate_tokens(StringIO.StringIO(a_program).readline)   # tokenize the string
         
-        for toknum, tokval, tokbeg, tokend,tokline  in g:
-            self._tokens.append(Token(token.tok_name[toknum],toknum, tokval, tokbeg, tokend,tokline))
+        #for toknum, tokval, tokbeg, tokend,tokline  in g:
+        #    self._tokens.append(Token(token.tok_name[toknum],toknum, tokval, tokbeg, tokend,tokline))
+            
         
             
     def __iter__(self):
