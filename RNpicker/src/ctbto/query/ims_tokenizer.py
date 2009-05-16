@@ -9,18 +9,32 @@ import re
 class LexerError(Exception):
     """Base class for All exceptions"""
 
-    def __init__(self,a_msg,a_line=None,a_pos=None):
+    def __init__(self,a_line_num,a_line,a_pos):
         
-        self._line = a_line
-        self._pos  = a_pos
+        self._line     = a_line
+        self._pos      = a_pos
+        self._line_num = a_line_num
         
-        if self._line == None and self._pos == None:
-            extra = "" 
-        else:
-            extra = "(line=%s,pos=%s)"%(self._line,self._pos)
+        instrumented_request  = a_line[:a_pos] + "(ERR)=>" + a_line[a_pos:]
         
-        super(LexerError,self).__init__("%s %s."%(a_msg,extra))
+        msg = "Illegal Character %s in Line %d, position %d.[%s]"%(a_line[a_pos],a_line_num,a_pos,instrumented_request)
+        
+        super(LexerError,self).__init__(msg)
+        
+    @property    
+    def line(self):
+        return self._line
     
+    @property
+    def line_num(self):
+        return self._line_num
+    
+    @property
+    def pos(self):
+        return self._pos
+    
+    def illegal_character(self):
+        return self._line[self._pos]
 
 class Token(object):
     
@@ -121,7 +135,8 @@ NUMBER_RE = re.compile(Number)
 
 # ID Token
 ID          = 'ID'
-ID_RE       = re.compile(r'[\*A-Za-z_+\(\)\<\>=][\<\>\(\)\w_\.@\*+-=]*')
+#ID_RE       = re.compile(r'([\*A-Za-z_\+\(\)\<\>=])[\<\>\(\)\w_\.@\*\+-=]*')
+ID_RE       = re.compile(r'[\*A-Za-z_\+=\(\)\<\>]([\w]|[=\<\>\(\)\.@\*\+-])*')
 
 # DATETIME Token
 DATETIME    = 'DATETIME'
@@ -134,6 +149,13 @@ NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
 # MSGFORMAT Token
 MSGFORMAT    = 'MSGFORMAT'
 MSGFORMAT_RE = re.compile(r'[A-Za-z]{3}(\d+\.\d+)')
+
+# SEPARATORS
+COMMA        = 'COMMA'
+COMMA_RE     = re.compile(r',')
+
+MINUS        = 'MINUS'
+MINUS_RE     = re.compile(r'-')
 
 # Language keywords
 
@@ -162,7 +184,17 @@ TIME_RE      = re.compile('TIME',re.IGNORECASE)
 STALIST     = 'STALIST'
 STALIST_RE  = re.compile('STA_LIST',re.IGNORECASE)
 
-KEYWORDS_TOKENS = [BEGIN,STOP,TO,MSGTYPE,MSGID,EMAIL,TIME,STALIST]
+HELP        = 'HELP'
+HELP_RE     = re.compile('HELP',re.IGNORECASE)
+
+LAT         = 'LAT'
+LAT_RE      = re.compile('LAT',re.IGNORECASE)
+
+LON         = 'LON'
+LON_RE      = re.compile('LON',re.IGNORECASE)
+
+
+KEYWORDS_TOKENS = [BEGIN,STOP,TO,MSGTYPE,MSGID,EMAIL,TIME,STALIST,HELP,LAT,LON]
 
 TOKENS = {
            ID       : ID_RE,
@@ -177,12 +209,17 @@ TOKENS = {
            EMAIL    : EMAIL_RE,
            TIME     : TIME_RE,
            STALIST  : STALIST_RE,
+           HELP     : HELP_RE,
+           LAT      : LAT_RE,
+           LON      : LON_RE,
+           COMMA    : COMMA_RE,
+           MINUS    : MINUS_RE,
            NEWLINE  : NEWLINE_RE,
          }
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,NEWLINE]
+TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,COMMA,MINUS,NEWLINE]
 
 # Litterals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
@@ -219,45 +256,51 @@ class IMSTokenizer(object):
         return self._io_prog
         
     def tokenize(self):
-        """ parse the expression.
+        """ tokenize the expression. Beware the tokenize method is a generator
         
             Args:
-               a_expression: the expression to parser
+               None: 
                
             Returns:
-               return dict containing the different parts of the request (spectrum, ....)
+               return next found token 
         
             Raises:
-               exception CTBTOError if the syntax of the aString string is incorrect
+               exception LexerError if no specified Token found
         """
         
         line_num = 0
         
-        for a_line in self._io_prog:
-            print("line to read=[%s].len(line)=%d\n"%(a_line,len(a_line)))
+        for line in self._io_prog:
+            #print("line to read=[%s].len(line)=%d\n"%(line,len(line)))
             
             line_num    += 1
         
-            pos, max = 0, len(a_line)
+            pos, max = 0, len(line)
         
             while pos < max:
             
                 b_found = False
                 # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
-                if a_line[pos] in IGNORED_LITERALS:
+                if line[pos] in IGNORED_LITERALS:
                     pos += 1
                     continue
             
-                print("Try to match from [%s]\n"%(a_line[pos:]))
+                #print("Try to match from [%s]\n"%(line[pos:]))
                         
                 for key in TOKENS_ORDERED:
                     regexp = TOKENS[key]
-                    match  = regexp.match(a_line,pos)
+                    match  = regexp.match(line,pos)
                     if match:
                        
                         val        = match.group()
                         start, end = pos,(pos+len(val)-1)
-                        tok        = Token(key,val,start,end,line_num,a_line)
+                        type       = key
+                        
+                        # when it is an ID check if this is a WCID
+                        if type == 'ID' and (val.lower().find('*') >= 0):
+                            type = 'WCID'
+                        
+                        tok = Token(type,val,start,end,line_num,line)
                     
                         #update pos
                         pos = end +1
@@ -273,9 +316,7 @@ class IMSTokenizer(object):
             
             
                 if not b_found:
-                    LexerError("Illegal Character. Char to match %s"%(a_line[pos]),a_line,pos)
-                    pos = max
-            
+                    raise LexerError(line_num,line,pos)            
         
         # All lines have been read return ENDMARKER Token
         yield ENDMARKERToken(line_num)
