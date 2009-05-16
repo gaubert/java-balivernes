@@ -85,7 +85,7 @@ class DataEmailer(object):
         if self._login != None: 
             self._smtp_server.login(self._login,self._password)
     
-    def send_email_attached_files(self,a_sender,a_receivers,a_list_of_attached_files,a_subject='(no subject)'):
+    def send_email_attached_files(self,a_sender,a_receivers,a_list_of_attached_files,a_subject='(no subject)',a_text_content=None):
         """
             Send email with the passed data to the receiver
         
@@ -94,6 +94,7 @@ class DataEmailer(object):
                 a_sender                 : the sender
                 a_receivers              : the comma separated string of receivers (ex:'foo@ctbto.org,bar@ctbto.org')
                 a_list_of_attached_files : a list of files to attach to the email
+                a_text_content           : If you fancy a text content in the email
                
             Returns:
         
@@ -126,6 +127,10 @@ class DataEmailer(object):
     
         outer['From']  = a_sender
         #outer.preamble = ''
+        
+        # if there is a text content add it
+        if a_text_content != None:
+            outer.attach(MIMEText(a_text_content))
         
         # Assume we know that the image files are all in PNG format
         for file in a_list_of_attached_files:

@@ -1,212 +1,15 @@
-""" 
-    Copyright 2008 CTBTO
-    
-    compile the statements
-"""
-import logging
+'''
+Created on May 13, 2009
 
+@author: guillaume.aubert@ctbto.org
+
+'''
+import logging
 from tokenizer import Tokenizer
 from expr_compiler import ExpressionCompiler
 
-class ParsingError(Exception):
-    """Base class for All exceptions"""
 
-    def __init__(self,a_msg,a_line=None,a_col=None):
-        
-        self._line = a_line
-        self._col  = a_col
-        
-        if self._line == None and self._col == None:
-            extra = "" 
-        else:
-            extra = "(line=%s,col=%s)"%(self._line,self._col)
-        
-        super(ParsingError,self).__init__("%s %s."%(a_msg,extra))
-    
-    #def __str__(self):
-    #    return "ParsingError (line:%s,col:%s) => %s"%()
-        
-class Statement(object):
-    """Base Class used for all statements """
-    
-    def execute(self):
-        raise Error(-1,"Abstract method to be implemented by the children")
-    
-    def get_execution_tree(self):
-        raise Error(-1,"Abstract method to be implemented by the children")
-    
-class BlockStatement(Statement):
-    
-    def __init__(self):
-        
-        super(BlockStatement,self).__init__()
-        
-        self._statements = []
-        
-    def add(self,statement):
-        
-        #precondition, check that the passed object is a statement
-        self._statements.append(statement)
-        
-    def execute(self):
-        last = None
-        
-        for statement in self._statements:
-            last = statement.execute()
-       
-        return last
-    
-    def get_execution_tree(self):
-        last = None
-        
-        for statement in self._statements:
-            last = statement.get_execution_tree()
-       
-        return last
-
-class CriteriaStatement(Statement):
-    
-    def __init__(self):
-        
-        super(CriteriaStatement,self).__init__()
-        
-        self._criteria = []
-        
-    def add_criteria(self,expr):
-        
-        self._criteria.append(expr)
-        
-        
-    def get_execution_tree(self):
-        
-        s = ""
-        
-        for expr in self._criteria:
-            s += expr.get_execution_tree()
-        
-        return "( criteria %s )"%(s)
-
-class ItemAssignementStatement(Statement):
-    
-    def __init__(self):
-        
-        super(Statement,self).__init__()
-        
-        self._variable   = None
-        self._index      = None
-        self._expression = None 
-        
-    def add_variable(self,a_variable):
-        
-        self._variable = a_variable
-    
-    def add_index(self,a_index):
-        
-        self._index = a_index
-    
-    def add_expression(self,a_expr):
-        
-        self._expression = a_index    
-        
-    def get_execution_tree(self):
-        
-        s = ""
-        
-        for expr in self._criteria:
-            s += expr.get_execution_tree()
-        
-        return "( assign ( var %s ) ( index %s ) ( expr %s)"%(s)
-    
-class ContainerBaseStatement(Statement):
-    
-    def __init__(self):
-        
-        super(ContainerBaseStatement,self).__init__()
-        
-        self._type        = None
-        self._value       = None
-        self._format      = None
-    
-    def add_type(self,a_type):
-        
-        self._type         = a_type
-    
-    def add_value(self,a_value):
-        
-        self._value = a_value
-        
-    def add_format(self,a_format):
-        
-        self._format = a_format
-        
- 
-class DestinationStatement(ContainerBaseStatement):
- 
-    def __init__(self):
-        
-        super(DestinationStatement,self).__init__()
-        
-    def get_execution_tree(self):
-        
-        return "( to ( type %s ) ( val %s ) ( format %s ) )"%(self._type,self._value,self._format) if (self._format != None) else "( to ( type %s ) ( val %s ) )"%(self._type,self._value) 
-
-class OriginStatement(ContainerBaseStatement):
- 
-    def __init__(self):
-        
-        super(OriginStatement,self).__init__()
-        
-    def get_execution_tree(self):
-        return "( from ( type %s ) ( val %s ) ( format %s ) )"%(self._type,self._value,self._format) if (self._format != None) else "( from ( type %s ) ( val %s ) )"%(self._type,self._value)     
-     
-class FilterStatement(Statement):
- 
-    def __init__(self):
-        
-        super(FilterStatement,self).__init__()
-        
-        self._filters = {}
-        
-    def add_filter(self,name,values):
-        
-        if name not in self._filters:
-            self._filters[name] = values
-        else:
-            raise ParsingError("Filter %s already exists"%(name))
-        
-    def get_execution_tree(self):
-        s = ""
-        
-        for (key,value) in self._filters.iteritems():
-            s += "( [ ( literal %s )"%(key)
-            for v in value:
-                s += " ( literal %s )"%(v)
-            s += " ) "
-        
-        return "( filter %s)"%(s)
-        
-class RetrieveStatement(Statement):
-    
-    def __init__(self):
-        
-        super(RetrieveStatement,self).__init__()
-        
-        self._statements = []
-        
-    def add(self,statement):
-        
-        #precondition, check that the passed object is a statement
-        self._statements.append(statement)
-        
-    def get_execution_tree(self):
-        last = ""
-        
-        for statement in self._statements:
-            last += statement.get_execution_tree()
-       
-        return "( retrieve %s )"%(last)
-
-class Compiler(object):
+class IMSParser(object):
     """ create tokens for parsing the grammar. 
         This class is a wrapper around the python tokenizer adapt to the DSL that is going to be used.
     """
@@ -520,82 +323,40 @@ class Compiler(object):
         return statements
         
         
-        
-        
-        
 # unit tests part
 import unittest
-class TestCompiler(unittest.TestCase):
+class TestIMSParser(unittest.TestCase):
+    
+    TOKENIZER_TEST_1 = "begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ARP01\nalert_temp\n    stop"
     
     def setUp(self):
          
         print " setup \n"
+        
+    def testTokenizeTest(self):
+        """ Test the tokenizer and see how it would behave for IMS2.0 messages"""
+         
+          # get simple string
+        tokens = Tokenizer()
+        
+        #tokens.tokenize("retrieve spectrum[CURR,BK] where technology = radionuclide and id=123456 in file=\"/tmp/ctbto.data\", filetype=SAMPML")
+        
+        tokens.tokenize(TestIMSParser.TOKENIZER_TEST_1)
+        
+        #valuesToCheck = ['retrieve','i','>','3','']
+        i = 0
+         
+        for tok in tokens: 
+            print "token = %s"%(tok.value) 
+            #self.assertEqual(valuesToCheck[i],tok.value)
+            i +=1
     
     def ztestTokenizerCompiler(self):
         
-        c = Compiler()
+        c = IMSParser()
         
         # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
-        """
-           radionuclide products :  bulletins         data             observations
-                                    
-                                     RRR,ARR,SSREB     sampml           particulate, noble gas
-        """
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2")
+        program = c.compile("begin ims2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ARP01\nalert_temp\n    stop")
      
         print "get_execution_tree program %s\n"%(program.get_execution_tree())
     
-    def ztestExpressionWithTO(self):
-        
-        c = Compiler()
-        
-        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
-        """
-           radionuclide products :  bulletins         data             observations
-                                    
-                                     RRR,ARR,SSREB     sampml           particulate, noble gas
-        """
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 to file='/tmp/data/data.bin'")
-     
-        print "get_execution_tree program %s\n"%(program.get_execution_tree())
-    
-    def ztestExpressionWithFrom(self):
-        
-        c = Compiler()
-        
-        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
-        """
-           radionuclide products :  bulletins         data             observations
-                                    
-                                     RRR,ARR,SSREB     sampml           particulate, noble gas
-        """
-        program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide and mda < 10 and category > 2 from file='/tmp/data/data.bin'")
-     
-        print "get_execution_tree program %s\n"%(program.get_execution_tree())
-    
-    def testExpressionWithFromAndTo(self):
-        
-        c = Compiler()
-        
-        # need support for time => date=20081002to20081102 or date=20081002,20081024,20081212
-        """
-           radionuclide products :  bulletins         data             observations
-                                    
-                                     RRR,ARR,SSREB     sampml           particulate, noble gas
-        """
-        #program = c.compile("retrieve spectrum[CURR,BK], analysis[CURR,BK] with techno = radionuclide , mda < 10 and category > 2 from file='/tmp/data/data.bin' to file='/tmp/to_file.data',format=SAMPML")
-        
-        program = c.compile("retrieve spectrum[CURR] with tech = radionuclide , mda < 10")
-     
-        print "get_execution_tree program %s\n"%(program.get_execution_tree())
-   
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

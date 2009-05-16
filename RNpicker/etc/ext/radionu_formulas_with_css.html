@@ -1,0 +1,354 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
+<style type="text/css">
+
+/* to be removed */
+body {
+    background-color: white;
+    color: black;
+    margin: 0 0.1in;
+    font-family:Times, "Times New Roman", serif;  
+    }
+div {
+    margin: 0;
+    }
+h1, h2, h3, h4, h5 {
+    font-size: 115%;
+    font-family: sans-serif; 
+    border-top: 3px solid blue; 
+    color: #f90;  /* #f90 is orange.  Opera doesn't recognize 'orange' */
+    margin: 0.5in 0 0.1in 0; 
+    clear: both; 
+    }
+h1 { 
+    font-size: 130%;
+    margin-top: 0.1in;
+    clear: left;  /* so that the 'next' button can float right */
+    }  
+
+/* give images a smaller centered font for picture captions */
+div.image { 
+    float: left; 
+    margin:0; 
+    text-align: center; 
+    font-size: 70%;   /* x-small */
+    font-family: sans-serif; 
+    }  
+
+/* for centered images */
+div.centered_image { 
+    margin:0.5em 0; 
+    text-align: center; 
+    font-size: 70%;   /* x-small */
+    font-family: sans-serif; 
+    }  
+    
+/* inline equations */
+span.inline_eqn { white-space: nowrap; }  
+
+/* display equations appear on their own line.  */
+/* (note: don't use display:block on tables, it screws up NN tables) */
+span.display_eqn { 
+    display: block; 
+    }
+.fraction, 
+.display_eqn, 
+.centered { 
+    margin-top:0.5em; 
+    margin-bottom:0.5em; 
+    text-align: center; 
+    vertical-align: middle; 
+    }
+
+/* inline fraction table  NOT USED??? */
+table.inline_frac { 
+    display:inline; 
+    margin-top:0; 
+    margin-bottom:0;
+    text-align: center; 
+    vertical-align: middle; 
+    }
+
+/* bigger line-height helps make eqns without ^2 more equal to those with ^2 */
+.display_eqn, 
+table.num_eqn { 
+    line-height: 2em; 
+    }
+.fraction { 
+    line-height: normal; /* for when fraction is wrapped by num_eqn */
+    }  
+
+/* numbered equations done with a table */
+/* width slightly less than 100% because of bugs in IE when alongside an image
+   see dbl_pendulum page. */
+table.num_eqn {
+    width:99%;  
+    text-align: center; 
+    vertical-align: middle;
+    margin-top:0.5em; 
+    margin-bottom:0.5em; 
+    }
+
+ul.vars {
+    list-style-type:none; 
+    margin-top:0.5em; 
+    margin-bottom:0.5em;
+    }
+
+/* sup style needed for Opera (why?) */
+sup { 
+    vertical-align: 0.8ex; 
+    font-size:95%; 
+    }
+sub { 
+    vertical-align: -0.6ex; 
+    font-size:80%; 
+    }
+span.bigg { font-size:150%; }  /* for big math symbols */
+
+span.over {text-decoration:overline;}  /* for vectors */
+
+span.nobr { white-space:nowrap; }  /* for setting where to break long equations */
+
+td.upper_line { border-top:solid 1px black; } /* for horiz line in fractions */
+
+td.eqn_blank { text-align:left; width:2em; } /* for left side of numbered equations */
+td.eqn_number { text-align:right; width:2em; } /* for numbered equations */
+
+.emphasized {  border: solid 2px #f90; }
+div.emphasized {
+    margin: 0.5em 0; 
+    padding: 0.5em; 
+    text-align: center; 
+    border: solid 2px #f90; 
+    }
+
+span.text { font-size:90%; }  /* smaller text within math expressions */
+
+p.list {
+    margin-top:0cm; 
+    margin-bottom:0cm; 
+    margin-left:1cm;
+    }
+
+ul#navsite,
+#navsite ul {
+    font: 12px Verdana, sans-serif;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    background-color: white;
+    }
+#navsite li {
+    float: left;  /* arrange top menu items horizontally */
+    text-align: center;
+    }
+/* Absolute position with auto setting means the item will appear
+   where it would have appeared normally, but is taken out of the
+   flow and floats above all the content. */
+#navsite li ul {
+    position: absolute;
+    top: auto;
+    left: -999em; /* for better accessibility than using display:none */
+    }
+* > html #navsite li ul {  /* "Tan Hack" for IE Mac only */
+    display: none;
+    left: auto;
+    }
+#navsite li:hover ul,
+* html #navsite li.sfhover ul {  /* for IE-Win and other non-IE browsers */
+    left: auto;
+    }
+* > html #navsite li.sfhover ul { /* "Tan Hack" for IE Mac only */
+    display: block;  /* IE-Mac gets confused by the left:-999em rule, so we do this. */
+    border: 2px solid #778;  /* to visually confirm this rule is being used on IE-Mac */
+    }
+#navsite li ul li {
+    float: none;  /* sub-menu items will stack vertically as normal list */
+    text-align: left;
+    }
+#navsite a {
+    display: block;
+    text-decoration: none;
+    color: #777;
+    background-color: #dde;
+    padding: 1px 0px 2px 0px;  /* no right-left padding for top level items */
+    border: 1px solid #778;
+    }
+#navsite li ul li a {  /* for sub-menu items */
+    /* Apply the width here (not to li) so that IE regards entire width as clickable */
+    /* This also seems to fix the "3px gap between list items" bug in IE. */
+    width: 16em;
+    border-top-style: none;  /* to get single line between items */
+    padding: 1px 10px 2px 10px; 
+    }
+/* note: important to keep ordering of LVHA link, visited, hover, active */
+#navsite a:link:hover,
+#navsite a:visited:hover {
+    color: #000;
+    background-color: #AAE;
+    border-color: #227;
+    }
+
+div#next_arrow {
+    float: right;
+    margin-top: 20px;
+    }
+/* note: important to keep ordering of LVHA link, visited, hover, active */
+#next_arrow a:link,
+#next_arrow a:visited,
+#footer a:link,
+#footer a:visited {
+    color: #f90;
+    text-decoration: none;
+    }
+#next_arrow a:hover,
+#footer a:hover {
+    color: blue;
+    text-decoration: underline;
+    }
+td#next_link,
+#next_arrow a {
+    font-family: sans-serif;
+    font-size: small;
+    text-align: right;
+    }
+table#footer {
+    width: 100%;
+    text-align: center;
+    font-family: sans-serif;
+    border-top: 3px solid blue;
+    margin-top: 15px;
+    color: #f90;
+    font-size: 80%;
+    }
+
+/* OLD STUFF -- TRY TO DELETE IT ======================================== */
+
+p.link {font-family:sans-serif; font-size:8pt;}
+
+p.eqn {text-align:center;  
+    margin-top:0cm; margin-bottom:0cm;}
+pre.eqn {font-family:Courier, monospace; font-size:10pt; color:blue; margin-bottom:0.1cm;}
+
+p.caption {font-family: Helvetica, Arial, sans-serif; font-size:70%; text-align:left; 
+margin-top:0cm;  margin-left:1cm;}
+
+/*span.greek {font-family:Times, "Times New Roman", serif; color:blue;}*/
+
+span.large {font-size:20pt;}        
+/*i { font-style: italic; }  failed attempt to get Opera to show greek chars in italics */
+
+
+span.sym {font-family:Symbol, serif;}
+span.cursive {font-family:cursive;}
+
+
+</style>
+</head>
+<body>
+
+<h2 id="radionuc_formula">Radionuclides Formula</h2>
+
+With i being the ROI number:
+2 = XE135
+3 = XE133
+5 = XE131M
+6 = XE133M
+
+For i=2,5,6 
+<table class="fraction" align="center" cellpadding="0" cellspacing="0" >
+    <tr>
+        <td rowspan="2">
+            <i>AC</i><sub>i,uncorr</sub> &nbsp; = &nbsp;
+        </td>
+        <td nowrap="nowrap">
+            <i>AC</i><sub>i</sub> &frasl; <i>f</i><sub>i</sub>
+        </td>
+    </tr>
+</table>
+With:
+<table class="fraction" align="center" cellpadding="0" cellspacing="0" >
+    <tr>
+        <td rowspan="2">
+            <i>f</i><sub>i</sub> &nbsp; = &nbsp;
+        </td>
+        <td nowrap="nowrap">
+            <i>&lambda;</i><sub>i</sub><sup>2</sup>
+        </td>
+    </tr><tr>
+        <td class="upper_line" nowrap="nowrap">
+            (<i>1</i>&minus;<i>e</i><sup>&minus;<i>&lambda;</i><sub>i</sub><i>t</i><sub><i>count</i></sub></sup>)<i>e</i><sup>&minus;<i>&lambda;</i><sub>i</sub><i>t</i><sub><i>prep</i></sub></sup>(<i>1</i>&minus;<i>e</i><sup>&minus;<i>&lambda;</i><sub>i</sub><i>t</i><sub><i>real</i></sub></sup>)
+        </td>
+    </tr>
+</table>
+And,  
+<table class="fraction" align="center" cellpadding="0" cellspacing="0" >
+    <tr>
+        <td rowspan="2">
+            <i>&lambda;</i><sub>i</sub> &nbsp; = &nbsp;
+        </td>
+        <td nowrap="nowrap">
+            <i>ln(2)</i> 
+        </td>
+    </tr><tr>
+        <td class="upper_line" nowrap="nowrap">
+            <i><span>T</span></i><sub>1/2</sub>
+        </td>
+    </tr>
+</table>
+</br>
+For i=3
+
+<table class="fraction" align="center" cellpadding="0" cellspacing="0" >
+    <tr>
+        <td rowspan="2">
+            <i>AC</i><sub>3,uncorr</sub> 
+        </td>
+        <td rowspan="2">
+            &nbsp; = &nbsp; 
+        </td><td nowrap="nowrap">
+            <i>1</i>
+        </td><td rowspan="2">
+            &nbsp;<i>AC</i><sub>3</sub>&nbsp; + &nbsp;
+        </td>
+        </td><td nowrap="nowrap">
+            <i>&lambda;</i><sub>3</sub>
+        </td>
+        </td><td rowspan="2">
+            &nbsp; <span class="bigg">(</span>
+        </td>
+        </td><td nowrap="nowrap">
+            <i>1</i>
+        </td>
+        <td rowspan="2">
+            &nbsp; &minus; &nbsp;
+        </td>
+        </td><td nowrap="nowrap">
+            <i>1</i>
+        </td>
+        <td rowspan="2">
+          <span class="bigg">)</span>&nbsp;<i>AC</i><sub>6</sub>
+        </td>
+    </tr><tr>
+        <td class="upper_line" nowrap="nowrap">
+            <i>f</i><sub>3</sub>
+        </td><td class="upper_line" nowrap="nowrap">
+            <i>&lambda;</i><sub>6</sub>&minus;<i>&lambda;</i><sub>3</sub>
+        </td>
+        <td class="upper_line" nowrap="nowrap">
+            <i>f</i><sub>3</sub>
+        </td>
+        <td class="upper_line" nowrap="nowrap">
+            <i>f</i><sub>6</sub>
+        </td>
+    </tr>
+</table>
+
+</div>
+</body>
+</html>

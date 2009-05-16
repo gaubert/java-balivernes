@@ -579,36 +579,50 @@ def send_img_as_attachment():
     s.sendmail(sender, [receiver], msg.as_string())
     s.close()
 
-def test_date_pattern_matching():
+def group(*choices)   : return '(' + '|'.join(choices) + ')'
 
-    #strToParse = "2009-01-31T13:12:59"
-    # the date-time pattern 
-    #pattern ="((19|20)\d\d)[-/.]?(0[1-9]|1[012])[-/.]?(0[1-9]|[12][0-9]|3[01])(T([0-1][0-9]|2[0-3])([.:]([0-5][0-9]))?([.:]([0-5][0-9]))?)?"
-   
-    strToParse = 'WITH'
-    pattern    = '[Ww][Ii][Tt][Hh]'
-   
-    #reSpec = re.compile(pattern, re.IGNORECASE)
-    reSpec = re.compile(pattern)
+msgformat1 = "[A-Za-z]{3}"
+msgformat2 = "[A-Za-z]{3}\d+"
+msgformat3 = "[A-Za-z]{3}\d+\.\d+"
+
+msgformat_regexpr = re.compile(group(msgformat1,msgformat2,msgformat3))
+
+date ="((19|20|21)\d\d)[-/.]?((0)?[1-9]|1[012])[-/.]?(0[1-9]|[12][0-9]|3[01])([tT ]([0-1][0-9]|2[0-3])([:]([0-5][0-9]))?([:]([0-5][0-9]))?([.]([0-9])+)?)?"
+date_regexpr = re.compile(date)
+
+def check_regexpr():
     
-    m = reSpec.match(strToParse)
+    res = msgformat_regexpr.match('2004/04/04')
     
-    if m != None:
-        print "m = %s"%(m.group())
+    print "res = %s\n"%(res)
+    
+
+def email_parser():
+    
+    import email
+    
+    #fd = open('/tmp/req_messages/34366629.msg')
+    
+    fd = open('/tmp/req_messages/34383995.msg')
+    msg = email.message_from_file(fd)
+    
+    #print("msg = %s\n"%(msg))
+    
+    if not msg.is_multipart():
+        to_parse = msg.get_payload()
+        print("to_parse %s\n"%(to_parse))
     else:
-        print "not matched\n"
+        print("multipart")
+        
+        for part in msg.walk():
+            #print(part.get_content_type())
+            # if we have a text/plain this a IMS2.0 message so we try to parse it
+            if part.get_content_type() == 'text/plain':
+                print("To Parser %s\n"%(part.get_payload()))
 
 
 if __name__ == '__main__':
     
-   #email_test()
-   test_date_pattern_matching()
    
-    
-    
-    
-    
-    
-   
-  
-   
+   #email_parser()
+   check_regexpr()

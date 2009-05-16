@@ -19,7 +19,7 @@ class XML2HTMLRenderer(object):
     # Class members
     c_log = logging.getLogger("html.XML2HTMLRenderer")
     
-    c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.5'}
+    c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.6.1'}
     
     def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates',TemplateName='ArrHtml.html'):
         
@@ -125,7 +125,7 @@ class XML2HTMLRenderer(object):
         curr_spectrum_id     = None
  
         # res is Element Spectrum 
-        res = root.xpath(dateExpr,suffix = 'SPHD-G',name   = 'Spectrum')
+        res = root.xpath(dateExpr,suffix = 'SPHD',name   = 'SpectrumGroup')
         if len(res) > 0:
             elem = res[0]
             # get attribute id
@@ -232,7 +232,7 @@ class XML2HTMLRenderer(object):
         
             # Add ROI results
             # get ROIInfo
-            res = analysis_elem.find("{%s}ROIInfo"%(XML2HTMLRenderer.c_namespaces['sml']))    
+            res = analysis_elem.find("{%s}RoiInfo"%(XML2HTMLRenderer.c_namespaces['sml']))    
            
             # iterate over RoiNetCount
             roi_results    = []
@@ -321,8 +321,13 @@ class XML2HTMLRenderer(object):
                     XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
                     d['name']  = timeflag.tag
                
-                d['result'] = timeflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['value']  = utils.round_as_string(timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,HDIGITS)
+                d['result'] = timeflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                try:
+                    d['value']  = utils.round_as_string(timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,HDIGITS)
+                except Exception, e:
+                    #cannot convert this number value so put the string as it is
+                    d['value']  = timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                    
                 d['test']   = timeflag.find('{%s}Test'%(XML2HTMLRenderer.c_namespaces['sml'])).text
             
                 flags.append(d)
@@ -339,7 +344,7 @@ class XML2HTMLRenderer(object):
                     XML2HTMLRenderer.c_log.error("Unknown DataQuality Flag: %s"%(dqflag.tag))   
                     d['name']  = dqflag.tag
                
-                d['result'] = dqflag.find('{%s}Flag'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['result'] = dqflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 d['value']  = utils.round_as_string(dqflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,3)
                 d['test']   = dqflag.find('{%s}Test'%(XML2HTMLRenderer.c_namespaces['sml'])).text
             

@@ -3,9 +3,8 @@
 Tokenizer parsing the grammar
 """
 import logging
-import tokenize
-import token
 import StringIO
+import re
 
 class LexerError(Exception):
     """Base class for All exceptions"""
@@ -68,6 +67,52 @@ class Token(object):
         return "[type,num]=[%s,%s],value=[%s], parsed line=%s,[begin index,end index]=[%s,%s]"%(self._type,self._num,self._value,self._parsed_line,self._begin,self._end)
          
 
+# functor tools to assemble tokens
+def group(*choices)   : return '(' + '|'.join(choices) + ')'
+def any(*choices)     : return group(*choices) + '*'
+def maybe(*choices)   : return group(*choices) + '?'
+
+# NUMBER Token
+NUMBER = 'NUMBER'
+
+#regular expressions for number
+Hexnumber = r'0[xX][\da-fA-F]*[lL]?'
+Octnumber = r'0[0-7]*[lL]?'
+Decnumber = r'[1-9]\d*[lL]?'
+Intnumber = group(Hexnumber, Octnumber, Decnumber)
+Exponent = r'[eE][-+]?\d+'
+Pointfloat = group(r'\d+\.\d*', r'\.\d+') + maybe(Exponent)
+Expfloat = r'\d+' + Exponent
+Floatnumber = group(Pointfloat, Expfloat)
+Imagnumber = group(r'\d+[jJ]', Floatnumber + r'[jJ]')
+Number = group(Imagnumber, Floatnumber, Intnumber)
+
+NUMBER_RE = re.compile(Number)
+
+# ID Token
+ID          = 'ID'
+Id          = r'[\*A-Za-z_+\(\)\<\>=][\<\>\(\)\w_\.@\*+-=]*'
+ID_RE       = re.compile(Id)
+
+# DATETIME Token
+DATETIME    = 'DATETIME'
+Datetime    = r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?'
+DATETIME_RE = re.compile(Datetime)
+
+WS          = 'WS'
+WS_RE       = re.compile(r'[ \f\t]*')
+
+TOKENS = {
+           ID       : ID_RE,
+           DATETIME : DATETIME_RE,
+           NUMBER   : NUMBER_RE,
+           WS       : WS_RE,
+         }
+
+# key ordered to optimize pattern matching
+TOKENS_ORDERED = [WS,ID,NUMBER,DATETIME]
+
+
 class Tokenizer(object):
     """ create tokens for parsing the grammar. 
         This class is a wrapper around the python tokenizer adapt to the DSL that is going to be used.
@@ -85,7 +130,39 @@ class Tokenizer(object):
         self._index   = 0
         
         self._current = None
-       
+        
+
+    def _tokenize_line(self,a_line,a_line_num):
+        """ find tokens in a line """
+        
+        pos, max = 0, len(a_line)
+        
+        while pos < max:
+            
+            b_found = False
+            print("Try to match from [%s]\n"%(a_line[pos:]))
+                        
+            for key in TOKENS_ORDERED:
+                regexp = TOKENS[key]
+                match  = regexp.match(a_line,pos)
+                if match:
+                    # scan for tokens
+                    start, end = match.span(1)
+                    spos, epos, pos = (a_line_num, start), (a_line_num, end), end
+                    token = a_line[start:end]
+                    print("(token,type) = (%s,%s)\n"%(token,key))
+                    b_found = True
+                    break
+            
+            
+            if not b_found:
+                print("didn't find anything else")
+                pos = max
+            
+                
+        
+        
+        
     def tokenize(self,a_program):
         """ parse the expression.
         
@@ -98,14 +175,13 @@ class Tokenizer(object):
             Raises:
                exception CTBTOError if the syntax of the aString string is incorrect
         """
+        io_prog = StringIO.StringIO(a_program)
+          
+        line_num = 1
         
-        
-        g = tokenize.generate_tokens(StringIO.StringIO(a_program).readline)   # tokenize the string
-        
-        #for toknum, tokval, tokbeg, tokend,tokline  in g:
-        #    self._tokens.append(Token(token.tok_name[toknum],toknum, tokval, tokbeg, tokend,tokline))
-            
-        
+        for line in io_prog:
+             line_tokens = self._tokenize_line(line,line_num)
+             line_num    += 1
             
     def __iter__(self):
         """ iterator implemented with a generator.
@@ -170,46 +246,10 @@ class TestTokenizer(unittest.TestCase):
          
         print " setup \n"
     
-    def testTokenizerIterator(self):
+    def testTokenizerIterator(self):     
         
         # get simple string
         tokens = Tokenizer()
-        
-        #tokens.tokenize("retrieve spectrum[CURR,BK] where technology = radionuclide and id=123456 in file=\"/tmp/ctbto.data\", filetype=SAMPML")
-        
-        tokens.tokenize("retrieve i > 3")
-        
-        valuesToCheck = ['retrieve','i','>','3','']
-        i = 0
          
-        for tok in tokens: 
-            print "token = %s"%(tok) 
-            self.assertEqual(valuesToCheck[i],tok.value)
-            i +=1
-     
-    def testTokenizerNext(self):
-                
-        # get simple string
-        tokens = Tokenizer()
-        tokens.tokenize("retrieve i > 3")
+        tokens.tokenize(" 34543 342")
         
-        valuesToCheck = ['retrieve','i','>','3','']
-        i = 0
-        
-        while tokens.has_next():
-            
-            t  = tokens.next()
-            print "Token = %s"%(t)
-            self.assertEqual(valuesToCheck[i],t.value)
-            i += 1
-      
-    def testTokenizerAdvance(self):
-                
-        # get simple string
-        tokens = Tokenizer()
-        tokens.tokenize("retrieve i > 3")
-        
-        self.assertEqual(tokens.advance().value,"i")
-        
-        self.assertEqual(tokens.advance(2).value,">")
-            
