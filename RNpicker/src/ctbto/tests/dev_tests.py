@@ -149,7 +149,7 @@ class TestSAMPMLCreator(unittest.TestCase):
    
         self._setUpGenieParticulate()
         
-        #self._setUpNobleGaz()
+        self._setUpNobleGaz()
         
         
     def assertIfNoTagsLeft(self,path):
@@ -486,7 +486,7 @@ Get Full Noble Gaz samples.
         
         TestSAMPMLCreator.c_log.info("\n****************************************************************************\n****************************************************************************\n****** EXECUTED %d FULL SAMPLE RETRIEVALS in %s seconds ********\n****************************************************************************\n****************************************************************************\n"%(cpt,total_t1-total_t0))
     
-    def testIterativeSampleIDRetrievals(self):
+    def ztestIterativeSampleIDRetrievals(self):
         
         beginDate = '2009-01-20T00:00:00'
        
@@ -527,10 +527,10 @@ Get Full Noble Gaz samples.
         f.close()
        
     
-    def ztestGenerateNobleGasARR(self):
+    def testGenerateNobleGasARR(self):
         """
-Generate a Noble Gaz ARR.
-"""
+          Generate a Noble Gaz ARR.
+        """
         
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
@@ -545,7 +545,7 @@ Generate a Noble Gaz ARR.
             if id in listOfSamplesToTest:
                 listOfSamplesToTest.remove(id)
                 
-        #listOfSamplesToTest = [206975]
+        listOfSamplesToTest = [310317]
                
         TestSAMPMLCreator.c_log.info("list samples %s"%listOfSamplesToTest)
         

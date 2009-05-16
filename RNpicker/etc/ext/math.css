@@ -1,0 +1,98 @@
+
+
+body {
+    background-color: white;
+    color: black;
+    margin: 0 0.1in;
+    font-family:Times, "Times New Roman", serif;
+    }
+
+/* display equations appear on their own line.  */
+/* (note: don't use display:block on tables, it screws up NN tables) */
+span.display_eqn { 
+    display: block; 
+    }
+.fraction, 
+.display_eqn, 
+.centered { 
+    margin-top:0.5em; 
+    margin-bottom:0.5em; 
+    text-align: center; 
+    vertical-align: middle; 
+    }
+
+/* inline fraction table  NOT USED??? */
+table.inline_frac { 
+    display:inline; 
+    margin-top:0; 
+    margin-bottom:0;
+    text-align: center; 
+    vertical-align: middle; 
+    }
+
+
+
+/* bigger line-height helps make eqns without ^2 more equal to those with ^2 */
+.display_eqn, 
+table.num_eqn { 
+    line-height: 2em; 
+    }
+.fraction { 
+    line-height: normal; /* for when fraction is wrapped by num_eqn */
+    }  
+
+/* numbered equations done with a table */
+/* width slightly less than 100% because of bugs in IE when alongside an image
+   see dbl_pendulum page. */
+table.num_eqn {
+    width:99%;  
+    text-align: center; 
+    vertical-align: middle;
+    margin-top:0.5em; 
+    margin-bottom:0.5em; 
+    }
+
+ul.vars {
+    list-style-type:none; 
+    margin-top:0.5em; 
+    margin-bottom:0.5em;
+    }
+
+/* sup style needed for Opera (why?) */
+sup { 
+    vertical-align: 0.8ex; 
+    font-size:95%; 
+    }
+sub { 
+    vertical-align: -0.6ex; 
+    font-size:80%; 
+    }
+span.bigg { font-size:150%; }  /* for big math symbols */
+
+span.over {text-decoration:overline;}  /* for vectors */
+
+span.nobr { white-space:nowrap; }  /* for setting where to break long equations */
+
+td.upper_line { border-top:solid 1px black; } /* for horiz line in fractions */
+
+td.eqn_blank { text-align:left; width:2em; } /* for left side of numbered equations */
+td.eqn_number { text-align:right; width:2em; } /* for numbered equations */
+
+.emphasized {  border: solid 2px #f90; }
+div.emphasized {
+    margin: 0.5em 0; 
+    padding: 0.5em; 
+    text-align: center; 
+    border: solid 2px #f90; 
+    }
+
+span.text { font-size:90%; }  /* smaller text within math expressions */
+
+p.eqn {text-align:center;  
+    margin-top:0cm; margin-bottom:0cm;}
+pre.eqn {font-family:Courier, monospace; font-size:10pt; color:blue; margin-bottom:0.1cm;}
+
+span.sym {font-family:Symbol, serif;}
+span.cursive {font-family:cursive;}
+
+

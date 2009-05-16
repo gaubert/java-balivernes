@@ -16,7 +16,7 @@ from ctbto.query import RequestParser
 from ctbto.common   import CTBTOError
 from org.ctbto.conf import Conf
 
-
+UNDEFINED="N/A"
 
 
 class DBDataFetcher(object):
@@ -240,12 +240,17 @@ class DBDataFetcher(object):
             
     
     def _transformResults(self,aDataDict):
-        """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers """
+        """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers
+            - change datetime format to isoformat
+            - change None Value to N/A (non available)
+        """
         
         # transform date information
         for (key,value) in aDataDict.items():
             if str(value.__class__) == "<type 'datetime.datetime'>" :
                 aDataDict[key]= value.isoformat() 
+            if value == None:
+                aDataDict[key] = UNDEFINED
               
         return aDataDict
     
@@ -338,8 +343,8 @@ class DBDataFetcher(object):
             return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
         elif aDataType == 'G' and aSpectralQualifier == 'FULL':
             return (("GASBK_%s"%(aSampleID)).strip(),'GASBK')
-       # elif aDataType == 'G' and aSpectralQualifier == 'PREL':
-       #     return (("GSPHD_%s"%(aSampleID)).strip(),'PSPHD')
+        elif aDataType == 'B' and aSpectralQualifier == 'FULL':
+            return (("BAK_%s"%(aSampleID)).strip(),'BAK')
         else:
             raise CTBTOError(-1,"Unknown spectrum type: DataType = %s and SpectralQualifier = %s\n"%(aDataType,aSpectralQualifier))  
        
@@ -374,21 +379,31 @@ class DBDataFetcher(object):
         b = rows[0]['DATA_COLLECT_STOP']
        
         if a is None or b is None:
-            data[u'DATA_DECAY_TIME'] = "Unknown"
+            data[u'DATA_DECAY_TIME'] = "N/A"
         else:   
             # retrun difference in seconds
             dc = ctbto.common.time_utils.getDifferenceInTime(b,a)
-            data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
+            
+            # Handle negative values: check that it is neg or not
+            if dc < 0:
+                data[u'DATA_DECAY_TIME'] = "-PT%dS"%(abs(dc))
+                DBDataFetcher.c_log.error("Decay time for %s is negative: %s !! \n"%(aSampleID,data[u'DATA_DECAY_TIME']))
+            else:
+                data[u'DATA_DECAY_TIME'] = "PT%dS"%(dc)
        
         a = rows[0][u'DATA_COLLECT_STOP']
         b = rows[0]['DATA_COLLECT_START']
        
         if a is None or b is None:
-            data[u'DATA_SAMPLING_TIME'] = "Unknown"
+            data[u'DATA_SAMPLING_TIME'] = "N/A"
         else:
             # sampling time in secondds
             dc =  ctbto.common.time_utils.getDifferenceInTime(b,a)
-            data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
+            if dc < 0:
+                data[u'DATA_SAMPLING_TIME'] = "-PT%dS"%(abs(dc))
+                DBDataFetcher.c_log.error("Sampling time for %s is negative: %s !! \n"%(aSampleID,data[u'DATA_SAMPLING_TIME']))
+            else:
+                data[u'DATA_SAMPLING_TIME'] = "PT%dS"%(dc)
        
         data[u'DATA_ACQ_LIVE_SEC'] = "PT%dS"%(data['DATA_ACQ_LIVE_SEC']) if data['DATA_ACQ_LIVE_SEC'] is not None else ""
         data[u'DATA_ACQ_REAL_SEC'] = "PT%dS"%(data['DATA_ACQ_REAL_SEC']) if data['DATA_ACQ_REAL_SEC'] is not None else ""
@@ -1112,7 +1127,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
         data = {}
         
-        
+        self._dataBag[u"%s_DATA_NAME"%(dataname)]   = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+
         for row in rows:
             (theInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
             
@@ -1135,7 +1151,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
                 self._dataBag[u"%s"%(spec_id)]                = data
                 # create a unique id for the extract data
-                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_ID"%(spec_id)]   = "%s-%s-%s-B"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_TY"%(spec_id)]   = "%s-B"%(ty)
                   
             elif filename.endswith("g.s") or filename.endswith("g.archs"):
                 spec_id = "%s_DATA_G"%(dataname)
@@ -1149,7 +1166,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._dataBag[u"%s_COMPRESSED"%(spec_id)]     = compressed
                 self._dataBag[u"%s"%(spec_id)]                = data
                 # create a unique id for the extract data
-                self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_ID"%(spec_id)]   = "%s-%s-%s-G"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_TY"%(spec_id)]   = "%s-G"%(ty)
                
             elif filename.endswith(".h") or filename.endswith(".archhist"):
                 spec_id = "%s_DATA_H"%(dataname)
@@ -1175,6 +1193,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                
                 # create a unique id for the extracted data
                 self._dataBag[u"%s_ID"%(spec_id)] = "%s-%s-%s-H"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+                self._dataBag[u"%s_TY"%(spec_id)]   = "%s-H"%(ty)
                
             elif filename.endswith(".msg") or filename.endswith(".archmsg"):
                 # Here whe should extract the 3 components
@@ -1299,9 +1318,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # only one row in result set
         rows = result.fetchall()   
        
-        # get the volume to comp[ute activity from concentration
-        # it is in m3
-        volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
+        # get the volume of mesured xenon to compute activities from concentration
+        # it is in m3 and in the AUXILIARY_INFO
+        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
+        # we need to a correction coefficient 0.087 according to Matthias
+        volume = aux.get('XE_VOLUME',0)
         
         # add results in a list which will become a list of dicts
         res = []
@@ -1325,11 +1346,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
           
             # to avoid div by 0 check that quotient is not nul
             if data[u'ACTIVITY'] != 0:
-                data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
+                data[u'ACTIVITY_ERR_PERC'] = abs((data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY'))
           
             # add concentration error in percent
             if data.get(u'CONC',0) != 0:
-                data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
+                data[u'CONC_ERR_PERC'] = abs((data.get(u'CONC_ERR',0)*100)/data.get(u'CONC'))
           
             data[u'LC_ACTIVITY'] = data.get(u'LC',0)*volume  
             data[u'LD_ACTIVITY'] = data.get(u'LD',0)*volume
@@ -1613,7 +1634,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
               
                 # get relative error
                 if e != 0:
-                    data[u'EFFICIENCY_ERROR_PERC'] = (e_err*100)/e
+                    data[u'EFFICIENCY_ERROR_PERC'] = abs((e_err*100)/e)
               
             
             res.append(data)
@@ -2002,6 +2023,9 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SPALAX_GET_RAW_SPECTRUM%(arch_type,aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=True) 
         elif nbResults > 1:
             ParticulateDataFetcher.c_log.warning("WARNING: found more than one spectrum for sample_id %s\n"%(aSampleID))
+            
+        # add spectrum group name
+        self._dataBag[u"%s_DATA_NAME"%(dataname)]   = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
         
         for row in rows:
             (anInput,ext) = self._readDataFile(foundOnArchive,row['DIR'], row['DFile'],row['PRODTYPE'],row['FOFF'],row['DSIZE'],aSampleID,dataname,ty)
@@ -2037,6 +2061,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
             # create a unique id for the extract data
             self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+            self._dataBag[u"%s_TY"%(sid)]   = "%s-G"%(ty)
         
         return (dataname,ty)
     
@@ -2328,7 +2353,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         
         # get the volume to comp[ute activity from concentration
         # it is in m3
-        volume = self._dataBag.get('%s_DATA_SAMPLE_QUANTITY'%(dataname),0)
+        volume = self._dataBag.get('%s_G_DATA_SAMPLE_QUANTITY'%(dataname),0)
        
         # add results in a list which will become a list of dicts
         res = []
@@ -2346,7 +2371,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 data[u'NID_FLAG_NUM'] = nidflag
             
             # translate METHOD_ID to something humanely understandable
-            method_id = data.get(u'METHOD_ID',None)
+            method_id = data.get(u'METHOD_ID',UNDEFINED)
             # check if there is NID key
             if nidflag is not None:
                 val = SpalaxNobleGasDataFetcher.c_method_translation.get(method_id,method_id)
@@ -2360,7 +2385,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             nuclide_id = nuclide_id - 1
             nuclide_lib = self._dataBag[u'XE_NUCL_LIB']
             if nuclide_id is not None:
-                nucl = nuclide_lib[nuclide_id] if (nuclide_id < len(nuclide_lib)) and (nuclide_id >=0) else "Not Found"
+                nucl = nuclide_lib[nuclide_id] if (nuclide_id < len(nuclide_lib)) and (nuclide_id >=0) else UNDEFINED
                 data[u'NUCLIDE'] =  nucl[u'NAME']
         
             # add concentration error in percent
@@ -2369,20 +2394,20 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 
             # calculate volumes and concentration (need vol for that)
             # get activity. If no volume or no activity results are 0
-            # if volume = 0 or ignore
-            if volume > 1:
+            # if volume = 0 (I think that 1 m3 means nothing)
+            if volume >= 0:
                 data[u'ACTIVITY']     = data.get(u'CONC',0)*volume
                 data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
                 data[u'LC_ACTIVITY']  = data.get(u'LC',0)*volume  
                 data[u'LD_ACTIVITY']  = data.get(u'LD',0)*volume
             else:
-                data[u'ACTIVITY']     = 'N/A'
-                data[u'ACTIVITY_ERR'] = 'N/A'
-                data[u'LC_ACTIVITY']  = 'N/A'  
-                data[u'LD_ACTIVITY']  = 'N/A'
+                data[u'ACTIVITY']     = UNDEFINED
+                data[u'ACTIVITY_ERR'] = UNDEFINED
+                data[u'LC_ACTIVITY']  = UNDEFINED  
+                data[u'LD_ACTIVITY']  = UNDEFINED
           
             # to avoid div by 0 check that quotient is not nul
-            if data[u'ACTIVITY'] != 'N/A':
+            if data[u'ACTIVITY'] != UNDEFINED:
                 data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
           
             res.append(data)
@@ -2604,6 +2629,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             self._dataBag[u"%s_ENERGY_SPAN"%(sid)]    = energy_span
             # create a unique id for the extract data
             self._dataBag[u"%s_ID"%(sid)] = "%s-%s-%s"%(self._dataBag[u'STATION_CODE'],aSampleID,ty)
+            self._dataBag[u"%s_TY"%(sid)]   = "%s-G"%(ty)
         
         return (dataname,ty)
         

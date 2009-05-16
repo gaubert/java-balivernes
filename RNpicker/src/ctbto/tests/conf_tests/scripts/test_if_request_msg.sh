@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 
 # quick script for extracting spectrum from archive file
 #$1 ssh hostname (need to have a public key installed)"
@@ -56,7 +56,7 @@ cat $tempfile | ssh $4@$1 perl > $3
 #cat $tempfile | ssh $4@$1 perl 
 res="$?"
 
-rm -f $tempfile
+#rm -f $tempfile
 
 if [ $res != 0 ];
 then

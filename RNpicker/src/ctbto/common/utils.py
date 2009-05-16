@@ -142,7 +142,7 @@ def __rmgeneric(path, __func__):
     except OSError, (errno, strerror): #IGNORE:W0612
         print """Error removing %(path)s, %(error)s """%{'path' : path, 'error': strerror }
             
-def delete_all_under(path):
+def delete_all_under(path,delete_top_dir=False):
     """ delete all files and directories under path """
 
     if not os.path.isdir(path):
@@ -159,6 +159,9 @@ def delete_all_under(path):
             delete_all_under(fullpath)
             f=os.rmdir
             __rmgeneric(fullpath, f)
+    
+    if delete_top_dir:
+        os.rmdir(path)
 
 
 def ftimer(func, args, kwargs, result = [], number=1, timer=time.time): #IGNORE:W0102
