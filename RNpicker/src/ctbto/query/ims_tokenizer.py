@@ -9,25 +9,24 @@ import re
 class LexerError(Exception):
     """Base class for All exceptions"""
 
-    def __init__(self,a_msg,a_line=None,a_col=None):
+    def __init__(self,a_msg,a_line=None,a_pos=None):
         
         self._line = a_line
-        self._col  = a_col
+        self._pos  = a_pos
         
-        if self._line == None and self._col == None:
+        if self._line == None and self._pos == None:
             extra = "" 
         else:
-            extra = "(line=%s,col=%s)"%(self._line,self._col)
+            extra = "(line=%s,pos=%s)"%(self._line,self._pos)
         
         super(LexerError,self).__init__("%s %s."%(a_msg,extra))
     
 
 class Token(object):
     
-    def __init__(self,type,num,value,begin,end,parsed_line):
+    def __init__(self,type,value,begin,end,parsed_line):
         
         self._type  = type
-        self._num   = num
         self._value = value
         self._begin = begin
         self._end   = end
@@ -37,11 +36,6 @@ class Token(object):
     def type(self):
         """ Return the token type """
         return self._type
-
-    @property
-    def num(self):
-        """ Return the token type num """
-        return self._num
 
     @property
     def value(self):
@@ -64,8 +58,10 @@ class Token(object):
         return self._parsed_line
     
     def __repr__(self):
-        return "[type,num]=[%s,%s],value=[%s], parsed line=%s,[begin index,end index]=[%s,%s]"%(self._type,self._num,self._value,self._parsed_line,self._begin,self._end)
-         
+        return "Token[type=%s,value={%s},parsed line=%s,(begin index,end index)=(%s,%s)"%(self._type,self._value,self._parsed_line,self._begin,self._end)
+     
+    def __str__(self):
+        return self.__repr__()    
 
 # functor tools to assemble tokens
 def group(*choices)   : return '(' + '|'.join(choices) + ')'
@@ -99,18 +95,21 @@ DATETIME    = 'DATETIME'
 Datetime    = r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?'
 DATETIME_RE = re.compile(Datetime)
 
-WS          = 'WS'
-WS_RE       = re.compile(r'[ \f\t]*')
+# NEWLINE Token
+NEWLINE    = 'NEWLINE'
+NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
 
 TOKENS = {
            ID       : ID_RE,
            DATETIME : DATETIME_RE,
            NUMBER   : NUMBER_RE,
-           WS       : WS_RE,
+           NEWLINE  : NEWLINE_RE,
          }
 
 # key ordered to optimize pattern matching
-TOKENS_ORDERED = [WS,ID,NUMBER,DATETIME]
+TOKENS_ORDERED = [ID,NUMBER,DATETIME,NEWLINE]
+
+IGNORED_LITERALS = " \f\t\x0c"
 
 
 class Tokenizer(object):
@@ -140,6 +139,14 @@ class Tokenizer(object):
         while pos < max:
             
             b_found = False
+            # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
+            if a_line[pos] in IGNORED_LITERALS:
+                pos += 1
+                continue
+            
+            # check if it is a NEWLINE 
+            
+            
             print("Try to match from [%s]\n"%(a_line[pos:]))
                         
             for key in TOKENS_ORDERED:
@@ -147,16 +154,23 @@ class Tokenizer(object):
                 match  = regexp.match(a_line,pos)
                 if match:
                     # scan for tokens
-                    start, end = match.span(1)
-                    spos, epos, pos = (a_line_num, start), (a_line_num, end), end
-                    token = a_line[start:end]
-                    print("(token,type) = (%s,%s)\n"%(token,key))
+                    print("match.group() = [%s], match.lastindex = %s\n"%(match.group(),match.lastindex))
+                    
+                    val        = match.group()
+                    start, end = pos,(pos+len(val)-1)
+                    tok        = Token(key,val,start,end,a_line)
+                    
+                    #update pos
+                    pos = end +1
+                    
+                    #print("(token,type) = (%s,%s)\n"%(val,key))
+                    print("Token = %s\n"%(tok))
                     b_found = True
                     break
             
             
             if not b_found:
-                print("didn't find anything else")
+                LexerError("Illegal Character. Char to match %s"%(a_line[pos]),a_line,pos)
                 pos = max
             
                 
@@ -180,8 +194,9 @@ class Tokenizer(object):
         line_num = 1
         
         for line in io_prog:
-             line_tokens = self._tokenize_line(line,line_num)
-             line_num    += 1
+            print("line to read=[%s].len(line)=%d\n"%(line,len(line)))
+            line_tokens = self._tokenize_line(line,line_num)
+            line_num    += 1
             
     def __iter__(self):
         """ iterator implemented with a generator.
@@ -251,5 +266,5 @@ class TestTokenizer(unittest.TestCase):
         # get simple string
         tokens = Tokenizer()
          
-        tokens.tokenize(" 34543 342")
+        tokens.tokenize("\r\n 34543 342\n     Toto")
         
