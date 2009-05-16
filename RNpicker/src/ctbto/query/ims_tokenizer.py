@@ -107,9 +107,14 @@ TOKENS = {
          }
 
 # key ordered to optimize pattern matching
-TOKENS_ORDERED = [ID,NUMBER,DATETIME,NEWLINE]
+# it also defines the pattern matching rule precedence
+TOKENS_ORDERED = [DATETIME,ID,NUMBER,NEWLINE]
 
+# Litterals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
+
+# ENDMARKER Token to signal end of program
+ENDMARKER = "ENDMARKER"
 
 
 class Tokenizer(object):
@@ -118,7 +123,7 @@ class Tokenizer(object):
     """
     
     # Class members
-    c_log = logging.getLogger("query.Tokenizer")
+    c_log = logging.getLogger("query.ims_tokenizer")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
@@ -130,54 +135,16 @@ class Tokenizer(object):
         
         self._current = None
         
-
-    def _tokenize_line(self,a_line,a_line_num):
-        """ find tokens in a line """
+        self._io_prog = None
         
-        pos, max = 0, len(a_line)
+    def set_io_prog(self,a_io_prog):
         
-        while pos < max:
-            
-            b_found = False
-            # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
-            if a_line[pos] in IGNORED_LITERALS:
-                pos += 1
-                continue
-            
-            # check if it is a NEWLINE 
-            
-            
-            print("Try to match from [%s]\n"%(a_line[pos:]))
-                        
-            for key in TOKENS_ORDERED:
-                regexp = TOKENS[key]
-                match  = regexp.match(a_line,pos)
-                if match:
-                    # scan for tokens
-                    print("match.group() = [%s], match.lastindex = %s\n"%(match.group(),match.lastindex))
-                    
-                    val        = match.group()
-                    start, end = pos,(pos+len(val)-1)
-                    tok        = Token(key,val,start,end,a_line)
-                    
-                    #update pos
-                    pos = end +1
-                    
-                    #print("(token,type) = (%s,%s)\n"%(val,key))
-                    print("Token = %s\n"%(tok))
-                    b_found = True
-                    break
-            
-            
-            if not b_found:
-                LexerError("Illegal Character. Char to match %s"%(a_line[pos]),a_line,pos)
-                pos = max
-            
-                
+        self._io_prog = a_io_prog
         
+    def io_prog(self):
+        return self._io_prog
         
-        
-    def tokenize(self,a_program):
+    def tokenize(self):
         """ parse the expression.
         
             Args:
@@ -189,15 +156,58 @@ class Tokenizer(object):
             Raises:
                exception CTBTOError if the syntax of the aString string is incorrect
         """
-        io_prog = StringIO.StringIO(a_program)
-          
+        
         line_num = 1
         
-        for line in io_prog:
-            print("line to read=[%s].len(line)=%d\n"%(line,len(line)))
-            line_tokens = self._tokenize_line(line,line_num)
-            line_num    += 1
+        for a_line in self._io_prog:
+            print("line to read=[%s].len(line)=%d\n"%(a_line,len(a_line)))
             
+            line_num    += 1
+        
+            pos, max = 0, len(a_line)
+        
+            while pos < max:
+            
+                b_found = False
+                # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
+                if a_line[pos] in IGNORED_LITERALS:
+                    pos += 1
+                    continue
+            
+                print("Try to match from [%s]\n"%(a_line[pos:]))
+                        
+                for key in TOKENS_ORDERED:
+                    regexp = TOKENS[key]
+                    match  = regexp.match(a_line,pos)
+                    if match:
+                        # scan for tokens
+                        #print("match.group() = [%s], match.lastindex = %s\n"%(match.group(),match.lastindex))
+                    
+                        val        = match.group()
+                        start, end = pos,(pos+len(val)-1)
+                        tok        = Token(key,val,start,end,a_line)
+                    
+                        #update pos
+                        pos = end +1
+                    
+                        print("Token = %s\n"%(tok))
+                        b_found = True
+                    
+                        #return token using yield and generator
+                        yield tok
+                        
+                        #found on so quit for loop
+                        break
+            
+            
+                if not b_found:
+                    LexerError("Illegal Character. Char to match %s"%(a_line[pos]),a_line,pos)
+                    pos = max
+            
+        
+        # All lines have been read return ENDMARKER Token
+        yield Token(ENDMARKER,"",max,max,"")
+                  
     def __iter__(self):
         """ iterator implemented with a generator.
         """
@@ -264,7 +274,20 @@ class TestTokenizer(unittest.TestCase):
     def testTokenizerIterator(self):     
         
         # get simple string
-        tokens = Tokenizer()
-         
-        tokens.tokenize("\r\n 34543 342\n     Toto")
+        tokenizer = Tokenizer()
+        
+        io_prog = StringIO.StringIO("\r\n 34543 342\n2009.05.04     Toto")
+        
+        tokenizer.set_io_prog(io_prog)
+        
+        #gen_tok = tokenizer.tokenize()
+        
+        for tok in tokenizer.tokenize():
+            print("Tok = %s \n"%(tok))
+            
+            if tok.type == ENDMARKER:
+                print("End of program\n")
+                return 
+        
+        
         
