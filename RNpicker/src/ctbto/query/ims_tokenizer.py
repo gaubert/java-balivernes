@@ -24,13 +24,14 @@ class LexerError(Exception):
 
 class Token(object):
     
-    def __init__(self,type,value,begin,end,parsed_line):
+    def __init__(self,type,value,begin,end,line_num,parsed_line):
         
-        self._type  = type
-        self._value = value
-        self._begin = begin
-        self._end   = end
+        self._type         = type
+        self._value        = value
+        self._begin        = begin
+        self._end          = end
         self._parsed_line  = parsed_line
+        self._line_num     = line_num
     
     @property
     def type(self):
@@ -58,10 +59,43 @@ class Token(object):
         return self._parsed_line
     
     def __repr__(self):
-        return "Token[type=%s,value={%s},parsed line=%s,(begin index,end index)=(%s,%s)"%(self._type,self._value,self._parsed_line,self._begin,self._end)
-     
-    def __str__(self):
-        return self.__repr__()    
+        return "Token[type=%s,value={%s},line_num=%s,(begin index,end index)=(%s,%s)"%(self._type,self._value,self._line_num,self._begin,self._end)  
+
+class ENDMARKERToken(Token):
+    """ A very special Token: ENDMARKER to signal the end of program """
+    
+    def __init__(self,a_line_num):
+        
+        super(ENDMARKERToken,self).__init__(ENDMARKER,None,-1,-1,a_line_num,"")
+
+    @property
+    def type(self):
+        """ Return the token type """
+        return self._type
+
+    @property
+    def value(self):
+        """ Return the token value """
+        return self._value
+    
+    @property
+    def begin(self):
+        """ Return the token begin """
+        return self._begin
+    
+    @property
+    def end(self):
+        """ Return the token end """
+        return self._end
+    
+    @property
+    def parsed_line(self):
+        """ Return the token line """
+        return self._parsed_line
+    
+    def __repr__(self):
+        return "ENDMARKER Token line_num = %d"%(self._line_num)  
+
 
 # functor tools to assemble tokens
 def group(*choices)   : return '(' + '|'.join(choices) + ')'
@@ -87,28 +121,68 @@ NUMBER_RE = re.compile(Number)
 
 # ID Token
 ID          = 'ID'
-Id          = r'[\*A-Za-z_+\(\)\<\>=][\<\>\(\)\w_\.@\*+-=]*'
-ID_RE       = re.compile(Id)
+ID_RE       = re.compile(r'[\*A-Za-z_+\(\)\<\>=][\<\>\(\)\w_\.@\*+-=]*')
 
 # DATETIME Token
 DATETIME    = 'DATETIME'
-Datetime    = r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?'
-DATETIME_RE = re.compile(Datetime)
+DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
 
 # NEWLINE Token
 NEWLINE    = 'NEWLINE'
 NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
 
+# MSGFORMAT Token
+MSGFORMAT    = 'MSGFORMAT'
+MSGFORMAT_RE = re.compile(r'[A-Za-z]{3}(\d+\.\d+)')
+
+# Language keywords
+
+# BEGIN 
+BEGIN        = 'BEGIN'
+BEGIN_RE     = re.compile('BEGIN',re.IGNORECASE)
+
+STOP         = 'STOP'
+STOP_RE      = re.compile('STOP',re.IGNORECASE)
+
+TO           = 'TO'
+TO_RE        = re.compile('TO',re.IGNORECASE)
+
+MSGTYPE      = 'MSG_TYPE'
+MSGTYPE_RE   = re.compile('MSG_TYPE',re.IGNORECASE)
+
+MSGID        = 'MSG_ID'
+MSGID_RE     = re.compile('MSG_ID',re.IGNORECASE)
+
+EMAIL        = 'EMAIL'
+EMAIL_RE     = re.compile('E-MAIL',re.IGNORECASE)
+
+TIME         = 'TIME'
+TIME_RE      = re.compile('TIME',re.IGNORECASE)
+
+STALIST     = 'STALIST'
+STALIST_RE  = re.compile('STA_LIST',re.IGNORECASE)
+
+KEYWORDS_TOKENS = [BEGIN,STOP,TO,MSGTYPE,MSGID,EMAIL,TIME,STALIST]
+
 TOKENS = {
            ID       : ID_RE,
            DATETIME : DATETIME_RE,
            NUMBER   : NUMBER_RE,
+           MSGFORMAT: MSGFORMAT_RE,
+           BEGIN    : BEGIN_RE,
+           STOP     : STOP_RE,
+           TO       : TO_RE,
+           MSGTYPE  : MSGTYPE_RE,
+           MSGID    : MSGID_RE,
+           EMAIL    : EMAIL_RE,
+           TIME     : TIME_RE,
+           STALIST  : STALIST_RE,
            NEWLINE  : NEWLINE_RE,
          }
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [DATETIME,ID,NUMBER,NEWLINE]
+TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,NEWLINE]
 
 # Litterals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
@@ -117,7 +191,7 @@ IGNORED_LITERALS = " \f\t\x0c"
 ENDMARKER = "ENDMARKER"
 
 
-class Tokenizer(object):
+class IMSTokenizer(object):
     """ create tokens for parsing the grammar. 
         This class is a wrapper around the python tokenizer adapt to the DSL that is going to be used.
     """
@@ -157,7 +231,7 @@ class Tokenizer(object):
                exception CTBTOError if the syntax of the aString string is incorrect
         """
         
-        line_num = 1
+        line_num = 0
         
         for a_line in self._io_prog:
             print("line to read=[%s].len(line)=%d\n"%(a_line,len(a_line)))
@@ -180,17 +254,15 @@ class Tokenizer(object):
                     regexp = TOKENS[key]
                     match  = regexp.match(a_line,pos)
                     if match:
-                        # scan for tokens
-                        #print("match.group() = [%s], match.lastindex = %s\n"%(match.group(),match.lastindex))
-                    
+                       
                         val        = match.group()
                         start, end = pos,(pos+len(val)-1)
-                        tok        = Token(key,val,start,end,a_line)
+                        tok        = Token(key,val,start,end,line_num,a_line)
                     
                         #update pos
                         pos = end +1
                     
-                        print("Token = %s\n"%(tok))
+                        #print("Token = %s\n"%(tok))
                         b_found = True
                     
                         #return token using yield and generator
@@ -206,63 +278,8 @@ class Tokenizer(object):
             
         
         # All lines have been read return ENDMARKER Token
-        yield Token(ENDMARKER,"",max,max,"")
-                  
-    def __iter__(self):
-        """ iterator implemented with a generator.
-        """
-        for tok in self._tokens:
-            self._current = tok
-            yield tok
-        
-    def next(self):
-        """ get next token.
-          
-            Returns:
-               return next token
-        """
-        
-        self._current = self._tokens[self._index]
-        self._index += 1
-        return self._current
-    
-    def has_next(self):
-        """ check it there are more tokens to consume.
-        
-            Returns:
-               return True if more tokens to consume False otherwise
-        """
-        return self._index < len(self._tokens)
-    
-    def current_token(self):
-        """ return the latest consumed token.
-        
-            Returns:
-               return the latest consumerd token
-        """
-        return self._current
-    
-    def consume_token(self,what):
-        if self._current.value != what :
-            raise LexerError("Expected '%s' but instead found '%s'"%(what,self._current.value))
-        else:
-            return self.next()
-    
-    def advance(self,inc=1):
-        """ return the next + inc token but do not consume it.
-            Useful to check future tokens.
-        
-            Args:
-               a_expression: increment + 1 is the default (just look one step forward)
-               
-            Returns:
-               return lookhead token
-        """
-        return self._tokens[self._index-1+inc]
-     
-    
-            
-            
+        yield ENDMARKERToken(line_num)
+              
 # unit tests part
 import unittest
 class TestTokenizer(unittest.TestCase):
@@ -274,7 +291,7 @@ class TestTokenizer(unittest.TestCase):
     def testTokenizerIterator(self):     
         
         # get simple string
-        tokenizer = Tokenizer()
+        tokenizer = IMSTokenizer()
         
         io_prog = StringIO.StringIO("\r\n 34543 342\n2009.05.04     Toto")
         
