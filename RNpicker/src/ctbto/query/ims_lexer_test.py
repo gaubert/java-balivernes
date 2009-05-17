@@ -679,15 +679,15 @@ class LexerTest(TestCase):
     
             cpt+=1
             
-    def ztest_read_from_email(self):
+    def test_read_from_email(self):
         ''' test read from an email message and lex '''
         
         import email
+        dir = '/home/aubert/req_messages'
     
         #fd = open('/tmp/req_messages/34366629.msg')
-    
-        #fd = open('/tmp/req_messages/34383995.msg')
-        fd  = open('/tmp/req_messages/34368614.msg')
+
+        fd  = open('%s/%s'%(dir,'34368614.msg'))
         msg = email.message_from_file(fd)
     
         #print("msg = %s\n"%(msg))
