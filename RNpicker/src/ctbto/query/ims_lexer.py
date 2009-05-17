@@ -336,7 +336,7 @@ def t_EMAIL(t):
 def t_ID(t):
     r'[\*A-Za-z_+\(\)\<\>=][\<\>\(\)\w_\.@\*+-=]*'   
     #r'[\*A-Za-z_+][\w_\.@\*+-]*'
-    # if string is longer than 55 bytes, it is most probably a data
+    # if string is longer than 55 chars, it is most probably a data
     if len(t.value) > 55:
         t.type = 'DATA'
     # check if it contains a * if yes then type=WCID (wildcard ID) 

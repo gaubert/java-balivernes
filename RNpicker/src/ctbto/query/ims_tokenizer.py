@@ -135,8 +135,9 @@ NUMBER_RE = re.compile(Number)
 
 # ID Token
 ID          = 'ID'
-#ID_RE       = re.compile(r'([\*A-Za-z_\+\(\)\<\>=])[\<\>\(\)\w_\.@\*\+-=]*')
-ID_RE       = re.compile(r'[\*A-Za-z_\+=\(\)\<\>]([\w]|[=\<\>\(\)\.@\*\+-])*')
+#witout slash
+#ID_RE       = re.compile(r'[\*A-Za-z_\+=\(\)\<\>]([\w]|[=\<\>\(\)\.@\*\+-])*')
+ID_RE       = re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*')
 
 # DATETIME Token
 DATETIME    = 'DATETIME'
@@ -153,6 +154,9 @@ MSGFORMAT_RE = re.compile(r'[A-Za-z]{3}(\d+\.\d+)')
 # SEPARATORS
 COMMA        = 'COMMA'
 COMMA_RE     = re.compile(r',')
+
+COLON        = 'COLON'
+COLON_RE     = re.compile(r':')
 
 MINUS        = 'MINUS'
 MINUS_RE     = re.compile(r'-')
@@ -213,13 +217,14 @@ TOKENS = {
            LAT      : LAT_RE,
            LON      : LON_RE,
            COMMA    : COMMA_RE,
+           COLON    : COLON_RE,
            MINUS    : MINUS_RE,
            NEWLINE  : NEWLINE_RE,
          }
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,COMMA,MINUS,NEWLINE]
+TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,COMMA,COLON,MINUS,NEWLINE]
 
 # Litterals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
@@ -254,6 +259,35 @@ class IMSTokenizer(object):
         
     def io_prog(self):
         return self._io_prog
+    
+    def _get_ID_type(self,a_value):
+        """ get the type for a particular free form ID.
+            There are 3 different kinds of IDs: 
+            - WCID. WildCard ID. if a_value contains a *.
+            - DATA. Data in a data message. If len(a_value) > 50 bytes (or chars) and if a_value contains -
+            - ID. All the rest 
+        
+            Args:
+               a_value: the a_value
+               
+            Returns:
+               return the found type (WCID or ID or DATA)
+        
+            Raises:
+               None
+        """
+        #p = re.search('[-/=+\<\>\(\)]',a_value)
+        #if p:
+        #    print("MATCHED %s for %s\n"%(p,a_value))
+        #if len(a_value) > 50 or (a_value.find('-') >= 0):
+        if len(a_value) > 50 or re.search('[-/=+\<\>\(\)]',a_value):
+            return 'DATA'
+        elif a_value.find('*') >= 0:
+            return 'WCID'     
+        else:
+            return 'ID'
+    
+        
         
     def tokenize(self):
         """ tokenize the expression. Beware the tokenize method is a generator
@@ -294,11 +328,12 @@ class IMSTokenizer(object):
                        
                         val        = match.group()
                         start, end = pos,(pos+len(val)-1)
-                        type       = key
                         
                         # when it is an ID check if this is a WCID
-                        if type == 'ID' and (val.lower().find('*') >= 0):
-                            type = 'WCID'
+                        if key == 'ID':
+                            type = self._get_ID_type(val)
+                        else:
+                            type = key
                         
                         tok = Token(type,val,start,end,line_num,line)
                     

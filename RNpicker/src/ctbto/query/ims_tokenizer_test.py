@@ -14,7 +14,7 @@ class LexerTest(TestCase):
     def setUp(self):
         pass
         
-    def test_list_tokens_lower_case(self):
+    def ztest_list_tokens_lower_case(self):
         
         tokenizer = IMSTokenizer()
         
@@ -105,7 +105,7 @@ class LexerTest(TestCase):
     
             cpt+=1
     
-    def test_generate_exception(self):
+    def ztest_generate_exception(self):
         
         tokenizer = IMSTokenizer()
         
@@ -134,7 +134,7 @@ class LexerTest(TestCase):
             self.assertEqual(le.line_num,1)
             
    
-    def test_help_message(self):
+    def ztest_help_message(self):
         
         tokenizer = IMSTokenizer()
         
@@ -201,7 +201,7 @@ class LexerTest(TestCase):
             
             cpt+=1
     
-    def test_time_1(self):
+    def ztest_time_1(self):
         ''' test with an advance time part '''
 
         tokenizer = IMSTokenizer()
@@ -305,7 +305,7 @@ class LexerTest(TestCase):
             
             cpt += 1
     
-    def test_time_2(self):
+    def ztest_time_2(self):
         ''' test time extreme cases '''
         tokenizer = IMSTokenizer()
         
@@ -408,7 +408,7 @@ class LexerTest(TestCase):
             
             cpt += 1
     
-    def test_station_list(self):
+    def ztest_station_list(self):
         ''' test with a station list'''
         tokenizer = IMSTokenizer()
         
@@ -513,7 +513,7 @@ class LexerTest(TestCase):
         
         pass
 
-    def test_lat_lon(self):
+    def ztest_lat_lon(self):
         ''' lat-lon test '''
         
         tokenizer = IMSTokenizer()
@@ -627,7 +627,7 @@ class LexerTest(TestCase):
     
             cpt+=1
     
-    def test_star_expansion(self):
+    def ztest_star_expansion(self):
         ''' test with expansion star'''                                                                                                           
         tokenizer = IMSTokenizer()
         
@@ -735,27 +735,30 @@ class LexerTest(TestCase):
         
         import email
     
-        #fd = open('/tmp/req_messages/34366629.msg')
     
-        #fd = open('/tmp/req_messages/34383995.msg')
-        fd  = open('/tmp/req_messages/34368614.msg')
+        dir = '/home/aubert/req_messages'
+        fd  = open('%s/%s'%(dir,'34379477.msg'))
         msg = email.message_from_file(fd)
     
         #print("msg = %s\n"%(msg))
     
         if not msg.is_multipart():
             to_parse = msg.get_payload()
-            print("to_parse %s\n"%(to_parse))
+            #print("to_parse %s\n"%(to_parse))
                 
             index = to_parse.lower().find('begin')
                 
             if index >= 0:
                 
-                lexer  = IMSLexer()
-                lexer.input(to_parse[index:])
+                tokenizer = IMSTokenizer()
+        
+                io_prog = StringIO.StringIO(to_parse[index:])
+         
+                tokenizer.set_io_prog(io_prog)
+                
                 cpt = 0
-                for token in lexer:
-                    print("\nToken = %s"%(token))
+                for token in tokenizer.tokenize():
+                    #print("\nToken = %s"%(token))
                     cpt +=1
             else:
                 print("Cannot find begin")
@@ -770,22 +773,26 @@ class LexerTest(TestCase):
                     index = to_parse.lower().find('begin')
                 
                     if index >= 0:
-                        lexer  = IMSLexer()
-                        lexer.input(to_parse)
+                        tokenizer = IMSTokenizer()
+        
+                        io_prog = StringIO.StringIO(to_parse)
+         
+                        tokenizer.set_io_prog(io_prog)
+                
                         cpt = 0
-                        for token in lexer:
-                            print("\nToken = %s"%(token))
+                        for token in tokenizer.tokenize():
+                            #print("\nToken = %s"%(token))
                             cpt +=1  
                     else:
-                        print("Cannot find begin")
+                        print("Cannot find begin in %s"%(to_parse))
     
-    def ztest_loop_read_from_dir(self):
+    def test_loop_read_from_dir(self):
         ''' This is not a unit test as it reads a full dir and then launch the lexer on each file '''
         
         import email
         import os
         
-        dir = '/tmp/req_messages'
+        dir = '/home/aubert/req_messages'
         for f in os.listdir(dir):
             
             print("********************* Try to Parse %s/%s **************************"%(dir,f))
@@ -804,12 +811,16 @@ class LexerTest(TestCase):
                 
                 if index >= 0:
                 
-                   lexer  = IMSLexer()
-                   lexer.input(to_parse[index:])
-                   cpt = 0
-                   for token in lexer:
-                      #print("\nToken = %s"%(token))
-                      cpt +=1
+                    tokenizer = IMSTokenizer()
+        
+                    io_prog = StringIO.StringIO(to_parse[index:])
+         
+                    tokenizer.set_io_prog(io_prog)
+                
+                    cpt = 0
+                    for token in tokenizer.tokenize():
+                        #print("\nToken = %s"%(token))
+                        cpt +=1
                 else:
                    print("Cannot find begin")
                 
@@ -824,13 +835,17 @@ class LexerTest(TestCase):
                         index = to_parse.lower().find('begin')
                 
                         if index >= 0:
-                           lexer  = IMSLexer()
-                           lexer.input(to_parse)
+                           tokenizer = IMSTokenizer()
+        
+                           io_prog = StringIO.StringIO(to_parse)
+         
+                           tokenizer.set_io_prog(io_prog)
+                
                            cpt = 0
-                           for token in lexer:
+                           for token in tokenizer.tokenize():
                                #print("\nToken = %s"%(token))
                                cpt +=1  
                         else:
-                            print("Cannot find begin")     
+                            print("Cannot find begin in %s\n"%(to_parse))     
         
         
