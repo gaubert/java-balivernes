@@ -14,7 +14,7 @@ class LexerTest(TestCase):
     def setUp(self):
         pass
         
-    def ztest_list_tokens_lower_case(self):
+    def test_list_tokens_lower_case(self):
         
         tokenizer = IMSTokenizer()
         
@@ -105,7 +105,7 @@ class LexerTest(TestCase):
     
             cpt+=1
     
-    def ztest_generate_exception(self):
+    def test_generate_exception(self):
         
         tokenizer = IMSTokenizer()
         
@@ -134,7 +134,7 @@ class LexerTest(TestCase):
             self.assertEqual(le.line_num,1)
             
    
-    def ztest_help_message(self):
+    def test_help_message(self):
         
         tokenizer = IMSTokenizer()
         
@@ -201,7 +201,7 @@ class LexerTest(TestCase):
             
             cpt+=1
     
-    def ztest_time_1(self):
+    def test_time_1(self):
         ''' test with an advance time part '''
 
         tokenizer = IMSTokenizer()
@@ -305,7 +305,7 @@ class LexerTest(TestCase):
             
             cpt += 1
     
-    def ztest_time_2(self):
+    def test_time_2(self):
         ''' test time extreme cases '''
         tokenizer = IMSTokenizer()
         
@@ -408,7 +408,7 @@ class LexerTest(TestCase):
             
             cpt += 1
     
-    def ztest_station_list(self):
+    def test_station_list(self):
         ''' test with a station list'''
         tokenizer = IMSTokenizer()
         
@@ -513,7 +513,7 @@ class LexerTest(TestCase):
         
         pass
 
-    def ztest_lat_lon(self):
+    def test_lat_lon(self):
         ''' lat-lon test '''
         
         tokenizer = IMSTokenizer()
@@ -627,7 +627,7 @@ class LexerTest(TestCase):
     
             cpt+=1
     
-    def ztest_star_expansion(self):
+    def test_star_expansion(self):
         ''' test with expansion star'''                                                                                                           
         tokenizer = IMSTokenizer()
         
@@ -730,7 +730,7 @@ class LexerTest(TestCase):
     
             cpt+=1
             
-    def ztest_read_from_email(self):
+    def test_read_from_email(self):
         ''' test read from an email message and lex '''
         
         import email
@@ -786,7 +786,7 @@ class LexerTest(TestCase):
                     else:
                         print("Cannot find begin in %s"%(to_parse))
     
-    def test_loop_read_from_dir(self):
+    def ztest_loop_read_from_dir(self):
         ''' This is not a unit test as it reads a full dir and then launch the lexer on each file '''
         
         import email
