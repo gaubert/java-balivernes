@@ -1,13 +1,15 @@
+'''
+Created on May 16, 2009
 
-"""
-Tokenizer parsing the grammar
-"""
+@author: guillaume.aubert@ctbto.org
+'''
+
 import logging
 import StringIO
 import re
 
 class LexerError(Exception):
-    """Base class for All exceptions"""
+    """LexerError Class"""
 
     def __init__(self,a_line_num,a_line,a_pos):
         
@@ -226,7 +228,7 @@ TOKENS = {
 # it also defines the pattern matching rule precedence
 TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,COMMA,COLON,MINUS,NEWLINE]
 
-# Litterals to ignore
+# Literals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
 
 # ENDMARKER Token to signal end of program
@@ -234,28 +236,34 @@ ENDMARKER = "ENDMARKER"
 
 
 class IMSTokenizer(object):
-    """ create tokens for parsing the grammar. 
-        This class is a wrapper around the python tokenizer adapt to the DSL that is going to be used.
+    """ 
+       Tokenizer for IMS2.0 messages.
     """
     
     # Class members
-    c_log = logging.getLogger("query.ims_tokenizer")
+    c_log = logging.getLogger("query.IMSTokenizer")
     c_log.setLevel(logging.DEBUG)
     
     def __init__(self):
         """ constructor """
-        # list of tokens
-        self._tokens  = []
         
-        self._index   = 0
+        self._io_prog  = None
         
-        self._current = None
+        # current parsed line
+        self._line_num = -1
         
-        self._io_prog = None
+        # current position in the line
+        self._pos      = -1
+        
+        # current token
+        self._tok      = None
         
     def set_io_prog(self,a_io_prog):
         
-        self._io_prog = a_io_prog
+        self._io_prog  = a_io_prog
+        self._line_num = 0
+        self._pos      = 0
+        self._tok      = 0
         
     def io_prog(self):
         return self._io_prog
@@ -289,11 +297,15 @@ class IMSTokenizer(object):
     
         
         
-    def tokenize(self):
-        """ tokenize the expression. Beware the tokenize method is a generator
+    def tokenize(self,a_starting_pos=0):
+        """ Use a generator to return an iterator on the tokens stream.
+            Calling twice the tokenize method will reset the generator and the 
+            position on the read stream. You can position the "cursor" on the
+            read stream to the desired offset with a_starting_pos
         
             Args:
-               None: 
+               a_starting_pos:Where to position the offset on the read stream.
+                              If a_starting_pos is None, do not reset the stream position
                
             Returns:
                return next found token 
@@ -302,32 +314,34 @@ class IMSTokenizer(object):
                exception LexerError if no specified Token found
         """
         
-        line_num = 0
+        # position 0 in io stream
+        if a_starting_pos != None:
+            self._io_prog.seek(a_starting_pos)
         
         for line in self._io_prog:
             #print("line to read=[%s].len(line)=%d\n"%(line,len(line)))
             
-            line_num    += 1
+            self._line_num    += 1
         
-            pos, max = 0, len(line)
+            self._pos, max = 0, len(line)
         
-            while pos < max:
+            while self._pos < max:
             
                 b_found = False
                 # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
-                if line[pos] in IGNORED_LITERALS:
-                    pos += 1
+                if line[self._pos] in IGNORED_LITERALS:
+                    self._pos += 1
                     continue
             
                 #print("Try to match from [%s]\n"%(line[pos:]))
                         
                 for key in TOKENS_ORDERED:
                     regexp = TOKENS[key]
-                    match  = regexp.match(line,pos)
+                    match  = regexp.match(line,self._pos)
                     if match:
                        
                         val        = match.group()
-                        start, end = pos,(pos+len(val)-1)
+                        start, end = self._pos,(self._pos+len(val)-1)
                         
                         # when it is an ID check if this is a WCID
                         if key == 'ID':
@@ -335,26 +349,48 @@ class IMSTokenizer(object):
                         else:
                             type = key
                         
-                        tok = Token(type,val,start,end,line_num,line)
+                        self._tok = Token(type,val,start,end,self._line_num,line)
                     
                         #update pos
-                        pos = end +1
+                        self._pos = end +1
                     
-                        #print("Token = %s\n"%(tok))
+                        #print("Token = %s\n"%(self._tok))
                         b_found = True
                     
                         #return token using yield and generator
-                        yield tok
+                        yield self._tok
                         
                         #found on so quit for loop
                         break
             
             
                 if not b_found:
-                    raise LexerError(line_num,line,pos)            
+                    raise LexerError(self._line_num,line,self._pos)            
         
         # All lines have been read return ENDMARKER Token
-        yield ENDMARKERToken(line_num)
+        self._tok = ENDMARKERToken(self._line_num)
+        yield self._tok
+        
+    def advance_until(self,a_tokens_expression):
+        """ 
+            Advance in the stream of tokens until one of the desired tokens is found.
+            
+            Args:
+               a_tokens_expression: this is list of possible tokens to match
+              
+        
+            Returns:
+               return the matched token
+        """
+    
+    def current_token(self):
+        """ 
+            return the latest consumed token.
+        
+            Returns:
+               return the latest consumed token. None if there is no token
+        """
+        return self._tok
               
 # unit tests part
 import unittest
@@ -364,7 +400,7 @@ class TestTokenizer(unittest.TestCase):
          
         print " setup \n"
     
-    def testTokenizerIterator(self):     
+    def ztestTokenizerIterator(self):     
         
         # get simple string
         tokenizer = IMSTokenizer()
@@ -381,6 +417,78 @@ class TestTokenizer(unittest.TestCase):
             if tok.type == ENDMARKER:
                 print("End of program\n")
                 return 
+    
+    def ztestMyTest(self):
+        
+        next_five_days = next_day(6)
+        cpt = 0
+        for day in next_five_days:
+            print day
+            cpt +=1
+            if cpt == 4:
+                break
+        
+        print("new days")
+        next_five_days = next_day(6)
+        for day in next_five_days:
+            print day
+        
+            
+    def testTokenizerNext(self):
+        
+        tokenizer = IMSTokenizer()
+        
+        io_prog = StringIO.StringIO("34543 342\n2009.05.04     Toto")
+        
+        io_prog.seek(0)
+        
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        for tok in tokenizer.tokenize():
+            cpt +=1
+            print("Token = %s\n"%(tok))
+            if cpt == 4:
+                break
+        
+        print("restart\n")
+        
+        cpt = 0
+        for tok in tokenizer.tokenize():
+            cpt +=1
+            print("Token = %s\n"%(tok))
+            if cpt == 4:
+                break
+        
+        #gen_tok = tokenizer.tokenize("val")
+        
+        #print("dir(gen_tok)=%s\n"%(dir(gen_tok)))
+        
+        #print("gen_tok.next() = %s\n"%(gen_tok.next()))
+        
+        #print("gen_tok.next() = %s\n"%(gen_tok.next()))
+        
+        #print("gen_tok.next() = %s\n"%(gen_tok.next()))
+        
+        #gen_tok2 = tokenizer.tokenize("val1")
+        
+        #print("gen_tok2.next() = %s\n"%(gen_tok2.next()))
+        
+        #print("gen_tok2.next() = %s\n"%(gen_tok2.next()))
+    
+   
+import datetime
+def next_day(days):
+    current_day = datetime.datetime.today()
+    while days:
+        next_day = current_day + datetime.timedelta(days=1)
+        current_day = next_day
+        days -= 1
+        yield next_day
+
+   
+
+
         
         
         
