@@ -6,6 +6,8 @@ Created on May 13, 2009
 '''
 import logging
 
+from ims_tokenizer import IMSTokenizer, Token, LexerError, NonExistingTokenError, TokensNotFoundError
+
 
 class IMSParser(object):
     """ create tokens for parsing the grammar. 
@@ -19,7 +21,10 @@ class IMSParser(object):
     def __init__(self):
         """ constructor """
         
-        self._tokenizer = None
+        self._tokenizer = IMSTokenizer()
+        
+        # io stream
+        self._io_prog   = None
     
     def parse(self,message):
         """ parsed the passed message.
@@ -33,9 +38,10 @@ class IMSParser(object):
             Raises:
                exception 
         """ 
-        self._tokenizer = Tokenizer()
-        self._tokenizer.tokenize(program)
-        self._tokenizer.next()
+        # For the moment the message is always a string
+        io_prog = StringIO.StringIO(message)
+         
+        tokenizer.set_io_prog(io_prog)
         
         return self._parse()
     
