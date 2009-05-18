@@ -275,6 +275,9 @@ class IMSTokenizer(object):
         # current token
         self._tok      = None
         
+        # internal generator on current stream
+        self._gen      = None
+        
     def set_io_prog(self,a_io_prog):
         
         self._io_prog  = a_io_prog
@@ -390,6 +393,27 @@ class IMSTokenizer(object):
         # All lines have been read return ENDMARKER Token
         self._tok = ENDMARKERToken(self._line_num)
         yield self._tok
+        
+        
+    def next(self):
+        """
+           Return the next token
+            
+           Returns:
+               return next found token 
+        """
+        
+        print("Hello nexta\n")
+        
+        self._gen = self.tokenize()
+        # issue every time tokenize is called the generator is reseted, so next should memoize the generator and go through it
+        # maybe ad a reset or position ?
+        
+        
+        for tok in self.tokenize():
+            t = tok
+            print("Tok = %s\n"%(tok))
+            yield tok
         
     def advance_until(self,a_tokens_list):
         """ 
