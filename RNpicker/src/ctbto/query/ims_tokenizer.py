@@ -38,9 +38,37 @@ class LexerError(Exception):
     def illegal_character(self):
         return self._line[self._pos]
 
+class NonExistingTokenError(Exception):
+    pass
+
+class TokensNotFoundError(Exception):
+    pass
+
 class Token(object):
     
-    def __init__(self,type,value,begin,end,line_num,parsed_line):
+    ID          = 'ID'
+    DATETIME    = 'DATETIME'
+    NUMBER      = 'NUMBER'
+    NEWLINE     = 'NEWLINE'
+    MSGFORMAT   = 'MSGFORMAT'
+    COMMA       = 'COMMA'
+    COLON       = 'COLON'
+    MINUS       = 'MINUS'
+    BEGIN       = 'BEGIN'
+    STOP        = 'STOP'
+    TO          = 'TO'
+    MSGTYPE     = 'MSG_TYPE'
+    MSGID       = 'MSG_ID'
+    EMAIL       = 'EMAIL'
+    TIME        = 'TIME'
+    STALIST     = 'STALIST'
+    HELP        = 'HELP'
+    LAT         = 'LAT'
+    LON         = 'LON'
+    # ENDMARKER Token to signal end of program
+    ENDMARKER = 'ENDMARKER'
+      
+    def __init__(self,type,value,begin,end,line_num,parsed_line,file_pos=-1):
         
         self._type         = type
         self._value        = value
@@ -48,6 +76,7 @@ class Token(object):
         self._end          = end
         self._parsed_line  = parsed_line
         self._line_num     = line_num
+        self._file_pos     = file_pos
     
     @property
     def type(self):
@@ -68,6 +97,11 @@ class Token(object):
     def end(self):
         """ Return the token end """
         return self._end
+
+    @property
+    def file_pos(self):
+        """ Return file_pos """
+        return self._file_pos
     
     @property
     def parsed_line(self):
@@ -82,7 +116,7 @@ class ENDMARKERToken(Token):
     
     def __init__(self,a_line_num):
         
-        super(ENDMARKERToken,self).__init__(ENDMARKER,None,-1,-1,a_line_num,"")
+        super(ENDMARKERToken,self).__init__(Token.ENDMARKER,None,-1,-1,a_line_num,"")
 
     @property
     def type(self):
@@ -118,9 +152,10 @@ def group(*choices)   : return '(' + '|'.join(choices) + ')'
 def any(*choices)     : return group(*choices) + '*'
 def maybe(*choices)   : return group(*choices) + '?'
 
-# NUMBER Token
-NUMBER = 'NUMBER'
 
+# All the regular expr for the different tokens
+
+# NUMBER
 #regular expressions for number
 Hexnumber = r'0[xX][\da-fA-F]*[lL]?'
 Octnumber = r'0[0-7]*[lL]?'
@@ -134,105 +169,84 @@ Imagnumber = group(r'\d+[jJ]', Floatnumber + r'[jJ]')
 Number = group(Imagnumber, Floatnumber, Intnumber)
 
 NUMBER_RE = re.compile(Number)
-
-# ID Token
-ID          = 'ID'
-#witout slash
-#ID_RE       = re.compile(r'[\*A-Za-z_\+=\(\)\<\>]([\w]|[=\<\>\(\)\.@\*\+-])*')
+# ID 
 ID_RE       = re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*')
 
-# DATETIME Token
-DATETIME    = 'DATETIME'
+# DATETIME T
 DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
 
 # NEWLINE Token
-NEWLINE    = 'NEWLINE'
 NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
 
-# MSGFORMAT Token
-MSGFORMAT    = 'MSGFORMAT'
+# MSGFORMAT
 MSGFORMAT_RE = re.compile(r'[A-Za-z]{3}(\d+\.\d+)')
 
 # SEPARATORS
-COMMA        = 'COMMA'
 COMMA_RE     = re.compile(r',')
 
-COLON        = 'COLON'
 COLON_RE     = re.compile(r':')
 
-MINUS        = 'MINUS'
 MINUS_RE     = re.compile(r'-')
 
 # Language keywords
 
 # BEGIN 
-BEGIN        = 'BEGIN'
 BEGIN_RE     = re.compile('BEGIN',re.IGNORECASE)
-
-STOP         = 'STOP'
+# STOP
 STOP_RE      = re.compile('STOP',re.IGNORECASE)
-
-TO           = 'TO'
+# TO
 TO_RE        = re.compile('TO',re.IGNORECASE)
-
-MSGTYPE      = 'MSG_TYPE'
+# MSGTYPE
 MSGTYPE_RE   = re.compile('MSG_TYPE',re.IGNORECASE)
-
-MSGID        = 'MSG_ID'
+# MSGID
 MSGID_RE     = re.compile('MSG_ID',re.IGNORECASE)
-
-EMAIL        = 'EMAIL'
+# EMAIL
 EMAIL_RE     = re.compile('E-MAIL',re.IGNORECASE)
-
-TIME         = 'TIME'
+# TIME
 TIME_RE      = re.compile('TIME',re.IGNORECASE)
-
-STALIST     = 'STALIST'
+# STALIST
 STALIST_RE  = re.compile('STA_LIST',re.IGNORECASE)
-
-HELP        = 'HELP'
+# HELP
 HELP_RE     = re.compile('HELP',re.IGNORECASE)
-
-LAT         = 'LAT'
+# LAT
 LAT_RE      = re.compile('LAT',re.IGNORECASE)
-
-LON         = 'LON'
+# LON
 LON_RE      = re.compile('LON',re.IGNORECASE)
 
+KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Token.EMAIL,Token.TIME,Token.STALIST,Token.HELP,Token.LAT,Token.LON]
 
-KEYWORDS_TOKENS = [BEGIN,STOP,TO,MSGTYPE,MSGID,EMAIL,TIME,STALIST,HELP,LAT,LON]
 
-TOKENS = {
-           ID       : ID_RE,
-           DATETIME : DATETIME_RE,
-           NUMBER   : NUMBER_RE,
-           MSGFORMAT: MSGFORMAT_RE,
-           BEGIN    : BEGIN_RE,
-           STOP     : STOP_RE,
-           TO       : TO_RE,
-           MSGTYPE  : MSGTYPE_RE,
-           MSGID    : MSGID_RE,
-           EMAIL    : EMAIL_RE,
-           TIME     : TIME_RE,
-           STALIST  : STALIST_RE,
-           HELP     : HELP_RE,
-           LAT      : LAT_RE,
-           LON      : LON_RE,
-           COMMA    : COMMA_RE,
-           COLON    : COLON_RE,
-           MINUS    : MINUS_RE,
-           NEWLINE  : NEWLINE_RE,
+
+TOKENS_RE = {
+           Token.ID        : ID_RE,
+           Token.DATETIME  : DATETIME_RE,
+           Token.NUMBER    : NUMBER_RE,
+           Token.MSGFORMAT : MSGFORMAT_RE,
+           Token.BEGIN     : BEGIN_RE,
+           Token.STOP      : STOP_RE,
+           Token.TO        : TO_RE,
+           Token.MSGTYPE   : MSGTYPE_RE,
+           Token.MSGID     : MSGID_RE,
+           Token.EMAIL     : EMAIL_RE,
+           Token.TIME      : TIME_RE,
+           Token.STALIST   : STALIST_RE,
+           Token.HELP      : HELP_RE,
+           Token.LAT       : LAT_RE,
+           Token.LON       : LON_RE,
+           Token.COMMA     : COMMA_RE,
+           Token.COLON     : COLON_RE,
+           Token.MINUS     : MINUS_RE,
+           Token.NEWLINE   : NEWLINE_RE,
+           Token.ENDMARKER : None,
          }
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [DATETIME]  + KEYWORDS_TOKENS + [MSGFORMAT,ID,NUMBER,COMMA,COLON,MINUS,NEWLINE]
+TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + [Token.MSGFORMAT,Token.ID,Token.NUMBER,Token.COMMA,Token.COLON,Token.MINUS,Token.NEWLINE]
 
 # Literals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
 
-# ENDMARKER Token to signal end of program
-ENDMARKER = "ENDMARKER"
 
 
 class IMSTokenizer(object):
@@ -253,7 +267,10 @@ class IMSTokenizer(object):
         self._line_num = -1
         
         # current position in the line
-        self._pos      = -1
+        self._line_pos      = -1
+        
+        # file-like offset position
+        self._file_pos = -1
         
         # current token
         self._tok      = None
@@ -262,8 +279,13 @@ class IMSTokenizer(object):
         
         self._io_prog  = a_io_prog
         self._line_num = 0
-        self._pos      = 0
+        self._line_pos      = 0
+        self._file_pos = 0
         self._tok      = 0
+    
+    def file_pos(self):
+        """ return the position of the reading cursor in current file """
+        return self._file_pos
         
     def io_prog(self):
         return self._io_prog
@@ -284,10 +306,6 @@ class IMSTokenizer(object):
             Raises:
                None
         """
-        #p = re.search('[-/=+\<\>\(\)]',a_value)
-        #if p:
-        #    print("MATCHED %s for %s\n"%(p,a_value))
-        #if len(a_value) > 50 or (a_value.find('-') >= 0):
         if len(a_value) > 50 or re.search('[-/=+\<\>\(\)]',a_value):
             return 'DATA'
         elif a_value.find('*') >= 0:
@@ -297,7 +315,7 @@ class IMSTokenizer(object):
     
         
         
-    def tokenize(self,a_starting_pos=0):
+    def tokenize(self,a_starting_pos=None):
         """ Use a generator to return an iterator on the tokens stream.
             Calling twice the tokenize method will reset the generator and the 
             position on the read stream. You can position the "cursor" on the
@@ -323,36 +341,38 @@ class IMSTokenizer(object):
             
             self._line_num    += 1
         
-            self._pos, max = 0, len(line)
+            self._file_pos = self._io_prog.tell()
+            
+            self._line_pos, max = 0, len(line)
         
-            while self._pos < max:
+            while self._line_pos < max:
             
                 b_found = False
                 # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
-                if line[self._pos] in IGNORED_LITERALS:
-                    self._pos += 1
+                if line[self._line_pos] in IGNORED_LITERALS:
+                    self._line_pos += 1
                     continue
             
                 #print("Try to match from [%s]\n"%(line[pos:]))
                         
                 for key in TOKENS_ORDERED:
-                    regexp = TOKENS[key]
-                    match  = regexp.match(line,self._pos)
+                    regexp = TOKENS_RE[key]
+                    match  = regexp.match(line,self._line_pos)
                     if match:
                        
                         val        = match.group()
-                        start, end = self._pos,(self._pos+len(val)-1)
+                        start, end = self._line_pos,(self._line_pos+len(val)-1)
                         
                         # when it is an ID check if this is a WCID
-                        if key == 'ID':
+                        if key == Token.ID:
                             type = self._get_ID_type(val)
                         else:
                             type = key
                         
-                        self._tok = Token(type,val,start,end,self._line_num,line)
+                        self._tok = Token(type,val,start,end,self._line_num,line,self._file_pos)
                     
                         #update pos
-                        self._pos = end +1
+                        self._line_pos = end +1
                     
                         #print("Token = %s\n"%(self._tok))
                         b_found = True
@@ -365,23 +385,100 @@ class IMSTokenizer(object):
             
             
                 if not b_found:
-                    raise LexerError(self._line_num,line,self._pos)            
+                    raise LexerError(self._line_num,line,self._line_pos)            
         
         # All lines have been read return ENDMARKER Token
         self._tok = ENDMARKERToken(self._line_num)
         yield self._tok
         
-    def advance_until(self,a_tokens_expression):
+    def advance_until(self,a_tokens_list):
         """ 
             Advance in the stream of tokens until one of the desired tokens is found.
             
+            
             Args:
-               a_tokens_expression: this is list of possible tokens to match
+               a_tokens_expression: this is list of possible tokens to match.
+                                    the corresponding regular expression is used to try matching the token
               
         
             Returns:
                return the matched token
         """
+        # check that the list contains know tokens
+        tokens_to_match        = []
+        has_to_match_endmarker = False
+        # last possible cursor position in the current line
+        max                    = -1
+        
+        for tok in a_tokens_list:
+            if TOKENS_RE.has_key(tok):
+                
+                # ENDMARKER needs to be differentiated
+                if tok == Token.ENDMARKER:
+                    has_to_match_endmarker = True
+                elif tok == 'DATA' or tok == 'WCID':
+                    tokens_to_match.append(Token.ID)
+                else:
+                    tokens_to_match.append(tok)
+            else:
+                raise NonExistingTokenError("The token named %s doesn't exist"%(tok))
+             
+        for line in self._io_prog: 
+            self._line_num    += 1
+        
+            self._line_pos, max = 0, len(line)
+        
+            # This code provides some short-circuit code for whitespace, tabs, and other ignored characters
+            if line[self._line_pos] in IGNORED_LITERALS:
+                self._line_pos += 1
+                continue
+            
+            #print("Try to match from [%s]\n"%(line[pos:]))
+                        
+            for key in tokens_to_match:
+                regexp = TOKENS_RE[key]
+                #here search anywhere in the line for the token
+                match  = regexp.search(line,self._line_pos)
+                if match:
+                    val        = match.group()
+                    start, end = self._line_pos,(self._line_pos+len(val)-1)
+                     
+                    # do all the tricks to return the right TOKENS (see SUB TOKENS like WCID DATA)
+                        
+                    # when it is an ID check if this is a WCID
+                    if key == 'ID':
+                        type = self._get_ID_type(val)
+                    else:
+                        type = key
+                        
+                        self._tok = Token(type,val,start,end,self._line_num,line)
+                    
+                        #update pos
+                        self._line_pos = end +1
+                        
+                        # compute file_pos and reposition the cursor to this point in the file
+                        # like that the stream starts just after the last found token
+                        self._file_pos += self._line_pos
+                        self._io_prog.seek(self._file_pos)
+                    
+                        #return token (no generator)
+                        return self._tok
+                        
+                        #found on so quit for loop
+                        break
+            
+            self._file_pos = self._io_prog.tell()
+            # not found go to next line
+                                
+        
+        # All lines have been read return ENDMARKER Token
+        self._tok = ENDMARKERToken(self._line_num)
+        self._line_pos = max
+        self._file_pos = self._io_prog.tell()
+        if has_to_match_endmarker:
+            return self._tok
+        else:
+            raise TokensNotFoundError("Could not find any of the following tokens %s"%(a_tokens_list))
     
     def current_token(self):
         """ 
@@ -417,22 +514,6 @@ class TestTokenizer(unittest.TestCase):
             if tok.type == ENDMARKER:
                 print("End of program\n")
                 return 
-    
-    def ztestMyTest(self):
-        
-        next_five_days = next_day(6)
-        cpt = 0
-        for day in next_five_days:
-            print day
-            cpt +=1
-            if cpt == 4:
-                break
-        
-        print("new days")
-        next_five_days = next_day(6)
-        for day in next_five_days:
-            print day
-        
             
     def testTokenizerNext(self):
         
@@ -476,15 +557,6 @@ class TestTokenizer(unittest.TestCase):
         
         #print("gen_tok2.next() = %s\n"%(gen_tok2.next()))
     
-   
-import datetime
-def next_day(days):
-    current_day = datetime.datetime.today()
-    while days:
-        next_day = current_day + datetime.timedelta(days=1)
-        current_day = next_day
-        days -= 1
-        yield next_day
 
    
 
