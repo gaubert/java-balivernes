@@ -23,7 +23,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -115,7 +115,7 @@ class LexerTest(TestCase):
     
         try:
             cpt = 0
-            for token in tokenizer.tokenize():
+            for token in tokenizer:
                 #print("\nToken = %s"%(token))
             
                 if cpt == 0:
@@ -143,7 +143,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -211,7 +211,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -314,7 +314,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -417,7 +417,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -521,7 +521,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -634,7 +634,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -737,7 +737,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -867,7 +867,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -897,7 +897,7 @@ class LexerTest(TestCase):
         tokenizer.advance_until([Token.STALIST])
         
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             if cpt == 0:
                 self.assertEqual(token.type,'ID')
                 self.assertEqual(token.value,'ABC')
@@ -981,7 +981,7 @@ class LexerTest(TestCase):
         tokenizer.set_io_prog(io_prog)
     
         cpt = 0
-        for token in tokenizer.tokenize():
+        for token in tokenizer:
             #print("\nToken = %s"%(token))
             
             if cpt == 0:
@@ -1056,13 +1056,9 @@ class LexerTest(TestCase):
          
         tokenizer.set_io_prog(io_prog)
         
-        gen = tokenizer.next()
-        
-        token = gen.next()
-        
-        print("gen has next %s\n"%(gen.has_next()))
-            
         cpt = 0
+        
+        token = tokenizer.next()
         
         while token.type != Token.ENDMARKER:
             if cpt == 0:
@@ -1156,7 +1152,7 @@ class LexerTest(TestCase):
             
             # inc cpt and go to next token
             cpt+=1
-            token = gen.next()
+            token = tokenizer.next()
         
               
         
@@ -1189,7 +1185,7 @@ class LexerTest(TestCase):
                 tokenizer.set_io_prog(io_prog)
                 
                 cpt = 0
-                for token in tokenizer.tokenize():
+                for token in tokenizer:
                     #print("\nToken = %s"%(token))
                     cpt +=1
             else:
@@ -1212,7 +1208,7 @@ class LexerTest(TestCase):
                         tokenizer.set_io_prog(io_prog)
                 
                         cpt = 0
-                        for token in tokenizer.tokenize():
+                        for token in tokenizer:
                             #print("\nToken = %s"%(token))
                             cpt +=1  
                     else:
@@ -1251,7 +1247,7 @@ class LexerTest(TestCase):
                     tokenizer.set_io_prog(io_prog)
                 
                     cpt = 0
-                    for token in tokenizer.tokenize():
+                    for token in tokenizer:
                         #print("\nToken = %s"%(token))
                         cpt +=1
                 else:
@@ -1275,7 +1271,7 @@ class LexerTest(TestCase):
                            tokenizer.set_io_prog(io_prog)
                 
                            cpt = 0
-                           for token in tokenizer.tokenize():
+                           for token in tokenizer:
                                #print("\nToken = %s"%(token))
                                cpt +=1  
                         else:

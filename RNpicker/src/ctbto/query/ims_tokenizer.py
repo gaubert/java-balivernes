@@ -261,31 +261,55 @@ class IMSTokenizer(object):
     def __init__(self):
         """ constructor """
         
-        self._io_prog  = None
+        self._io_prog        = None
         
         # current parsed line
-        self._line_num = -1
+        self._line_num       = -1
         
         # current position in the line
-        self._line_pos      = -1
+        self._line_pos       = -1
         
         # file-like offset position
-        self._file_pos = -1
+        self._file_pos       = -1
+        
+        # file-like original position (used for have __iter__ returning always the same sequence)
+        self._io_prog_offset = -1
         
         # current token
-        self._tok      = None
+        self._tok            = None
         
         # internal generator on current stream
-        self._gen      = None
+        # used by the iterator method
+        self._gen            = None
         
     def set_io_prog(self,a_io_prog):
-        
-        self._io_prog  = a_io_prog
-        self._line_num = 0
-        self._line_pos      = 0
-        self._file_pos = 0
-        self._tok      = 0
+        """ 
+           Pass the io stream to parse and start reading from where it has been positioned 
+           Args:
+               a_io_prog: file-like object
+        """
+        self._io_prog        = a_io_prog
+        self._io_prog_offset = a_io_prog.tell()
+        self._line_num       = 0
+        self._line_pos       = 0
+        self._file_pos       = -1
+        self._tok            = 0
+        # reset generator
+        self._gen            = None
     
+    def set_file_pos(self,a_file_pos):
+        """ 
+           Set the starting offset in the read io stream (file).
+           Reset the generator as the file positio has changed.
+           if a_file_pos is None then do not touch anything
+           
+           Args:
+               a_file_pos: If a_file_pos is None then set file_pos to -1 and the stream will not be touched.
+                           The generator will start reading from where it is
+        """
+        #special case do not touch anything and read from where we are
+        self._file_pos = a_file_pos if (a_file_pos != None) else -1
+        
     def file_pos(self):
         """ return the position of the reading cursor in current file """
         return self._file_pos
@@ -318,7 +342,7 @@ class IMSTokenizer(object):
     
         
         
-    def tokenize(self,a_starting_pos=None):
+    def _create_tokenize_gen(self,a_starting_pos=-1):
         """ Use a generator to return an iterator on the tokens stream.
             Calling twice the tokenize method will reset the generator and the 
             position on the read stream. You can position the "cursor" on the
@@ -326,7 +350,7 @@ class IMSTokenizer(object):
         
             Args:
                a_starting_pos:Where to position the offset on the read stream.
-                              If a_starting_pos is None, do not reset the stream position
+                              If a_starting_pos is -1, do not touch the current stream
                
             Returns:
                return next found token 
@@ -336,7 +360,7 @@ class IMSTokenizer(object):
         """
         
         # position 0 in io stream
-        if a_starting_pos != None:
+        if a_starting_pos != -1:
             self._io_prog.seek(a_starting_pos)
         
         for line in self._io_prog:
@@ -395,6 +419,18 @@ class IMSTokenizer(object):
         yield self._tok
         
         
+    def __iter__(self):
+        """ 
+            iterator from the begining of the stream.
+            If you call twice this method the second iterator will continue to iterate from 
+            where the previous one was and it will not create a new one.
+            To create a you one, you have to pass the io_prog again. 
+        """
+        self._gen = self._create_tokenize_gen(self._file_pos)
+        
+        return self
+        
+        
     def next(self):
         """
            Return the next token
@@ -403,17 +439,11 @@ class IMSTokenizer(object):
                return next found token 
         """
         
-        print("Hello nexta\n")
+        # if no generator have been created first do it and call next
+        if self._gen == None:
+            self._gen = self._create_tokenize_gen(self._file_pos)
         
-        self._gen = self.tokenize()
-        # issue every time tokenize is called the generator is reseted, so next should memoize the generator and go through it
-        # maybe ad a reset or position ?
-        
-        
-        for tok in self.tokenize():
-            t = tok
-            print("Tok = %s\n"%(tok))
-            yield tok
+        return self._gen.next()
         
     def advance_until(self,a_tokens_list):
         """ 
@@ -513,76 +543,6 @@ class IMSTokenizer(object):
         """
         return self._tok
               
-# unit tests part
-import unittest
-class TestTokenizer(unittest.TestCase):
-    
-    def setUp(self):
-         
-        print " setup \n"
-    
-    def ztestTokenizerIterator(self):     
-        
-        # get simple string
-        tokenizer = IMSTokenizer()
-        
-        io_prog = StringIO.StringIO("\r\n 34543 342\n2009.05.04     Toto")
-        
-        tokenizer.set_io_prog(io_prog)
-        
-        #gen_tok = tokenizer.tokenize()
-        
-        for tok in tokenizer.tokenize():
-            print("Tok = %s \n"%(tok))
-            
-            if tok.type == ENDMARKER:
-                print("End of program\n")
-                return 
-            
-    def testTokenizerNext(self):
-        
-        tokenizer = IMSTokenizer()
-        
-        io_prog = StringIO.StringIO("34543 342\n2009.05.04     Toto")
-        
-        io_prog.seek(0)
-        
-        tokenizer.set_io_prog(io_prog)
-        
-        cpt = 0
-        for tok in tokenizer.tokenize():
-            cpt +=1
-            print("Token = %s\n"%(tok))
-            if cpt == 4:
-                break
-        
-        print("restart\n")
-        
-        cpt = 0
-        for tok in tokenizer.tokenize():
-            cpt +=1
-            print("Token = %s\n"%(tok))
-            if cpt == 4:
-                break
-        
-        #gen_tok = tokenizer.tokenize("val")
-        
-        #print("dir(gen_tok)=%s\n"%(dir(gen_tok)))
-        
-        #print("gen_tok.next() = %s\n"%(gen_tok.next()))
-        
-        #print("gen_tok.next() = %s\n"%(gen_tok.next()))
-        
-        #print("gen_tok.next() = %s\n"%(gen_tok.next()))
-        
-        #gen_tok2 = tokenizer.tokenize("val1")
-        
-        #print("gen_tok2.next() = %s\n"%(gen_tok2.next()))
-        
-        #print("gen_tok2.next() = %s\n"%(gen_tok2.next()))
-    
-
-   
 
 
         
