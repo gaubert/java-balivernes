@@ -108,6 +108,10 @@ class Token(object):
         """ Return the token line """
         return self._parsed_line
     
+    def line_num(self):
+        """ return the line number """
+        return self._line_num
+    
     def __repr__(self):
         return "Token[type=%s,value={%s},line_num=%s,(begin index,end index)=(%s,%s)"%(self._type,self._value,self._line_num,self._begin,self._end)  
 
@@ -313,6 +317,10 @@ class IMSTokenizer(object):
     def file_pos(self):
         """ return the position of the reading cursor in current file """
         return self._file_pos
+    
+    def line_num(self):
+        """ return the line_num currently read """
+        return self._line_num
         
     def io_prog(self):
         return self._io_prog
