@@ -7,7 +7,7 @@ import StringIO
 
 from unittest import TestCase,TestLoader,TextTestRunner
 
-from ims_tokenizer import IMSTokenizer, Token, LexerError, NonExistingTokenError, TokensNotFoundError
+from ims_tokenizer import IMSTokenizer, Token, LexerError, IllegalCharacterError, BadTokenError, NonExistingTokenError, TokensNotFoundError
 
 class LexerTest(TestCase):
     
@@ -128,7 +128,7 @@ class LexerTest(TestCase):
                 cpt +=1
             
             fail("No LexerError Exception raised")
-        except LexerError, le:
+        except IllegalCharacterError, le:
             self.assertEqual(le.line,"     begin IMS2;###$0   llllll  \n")
             self.assertEqual(le.pos,15)
             self.assertEqual(le.line_num,1)
@@ -1154,9 +1154,104 @@ class LexerTest(TestCase):
             cpt+=1
             token = tokenizer.next()
         
-              
+   
+    def test_consume_next_token_method(self):
+        ''' test consume next token functionality '''
         
+        tokenizer = IMSTokenizer()
+        
+        str = "     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ABC,DEF, FGH  \nalert_temp\n    stop"
+        
+        io_prog = StringIO.StringIO(str)
+         
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        
+        token = tokenizer.next()
+        
+        while token.type != Token.ENDMARKER:
             
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'IMS2.0')
+            elif cpt == 2:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 3:
+                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.value,'msg_type')
+            elif cpt == 4:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'data')
+                break
+            
+            token = tokenizer.next()
+            
+            cpt +=1
+            
+        
+        token = tokenizer.consume_next_token(Token.NEWLINE)
+        
+        self.assertEqual(token.type,Token.NEWLINE)
+        self.assertEqual(token.value,'\n')
+        
+        token = tokenizer.next()
+        
+        self.assertEqual(token.type,Token.MSGID)
+        self.assertEqual(token.value,'msg_id')
+        
+    
+    def test_consume_next_token_method_error(self):
+        ''' test consume next token functionality and raise exception '''
+        
+        tokenizer = IMSTokenizer()
+        
+        str = "     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ABC,DEF, FGH  \nalert_temp\n    stop"
+        
+        io_prog = StringIO.StringIO(str)
+         
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        
+        token = tokenizer.next()
+        
+        while token.type != Token.ENDMARKER:
+            
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'IMS2.0')
+            elif cpt == 2:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 3:
+                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.value,'msg_type')
+            elif cpt == 4:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'data')
+                break
+            
+            token = tokenizer.next()
+            
+            cpt +=1
+            
+        try:
+            
+            token = tokenizer.consume_next_token(Token.MSGID)
+        except  BadTokenError, e:
+            self.assertEqual(e.message,'Found Token with type NEWLINE and value [\n] in Line 2, position 14. Was expecting a MSG_ID.')
+    
+                 
     def ztest_read_from_email(self):
         ''' test read from an email message and lex '''
         

@@ -5,13 +5,20 @@ Created on May 16, 2009
 '''
 
 import logging
-import StringIO
 import re
 
 class LexerError(Exception):
     """LexerError Class"""
+    
+    def __init__(self,a_msg):
+        
+        super(LexerError,self).__init__(a_msg)
+        
 
-    def __init__(self,a_line_num,a_line,a_pos):
+class IllegalCharacterError(LexerError):
+    """IllegalCharacterError Class"""
+
+    def __init__(self, a_line_num, a_line, a_pos):
         
         self._line     = a_line
         self._pos      = a_pos
@@ -19,29 +26,60 @@ class LexerError(Exception):
         
         instrumented_request  = a_line[:a_pos] + "(ERR)=>" + a_line[a_pos:]
         
-        msg = "Illegal Character %s in Line %d, position %d.[%s]"%(a_line[a_pos],a_line_num,a_pos,instrumented_request)
+        msg = "Illegal Character %s in Line %d, position %d.[%s]"% (a_line[a_pos], a_line_num, a_pos, instrumented_request)
         
-        super(LexerError,self).__init__(msg)
+        super(IllegalCharacterError, self).__init__(msg)
         
     @property    
     def line(self):
+        """ line accessor """ 
         return self._line
     
     @property
     def line_num(self):
+        """ line_num accessor """
         return self._line_num
     
     @property
     def pos(self):
+        """ pos accessor """
         return self._pos
     
     def illegal_character(self):
         return self._line[self._pos]
 
-class NonExistingTokenError(Exception):
+class BadTokenError(LexerError):
+    
+    def __init__(self, a_line_num, a_line, a_pos, a_expected_token_type, a_found_token):
+         
+        self._line     = a_line
+        self._pos      = a_pos
+        self._line_num = a_line_num
+         
+        msg = "Found Token with type %s and value [%s] in Line %s, position %s. Was expecting a %s."% (a_found_token.type,a_found_token.value,a_line_num,a_pos,a_expected_token_type)
+
+        super(BadTokenError, self).__init__(msg)
+         
+    @property    
+    def line(self):
+        """ line accessor """
+        return self._line
+    
+    @property
+    def line_num(self):
+        """ line_num accessor """
+        return self._line_num
+    
+    @property
+    def pos(self):
+        """ pos accessor """
+        return self._pos
+         
+         
+class NonExistingTokenError(LexerError):
     pass
 
-class TokensNotFoundError(Exception):
+class TokensNotFoundError(LexerError):
     pass
 
 class Token(object):
@@ -65,13 +103,21 @@ class Token(object):
     EMAIL       = 'EMAIL'
     TIME        = 'TIME'
     STALIST     = 'STALIST'
+    BULLTYPE    = 'BULLTYPE'
+    DEPTH       = 'DEPTH'
+    MAG         = 'MAG'
+    MAGTYPE     = 'MAGTYPE'
+    CHANLIST    = 'CHANLIST'
+    RELATIVETO  = 'RELATIVETO'
     HELP        = 'HELP'
     LAT         = 'LAT'
     LON         = 'LON'
     # ENDMARKER Token to signal end of program
-    ENDMARKER = 'ENDMARKER'
+    ENDMARKER   = 'ENDMARKER'
+    MAX         = 'MAX'
+    MIN         = 'MIN'
       
-    def __init__(self,type,value,begin,end,line_num,parsed_line,file_pos=-1):
+    def __init__(self, type, value, begin, end, line_num, parsed_line, file_pos=-1):
         
         self._type         = type
         self._value        = value
@@ -117,14 +163,14 @@ class Token(object):
         return self._line_num
     
     def __repr__(self):
-        return "Token[type=%s,value={%s},line_num=%s,(begin index,end index)=(%s,%s)"%(self._type,self._value,self._line_num,self._begin,self._end)  
+        return "Token[type=%s,value={%s},line_num=%s,(begin index,end index)=(%s,%s)"% (self._type, self._value, self._line_num, self._begin, self._end)  
 
 class ENDMARKERToken(Token):
     """ A very special Token: ENDMARKER to signal the end of program """
     
-    def __init__(self,a_line_num):
+    def __init__(self, a_line_num):
         
-        super(ENDMARKERToken,self).__init__(Token.ENDMARKER,None,-1,-1,a_line_num,"")
+        super(ENDMARKERToken, self).__init__(Token.ENDMARKER, None, -1, -1, a_line_num, "")
 
     @property
     def type(self):
@@ -152,7 +198,7 @@ class ENDMARKERToken(Token):
         return self._parsed_line
     
     def __repr__(self):
-        return "ENDMARKER Token line_num = %d"%(self._line_num)  
+        return "ENDMARKER Token line_num = %d"% (self._line_num)  
 
 
 # functor tools to assemble tokens
@@ -214,11 +260,22 @@ MSGTYPE_RE    = re.compile('MSG_TYPE',re.IGNORECASE)
 MSGID_RE      = re.compile('MSG_ID',re.IGNORECASE)
 # EMAIL
 EMAIL_RE      = re.compile('E-MAIL',re.IGNORECASE)
-   
 # TIME
 TIME_RE       = re.compile('TIME',re.IGNORECASE)
 # STALIST
 STALIST_RE    = re.compile('STA_LIST',re.IGNORECASE)
+# BULL_TYPE
+BULLTYPE_RE   = re.compile('BULL_TYPE',re.IGNORECASE)
+# DEPTH
+DEPTH_RE      = re.compile('DEPTH',re.IGNORECASE)
+# MAG
+MAG_RE        = re.compile('MAG',re.IGNORECASE)
+#MAGTYPE
+MAGTYPE_RE    = re.compile('MAG_TYPE',re.IGNORECASE)
+#CHANLIST
+CHANLIST_RE   = re.compile('CHAN_LIST',re.IGNORECASE)
+#RELATIVE_TO
+RELATIVETO_RE = re.compile('RELATIVE_TO',re.IGNORECASE)
 # HELP
 HELP_RE       = re.compile('HELP',re.IGNORECASE)
 # LAT
@@ -226,35 +283,39 @@ LAT_RE        = re.compile('LAT',re.IGNORECASE)
 # LON
 LON_RE        = re.compile('LON',re.IGNORECASE)
 
-KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Token.EMAIL,Token.TIME,Token.STALIST,Token.HELP,Token.LAT,Token.LON]
-
-
+KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Token.EMAIL,Token.TIME,Token.STALIST,Token.BULLTYPE,Token.DEPTH,Token.MAG,Token.MAGTYPE,Token.CHANLIST,Token.RELATIVETO,Token.HELP,Token.LAT,Token.LON]
 
 TOKENS_RE = {
-           Token.ID        : ID_RE,
+           Token.ID           : ID_RE,
            #different ID Flavours
-           Token.WCID      : ID_RE,
-           Token.DATA      : ID_RE,
-           Token.EMAILADDR : EMAILADDR_RE,
-           Token.DATETIME  : DATETIME_RE,
-           Token.NUMBER    : NUMBER_RE,
-           Token.MSGFORMAT : MSGFORMAT_RE,
-           Token.BEGIN     : BEGIN_RE,
-           Token.STOP      : STOP_RE,
-           Token.TO        : TO_RE,
-           Token.MSGTYPE   : MSGTYPE_RE,
-           Token.MSGID     : MSGID_RE,
-           Token.EMAIL     : EMAIL_RE,
-           Token.TIME      : TIME_RE,
-           Token.STALIST   : STALIST_RE,
-           Token.HELP      : HELP_RE,
-           Token.LAT       : LAT_RE,
-           Token.LON       : LON_RE,
-           Token.COMMA     : COMMA_RE,
-           Token.COLON     : COLON_RE,
-           Token.MINUS     : MINUS_RE,
-           Token.NEWLINE   : NEWLINE_RE,
-           Token.ENDMARKER : None,
+           Token.WCID         : ID_RE,
+           Token.DATA         : ID_RE,
+           Token.EMAILADDR    : EMAILADDR_RE,
+           Token.DATETIME     : DATETIME_RE,
+           Token.NUMBER       : NUMBER_RE,
+           Token.MSGFORMAT    : MSGFORMAT_RE,
+           Token.BEGIN        : BEGIN_RE,
+           Token.STOP         : STOP_RE,
+           Token.TO           : TO_RE,
+           Token.MSGTYPE      : MSGTYPE_RE,
+           Token.MSGID        : MSGID_RE,
+           Token.EMAIL        : EMAIL_RE,
+           Token.TIME         : TIME_RE,
+           Token.STALIST      : STALIST_RE,
+           Token.BULLTYPE     : BULLTYPE_RE,
+           Token.DEPTH        : DEPTH_RE,
+           Token.MAG          : MAG_RE,
+           Token.MAGTYPE      : MAGTYPE_RE,
+           Token.CHANLIST     : CHANLIST_RE,
+           Token.RELATIVETO   : RELATIVETO_RE,
+           Token.HELP         : HELP_RE,
+           Token.LAT          : LAT_RE,
+           Token.LON          : LON_RE,
+           Token.COMMA        : COMMA_RE,
+           Token.COLON        : COLON_RE,
+           Token.MINUS        : MINUS_RE,
+           Token.NEWLINE      : NEWLINE_RE,
+           Token.ENDMARKER    : None,
          }
 
 # key ordered to optimize pattern matching
@@ -433,7 +494,7 @@ class IMSTokenizer(object):
             
             
                 if not b_found:
-                    raise LexerError(self._line_num,line,self._line_pos)            
+                    raise IllegalCharacterError(self._line_num,line,self._line_pos)            
         
         # All lines have been read return ENDMARKER Token
         self._tok = ENDMARKERToken(self._line_num)
@@ -465,6 +526,22 @@ class IMSTokenizer(object):
             self._gen = self._create_tokenize_gen(self._file_pos)
         
         return self._gen.next()
+    
+    def consume_next_token(self,a_token_type):
+        """
+           Consume the next token and check that it is the expected type otherwise send an exception
+            
+           Returns:
+               return next token 
+        """
+        
+        tok = self.next()
+        
+        if tok.type != a_token_type:
+            raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_type,tok)
+        else:
+            return tok
+        
         
     def advance_until(self,a_tokens_list):
         """ 
