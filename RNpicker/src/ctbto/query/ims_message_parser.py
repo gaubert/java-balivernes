@@ -14,13 +14,13 @@ class ParsingError(Exception):
 
     def __init__(self,a_msg,a_line_num=None,a_pos=None):
         
-        self._line_num = a_line
+        self._line_num = a_line_num
         self._pos      = a_pos
         
-        if self._line == None and self._pos == None:
+        if self._line_num == None and self._pos == None:
             extra = "" 
         else:
-            extra = "(line=%s,pos=%s)"%(self._line,self._pos)
+            extra = "(line=%s,pos=%s)"%(self._line_num,self._pos)
         
         super(ParsingError,self).__init__("%s %s."%(a_msg,extra))
     
@@ -76,10 +76,11 @@ class IMSParser(object):
             Raises:
                exception 
         """
-        return self._read_message()
+        return self._read_header_message()
     
-    def _read_message(self):
-        """ read a message.
+    def _read_header_message(self):
+        """ Read the 4 first lines that are considered as the "header of the message".
+            This will help finding the message type
         
             Args: None
                
@@ -97,6 +98,7 @@ class IMSParser(object):
         curr_line_num = 0
         
         # look for line 1 BEGIN message_format
+        # format: begin message_format
         if token.type != Token.BEGIN:
             raise ParsingError("Expected the message to start with a BEGIN type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
         
@@ -115,7 +117,8 @@ class IMSParser(object):
         if token.type != Token.NEWLINE:
             raise ParsingError("Expected a NEWLINE type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
         
-        # get the message type
+        # line 2: get the message type
+        # format: msg_type request
         token = self._tokenizer.next()
         
         if token.type != Token.MSGTYPE:
@@ -127,6 +130,57 @@ class IMSParser(object):
             raise ParsingError("Expected a ID type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
         
         result[Token.MSGTYPE] = token.value
+        
+        token = self._tokenizer.next()
+        
+        # look for a new line
+        if token.type != Token.NEWLINE:
+            raise ParsingError("Expected a NEWLINE type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        token = self._tokenizer.next()
+        
+        # line 3: get the message id
+        # format: msg_id id_string [source]
+        if token.type != Token.MSGID:
+            raise ParsingError("Expected a MSGID type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        token = self._tokenizer.next()
+        
+        # next token is an ID 
+        # TODO: the id_string should be up to 20 characters and should not contains blanks or \
+        if token.type != Token.ID and token.type != Token.NUMBER:
+            raise ParsingError("Expected a ID type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        result[Token.MSGID] = token.value
+        
+        token = self._tokenizer.next()
+        
+        # it can be a source or a NEWLINE
+        
+        # this is a source and source format 3-letter country code followed by _ndc (ex: any_ndc)
+        if token.type == Token.ID:
+            result['SOURCE'] = token.value
+        elif token.type != Token.NEWLINE:
+            raise ParsingError("Expected an ID type as the source or a NEWLINE type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        token = self._tokenizer.next()
+        # look for a new line
+        if token.type != Token.NEWLINE:
+            raise ParsingError("Expected a NEWLINE type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        # line 4: e-mail foo.bar@domain_name
+        token = self._tokenizer.next()
+        # look for an EMAIL keyword
+        if token.type != Token.EMAIL:
+            raise ParsingError("Expected a NEWLINE type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        token = self._tokenizer.next()
+        # look for the EMAILADDR
+        if token.type != Token.EMAILADDR:
+            raise ParsingError("Expected an EMAILADDR type but instead got %s with type %s"%(token.value,token.type),token.line_num,token.begin)
+        
+        result[Token.EMAIL] = token.value
+        
         
         return result
            

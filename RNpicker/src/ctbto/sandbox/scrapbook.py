@@ -327,20 +327,7 @@ def python_tokenizer(program):
       result.append((toknum, tokval, tok3, tok4))
 
     return result
-   
-def test_tokenizer():
-    
-    #res = parse("1 + 2")
-    
-    #res = python_tokenizer("retrieve spectrum.a where mdc > 2")
-    res = python_tokenizer("retrieve spectrum[CURR,BK,SPHD] where techno = radionuclide and id = 1234567 and mdc= 124.56 in  file=\"/tmp/produced.data\", filetype=\"SAMPML\"")
-    
-    print "res = %s\n"%(res)
-    
-    import token
-    
-    print "Token Name: %s\n"%(token.tok_name[1]) 
-    
+
 class TheClass(object):
 
     def __init__(self,val):
@@ -596,6 +583,21 @@ def check_regexpr():
     
     print "res = %s\n"%(res)
     
+def test_reg_expr():
+    
+    #res = parse("1 + 2")
+    
+    #res = python_tokenizer("retrieve spectrum.a where mdc > 2")
+    #res = python_tokenizer("retrieve spectrum[CURR,BK,SPHD] where techno = radionuclide and id = 1234567 and mdc= 124.56 in  file=\"/tmp/produced.data\", filetype=\"SAMPML\"")
+    # as defined in RFC 2822 (do not support square brackets and double quotes)
+    email_address_regex = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+    
+    email ="guillaume@ctbo.org"
+    
+    m = re.match(email_address_regex,email)
+    
+    print "res = %s\n"%(m.group())
+    
 
 def email_parser():
     
@@ -624,5 +626,4 @@ def email_parser():
 if __name__ == '__main__':
     
    
-   #email_parser()
-   check_regexpr()
+   test_reg_expr()

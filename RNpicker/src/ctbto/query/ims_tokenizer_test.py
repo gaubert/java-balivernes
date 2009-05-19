@@ -61,7 +61,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -181,7 +181,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -249,7 +249,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -352,7 +352,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -455,7 +455,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -559,7 +559,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -672,7 +672,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -775,7 +775,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -1019,7 +1019,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -1096,7 +1096,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAIL')
                 self.assertEqual(token.value,'e-mail')
             elif cpt == 11:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
                 self.assertEqual(token.type,Token.NEWLINE)

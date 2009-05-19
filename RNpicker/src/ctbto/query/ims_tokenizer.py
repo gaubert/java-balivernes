@@ -47,6 +47,9 @@ class TokensNotFoundError(Exception):
 class Token(object):
     
     ID          = 'ID'
+    DATA        = 'DATA'
+    WCID        = 'WCID'
+    EMAILADDR   = 'EMAILADDR'
     DATETIME    = 'DATETIME'
     NUMBER      = 'NUMBER'
     NEWLINE     = 'NEWLINE'
@@ -108,6 +111,7 @@ class Token(object):
         """ Return the token line """
         return self._parsed_line
     
+    @property
     def line_num(self):
         """ return the line number """
         return self._line_num
@@ -176,8 +180,12 @@ NUMBER_RE = re.compile(Number)
 # ID 
 ID_RE       = re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*')
 
-# DATETIME T
+# DATETIME regexpr
 DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
+
+# EMAIL Address regexpr as defined in RFC 2822 (do not support square brackets and double quotes)
+EMAILADDR_RE = re.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",re.IGNORECASE)
+ 
 
 # NEWLINE Token
 NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
@@ -195,27 +203,28 @@ MINUS_RE     = re.compile(r'-')
 # Language keywords
 
 # BEGIN 
-BEGIN_RE     = re.compile('BEGIN',re.IGNORECASE)
+BEGIN_RE      = re.compile('BEGIN',re.IGNORECASE)
 # STOP
-STOP_RE      = re.compile('STOP',re.IGNORECASE)
+STOP_RE       = re.compile('STOP',re.IGNORECASE)
 # TO
-TO_RE        = re.compile('TO',re.IGNORECASE)
+TO_RE         = re.compile('TO',re.IGNORECASE)
 # MSGTYPE
-MSGTYPE_RE   = re.compile('MSG_TYPE',re.IGNORECASE)
+MSGTYPE_RE    = re.compile('MSG_TYPE',re.IGNORECASE)
 # MSGID
-MSGID_RE     = re.compile('MSG_ID',re.IGNORECASE)
+MSGID_RE      = re.compile('MSG_ID',re.IGNORECASE)
 # EMAIL
-EMAIL_RE     = re.compile('E-MAIL',re.IGNORECASE)
+EMAIL_RE      = re.compile('E-MAIL',re.IGNORECASE)
+   
 # TIME
-TIME_RE      = re.compile('TIME',re.IGNORECASE)
+TIME_RE       = re.compile('TIME',re.IGNORECASE)
 # STALIST
-STALIST_RE  = re.compile('STA_LIST',re.IGNORECASE)
+STALIST_RE    = re.compile('STA_LIST',re.IGNORECASE)
 # HELP
-HELP_RE     = re.compile('HELP',re.IGNORECASE)
+HELP_RE       = re.compile('HELP',re.IGNORECASE)
 # LAT
-LAT_RE      = re.compile('LAT',re.IGNORECASE)
+LAT_RE        = re.compile('LAT',re.IGNORECASE)
 # LON
-LON_RE      = re.compile('LON',re.IGNORECASE)
+LON_RE        = re.compile('LON',re.IGNORECASE)
 
 KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Token.EMAIL,Token.TIME,Token.STALIST,Token.HELP,Token.LAT,Token.LON]
 
@@ -223,6 +232,10 @@ KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Tok
 
 TOKENS_RE = {
            Token.ID        : ID_RE,
+           #different ID Flavours
+           Token.WCID      : ID_RE,
+           Token.DATA      : ID_RE,
+           Token.EMAILADDR : EMAILADDR_RE,
            Token.DATETIME  : DATETIME_RE,
            Token.NUMBER    : NUMBER_RE,
            Token.MSGFORMAT : MSGFORMAT_RE,
@@ -246,7 +259,7 @@ TOKENS_RE = {
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + [Token.MSGFORMAT,Token.ID,Token.NUMBER,Token.COMMA,Token.COLON,Token.MINUS,Token.NEWLINE]
+TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + [Token.MSGFORMAT,Token.EMAILADDR, Token.ID,Token.NUMBER,Token.COMMA,Token.COLON,Token.MINUS,Token.NEWLINE]
 
 # Literals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
@@ -474,12 +487,9 @@ class IMSTokenizer(object):
         
         for tok in a_tokens_list:
             if TOKENS_RE.has_key(tok):
-                
                 # ENDMARKER needs to be differentiated
                 if tok == Token.ENDMARKER:
                     has_to_match_endmarker = True
-                elif tok == 'DATA' or tok == 'WCID':
-                    tokens_to_match.append(Token.ID)
                 else:
                     tokens_to_match.append(tok)
             else:
@@ -508,7 +518,7 @@ class IMSTokenizer(object):
                     # do all the tricks to return the right TOKENS (see SUB TOKENS like WCID DATA)
                         
                     # when it is an ID check if this is a WCID
-                    if key == 'ID':
+                    if key == Token.ID:
                         type = self._get_ID_type(val)
                     else:
                         type = key

@@ -16,8 +16,9 @@ class IMSMessageParserTest(TestCase):
     def test_list_tokens_lower_case(self):
         
         
-        message = "     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ARP01\nalert_temp\n    stop"
-        
+        print("Start\n")
+        message = "begin ims1.0\nmsg_type request    \nmsg_id ex042 any_ndc    \ne-mail foo.bar@mars.com    \ntime 1999/06/01 to 1999/07/01    \nbull_type idc_reb\nmag 3.5 to 5.0\ndepth to 30\nlat -30 to -20\nlon -180 to -140\nbulletin ims1.0\nlat 75 to 79\nlon 110 to 140\nbulletin ims1.0\nstop"
+
         parser = IMSParser()
         
         result = parser.parse(message)
