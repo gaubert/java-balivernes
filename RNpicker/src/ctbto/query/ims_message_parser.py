@@ -267,17 +267,71 @@ class IMSParser(object):
             elif token.type == Token.LAT or token.type == Token.LON:
                 
                 product.update(self._parse_latlon(token.type))
+            
+            elif token.type == Token.BULLETIN:
+                
+                product.update(self._parse_shi_product(token))
+                
+                print("result_dict = %s\n"%(result_dict)) 
                     
             else:
                 raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
            
             # add current token type in seen_keywords
-            seen_keywords.append(Token.type)
+            seen_keywords.append(token.type)
             
             token = self._tokenizer.next()
+        
+        return result_dict
+            
+    def _parse_shi_product(self,a_token):
+        """ Parse shi product.
+            It should be a mag range mag [date1[time1]] to [date2[time2]]
+        
+            Args: a_token: token
+               
+            Returns:
+               return a dictionary of pased values 
+        
+            Raises:
+               exception 
+        """
+        
+        res_dict = {}
+        
+        # add product type
+        res_dict['TYPE'] = a_token.type
+        
+        token = self._tokenizer.next()
+        
+        if token.type == Token.NEWLINE:
+            return res_dict
+        
+        if token.type == Token.MSGFORMAT:
+            res_dict['FORMAT'] = token.value
+            
+            #get the next token
+            token = self._tokenizer.next()
+            
+            # if this is a COLON then there is a subformat
+            if token.type == Token.COLON:
+                token = self._tokenizer.next()
+                if token.type == Token.ID:
+                    
+                    res_dict['SUBFORMAT'] = token.value
+                    
+                    #consume next NEWLINE token
+                    self._tokenizer.consume_next_token(Token.NEWLINE)
+                else:
+                    raise ParsingError("Was expecting a subformat value (token type = ID), instead got %s with type %s "% (token.value, token.type), token.line_num, token.begin)
+            # it could be a NEWLINE and there is no subformat
+            elif token.type != Token.NEWLINE:
+                raise ParsingError("Expected a NEWLINE or ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+          
+        return res_dict  
+            
     
     def _parse_mag(self):
-         
         """ Parse magnitude component.
             It should be a mag range mag [date1[time1]] to [date2[time2]]
         
