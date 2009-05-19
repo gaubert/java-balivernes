@@ -6,6 +6,8 @@ Created on May 13, 2009
 '''
 import logging
 import StringIO
+import copy
+
 
 from ims_tokenizer import IMSTokenizer, Token, LexerError
 
@@ -206,16 +208,38 @@ class IMSParser(object):
         """ 
         result_dict = {}
         
+        cpt = 1
+        
+        # each product is in a dictionary
+        product_name              = 'product_%d' %(cpt)
+        result_dict[product_name] = {}
+        product = result_dict[product_name]
+        
         token = self._tokenizer.next()
+        
+        # add already seen keywords in this list. This is used to handle product "inheritance"
+        seen_keywords = []
         
         # For the moment look for the different possible tokens
         while token.type != Token.STOP:
             
+            # if the current token has already be seen
+            # store the new product and create a new one with the same properties as the current one
+            # product kind of inherit properties from the previous one
+            if token.type in seen_keywords:
+                cpt +=1
+                product_name  = 'product_%d' %(cpt)
+                result_dict[product_name] = copy.deepcopy(product)
+                product = result_dict[product_name]
+                
+                # clean seen_keyword
+                seen_keywords = []
+            
             # time keyword
             if token.type == Token.TIME:
                
-                result_dict.update(self._parse_time())
-                
+                product.update(self._parse_time())
+                   
             # bull_type
             elif token.type == Token.BULLTYPE:
                
@@ -225,29 +249,33 @@ class IMSParser(object):
                 if token.type != Token.ID:
                     raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
 
-                result_dict[Token.BULLTYPE] = token.value
+                product[Token.BULLTYPE] = token.value
 
                 self._tokenizer.consume_next_token(Token.NEWLINE)
-            
+                   
             # mag keyword
             elif token.type == Token.MAG:
                
-                result_dict.update(self._parse_mag())
+                product.update(self._parse_mag())
+                
             #DEPTH
             elif token.type == Token.DEPTH:
-                
-                result_dict.update(self._parse_depth())
+                 
+                product.update(self._parse_depth())
+                         
             #LAT or LON
             elif token.type == Token.LAT or token.type == Token.LON:
                 
-                result_dict.update(self._parse_latlon(token.type))
-            
+                product.update(self._parse_latlon(token.type))
+                    
             else:
                 raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
            
+            # add current token type in seen_keywords
+            seen_keywords.append(Token.type)
+            
             token = self._tokenizer.next()
     
-            
     def _parse_mag(self):
          
         """ Parse magnitude component.

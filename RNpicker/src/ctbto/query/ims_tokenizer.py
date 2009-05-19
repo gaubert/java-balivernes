@@ -84,39 +84,79 @@ class TokensNotFoundError(LexerError):
 
 class Token(object):
     
-    ID          = 'ID'
-    DATA        = 'DATA'
-    WCID        = 'WCID'
-    EMAILADDR   = 'EMAILADDR'
-    DATETIME    = 'DATETIME'
-    NUMBER      = 'NUMBER'
-    NEWLINE     = 'NEWLINE'
-    MSGFORMAT   = 'MSGFORMAT'
-    COMMA       = 'COMMA'
-    COLON       = 'COLON'
-    MINUS       = 'MINUS'
-    BEGIN       = 'BEGIN'
-    STOP        = 'STOP'
-    TO          = 'TO'
-    MSGTYPE     = 'MSG_TYPE'
-    MSGID       = 'MSG_ID'
-    EMAIL       = 'EMAIL'
-    TIME        = 'TIME'
-    STALIST     = 'STALIST'
-    BULLTYPE    = 'BULLTYPE'
-    DEPTH       = 'DEPTH'
-    MAG         = 'MAG'
-    MAGTYPE     = 'MAGTYPE'
-    CHANLIST    = 'CHANLIST'
-    RELATIVETO  = 'RELATIVETO'
-    HELP        = 'HELP'
-    LAT         = 'LAT'
-    LON         = 'LON'
+    ID            = 'ID'
+    DATA          = 'DATA'
+    WCID          = 'WCID'
+    EMAILADDR     = 'EMAILADDR'
+    DATETIME      = 'DATETIME'
+    NUMBER        = 'NUMBER'
+    NEWLINE       = 'NEWLINE'
+    MSGFORMAT     = 'MSGFORMAT'
+    COMMA         = 'COMMA'
+    COLON         = 'COLON'
+    MINUS         = 'MINUS'
+    BEGIN         = 'BEGIN'
+    STOP          = 'STOP'
+    TO            = 'TO'
+    MSGTYPE       = 'MSG_TYPE'
+    MSGID         = 'MSG_ID'
+    EMAIL         = 'EMAIL'
+    TIME          = 'TIME'
+    STALIST       = 'STALIST'
+    BULLTYPE      = 'BULLTYPE'
+    DEPTH         = 'DEPTH'
+    MAG           = 'MAG'
+    MAGTYPE       = 'MAGTYPE'
+    CHANLIST      = 'CHANLIST'
+    RELATIVETO    = 'RELATIVETO'
+    HELP          = 'HELP'
+    LAT           = 'LAT'
+    LON           = 'LON'
     # ENDMARKER Token to signal end of program
-    ENDMARKER   = 'ENDMARKER'
-    MAX         = 'MAX'
-    MIN         = 'MIN'
-      
+    ENDMARKER     = 'ENDMARKER'
+    MAX           = 'MAX'
+    MIN           = 'MIN'
+    # waveform products
+    BULLETIN       = 'BULLETIN'
+    WAVEFORM       = 'WAVEFORM'
+    EVENT          = 'EVENT'
+    ORIGIN         = 'ORIGIN'
+    EXECSUM        = 'EXECSUM'
+    SLSD           = 'SLSD'
+    ARRIVAL        = 'ARRIVAL'
+    OUTAGE         = 'OUTAGE'
+    STASTATUS      = 'STASTATUS'
+    CHANSTATUS     = 'CHANSTATUS'
+    CHANNEL        = 'CHANNEL'
+    WAVEMISSION    = 'WAVEMISSION'
+    WAVEQUALITY    = 'WAVEQUALITY'
+    STATION        = 'STATION'
+    COMMSTATUS     = 'COMM_STATUS'
+    COMMENT        = 'COMMENT'
+    RESPONSE       = 'RESPONSE'
+    
+    # radionuclide prodcuts
+    DETBKPHD       = 'DETBKPHD'
+    BLANKPHD       = 'BLANKPHD'
+    CALIBPHD       = 'CALIBPHD'
+    QCPHD          = 'QCPHD'
+    SPHDP          = 'SPHDP'
+    SPHDF          = 'SPHDF'
+    ARR            = 'ARR'
+    RRR            = 'RRR'
+    RLR            = 'RLR'
+    SSREB          = 'SSREB'
+    ALERTFLOW      = 'ALERTFLOW'
+    ALERTSYSTEM    = 'ALERTSYSTEM'
+    ALERTTEMP      = 'ALERTTEMP'
+    ALERTUPS       = 'ALERTUPS'
+    MET            = 'MET'
+    RNPS           = 'RNPS'
+    
+    ARMR           = 'ARMR'
+    FPEB           = 'FPEB'
+    
+         
     def __init__(self, type, value, begin, end, line_num, parsed_line, file_pos=-1):
         
         self._type         = type
@@ -285,6 +325,85 @@ LON_RE        = re.compile('LON',re.IGNORECASE)
 
 KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Token.EMAIL,Token.TIME,Token.STALIST,Token.BULLTYPE,Token.DEPTH,Token.MAG,Token.MAGTYPE,Token.CHANLIST,Token.RELATIVETO,Token.HELP,Token.LAT,Token.LON]
 
+# products
+
+#BULLETIN
+BULLETIN_RE      = re.compile('BULLETIN',re.IGNORECASE)
+#WAVEFORM
+WAVEFORM_RE      = re.compile('WAVEFORM',re.IGNORECASE)
+#SLSD
+SLSD_RE          = re.compile('SLSD',re.IGNORECASE)
+# ARRIVAL
+ARRIVAL_RE       = re.compile('ARRIVAL',re.IGNORECASE)
+#STA_STATUS
+STA_STATUS_RE    = re.compile('STA_STATUS',re.IGNORECASE)
+#CHAN_STATUS
+CHAN_STATUS_RE   = re.compile('CHAN_STATUS',re.IGNORECASE)
+#CHANNEL
+CHANNEL_RE       = re.compile('CHANNEL',re.IGNORECASE)
+#WAVE_MISSION
+WAVE_MISSION_RE  = re.compile('WAVE_MISSION',re.IGNORECASE)
+#WAVE_QUALITY
+WAVE_QUALITY_RE  = re.compile('WAVE_QUALITY',re.IGNORECASE)
+#STATION
+STATION_RE       = re.compile('STATION',re.IGNORECASE)
+#EVENT
+EVENT_RE         = re.compile('EVENT',re.IGNORECASE)
+#EXECSUM
+EXECSUM_RE       = re.compile('EXECSUM',re.IGNORECASE)
+#COMMENT
+COMMENT_RE       = re.compile('COMMENT',re.IGNORECASE)
+#COMM_STATUS
+COMM_STATUS      = re.compile('COMM_STATUS',re.IGNORECASE)
+#ORIGIN
+ORIGIN_RE        = re.compile('ORIGIN',re.IGNORECASE)
+#OUTAGE
+OUTAGE_RE        = re.compile('OUTAGE',re.IGNORECASE)
+#RESPONSE
+RESPONSE_RE      = re.compile('RESPONSE',re.IGNORECASE)
+
+#DETBKPHD
+DETBKPHD_RE      = re.compile('DETBKPHD',re.IGNORECASE)
+#BLANKPHD
+BLANKPHD_RE      = re.compile('BLANKPHD',re.IGNORECASE)
+#CALIBPHD
+CALIBPHD_RE      = re.compile('CALIBPHD',re.IGNORECASE)
+#QCPHD
+QCPHD_RE         = re.compile('QCPHD',re.IGNORECASE)
+#SPHDP
+SPHDP_RE         = re.compile('SPHDP',re.IGNORECASE)
+#SPHDF
+SPHDF_RE         = re.compile('SPHDF',re.IGNORECASE)
+#RLR
+RLR_RE           = re.compile('RLR',re.IGNORECASE)
+#ARR
+ARR_RE           = re.compile('ARR',re.IGNORECASE)
+#ARR
+RRR_RE           = re.compile('RRR',re.IGNORECASE)
+#ALERTFLOW
+ALERTFLOW_RE     = re.compile('ALERT_FLOW',re.IGNORECASE)
+#ALERT_SYSTEM
+ALERTSYSTEM_RE   = re.compile('ALERT_SYSTEM',re.IGNORECASE)
+#ALERT_TEMP
+ALERTTEMP_RE     = re.compile('ALERT_TEMP',re.IGNORECASE)
+#ALERT_TEMP
+ALERTUPS_RE      = re.compile('ALERT_UPS',re.IGNORECASE)
+#MET
+MET_RE           = re.compile('MET',re.IGNORECASE)
+#RNPS
+RNPS_RE          = re.compile('RNPS',re.IGNORECASE)
+#SSREB
+SSREB_RE         = re.compile('SSREB',re.IGNORECASE)
+
+#Deprecated ?
+#ARMR
+ARMR_RE          = re.compile('ARMR',re.IGNORECASE)
+#FPEB
+FPEB_RE          = re.compile('FPEB',re.IGNORECASE)
+
+SHI_PRODUCTS_TOKENS   = [Token.BULLETIN, Token.WAVEFORM, Token.SLSD, Token.ARRIVAL,Token.EVENT,Token.ORIGIN, Token.EXECSUM, Token.OUTAGE, Token.RESPONSE, Token.STASTATUS, Token.CHANSTATUS, Token.CHANNEL, Token.WAVEMISSION,Token.WAVEQUALITY,Token.STATION, Token.COMMENT, Token.COMMSTATUS]
+RADIO_PRODUCTS_TOKENS = [Token.DETBKPHD, Token.BLANKPHD, Token.CALIBPHD, Token.QCPHD,Token.SPHDP, Token.SPHDF, Token.ARR, Token.RRR, Token.SSREB, Token.RLR, Token.RNPS, Token.ALERTFLOW, Token.ALERTSYSTEM, Token.ALERTTEMP, Token.ALERTUPS, Token.MET, Token.ARMR, Token.FPEB]
+
 TOKENS_RE = {
            Token.ID           : ID_RE,
            #different ID Flavours
@@ -311,6 +430,46 @@ TOKENS_RE = {
            Token.HELP         : HELP_RE,
            Token.LAT          : LAT_RE,
            Token.LON          : LON_RE,
+           
+           # ID refined tokens
+           #SHI products
+           Token.BULLETIN     : BULLETIN_RE,
+           Token.WAVEFORM     : WAVEFORM_RE,
+           Token.EVENT        : EVENT_RE,
+           Token.EXECSUM      : EXECSUM_RE,
+           Token.SLSD         : SLSD_RE,
+           Token.ARRIVAL      : ARRIVAL_RE,
+           Token.STASTATUS    : STA_STATUS_RE,
+           Token.CHANSTATUS   : CHAN_STATUS_RE,
+           Token.CHANNEL      : CHANNEL_RE,
+           Token.WAVEMISSION  : WAVE_MISSION_RE,
+           Token.WAVEQUALITY  : WAVE_QUALITY_RE,
+           Token.STATION      : STATION_RE, 
+           Token.COMMENT      : COMMENT_RE,
+           Token.COMMSTATUS   : COMM_STATUS, 
+           Token.ORIGIN       : ORIGIN_RE,
+           Token.OUTAGE       : OUTAGE_RE,
+           Token.RESPONSE     : RESPONSE_RE,
+           #radio nuclide products
+           Token.DETBKPHD     : DETBKPHD_RE,
+           Token.BLANKPHD     : BLANKPHD_RE,
+           Token.CALIBPHD     : CALIBPHD_RE, 
+           Token.QCPHD        : QCPHD_RE,
+           Token.SPHDP        : SPHDP_RE,
+           Token.SPHDF        : SPHDF_RE,
+           Token.RLR          : RLR_RE,
+           Token.ARR          : ARR_RE,
+           Token.RRR          : RRR_RE,
+           Token.RNPS         : RNPS_RE,
+           Token.ALERTFLOW    : ALERTFLOW_RE,
+           Token.ALERTSYSTEM  : ALERTSYSTEM_RE,
+           Token.ALERTTEMP    : ALERTTEMP_RE,
+           Token.ALERTUPS     : ALERTUPS_RE,
+           Token.MET          : MET_RE,
+           Token.SSREB        : SSREB_RE,
+           Token.ARMR         : ARMR_RE,
+           Token.FPEB         : FPEB_RE,
+           
            Token.COMMA        : COMMA_RE,
            Token.COLON        : COLON_RE,
            Token.MINUS        : MINUS_RE,
@@ -320,12 +479,10 @@ TOKENS_RE = {
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + [Token.MSGFORMAT,Token.EMAILADDR, Token.ID,Token.NUMBER,Token.COMMA,Token.COLON,Token.MINUS,Token.NEWLINE]
+TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + SHI_PRODUCTS_TOKENS + RADIO_PRODUCTS_TOKENS + [Token.MSGFORMAT,Token.EMAILADDR, Token.ID,Token.NUMBER,Token.COMMA,Token.COLON,Token.MINUS,Token.NEWLINE]
 
 # Literals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
-
-
 
 class IMSTokenizer(object):
     """ 

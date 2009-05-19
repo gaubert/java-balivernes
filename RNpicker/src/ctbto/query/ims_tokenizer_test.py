@@ -91,7 +91,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 21:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 22:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -291,7 +291,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 25:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 26:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -394,7 +394,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 25:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 26:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -497,7 +497,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 25:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 26:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -613,7 +613,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 29:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 30:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -714,7 +714,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 25:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 26:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -820,7 +820,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'ID')
                 self.assertEqual(token.value,'DATA_TYPE')
             elif cpt == 26:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'WAVEFORM')
                 self.assertEqual(token.value,'WAVEFORM')
             elif cpt == 27:
                 self.assertEqual(token.type,'MSGFORMAT')
@@ -917,7 +917,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 7:
                 self.assertEqual(token.type,Token.NEWLINE)
@@ -1138,7 +1138,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 25:
-                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.type,'ALERTTEMP')
                 self.assertEqual(token.value,'alert_temp')
             elif cpt == 26:
                 self.assertEqual(token.type,Token.NEWLINE)
