@@ -127,13 +127,11 @@ class IMSParser(object):
         
         result[Token.MSGFORMAT] = token.value
         
-        #eat next line character
-        self._tokenizer.consume_next_token(Token.NEWLINE)
+        #eat next line characters
+        token = self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
         
         # line 2: get the message type
         # format: msg_type request
-        token = self._tokenizer.next()
-        
         if token.type != Token.MSGTYPE:
             raise ParsingError("Expected a MSGTYPE type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
         
@@ -144,22 +142,20 @@ class IMSParser(object):
         
         result[Token.MSGTYPE] = token.value
          
-        #eat next line character
-        self._tokenizer.consume_next_token(Token.NEWLINE)
-        
-        token = self._tokenizer.next()
+        #eat next line characters
+        token = self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
         
         # line 3: get the message id
         # format: msg_id id_string [source]
         if token.type != Token.MSGID:
-            raise ParsingError("Expected a MSGID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError("Expected a MSGID type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
         
         token = self._tokenizer.next()
         
         # next token is an ID 
         # TODO: the id_string should be up to 20 characters and should not contains blanks or \
         if token.type != Token.ID and token.type != Token.NUMBER:
-            raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError("Expected a ID type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
         
         result[Token.MSGID] = token.value
         
@@ -169,29 +165,31 @@ class IMSParser(object):
         
         # this is a source and source format 3-letter country code followed by _ndc (ex: any_ndc)
         if token.type == Token.ID:
-            result['SOURCE'] = token.value
+            result['SOURCE'] = token.value 
             
-            #eat next line character
-            self._tokenizer.consume_next_token(Token.NEWLINE)
-       
+            # go to next token
+            self._tokenizer.next()
+                     
         elif token.type != Token.NEWLINE:
             raise ParsingError("Expected an ID type as the source or a NEWLINE type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
         
+        #eat current and next line characters
+        token = self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
+        
         # line 4: e-mail foo.bar@domain_name
-        token = self._tokenizer.next()
         # look for an EMAIL keyword
         if token.type != Token.EMAIL:
-            raise ParsingError("Expected a NEWLINE type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError("Expected a EMAIL type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
         
         token = self._tokenizer.next()
         # look for the EMAILADDR
         if token.type != Token.EMAILADDR:
-            raise ParsingError("Expected an EMAILADDR type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError("Expected an EMAILADDR type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
         
         result[Token.EMAIL] = token.value
         
-        #eat next line character
-        self._tokenizer.consume_next_token(Token.NEWLINE)
+        #eat next line characters
+        self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
         
         return result
            
@@ -215,11 +213,10 @@ class IMSParser(object):
         result_dict[product_name] = {}
         product = result_dict[product_name]
         
-        token = self._tokenizer.next()
+        token = self._tokenizer.current_token()
         
         # add already seen keywords in this list. This is used to handle product "inheritance"
         seen_keywords = []
-        seen_type     = None
         
         # For the moment look for the different possible tokens
         while token.type != Token.STOP:
@@ -261,7 +258,7 @@ class IMSParser(object):
 
                 product[Token.BULLTYPE] = token.value
                 
-                self._tokenizer.consume_next_token(Token.NEWLINE)
+                self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
             #RELATIVE_TO origin | event | bulletin or ID
             elif token.type == Token.RELATIVETO:
                
@@ -274,7 +271,7 @@ class IMSParser(object):
                 
                 product[Token.RELATIVETO] = token.value
 
-                self._tokenizer.consume_next_token(Token.NEWLINE)   
+                self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])   
                                  
             # mag keyword
             elif token.type == Token.MAG:
@@ -322,7 +319,8 @@ class IMSParser(object):
             else:
                 raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
            
-            token = self._tokenizer.next()
+            # eat any left NEWLINE token
+            token = self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
         
         return result_dict
     
@@ -464,12 +462,15 @@ class IMSParser(object):
         if token.type == Token.NUMBER:
             res_dict['ENDMAG'] = token.value
             
-            #consume next NEWLINE token
+            #consume new line
             self._tokenizer.consume_next_token(Token.NEWLINE)
             
         elif token.type == Token.NEWLINE:
             
             res_dict['ENDMAG'] = Token.MAX 
+        
+        #go to next token
+        self._tokenizer.next()
        
         return res_dict
         
@@ -508,12 +509,15 @@ class IMSParser(object):
         if token.type == Token.NUMBER:
             res_dict['ENDDEPTH'] = token.value
             
-            #consume next NEWLINE token
+            #consume new line
             self._tokenizer.consume_next_token(Token.NEWLINE)
             
         elif token.type == Token.NEWLINE:
             
             res_dict['ENDDEPTH'] = Token.MAX 
+        
+        #go to next token
+        self._tokenizer.next()
        
         return res_dict
         
@@ -568,18 +572,22 @@ class IMSParser(object):
             res_dict['END%s' %(a_type)] = '-%s'%(token.value)
             
             # try to consume the next token that should be TO
-            self._tokenizer.consume_next_token(Token.NEWLINE)
+            #go to next token
+            self._tokenizer.next()
             
         elif token.type == Token.NUMBER:
             
             res_dict['END%s'%(a_type)] = token.value
             
-            #consume next NEWLINE token
+            #consume new line
             self._tokenizer.consume_next_token(Token.NEWLINE)
             
         elif token.type == Token.NEWLINE:
             
             res_dict['END%s'%(a_type)] = Token.MAX 
+            
+        #go to next token
+        self._tokenizer.next()
        
         return res_dict
             
@@ -615,6 +623,7 @@ class IMSParser(object):
         
         time_dict['ENDDATE'] = token.value
         
+        #consume at least a NEWLINE
         self._tokenizer.consume_next_token(Token.NEWLINE)
         
         return time_dict
