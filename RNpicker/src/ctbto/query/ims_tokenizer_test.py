@@ -37,7 +37,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -46,7 +46,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -157,7 +157,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -166,7 +166,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -225,7 +225,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -234,7 +234,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -328,7 +328,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -337,7 +337,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -431,7 +431,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -440,7 +440,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -535,7 +535,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -544,7 +544,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -648,7 +648,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -657,7 +657,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -751,7 +751,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -760,7 +760,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -881,7 +881,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -995,7 +995,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -1004,7 +1004,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -1072,7 +1072,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -1081,7 +1081,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
-                self.assertEqual(token.type,'MSG_ID')
+                self.assertEqual(token.type,'MSGID')
                 self.assertEqual(token.value,'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
@@ -1183,7 +1183,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -1196,6 +1196,55 @@ class LexerTest(TestCase):
             
         
         token = tokenizer.consume_next_token(Token.NEWLINE)
+        
+        self.assertEqual(token.type,Token.NEWLINE)
+        self.assertEqual(token.value,'\n')
+        
+        token = tokenizer.next()
+        
+        self.assertEqual(token.type,Token.MSGID)
+        self.assertEqual(token.value,'msg_id')
+    
+    def test_consume_next_tokens_method(self):
+        ''' test consume next tokens list functionality '''
+        
+        tokenizer = IMSTokenizer()
+        
+        str = "     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ABC,DEF, FGH  \nalert_temp\n    stop"
+        
+        io_prog = StringIO.StringIO(str)
+         
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        
+        token = tokenizer.next()
+        
+        while token.type != Token.ENDMARKER:
+            
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'IMS2.0')
+            elif cpt == 2:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 3:
+                self.assertEqual(token.type,'MSGTYPE')
+                self.assertEqual(token.value,'msg_type')
+            elif cpt == 4:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'data')
+                break
+            
+            token = tokenizer.next()
+            
+            cpt +=1
+            
+        token = tokenizer.consume_next_tokens([Token.NEWLINE])
         
         self.assertEqual(token.type,Token.NEWLINE)
         self.assertEqual(token.value,'\n')
@@ -1234,7 +1283,51 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
-                self.assertEqual(token.type,'MSG_TYPE')
+                self.assertEqual(token.type,'MSGTYPE')
+                self.assertEqual(token.value,'msg_type')
+            elif cpt == 4:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'data')
+                break
+            
+            token = tokenizer.next()
+            
+            cpt +=1
+            
+        try:
+            token = tokenizer.consume_next_token(Token.MSGID)
+        except  BadTokenError, e:
+            self.assertEqual(e.message,'Found Token with type NEWLINE and value [\n] in Line 2, position 14. Was expecting MSGID.')
+    
+    def test_consume_next_tokens_method_error(self):
+        ''' test consume next tokens list functionality and raise exception '''
+        
+        tokenizer = IMSTokenizer()
+        
+        str = "     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ABC,DEF, FGH  \nalert_temp\n    stop"
+        
+        io_prog = StringIO.StringIO(str)
+         
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        
+        token = tokenizer.next()
+        
+        while token.type != Token.ENDMARKER:
+            
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'IMS2.0')
+            elif cpt == 2:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 3:
+                self.assertEqual(token.type,'MSGTYPE')
                 self.assertEqual(token.value,'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
@@ -1247,10 +1340,52 @@ class LexerTest(TestCase):
             
         try:
             
-            token = tokenizer.consume_next_token(Token.MSGID)
+            token = tokenizer.consume_next_tokens([Token.MSGID])
         except  BadTokenError, e:
-            self.assertEqual(e.message,'Found Token with type NEWLINE and value [\n] in Line 2, position 14. Was expecting a MSG_ID.')
+            self.assertEqual(e.message,"Found Token with type NEWLINE and value [\n] in Line 2, position 14. Was expecting ['MSGID'].")
     
+    def test_consume_while_next_token_is_in(self):
+        ''' test consume while next token is in functionality '''
+        
+        tokenizer = IMSTokenizer()
+        
+        str = "     begin IMS2.0     \n\n\n\n\n\n\nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ABC,DEF, FGH  \nalert_temp\n    stop"
+        
+        io_prog = StringIO.StringIO(str)
+         
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        
+        token = tokenizer.next()
+        
+        while token.type != Token.ENDMARKER:
+            
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'IMS2.0')
+                break
+            
+            token = tokenizer.next()
+            cpt +=1
+        
+        # test the method now
+        tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        
+        token = tokenizer.current_token()
+    
+        self.assertEqual(token.type,'MSGTYPE')
+        self.assertEqual(token.value,'msg_type')
+        
+        token = tokenizer.next()
+        
+        self.assertEqual(token.type,'ID')
+        self.assertEqual(token.value,'data')
+         
                  
     def ztest_read_from_email(self):
         ''' test read from an email message and lex '''

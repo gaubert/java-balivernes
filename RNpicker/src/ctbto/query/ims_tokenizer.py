@@ -50,13 +50,13 @@ class IllegalCharacterError(LexerError):
 
 class BadTokenError(LexerError):
     
-    def __init__(self, a_line_num, a_line, a_pos, a_expected_token_type, a_found_token):
+    def __init__(self, a_line_num, a_line, a_pos, a_expected_token_types, a_found_token):
          
         self._line     = a_line
         self._pos      = a_pos
         self._line_num = a_line_num
          
-        msg = "Found Token with type %s and value [%s] in Line %s, position %s. Was expecting a %s."% (a_found_token.type,a_found_token.value,a_line_num,a_pos,a_expected_token_type)
+        msg = "Found Token with type %s and value [%s] in Line %s, position %s. Was expecting %s."% (a_found_token.type,a_found_token.value,a_line_num,a_pos,a_expected_token_types)
 
         super(BadTokenError, self).__init__(msg)
          
@@ -689,7 +689,7 @@ class IMSTokenizer(object):
            Consume the next token and check that it is the expected type otherwise send an exception
            
            Args:
-               a_token_type:  the token to consume
+               a_token_type:  the token type to consume
             
            Returns:
                return the consumed token 
@@ -701,6 +701,27 @@ class IMSTokenizer(object):
             raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_type,tok)
         else:
             return tok
+        
+    def consume_while_next_token_is_in(self,a_token_types_list):
+        """
+           Consume the next tokens as long as they have one of the passed types.
+           This means that at least one token with one of the passed types needs to be matched.
+           
+           Args:
+               a_token_types_list: the token types to consume
+            
+           Returns:
+               return the next non matching token 
+        """
+        
+        self.consume_next_tokens(a_token_types_list)
+        
+        while True:
+        
+            tok = self.next()
+        
+            if tok.type not in a_token_types_list:
+                return tok
     
     def consume_next_tokens(self,a_token_types_list):
         """
@@ -716,7 +737,7 @@ class IMSTokenizer(object):
         tok = self.next()
         
         if tok.type not in a_token_types_list:
-            raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_type,tok)
+            raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_types_list,tok)
         else:
             return tok
         
