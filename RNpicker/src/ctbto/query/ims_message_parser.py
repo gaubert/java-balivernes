@@ -39,6 +39,8 @@ class IMSParser(object):
     c_log = logging.getLogger("query.IMSParser")
     c_log.setLevel(logging.DEBUG)
     
+    c_PRODUCTS = [Token.BULLETIN,Token.SLSD,Token.ARRIVAL,Token.WAVEFORM]
+    
     def __init__(self):
         """ constructor """
         
@@ -217,6 +219,7 @@ class IMSParser(object):
         
         # add already seen keywords in this list. This is used to handle product "inheritance"
         seen_keywords = []
+        seen_type     = None
         
         # For the moment look for the different possible tokens
         while token.type != Token.STOP:
@@ -237,10 +240,19 @@ class IMSParser(object):
             if token.type == Token.TIME:
                
                 product.update(self._parse_time())
+                
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(Token.TIME)
                    
-            # bull_type
+            # bull_type 
+            # they both expect an ID
             elif token.type == Token.BULLTYPE:
-               
+                      
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(Token.BULLTYPE) 
+                  
                 # next token should be a ID (Bulletin type)
                 token = self._tokenizer.next()
                 
@@ -248,38 +260,68 @@ class IMSParser(object):
                     raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
 
                 product[Token.BULLTYPE] = token.value
-
+                
                 self._tokenizer.consume_next_token(Token.NEWLINE)
-                   
+            #RELATIVE_TO origin | event | bulletin or ID
+            elif token.type == Token.RELATIVETO:
+               
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(Token.RELATIVETO)
+               
+                # next token should be a ID (Bulletin type)
+                token = self._tokenizer.consume_next_tokens([Token.ORIGIN, Token.EVENT, Token.BULLETIN, Token.ID])
+                
+                product[Token.RELATIVETO] = token.value
+
+                self._tokenizer.consume_next_token(Token.NEWLINE)   
+                                 
             # mag keyword
             elif token.type == Token.MAG:
                
-                product.update(self._parse_mag())
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(Token.MAG)
+                
+                product.update(self._parse_mag()) 
                 
             #DEPTH
             elif token.type == Token.DEPTH:
                  
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(Token.DEPTH)
+                
                 product.update(self._parse_depth())
                          
             #LAT or LON
             elif token.type == Token.LAT or token.type == Token.LON:
                 
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(token.type)
+                
                 product.update(self._parse_latlon(token.type))
             
-            elif token.type == Token.BULLETIN or token.type == Token.SLSD or token.type == Token.ARRIVAL:
+            elif token.type == Token.BULLETIN or token.type == Token.SLSD or token.type == Token.ARRIVAL or token.type == Token.WAVEFORM:
+                
+                # to handle multiple product retrievals
+                # need to add all PRODUCTS
+                seen_keywords.extend(IMSParser.c_PRODUCTS)
                 
                 product.update(self._parse_shi_product(token))
                         
             elif token.type == Token.STALIST:
-                
+                                
                 product.update(self._parse_sta_list())
-                                    
+                
+                # to handle multiple product retrievals
+                # need to add all PRODUCTS
+                seen_keywords.append(Token.STALIST)
+                                     
             else:
                 raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
            
-            # add current token type in seen_keywords
-            seen_keywords.append(token.type)
-            
             token = self._tokenizer.next()
         
         return result_dict
