@@ -4,7 +4,7 @@ Created on May 18, 2009
 @author: guillaume.aubert@ctbto.org
 '''
 
-from unittest import TestCase,TestLoader,TextTestRunner
+from unittest import TestCase
 
 from ims_message_parser import IMSParser
 
@@ -36,7 +36,7 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
          
-        self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
     def test_simple_request_message_without_source(self): 
         """ simple message taken from AutoDRM Help response message without the optional source field """
@@ -61,7 +61,7 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
          
-        self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
     def test_multiple_products_request(self):
         """ multiple products request message taken from AutoDRM Help response message """
@@ -87,12 +87,12 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
         
-        self.assertEqual(result['PRODUCT_1'],{'ENDLON': '-140', 'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'STARTDEPTH': 'MIN', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDMAG': '5.0', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'ENDLON': '-140', 'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'STARTDEPTH': 'MIN', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDMAG': '5.0', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
      
         # product_2
         self.assertTrue(result.has_key('PRODUCT_2'))
      
-        self.assertEqual(result['PRODUCT_2'],{'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
       
     def test_multiple_lat_lon_request(self): 
         """ multiple products request message with different lat/lon taken from AutoDRM Help response message """ 
@@ -117,7 +117,7 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
         
-        self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
     
     def test_parse_several_request_with_the_same_parser(self): 
         """ parse multiple request message with the same parser (check if internal state stays consistent) """ 
@@ -142,7 +142,7 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
         
-        self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
     
         # first message ok, get the second one
         
@@ -162,12 +162,12 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result1.has_key('PRODUCT_1'))
         
-        self.assertEqual(result1['PRODUCT_1'],{'ENDLON': '-140', 'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'STARTDEPTH': 'MIN', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDMAG': '5.0', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result1['PRODUCT_1'], {'ENDLON': '-140', 'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'STARTDEPTH': 'MIN', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDMAG': '5.0', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
      
         # product_2
         self.assertTrue(result1.has_key('PRODUCT_2'))
      
-        self.assertEqual(result1['PRODUCT_2'],{'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result1['PRODUCT_2'], {'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
       
         
     
@@ -195,7 +195,7 @@ class IMSMessageParserTest(TestCase):
         self.assertTrue(result.has_key('PRODUCT_1'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_1'],{'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
+        self.assertEqual(result['PRODUCT_1'], {'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
     
     def test_slsd_automatic_with_many_newlines_request(self): 
         """ test with station list and slsd taken from AutoDRM Help response message.
@@ -223,7 +223,7 @@ class IMSMessageParserTest(TestCase):
         self.assertTrue(result.has_key('PRODUCT_1'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_1'],{'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
+        self.assertEqual(result['PRODUCT_1'], {'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
      
      
     def test_slsd_associated_request(self):
@@ -250,7 +250,7 @@ class IMSMessageParserTest(TestCase):
         self.assertTrue(result.has_key('PRODUCT_1'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_1'],{'STARTDATE': '1999/06/01', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/07/01', 'SUBTYPE': 'associated', 'FORMAT': 'ims2.0', 'TYPE': 'ARRIVAL', 'STALIST': ['ZAL']})  
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/06/01', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/07/01', 'SUBTYPE': 'associated', 'FORMAT': 'ims2.0', 'TYPE': 'ARRIVAL', 'STALIST': ['ZAL']})  
    
     def test_waveform_segment_and_bulletin_request(self):
         """ test with waveform_segment and bulletin taken from AutoDRM help response message """
@@ -276,13 +276,13 @@ class IMSMessageParserTest(TestCase):
         self.assertTrue(result.has_key('PRODUCT_1'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_1'],{'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims1.0', 'RELATIVETO': 'bulletin', 'BULLTYPE': 'idc_reb', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims1.0', 'RELATIVETO': 'bulletin', 'BULLTYPE': 'idc_reb', 'TYPE': 'BULLETIN'})
    
         # product_2
         self.assertTrue(result.has_key('PRODUCT_2'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_2'],{'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
+        self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
     
     def test_waveform_segment_request_1(self):
         """ test with waveform_segment taken from AutoDRM help response message """
@@ -308,7 +308,7 @@ class IMSMessageParserTest(TestCase):
         self.assertTrue(result.has_key('PRODUCT_1'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_1'],{'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
      
     def test_waveform_segment_request_2(self):
         """ test with waveform_segment taken from AutoDRM help response message """
@@ -334,7 +334,7 @@ class IMSMessageParserTest(TestCase):
         self.assertTrue(result.has_key('PRODUCT_1'))
         
         # validate that there is a sta_list and a subtype
-        self.assertEqual(result['PRODUCT_1'],{'STARTDATE': '2000/1/9 1:00', 'SUBFORMAT': 'int', 'ENDDATE': '2000/1/9 1:15', 'FORMAT': 'ims1.0', 'TYPE': 'WAVEFORM', 'STALIST': ['CMAR', 'PDAR']})
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2000/1/9 1:00', 'SUBFORMAT': 'int', 'ENDDATE': '2000/1/9 1:15', 'FORMAT': 'ims1.0', 'TYPE': 'WAVEFORM', 'STALIST': ['CMAR', 'PDAR']})
    
    
    

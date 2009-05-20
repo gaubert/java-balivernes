@@ -9,12 +9,12 @@ import StringIO
 import copy
 
 
-from ims_tokenizer import IMSTokenizer, Token, LexerError
+from ims_tokenizer import IMSTokenizer, Token
 
 class ParsingError(Exception):
     """Base class for All exceptions"""
 
-    def __init__(self,a_msg,a_line_num=None,a_pos=None):
+    def __init__(self, a_msg, a_line_num=None, a_pos=None):
         
         self._line_num = a_line_num
         self._pos      = a_pos
@@ -22,9 +22,9 @@ class ParsingError(Exception):
         if self._line_num == None and self._pos == None:
             extra = "" 
         else:
-            extra = "(line=%s,pos=%s)"%(self._line_num,self._pos)
+            extra = "(line=%s,pos=%s)"% (self._line_num, self._pos)
         
-        super(ParsingError,self).__init__("%s %s."%(a_msg,extra))
+        super(ParsingError, self).__init__("%s %s."% (a_msg, extra))
     
     #def __str__(self):
     #    return "ParsingError (line:%s,col:%s) => %s"%()
@@ -39,7 +39,7 @@ class IMSParser(object):
     c_log = logging.getLogger("query.IMSParser")
     c_log.setLevel(logging.DEBUG)
     
-    c_PRODUCTS = [Token.BULLETIN,Token.SLSD,Token.ARRIVAL,Token.WAVEFORM]
+    c_PRODUCTS = [Token.BULLETIN, Token.SLSD, Token.ARRIVAL, Token.WAVEFORM]
     
     def __init__(self):
         """ constructor """
@@ -49,7 +49,7 @@ class IMSParser(object):
         # io stream
         self._io_prog   = None
     
-    def parse(self,message):
+    def parse(self, message):
         """ parsed the passed message.
         
             Args:
@@ -209,7 +209,7 @@ class IMSParser(object):
         cpt = 1
         
         # each product is in a dictionary
-        product_name              = 'PRODUCT_%d' %(cpt)
+        product_name              = 'PRODUCT_%d'% (cpt)
         result_dict[product_name] = {}
         product = result_dict[product_name]
         
@@ -225,8 +225,8 @@ class IMSParser(object):
             # store the new product and create a new one with the same properties as the current one
             # product kind of inherit properties from the previous one
             if token.type in seen_keywords:
-                cpt +=1
-                product_name  = 'PRODUCT_%d' %(cpt)
+                cpt += 1
+                product_name  = 'PRODUCT_%d'% (cpt)
                 result_dict[product_name] = copy.deepcopy(product)
                 product = result_dict[product_name]
                 
@@ -351,7 +351,7 @@ class IMSParser(object):
                 
                 # should find a COMMA or NEWLINE
                 # IF COMMA loop again else leave loop
-                token = self._tokenizer.consume_next_tokens([Token.COMMA,Token.NEWLINE])
+                token = self._tokenizer.consume_next_tokens([Token.COMMA, Token.NEWLINE])
                 
                 if token.type == Token.NEWLINE:
                     #leave the loop
@@ -364,7 +364,7 @@ class IMSParser(object):
         
         return res_dict   
             
-    def _parse_shi_product(self,a_token):
+    def _parse_shi_product(self, a_token):
         """ Parse shi product.
             It should be a mag range mag [date1[time1]] to [date2[time2]]
         
@@ -521,7 +521,7 @@ class IMSParser(object):
        
         return res_dict
         
-    def _parse_latlon(self,a_type):
+    def _parse_latlon(self, a_type):
         """ Parse latlon component.
             It should be a lat range lat [min] to [max]
         
@@ -543,23 +543,23 @@ class IMSParser(object):
             #expect a number
             token = self._tokenizer.consume_next_token(Token.NUMBER)
             
-            res_dict['START%s' %(a_type)] = '-%s'%(token.value)
+            res_dict['START%s' % (a_type)] = '-%s' % (token.value)
             
             # try to consume the next token that should be TO
             self._tokenizer.consume_next_token(Token.TO)
         # positive number
         elif token.type == Token.NUMBER:
             
-            res_dict['START%s'%(a_type)] = token.value
+            res_dict['START%s' % (a_type)] = token.value
             
             # try to consume the next token that should be TO
             self._tokenizer.consume_next_token(Token.TO)
         # no min value    
         elif token.type == Token.TO:
             # add the min value because begin value has been omitted
-            res_dict['START%s'%(a_type)] = Token.MIN 
+            res_dict['START%s' % (a_type)] = Token.MIN 
         else:
-            ParsingError("Expected a NUMBER or TO type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            ParsingError("Expected a NUMBER or TO type but instead got %s with type %s" % (token.value, token.type), token.line_num, token.begin)
          
         token = self._tokenizer.next()
         
@@ -569,7 +569,7 @@ class IMSParser(object):
             #expect a number
             token = self._tokenizer.consume_next_token(Token.NUMBER)
             
-            res_dict['END%s' %(a_type)] = '-%s'%(token.value)
+            res_dict['END%s' % (a_type)] = '-%s'% (token.value)
             
             # try to consume the next token that should be TO
             #go to next token
@@ -577,14 +577,14 @@ class IMSParser(object):
             
         elif token.type == Token.NUMBER:
             
-            res_dict['END%s'%(a_type)] = token.value
+            res_dict['END%s' % (a_type)] = token.value
             
             #consume new line
             self._tokenizer.consume_next_token(Token.NEWLINE)
             
         elif token.type == Token.NEWLINE:
             
-            res_dict['END%s'%(a_type)] = Token.MAX 
+            res_dict['END%s' % (a_type)] = Token.MAX 
             
         #go to next token
         self._tokenizer.next()
