@@ -266,9 +266,13 @@ class IMSParser(object):
                 
                 product.update(self._parse_latlon(token.type))
             
-            elif token.type == Token.BULLETIN:
+            elif token.type == Token.BULLETIN or token.type == Token.SLSD or token.type == Token.ARRIVAL:
                 
                 product.update(self._parse_shi_product(token))
+                        
+            elif token.type == Token.STALIST:
+                
+                product.update(self._parse_sta_list())
                                     
             else:
                 raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
@@ -279,6 +283,46 @@ class IMSParser(object):
             token = self._tokenizer.next()
         
         return result_dict
+    
+    def _parse_sta_list(self):
+        """ Parse a station list.
+            It should be a mag range mag [date1[time1]] to [date2[time2]]
+        
+            Args: None
+               
+            Returns:
+               return a dictionary of pased values 
+        
+            Raises:
+               exception 
+        """ 
+        res_dict = {}
+        
+        stations = []
+        
+        while True:
+            
+            token = self._tokenizer.next() 
+        
+            #should find an ID
+            if token.type == Token.ID:
+            
+                stations.append(token.value)
+                
+                # should find a COMMA or NEWLINE
+                # IF COMMA loop again else leave loop
+                token = self._tokenizer.consume_next_tokens([Token.COMMA,Token.NEWLINE])
+                
+                if token.type == Token.NEWLINE:
+                    #leave the loop
+                    break
+            else:
+                raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+        
+        # if goes here then there is something in stations
+        res_dict[Token.STALIST] = stations
+        
+        return res_dict   
             
     def _parse_shi_product(self,a_token):
         """ Parse shi product.
@@ -295,11 +339,25 @@ class IMSParser(object):
         
         res_dict = {}
         
-        # add product type
+        # get product type
         res_dict['TYPE'] = a_token.type
         
         token = self._tokenizer.next()
         
+        if token.type == Token.NEWLINE:
+            return res_dict
+        
+        # first try to consume the SUBTYPE if there is any
+        # in that case, there is a subtype (only for SLSD and arrivals)
+        elif token.type == Token.COLON:
+            
+            token = self._tokenizer.consume_next_token(Token.ID)
+            res_dict['SUBTYPE'] = token.value
+            
+            # go to next token
+            token = self._tokenizer.next()
+        
+        #if we have a new line our job is over 
         if token.type == Token.NEWLINE:
             return res_dict
         
@@ -323,7 +381,9 @@ class IMSParser(object):
             # it could be a NEWLINE and there is no subformat
             elif token.type != Token.NEWLINE:
                 raise ParsingError("Expected a NEWLINE or ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-          
+        else:
+            ParsingError("Expected a NEWLINE, MSGFORMAT but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            
         return res_dict  
             
     
