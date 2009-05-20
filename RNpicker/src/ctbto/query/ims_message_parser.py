@@ -168,11 +168,12 @@ class IMSParser(object):
         # this is a source and source format 3-letter country code followed by _ndc (ex: any_ndc)
         if token.type == Token.ID:
             result['SOURCE'] = token.value
+            
+            #eat next line character
+            self._tokenizer.consume_next_token(Token.NEWLINE)
+       
         elif token.type != Token.NEWLINE:
             raise ParsingError("Expected an ID type as the source or a NEWLINE type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
-        #eat next line character
-        self._tokenizer.consume_next_token(Token.NEWLINE)
         
         # line 4: e-mail foo.bar@domain_name
         token = self._tokenizer.next()
@@ -191,9 +192,6 @@ class IMSParser(object):
         self._tokenizer.consume_next_token(Token.NEWLINE)
         
         return result
-    
-    def _consume_new_line_token(self):
-        """ check that the next token is a new line and consume it"""
            
     def _parse_request_message(self):
         """ Parse Radionuclide and SHI request messages
@@ -211,7 +209,7 @@ class IMSParser(object):
         cpt = 1
         
         # each product is in a dictionary
-        product_name              = 'product_%d' %(cpt)
+        product_name              = 'PRODUCT_%d' %(cpt)
         result_dict[product_name] = {}
         product = result_dict[product_name]
         
@@ -228,7 +226,7 @@ class IMSParser(object):
             # product kind of inherit properties from the previous one
             if token.type in seen_keywords:
                 cpt +=1
-                product_name  = 'product_%d' %(cpt)
+                product_name  = 'PRODUCT_%d' %(cpt)
                 result_dict[product_name] = copy.deepcopy(product)
                 product = result_dict[product_name]
                 
@@ -271,9 +269,7 @@ class IMSParser(object):
             elif token.type == Token.BULLETIN:
                 
                 product.update(self._parse_shi_product(token))
-                
-                print("result_dict = %s\n"%(result_dict)) 
-                    
+                                    
             else:
                 raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
            
