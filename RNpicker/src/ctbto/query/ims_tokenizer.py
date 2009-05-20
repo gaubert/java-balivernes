@@ -687,14 +687,35 @@ class IMSTokenizer(object):
     def consume_next_token(self,a_token_type):
         """
            Consume the next token and check that it is the expected type otherwise send an exception
+           
+           Args:
+               a_token_type:  the token to consume
             
+           Returns:
+               return the consumed token 
+        """
+        
+        tok = self.next()
+        
+        if tok.type != a_token_type:
+            raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_type,tok)
+        else:
+            return tok
+    
+    def consume_next_tokens(self,a_token_types_list):
+        """
+           Consume the one of the next token types given in the list and check that it is the expected type otherwise send an exception
+            
+           Args:
+               a_tokens_list:  the token types to list 
+               
            Returns:
                return next token 
         """
         
         tok = self.next()
         
-        if tok.type != a_token_type:
+        if tok.type not in a_token_types_list:
             raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_type,tok)
         else:
             return tok

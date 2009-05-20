@@ -174,7 +174,7 @@ class IMSMessageParserTest(TestCase):
     def test_slsd_request(self): 
         """ test with station list and slsd taken from AutoDRM Help response message """ 
         
-        message = "begin ims1.0\nmsg_type request    \nmsg_id ex006 any_ndc \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/08/01 to 1999/09/01   \nsta_list HIA,MJARbull_type idc_sel1\nslsd:automatic ims1.0\nstop"
+        message = "begin ims1.0\nmsg_type request    \nmsg_id ex134 any_ndc \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/08/01 to 1999/09/01   \nsta_list HIA,MJAR\nbull_type idc_sel1\nslsd:automatic ims1.0\nstop"
         
         parser = IMSParser()
         
@@ -185,13 +185,23 @@ class IMSMessageParserTest(TestCase):
         # check mandatory fields
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
-        self.assertEqual(result['MSGID'],'ex042')
+        self.assertEqual(result['MSGID'],'ex134')
         self.assertEqual(result['EMAIL'],'foo_bar.a.vb.bar@venus.com')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
+       
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
         
-    """    Add Errors (bad email address, missing essential elements,)    
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'],{'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
+     
+        
+        
+        
+        
+    """    Add Errors (bad email address, missing essential elements,incomplete format:subformat req, incomplete type:subtype format)    
     """
         
         
