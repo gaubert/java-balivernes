@@ -693,6 +693,9 @@ class IMSTokenizer(object):
             
            Returns:
                return the consumed token 
+           
+           Raises:
+               exception  BadTokenError if a Token Type that is not a_token_type is found
         """
         
         tok = self.next()
@@ -723,6 +726,27 @@ class IMSTokenizer(object):
             if tok.type not in a_token_types_list:
                 return tok
     
+    def consume_while_current_token_is_in(self,a_token_types_list):
+        """
+           Consume the tokens starting from the current token as long as they have one of the passed types.
+           It is a classical token eater. It eats tokens as long as they are the specified type
+           
+           Args:
+               a_token_types_list: the token types to consume
+            
+           Returns:
+               return the next non matching token 
+        """
+        
+        tok = self.current_token()
+        
+        while tok.type in a_token_types_list:
+            tok = self.next()
+        
+        return tok
+        
+        
+    
     def consume_next_tokens(self,a_token_types_list):
         """
            Consume the one of the next token types given in the list and check that it is the expected type otherwise send an exception
@@ -732,6 +756,9 @@ class IMSTokenizer(object):
                
            Returns:
                return next token 
+           
+           Raises:
+               exception  BadTokenError if a Token Type that is not in a_token_types_list is found
         """
         
         tok = self.next()

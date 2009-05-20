@@ -13,7 +13,7 @@ class IMSMessageParserTest(TestCase):
     def setUp(self):
         pass
     
-    def ztest_simple_request_message(self):
+    def test_simple_request_message(self):
         """ simple message taken from AutoDRM Help response message """
         
         message = "begin ims1.0\r\nmsg_type request\nmsg_id ex009 any_ndc \ne-mail foo.bar.ssi@domain.name.de \ntime 1999/06/13 to 1999/06/14 \nbull_type idc_reb \nbulletin ims1.0\nstop"
@@ -38,7 +38,7 @@ class IMSMessageParserTest(TestCase):
          
         self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
-    def ztest_simple_request_message_without_source(self): 
+    def test_simple_request_message_without_source(self): 
         """ simple message taken from AutoDRM Help response message without the optional source field """
         
         message = "begin ims1.0\r\nmsg_type request\nmsg_id ex009  \ne-mail foo.bar.ssi@domain.name.de \ntime 1999/06/13 to 1999/06/14 \nbull_type idc_reb \nbulletin ims1.0\nstop"
@@ -63,7 +63,7 @@ class IMSMessageParserTest(TestCase):
          
         self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
-    def ztest_multiple_products_request(self):
+    def test_multiple_products_request(self):
         """ multiple products request message taken from AutoDRM Help response message """
         
         
@@ -94,7 +94,7 @@ class IMSMessageParserTest(TestCase):
      
         self.assertEqual(result['PRODUCT_2'],{'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
       
-    def ztest_multiple_lat_lon_request(self): 
+    def test_multiple_lat_lon_request(self): 
         """ multiple products request message with different lat/lon taken from AutoDRM Help response message """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042   \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/07/12 to 1999/07/13    \nbull_type idc_sel3\nbulletin ims1.0\nstop"
@@ -119,7 +119,7 @@ class IMSMessageParserTest(TestCase):
         
         self.assertEqual(result['PRODUCT_1'],{'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
     
-    def ztest_parse_several_request_with_the_same_parser(self): 
+    def test_parse_several_request_with_the_same_parser(self): 
         """ parse multiple request message with the same parser (check if internal state stays consistent) """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042   \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/07/12 to 1999/07/13    \nbull_type idc_sel3\nbulletin ims1.0\nstop"
@@ -171,7 +171,7 @@ class IMSMessageParserTest(TestCase):
       
         
     
-    def ztest_slsd_automatic_request(self): 
+    def test_slsd_automatic_request(self): 
         """ test with station list and slsd taken from AutoDRM Help response message """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex134 any_ndc \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/08/01 to 1999/09/01   \nsta_list HIA,MJAR\nbull_type idc_sel1\nslsd:automatic ims1.0\nstop"
@@ -196,8 +196,37 @@ class IMSMessageParserTest(TestCase):
         
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'],{'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
+    
+    def test_slsd_automatic_with_many_newlines_request(self): 
+        """ test with station list and slsd taken from AutoDRM Help response message.
+            added many new lines in order to check if the parser allow that
+        """ 
+        
+        message = "begin ims1.0\nmsg_type request    \n\n\nmsg_id ex134 any_ndc \r\n\r\n\n\n\n\n\ne-mail foo_bar.a.vb.bar@venus.com    \n\n\n\n\n\ntime 1999/08/01 to 1999/09/01   \nsta_list HIA,MJAR\n\nbull_type idc_sel1\nslsd:automatic ims1.0\n\r\n\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        #print("\nresult = %s\n" %(result))
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex134')
+        self.assertEqual(result['EMAIL'],'foo_bar.a.vb.bar@venus.com')
+        
+        # optional for this request
+        self.assertTrue(result.has_key('SOURCE'))
+       
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'],{'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
      
-    def ztest_slsd_associated_request(self):
+     
+    def test_slsd_associated_request(self):
         """ test with slsd:associated taken from AutoDRM help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex007 any_ndc\ne-mail guillaume.aubert@gmail.com\ntime 1999/06/01 to 1999/07/01\nsta_list ZAL\nbull_type idc_reb\narrival:associated ims2.0\nstop"
