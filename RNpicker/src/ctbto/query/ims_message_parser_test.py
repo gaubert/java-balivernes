@@ -284,7 +284,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_2'],{'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
     
-    def test_waveform_segment_request(self):
+    def test_waveform_segment_request_1(self):
         """ test with waveform_segment taken from AutoDRM help response message """
         
         message = " begin ims1.0\nmsg_type request\nmsg_id ex002 any_ndc\ne-mail john.doo@ndc.gov.tr\ntime 1999/7/6 1:45 to 1999/7/6 2:00\nbull_type idc_reb\nrelative_to bulletin\nwaveform ims2.0:cm6\nstop"
@@ -309,6 +309,35 @@ class IMSMessageParserTest(TestCase):
         
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'],{'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
+     
+    def test_waveform_segment_request_2(self):
+        """ test with waveform_segment taken from AutoDRM help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex002 any_ndc\ne-mail john.doo@ndc.gov.tr\ntime 2000/1/9 1:00 to 2000/1/9 1:15\nsta_list CMAR,   PDAR\nwaveform ims1.0:int\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        #print("\nresult = %s\n" %(result))
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex002')
+        self.assertEqual(result['EMAIL'],'john.doo@ndc.gov.tr')
+        
+        # optional for this request
+        self.assertTrue(result.has_key('SOURCE'))
+       
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'],{'STARTDATE': '2000/1/9 1:00', 'SUBFORMAT': 'int', 'ENDDATE': '2000/1/9 1:15', 'FORMAT': 'ims1.0', 'TYPE': 'WAVEFORM', 'STALIST': ['CMAR', 'PDAR']})
+   
+   
+   
    
         
     """ Add Errors:
