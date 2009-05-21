@@ -13,7 +13,7 @@ class IMSMessageParserTest(TestCase):
     def setUp(self):
         pass
     
-    def ztest_simple_request_message(self):
+    def test_simple_request_message(self):
         """ test simple message taken from AutoDRM Help response message """
         
         message = "begin ims1.0\r\nmsg_type request\nmsg_id ex009 any_ndc \ne-mail foo.bar.ssi@domain.name.de \ntime 1999/06/13 to 1999/06/14 \nbull_type idc_reb \nbulletin ims1.0\nstop"
@@ -38,7 +38,7 @@ class IMSMessageParserTest(TestCase):
          
         self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
-    def ztest_simple_request_message_without_source(self): 
+    def test_simple_request_message_without_source(self): 
         """ test simple message taken from AutoDRM Help response message without the optional source field """
         
         message = "begin ims1.0\r\nmsg_type request\nmsg_id ex009  \ne-mail foo.bar.ssi@domain.name.de \ntime 1999/06/13 to 1999/06/14 \nbull_type idc_reb \nbulletin ims1.0\nstop"
@@ -63,7 +63,7 @@ class IMSMessageParserTest(TestCase):
          
         self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
-    def ztest_multiple_products_request(self):
+    def test_multiple_products_request(self):
         """ test multiple products request message taken from AutoDRM Help response message """
         
         
@@ -94,7 +94,7 @@ class IMSMessageParserTest(TestCase):
      
         self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
       
-    def ztest_multiple_lat_lon_request(self): 
+    def test_multiple_lat_lon_request(self): 
         """ test multiple products request message with different lat/lon taken from AutoDRM Help response message """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042   \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/07/12 to 1999/07/13    \nbull_type idc_sel3\nbulletin ims1.0\nstop"
@@ -119,7 +119,7 @@ class IMSMessageParserTest(TestCase):
         
         self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
     
-    def ztest_parse_several_request_with_the_same_parser(self): 
+    def test_parse_several_request_with_the_same_parser(self): 
         """ test parse multiple request message with the same parser (check if internal state stays consistent) """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042   \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/07/12 to 1999/07/13    \nbull_type idc_sel3\nbulletin ims1.0\nstop"
@@ -171,7 +171,7 @@ class IMSMessageParserTest(TestCase):
       
         
     
-    def ztest_slsd_automatic_request(self): 
+    def test_slsd_automatic_request(self): 
         """ test with station list and slsd taken from AutoDRM Help response message """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex134 any_ndc \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/08/01 to 1999/09/01   \nsta_list HIA,MJAR\nbull_type idc_sel1\nslsd:automatic ims1.0\nstop"
@@ -197,7 +197,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
     
-    def ztest_slsd_automatic_with_many_newlines_request(self): 
+    def test_slsd_automatic_with_many_newlines_request(self): 
         """ test with station list and slsd taken from AutoDRM Help response message.
             added many new lines in order to check if the parser allow that
         """ 
@@ -226,7 +226,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_1'], {'BULLTYPE': 'idc_sel1', 'STARTDATE': '1999/08/01', 'ENDDATE': '1999/09/01', 'SUBTYPE': 'automatic', 'FORMAT': 'ims1.0', 'TYPE': 'SLSD', 'STALIST': ['HIA', 'MJAR']})
      
      
-    def ztest_slsd_associated_request(self):
+    def test_slsd_associated_request(self):
         """ test with slsd:associated taken from AutoDRM help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex007 any_ndc\ne-mail guillaume.aubert@gmail.com\ntime 1999/06/01 to 1999/07/01\nsta_list ZAL\nbull_type idc_reb\narrival:associated ims2.0\nstop"
@@ -252,7 +252,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/06/01', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/07/01', 'SUBTYPE': 'associated', 'FORMAT': 'ims2.0', 'TYPE': 'ARRIVAL', 'STALIST': ['ZAL']})  
    
-    def ztest_waveform_segment_and_bulletin_request(self):
+    def test_waveform_segment_and_bulletin_request(self):
         """ test with waveform_segment and bulletin taken from AutoDRM help response message """
         
         message = " begin ims1.0\nmsg_type request\nmsg_id ex002 any_ndc\ne-mail john.doo@ndc.gov.tr\ntime 1999/7/6 1:45 to 1999/7/6 2:00\nbull_type idc_reb\nbulletin ims1.0\nrelative_to bulletin\nwaveform ims2.0:cm6\nstop"
@@ -284,7 +284,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
     
-    def ztest_waveform_segment_request_1(self):
+    def test_waveform_segment_request_1(self):
         """ test with waveform_segment taken from AutoDRM help response message """
         
         message = " begin ims1.0\nmsg_type request\nmsg_id ex002 any_ndc\ne-mail john.doo@ndc.gov.tr\ntime 1999/7/6 1:45 to 1999/7/6 2:00\nbull_type idc_reb\nrelative_to bulletin\nwaveform ims2.0:cm6\nstop"
@@ -310,7 +310,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/7/6 1:45', 'ENDDATE': '1999/7/6 2:00', 'FORMAT': 'ims2.0', 'RELATIVETO': 'bulletin', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'TYPE': 'WAVEFORM'})
      
-    def ztest_waveform_segment_request_2(self):
+    def test_waveform_segment_request_2(self):
         """ test with waveform_segment taken from AutoDRM help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex002 any_ndc\ne-mail john.doo@ndc.gov.tr\ntime 2000/1/9 1:00 to 2000/1/9 1:15\nsta_list CMAR,   PDAR\nwaveform ims1.0:int\nstop"
@@ -336,7 +336,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2000/1/9 1:00', 'SUBFORMAT': 'int', 'ENDDATE': '2000/1/9 1:15', 'FORMAT': 'ims1.0', 'TYPE': 'WAVEFORM', 'STALIST': ['CMAR', 'PDAR']})
     
-    def ztest_sta_status(self):
+    def test_sta_status(self):
         """ test a sta_status request taken from the AutoDRM help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex029 any_ndc\ne-mail foo@bar.com\ntime 1999/07/01 0:01 to 1999/07/31 23:59\nsta_list ARCES\nsta_status gse2.0\nstop\n"
@@ -364,7 +364,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/07/01 0:01', 'FORMAT': 'gse2.0', 'ENDDATE': '1999/07/31 23:59', 'STALIST': ['ARCES'], 'TYPE': 'STASTATUS'})
     
     
-    def ztest_chan_status(self):
+    def test_chan_status(self):
         """ test a chan_status request taken from the AutoDRM help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex015 any_ndc\ne-mail guillaume.aubert@ctbto.org\ntime 1999/07/11 0:01 to 1999/07/11 23:59\nchan_status gse2.0\nstop"
@@ -391,7 +391,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/07/11 0:01', 'FORMAT': 'gse2.0', 'ENDDATE': '1999/07/11 23:59', 'TYPE': 'CHANSTATUS'})
     
-    def ztest_calibphd(self):
+    def test_calibphd(self):
         """ test a calibphd request taken from the AUTODRM Help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex013\ne-mail foo.bar@google.com\ntime 1999/01/01 to 2000/01/01\ncalibphd rms2.0\nstop"
@@ -415,7 +415,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/01/01', 'FORMAT': 'rms2.0', 'ENDDATE': '2000/01/01', 'TYPE': 'CALIBPHD'})
     
-    def ztest_calibphd_def_format(self):
+    def test_calibphd_def_format(self):
         """ test a calibphd request without a message format taken from the AUTODRM Help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex013\ne-mail foo.bar@google.com\ntime 1999/01/01 to 2000/01/01\ncalibphd   \nstop"
@@ -439,7 +439,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/01/01', 'ENDDATE': '2000/01/01', 'TYPE': 'CALIBPHD'})
         
-    def ztest_2_sphd(self):
+    def test_2_sphd(self):
         """ test a sphd request without a message format taken from the AUTODRM Help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex026\ne-mail foo.bar@google.com\ntime 1999/07/01 to 2000/08/01\nsta_list AU*\nsphdf rms2.0\nsphdp rms2.0\nstop\n"
@@ -469,7 +469,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/07/01', 'ENDDATE': '2000/08/01', 'FORMAT': 'rms2.0', 'TYPE': 'SPHDP', 'STALIST': ['AU*']})
     
-    def ztest_arr(self):
+    def test_arr(self):
         """ test a arr request without a message format taken from the AUTODRM Help response message """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
@@ -490,7 +490,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'STALIST': ['FI001', 'UK001'], 'TYPE': 'ARR'})
         
-    def ztest_error_email_address(self):
+    def test_error_email_address(self):
         """ error with bad email address """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to_to\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
@@ -504,7 +504,7 @@ class IMSMessageParserTest(TestCase):
             self.assertEqual(p_err.message,"Error[line=4,pos=7]: Next keyword should be an email address but instead was 'foo.bar@to_to' (keyword type ID).")
             self.assertEqual(p_err.suggestion,'The email address might be missing or is malformated')
         
-    def ztest_error_bad_msg_type_keyword(self):
+    def test_error_bad_msg_type_keyword(self):
         """ error with bad msg_type keyword """
         
         message = "begin ims1.0\nmsg_tyype request\nmsg_id ex005\ne-mail foo.bar@to_to\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
@@ -519,7 +519,7 @@ class IMSMessageParserTest(TestCase):
         
         
     
-    def ztest_error_no_stop(self):
+    def test_error_no_stop(self):
         """ error missing stop """
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.fr\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\n"
         
@@ -531,7 +531,7 @@ class IMSMessageParserTest(TestCase):
         except ParsingError, p_err:
             self.assertEqual(p_err.message,'Error[line=7,pos=EOF]: End of request reached without encountering a stop keyword.')
         
-    def ztest_error_bad_datetime(self):
+    def test_error_bad_datetime(self):
         """ error with bad datetime """
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01/04 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
         
@@ -543,7 +543,7 @@ class IMSMessageParserTest(TestCase):
         except ParsingError, p_err:
             self.assertEqual(p_err.message,"Error[line=5,pos=15]: Next keyword should be a to but instead was '/04' (keyword type DATA).")
         
-    def ztest_error_incomplete_format(self):
+    def test_error_incomplete_format(self):
         """ error incomplete format """
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2A\nstop"
         
@@ -555,7 +555,7 @@ class IMSMessageParserTest(TestCase):
         except ParsingError, p_err:
             self.assertEqual(p_err.message,"Error[line=7,pos=4]: Next keyword should be a newline or a msg format (ex:ims2.0) but instead was 'rms2A' (keyword type ID).")
      
-    def ztest_error_incomplete_subformat(self):
+    def test_error_incomplete_subformat(self):
         """ error incomplete subformat """
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.00::kkkk\nstop"
         
@@ -567,7 +567,7 @@ class IMSMessageParserTest(TestCase):
         except ParsingError, p_err:
             self.assertEqual(p_err.message,"Error[line=7,pos=12]: Next keyword should be a subformat value but instead was ':' (keyword type COLON).")
     
-    def ztest_error_sta_list(self):
+    def test_error_sta_list(self):
         """ error incomplete sta_list """
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01 to 1999/05/01\nsta_list FI001+UK001\narr rms2.00\nstop"
         
@@ -577,10 +577,10 @@ class IMSMessageParserTest(TestCase):
             parser.parse(message)
             self.fail("should launch an exception")
         except ParsingError, p_err:
-            self.assertEqual(p_err.message,"Error[line=6,pos=9]: Next keyword should be a sta_list id but instead was 'FI001+UK001' (keyword type DATA).")
+            self.assertEqual(p_err.message,"Error[line=6,pos=9]: Next keyword should be a list id but instead was 'FI001+UK001' (keyword type DATA).")
       
       
-    def ztest_help(self):
+    def test_help(self):
         """ test a help """
         
         message = "BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID xxx ga\ne-mail guillaume.aubert@ctbto.org\nHELP\nSTOP"
@@ -604,7 +604,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_1'],{'TYPE': 'HELP'})
         
     
-    def ztest_channel_list(self):
+    def test_channel_list(self):
         """ test chan_list """
         
         message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID 34372481 CTBT_IDC\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
