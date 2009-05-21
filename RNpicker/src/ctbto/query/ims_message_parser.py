@@ -9,26 +9,55 @@ import StringIO
 import copy
 
 
-from ims_tokenizer import IMSTokenizer, Token
+from ims_tokenizer import IMSTokenizer, Token, ENDMARKERToken
 
 class ParsingError(Exception):
     """Base class for All exceptions"""
-
-    def __init__(self, a_msg, a_line_num=None, a_pos=None):
+    
+    c_STANDARD_ERROR_MSG = "Next keyword should be %s but instead was '%s' (keyword type %s)"
+    
+    @classmethod
+    def create_std_error_msg(cls,a_user_friendly_keyword,a_token):
+        """ 
+           Create the standard Error message.
+           
+           Args:
+               message: the message to parse
+               
+            Returns:
+               return 
         
-        self._line_num = a_line_num
-        self._pos      = a_pos
+            Raises:
+               exception
+           
+        """
+        return cls.c_STANDARD_ERROR_MSG % (a_user_friendly_keyword, a_token.value, a_token.type)
+    
+    def __init__(self, a_msg,a_suggestion,a_token):
         
-        if self._line_num == None and self._pos == None:
+        self._msg        = a_msg
+        self._token      = a_token
+        self._suggestion = a_suggestion
+        
+        if a_token == None:
             extra = "" 
         else:
-            extra = "(line=%s,pos=%s)"% (self._line_num, self._pos)
+            # manage the endmarker case if token.begin = -1
+            extra = "Error[line=%s,pos=%s]:"% (self._token.line_num, self._token.begin if (self._token.begin != -1) else 'EOF')
         
-        super(ParsingError, self).__init__("%s %s."% (a_msg, extra))
+        super(ParsingError, self).__init__("%s %s."% (extra,a_msg))
     
-    #def __str__(self):
-    #    return "ParsingError (line:%s,col:%s) => %s"%()
+    @property
+    def instrumented_line(self):
+        """ return the line with a cursor on the error """
+        line = self._token.parsed_line
         
+        instrumented_line  = line[:self._token.begin] + "[ERR]=>" + line[self._token.begin:] 
+        return instrumented_line   
+
+    @property
+    def suggestion(self):
+        return self._suggestion
 
 class IMSParser(object):
     """ create tokens for parsing the grammar. 
@@ -46,6 +75,7 @@ class IMSParser(object):
                       Token.RMSSOH, Token.RNPS, Token.MET, Token.NETWORK, Token.SSREB, ]
     
     c_ALL_PRODUCTS = c_SHI_PRODUCTS + c_RAD_PRODUCTS
+    
     c_PRODUCT      = 'PRODUCT'
     
     def __init__(self):
@@ -124,14 +154,14 @@ class IMSParser(object):
         # look for line 1 BEGIN message_format
         # format: begin message_format
         if token.type != Token.BEGIN:
-            raise ParsingError("Expected the message to start with a BEGIN type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a begin', token), 'The begin line is missing or not well formatted', token)
+    
         token = self._tokenizer.next()
         
         # look for a message_format
         if token.type != Token.MSGFORMAT:
-            raise ParsingError("Expected a MSGFORMAT type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a msg format id (ex:ims2.0)', token), 'The begin line is not well formatted', token)
+            
         result[Token.MSGFORMAT] = token.value
         
         #eat next line characters
@@ -140,12 +170,12 @@ class IMSParser(object):
         # line 2: get the message type
         # format: msg_type request
         if token.type != Token.MSGTYPE:
-            raise ParsingError("Expected a MSGTYPE type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a msg_type', token), 'The msg_type id line is missing', token)
+            
         token = self._tokenizer.next()
         
         if token.type != Token.ID:
-            raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError(ParsingError.create_std_error_msg('a id', token), 'The msg_type id is missing or the msg_type line is mal-formated', token)
         
         result[Token.MSGTYPE] = token.value
          
@@ -155,15 +185,14 @@ class IMSParser(object):
         # line 3: get the message id
         # format: msg_id id_string [source]
         if token.type != Token.MSGID:
-            raise ParsingError("Expected a MSGID type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a msg_id', token), 'The msg_id line is missing', token)
+            
         token = self._tokenizer.next()
         
         # next token is an ID 
         # TODO: the id_string should be up to 20 characters and should not contains blanks or \
         if token.type != Token.ID and token.type != Token.NUMBER:
-            raise ParsingError("Expected a ID type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('an id',token), 'The msg_id line is missing the id or is not well formatted', token)
         result[Token.MSGID] = token.value
         
         token = self._tokenizer.next()
@@ -178,7 +207,7 @@ class IMSParser(object):
             self._tokenizer.next()
                      
         elif token.type != Token.NEWLINE:
-            raise ParsingError("Expected an ID type as the source or a NEWLINE type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError(ParsingError.create_std_error_msg('a newline or a source', token), 'The msg_id line is not well formatted', token)
         
         #eat current and next line characters
         token = self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
@@ -186,13 +215,13 @@ class IMSParser(object):
         # line 4: e-mail foo.bar@domain_name
         # look for an EMAIL keyword
         if token.type != Token.EMAIL:
-            raise ParsingError("Expected a EMAIL type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('an email', token), 'The email line is probably missing or misplaced', token)
+    
         token = self._tokenizer.next()
         # look for the EMAILADDR
-        if token.type != Token.EMAILADDR:
-            raise ParsingError("Expected an EMAILADDR type but instead got [%s] with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+        if token.type != Token.EMAILADDR: 
+            raise ParsingError(ParsingError.create_std_error_msg('an email address', token), 'The email address might be missing or is malformated', token)
+           
         result[Token.EMAIL] = token.value
         
         #eat next line characters
@@ -226,7 +255,7 @@ class IMSParser(object):
         seen_keywords = []
         
         # For the moment look for the different possible tokens
-        while token.type != Token.STOP:
+        while token.type != Token.STOP and token.type != Token.ENDMARKER:
             
             # if the current token has already be seen
             # store the new product and create a new one with the same properties as the current one
@@ -264,7 +293,7 @@ class IMSParser(object):
                 token = self._tokenizer.next()
                 
                 if token.type != Token.ID:
-                    raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+                    raise ParsingError(ParsingError.create_std_error_msg('a id', token), 'The bull_type id qualifying type of bulletin requested is missing', token)
 
                 product[Token.BULLTYPE] = token.value
                 
@@ -336,10 +365,14 @@ class IMSParser(object):
                 seen_keywords.append(Token.STALIST)
                                      
             else:
-                raise ParsingError("Was not expecting a token with type %s and value %s"% (token.value, token.type), token.line_num, token.begin)  
-           
+                raise ParsingError('Unknown keyword %s'%(token.value), 'Request mal-formatted', token)
+
             # eat any left NEWLINE token
             token = self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
+            
+        # check if we have a stop
+        if token.type != Token.STOP:
+            raise ParsingError('End of request reached without encountering a stop keyword', 'Stop keyword missing or truncated request', token)
         
         return result_dict
     
@@ -376,8 +409,8 @@ class IMSParser(object):
                     #leave the loop
                     break
             else:
-                raise ParsingError("Expected a ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+                raise ParsingError(ParsingError.create_std_error_msg('a sta_list id', token), 'The sta_list line is not well formatted', token)
+  
         # if goes here then there is something in stations
         res_dict[Token.STALIST] = stations
         
@@ -450,12 +483,12 @@ class IMSParser(object):
                     #consume next NEWLINE token
                     self._tokenizer.consume_next_token(Token.NEWLINE)
                 else:
-                    raise ParsingError("Was expecting a subformat value (token type = ID), instead got %s with type %s "% (token.value, token.type), token.line_num, token.begin)
+                    raise ParsingError(ParsingError.create_std_error_msg('a subformat value', token), 'The product line [product_type format[:subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
             # it could be a NEWLINE and there is no subformat
             elif token.type != Token.NEWLINE:
-                raise ParsingError("Expected a NEWLINE or ID type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+                raise ParsingError(ParsingError.create_std_error_msg('a subformat value or a new line', token), 'The subformat or format part of the product line [product_type format:[subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
         else:
-            ParsingError("Expected a NEWLINE, MSGFORMAT but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
+            raise ParsingError(ParsingError.create_std_error_msg('a newline or a msg format (ex:ims2.0)', token), 'The product line [product_type format[:subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
             
         return res_dict  
             
@@ -487,8 +520,8 @@ class IMSParser(object):
             # add the min value because begin value has been omitted
             res_dict['STARTMAG'] = Token.MIN 
         else:
-            ParsingError("Expected a NUMBER or TO type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-         
+            raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The mag line is not well formatted', token)
+            
         token = self._tokenizer.next()
         
         # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
@@ -501,6 +534,8 @@ class IMSParser(object):
         elif token.type == Token.NEWLINE:
             
             res_dict['ENDMAG'] = Token.MAX 
+        else:
+            raise ParsingError(ParsingError.create_std_error_msg('a number or newline', token), 'The mag line is not well formatted', token)
         
         #go to next token
         self._tokenizer.next()
@@ -534,8 +569,8 @@ class IMSParser(object):
             # add the min value because begin value has been omitted
             res_dict['STARTDEPTH'] = Token.MIN 
         else:
-            ParsingError("Expected a NUMBER or TO type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-         
+            raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The depth line is not well formatted', token)
+            
         token = self._tokenizer.next()
         
         # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
@@ -548,6 +583,8 @@ class IMSParser(object):
         elif token.type == Token.NEWLINE:
             
             res_dict['ENDDEPTH'] = Token.MAX 
+        else:
+            raise ParsingError(ParsingError.create_std_error_msg('a number or newline', token), 'The depth line is not well formatted', token)
         
         #go to next token
         self._tokenizer.next()
@@ -592,8 +629,8 @@ class IMSParser(object):
             # add the min value because begin value has been omitted
             res_dict['START%s' % (a_type)] = Token.MIN 
         else:
-            ParsingError("Expected a NUMBER or TO type but instead got %s with type %s" % (token.value, token.type), token.line_num, token.begin)
-         
+            raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The lat or lon line is not well formatted', token)
+            
         token = self._tokenizer.next()
         
         # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
@@ -618,6 +655,8 @@ class IMSParser(object):
         elif token.type == Token.NEWLINE:
             
             res_dict['END%s' % (a_type)] = Token.MAX 
+        else:
+            raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The lat or lon line is not well formatted', token)
             
         #go to next token
         self._tokenizer.next()
@@ -641,19 +680,19 @@ class IMSParser(object):
         token = self._tokenizer.next()
         
         if token.type != Token.DATETIME:
-            raise ParsingError("Expected a DATETIME type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a datetime', token), 'The time line is incorrect. The datetime value is probably malformatted or missing.', token)
+            
         time_dict['STARTDATE'] = token.value
         
         token = self._tokenizer.next()
         # it should be a TO
         if token.type != Token.TO:
-            raise ParsingError("Expected a TO type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a to', token), 'The to keyword is missing in the line time', token)
+            
         token = self._tokenizer.next()
         if token.type != Token.DATETIME:
-            raise ParsingError("Expected a DATETIME type but instead got %s with type %s"% (token.value, token.type), token.line_num, token.begin)
-        
+            raise ParsingError(ParsingError.create_std_error_msg('a datetime', token), 'The time line is incorrect. The datetime value is probably malformatted or missing.', token)
+            
         time_dict['ENDDATE'] = token.value
         
         #consume at least a NEWLINE
@@ -672,7 +711,7 @@ class IMSParser(object):
             Raises:
                exception 
         """ 
-        raise ParsingError("_parse_subscription_message is currently not implemented")
+        raise ParsingError("_parse_subscription_message is currently not implemented",ENDMARKERToken(100))
     
     def _parse_data_message(self):
         """ Parse Radionuclide and SHI request messages
@@ -685,5 +724,5 @@ class IMSParser(object):
             Raises:
                exception 
         """ 
-        raise ParsingError("_parse_data_message is currently not implemented")
+        raise ParsingError("_parse_data_message is currently not implemented",ENDMARKERToken(100))
        

@@ -6,7 +6,7 @@ Created on May 18, 2009
 
 from unittest import TestCase
 
-from ims_message_parser import IMSParser
+from ims_message_parser import IMSParser, ParsingError
 
 class IMSMessageParserTest(TestCase):
     
@@ -14,7 +14,7 @@ class IMSMessageParserTest(TestCase):
         pass
     
     def test_simple_request_message(self):
-        """ simple message taken from AutoDRM Help response message """
+        """ test simple message taken from AutoDRM Help response message """
         
         message = "begin ims1.0\r\nmsg_type request\nmsg_id ex009 any_ndc \ne-mail foo.bar.ssi@domain.name.de \ntime 1999/06/13 to 1999/06/14 \nbull_type idc_reb \nbulletin ims1.0\nstop"
         
@@ -39,7 +39,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
     def test_simple_request_message_without_source(self): 
-        """ simple message taken from AutoDRM Help response message without the optional source field """
+        """ test simple message taken from AutoDRM Help response message without the optional source field """
         
         message = "begin ims1.0\r\nmsg_type request\nmsg_id ex009  \ne-mail foo.bar.ssi@domain.name.de \ntime 1999/06/13 to 1999/06/14 \nbull_type idc_reb \nbulletin ims1.0\nstop"
         
@@ -64,7 +64,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/06/13', 'BULLTYPE': 'idc_reb', 'ENDDATE': '1999/06/14', 'TYPE': 'BULLETIN'})
      
     def test_multiple_products_request(self):
-        """ multiple products request message taken from AutoDRM Help response message """
+        """ test multiple products request message taken from AutoDRM Help response message """
         
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042 myndc    \ne-mail foo.bar@pluto.com    \ntime 1999/06/01 to 1999/07/01    \nbull_type idc_reb\nmag 3.5 to 5.0\ndepth to 30\nlat -30 to -20\nlon -180 to -140\nbulletin ims1.0\nlat 75 to 79\nlon 110 to 140\nbulletin ims2.0:cm6\nstop"
@@ -95,7 +95,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
       
     def test_multiple_lat_lon_request(self): 
-        """ multiple products request message with different lat/lon taken from AutoDRM Help response message """ 
+        """ test multiple products request message with different lat/lon taken from AutoDRM Help response message """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042   \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/07/12 to 1999/07/13    \nbull_type idc_sel3\nbulletin ims1.0\nstop"
 
@@ -120,7 +120,7 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['PRODUCT_1'], {'FORMAT': 'ims1.0', 'STARTDATE': '1999/07/12', 'BULLTYPE': 'idc_sel3', 'ENDDATE': '1999/07/13', 'TYPE': 'BULLETIN'})
     
     def test_parse_several_request_with_the_same_parser(self): 
-        """ parse multiple request message with the same parser (check if internal state stays consistent) """ 
+        """ test parse multiple request message with the same parser (check if internal state stays consistent) """ 
         
         message = "begin ims1.0\nmsg_type request    \nmsg_id ex042   \ne-mail foo_bar.a.vb.bar@venus.com    \ntime 1999/07/12 to 1999/07/13    \nbull_type idc_sel3\nbulletin ims1.0\nstop"
 
@@ -490,18 +490,106 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'STALIST': ['FI001', 'UK001'], 'TYPE': 'ARR'})
         
+    def test_error_email_address(self):
+        """ error with bad email address """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to_to\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=4,pos=7]: Next keyword should be an email address but instead was 'foo.bar@to_to' (keyword type ID).")
+            self.assertEqual(p_err.suggestion,'The email address might be missing or is malformated')
+        
+    def test_error_bad_msg_type_keyword(self):
+        """ error with bad msg_type keyword """
+        
+        message = "begin ims1.0\nmsg_tyype request\nmsg_id ex005\ne-mail foo.bar@to_to\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=2,pos=0]: Next keyword should be a msg_type but instead was 'msg_tyype' (keyword type ID).")
+        
+        
+    
+    def test_error_no_stop(self):
+        """ error missing stop """
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.fr\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\n"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,'Error[line=7,pos=EOF]: End of request reached without encountering a stop keyword.')
+        
+    def test_error_bad_datetime(self):
+        """ error with bad datetime """
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01/04 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=5,pos=15]: Next keyword should be a to but instead was '/04' (keyword type DATA).")
+        
+    def test_error_incomplete_format(self):
+        """ error incomplete format """
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2A\nstop"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=7,pos=4]: Next keyword should be a newline or a msg format (ex:ims2.0) but instead was 'rms2A' (keyword type ID).")
      
-
+    def test_error_incomplete_subformat(self):
+        """ error incomplete subformat """
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.00::kkkk\nstop"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=7,pos=12]: Next keyword should be a subformat value but instead was ':' (keyword type COLON).")
+    
+    def test_error_sta_list(self):
+        """ error incomplete sta_list """
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@to.com\ntime 1999/04/01 to 1999/05/01\nsta_list FI001+UK001\narr rms2.00\nstop"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=6,pos=9]: Next keyword should be a sta_list id but instead was 'FI001+UK001' (keyword type DATA).")
+        
         
     """ Add Errors:
-        - bad email address, 
-        - bad datetime values,
-        - multiple lines separator (shall we eat them)
-        - datetime values with one number,
+        - (DONE) bad email address, 
+        - (DONE) no stop,
+        - (DONE) bad datetime values,
+        - (DONE) multiple lines separator (shall we eat them)
+        - (Done) incomplete format:subformat req, 
+        - (Done) incomplete type:subtype format),
+        - bad station list (ZA,),
         - missing essential elements,
-        - incomplete format:subformat req, 
-        - incomplete type:subtype format),   
-        - bad station list (ZA/),
+        
     """
         
         

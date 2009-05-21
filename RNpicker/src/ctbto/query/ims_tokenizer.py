@@ -24,9 +24,9 @@ class IllegalCharacterError(LexerError):
         self._pos      = a_pos
         self._line_num = a_line_num
         
-        instrumented_request  = a_line[:a_pos] + "(ERR)=>" + a_line[a_pos:]
+        instrumented_line  = a_line[:a_pos] + "(ERR)=>" + a_line[a_pos:]
         
-        msg = "Illegal Character %s in Line %d, position %d.[%s]"% (a_line[a_pos], a_line_num, a_pos, instrumented_request)
+        msg = "Illegal Character %s in Line %d, position %d.[%s]"% (a_line[a_pos], a_line_num, a_pos, instrumented_line)
         
         super(IllegalCharacterError, self).__init__(msg)
         
