@@ -335,10 +335,163 @@ class IMSMessageParserTest(TestCase):
         
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2000/1/9 1:00', 'SUBFORMAT': 'int', 'ENDDATE': '2000/1/9 1:15', 'FORMAT': 'ims1.0', 'TYPE': 'WAVEFORM', 'STALIST': ['CMAR', 'PDAR']})
+    
+    def test_sta_status(self):
+        """ test a sta_status request taken from the AutoDRM help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex029 any_ndc\ne-mail foo@bar.com\ntime 1999/07/01 0:01 to 1999/07/31 23:59\nsta_list ARCES\nsta_status gse2.0\nstop\n"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        #print("\nresult = %s\n" %(result))
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex029')
+        self.assertEqual(result['EMAIL'],'foo@bar.com')
    
+        # optional for this request
+        self.assertTrue(result.has_key('SOURCE'))
+        self.assertEqual(result['SOURCE'],'any_ndc')
    
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/07/01 0:01', 'FORMAT': 'gse2.0', 'ENDDATE': '1999/07/31 23:59', 'STALIST': ['ARCES'], 'TYPE': 'STASTATUS'})
+    
+    
+    def test_chan_status(self):
+        """ test a chan_status request taken from the AutoDRM help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex015 any_ndc\ne-mail guillaume.aubert@ctbto.org\ntime 1999/07/11 0:01 to 1999/07/11 23:59\nchan_status gse2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        #print("\nresult = %s\n" %(result))
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex015')
+        self.assertEqual(result['EMAIL'],'guillaume.aubert@ctbto.org')
    
+        # optional for this request
+        self.assertTrue(result.has_key('SOURCE'))
+        self.assertEqual(result['SOURCE'],'any_ndc')
    
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/07/11 0:01', 'FORMAT': 'gse2.0', 'ENDDATE': '1999/07/11 23:59', 'TYPE': 'CHANSTATUS'})
+    
+    def test_calibphd(self):
+        """ test a calibphd request taken from the AUTODRM Help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex013\ne-mail foo.bar@google.com\ntime 1999/01/01 to 2000/01/01\ncalibphd rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex013')
+        self.assertEqual(result['EMAIL'],'foo.bar@google.com')
+   
+        # optional for this request
+        self.assertFalse(result.has_key('SOURCE'))
+
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/01/01', 'FORMAT': 'rms2.0', 'ENDDATE': '2000/01/01', 'TYPE': 'CALIBPHD'})
+    
+    def test_calibphd_def_format(self):
+        """ test a calibphd request without a message format taken from the AUTODRM Help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex013\ne-mail foo.bar@google.com\ntime 1999/01/01 to 2000/01/01\ncalibphd   \nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex013')
+        self.assertEqual(result['EMAIL'],'foo.bar@google.com')
+   
+        # optional for this request
+        self.assertFalse(result.has_key('SOURCE'))
+
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/01/01', 'ENDDATE': '2000/01/01', 'TYPE': 'CALIBPHD'})
+        
+    def test_2_sphd(self):
+        """ test a sphd request without a message format taken from the AUTODRM Help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex026\ne-mail foo.bar@google.com\ntime 1999/07/01 to 2000/08/01\nsta_list AU*\nsphdf rms2.0\nsphdp rms2.0\nstop\n"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex026')
+        self.assertEqual(result['EMAIL'],'foo.bar@google.com')
+   
+        # optional for this request
+        self.assertFalse(result.has_key('SOURCE'))
+
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/07/01', 'ENDDATE': '2000/08/01', 'FORMAT': 'rms2.0', 'TYPE': 'SPHDF', 'STALIST': ['AU*']})
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_2'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/07/01', 'ENDDATE': '2000/08/01', 'FORMAT': 'rms2.0', 'TYPE': 'SPHDP', 'STALIST': ['AU*']})
+    
+    def test_arr(self):
+        """ test a arr request without a message format taken from the AUTODRM Help response message """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\ne-mail foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['EMAIL'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'STALIST': ['FI001', 'UK001'], 'TYPE': 'ARR'})
+        
+     
+
         
     """ Add Errors:
         - bad email address, 

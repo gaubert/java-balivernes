@@ -139,6 +139,7 @@ class Token(object):
     DETBKPHD       = 'DETBKPHD'
     BLANKPHD       = 'BLANKPHD'
     CALIBPHD       = 'CALIBPHD'
+    GASBKPHD       = 'GASBKPHD'
     QCPHD          = 'QCPHD'
     SPHDP          = 'SPHDP'
     SPHDF          = 'SPHDF'
@@ -152,7 +153,10 @@ class Token(object):
     ALERTUPS       = 'ALERTUPS'
     MET            = 'MET'
     RNPS           = 'RNPS'
+    NETWORK        = 'NETWORK'
+    RMSSOH         = 'RMSSOH'
     
+    #deprecated
     ARMR           = 'ARMR'
     FPEB           = 'FPEB'
     
@@ -267,7 +271,7 @@ NUMBER_RE = re.compile(Number)
 ID_RE       = re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*')
 
 # DATETIME regexpr
-DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[1-9])([:]?([0-5][0-9]|[1-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
+DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[0-9])([:]?([0-5][0-9]|[0-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
 
 # EMAIL Address regexpr as defined in RFC 2822 (do not support square brackets and double quotes)
 EMAILADDR_RE = re.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",re.IGNORECASE)
@@ -364,6 +368,8 @@ RESPONSE_RE      = re.compile('RESPONSE',re.IGNORECASE)
 
 #DETBKPHD
 DETBKPHD_RE      = re.compile('DETBKPHD',re.IGNORECASE)
+#GASBKPHD
+GASBKPHD_RE      = re.compile('GASBKPHD',re.IGNORECASE)
 #BLANKPHD
 BLANKPHD_RE      = re.compile('BLANKPHD',re.IGNORECASE)
 #CALIBPHD
@@ -394,6 +400,10 @@ MET_RE           = re.compile('MET',re.IGNORECASE)
 RNPS_RE          = re.compile('RNPS',re.IGNORECASE)
 #SSREB
 SSREB_RE         = re.compile('SSREB',re.IGNORECASE)
+#NETWORK
+NETWORK_RE       = re.compile('NETWORK',re.IGNORECASE)
+#RMSSOH
+RMSSOH_RE        = re.compile('RMSSOH',re.IGNORECASE)
 
 #Deprecated ?
 #ARMR
@@ -402,7 +412,7 @@ ARMR_RE          = re.compile('ARMR',re.IGNORECASE)
 FPEB_RE          = re.compile('FPEB',re.IGNORECASE)
 
 SHI_PRODUCTS_TOKENS   = [Token.BULLETIN, Token.WAVEFORM, Token.SLSD, Token.ARRIVAL,Token.EVENT,Token.ORIGIN, Token.EXECSUM, Token.OUTAGE, Token.RESPONSE, Token.STASTATUS, Token.CHANSTATUS, Token.CHANNEL, Token.WAVEMISSION,Token.WAVEQUALITY,Token.STATION, Token.COMMENT, Token.COMMSTATUS]
-RADIO_PRODUCTS_TOKENS = [Token.DETBKPHD, Token.BLANKPHD, Token.CALIBPHD, Token.QCPHD,Token.SPHDP, Token.SPHDF, Token.ARR, Token.RRR, Token.SSREB, Token.RLR, Token.RNPS, Token.ALERTFLOW, Token.ALERTSYSTEM, Token.ALERTTEMP, Token.ALERTUPS, Token.MET, Token.ARMR, Token.FPEB]
+RADIO_PRODUCTS_TOKENS = [Token.DETBKPHD, Token.BLANKPHD, Token.CALIBPHD, Token.QCPHD,Token.SPHDP, Token.SPHDF, Token.GASBKPHD, Token.ARR, Token.RRR, Token.SSREB, Token.RLR, Token.RNPS, Token.ALERTFLOW, Token.ALERTSYSTEM, Token.ALERTTEMP, Token.ALERTUPS, Token.RMSSOH, Token.MET, Token.NETWORK, Token.ARMR, Token.FPEB]
 
 TOKENS_RE = {
            Token.ID           : ID_RE,
@@ -453,7 +463,8 @@ TOKENS_RE = {
            #radio nuclide products
            Token.DETBKPHD     : DETBKPHD_RE,
            Token.BLANKPHD     : BLANKPHD_RE,
-           Token.CALIBPHD     : CALIBPHD_RE, 
+           Token.CALIBPHD     : CALIBPHD_RE,
+           Token.GASBKPHD     : GASBKPHD_RE,
            Token.QCPHD        : QCPHD_RE,
            Token.SPHDP        : SPHDP_RE,
            Token.SPHDF        : SPHDF_RE,
@@ -467,6 +478,9 @@ TOKENS_RE = {
            Token.ALERTUPS     : ALERTUPS_RE,
            Token.MET          : MET_RE,
            Token.SSREB        : SSREB_RE,
+           Token.NETWORK      : NETWORK_RE,
+           Token.RMSSOH       : RMSSOH_RE,
+           
            Token.ARMR         : ARMR_RE,
            Token.FPEB         : FPEB_RE,
            

@@ -5,17 +5,19 @@ Created on May 16, 2009
 '''
 import StringIO
 
-from unittest import TestCase,TestLoader,TextTestRunner
+from unittest import TestCase
 
-from ims_tokenizer import IMSTokenizer, Token, LexerError, IllegalCharacterError, BadTokenError, NonExistingTokenError, TokensNotFoundError
+from ims_tokenizer import IMSTokenizer, Token, IllegalCharacterError, BadTokenError, NonExistingTokenError, TokensNotFoundError
 
 class LexerTest(TestCase):
+    """ LexerTest """
     
     def setUp(self):
+        """ setUp method """
         pass
         
     def test_list_tokens_lower_case(self):
-        
+        """ test_list_tokens_lower_case """
         tokenizer = IMSTokenizer()
         
         io_prog = StringIO.StringIO("     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 2000/11/22 to 2001/01/01\nsta_list ARP01\nalert_temp\n    stop")
@@ -35,19 +37,19 @@ class LexerTest(TestCase):
                 self.assertEqual(token.value,'IMS2.0')
             elif cpt == 2:
                 self.assertEqual(token.type,Token.NEWLINE)
-                self.assertEqual(token.value,'\n')
+                self.assertEqual(token.value, '\n')
             elif cpt == 3:
                 self.assertEqual(token.type,'MSGTYPE')
-                self.assertEqual(token.value,'msg_type')
+                self.assertEqual(token.value, 'msg_type')
             elif cpt == 4:
                 self.assertEqual(token.type,'ID')
                 self.assertEqual(token.value,'data')
             elif cpt == 5:
-                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.type, Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
                 self.assertEqual(token.type,'MSGID')
-                self.assertEqual(token.value,'msg_id')
+                self.assertEqual(token.value, 'msg_id')
             elif cpt == 7:
                 self.assertEqual(token.type,'NUMBER')
                 self.assertEqual(token.value,'54695')
@@ -55,7 +57,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'ID')
                 self.assertEqual(token.value,'ctbto_idc')
             elif cpt == 9:
-                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.type, Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 10:
                 self.assertEqual(token.type,'EMAIL')
@@ -64,7 +66,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'EMAILADDR')
                 self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
             elif cpt == 12:
-                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.type, Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 13:
                 self.assertEqual(token.type,'TIME')
@@ -369,6 +371,109 @@ class LexerTest(TestCase):
             elif cpt == 16:
                 self.assertEqual(token.type,'DATETIME')
                 self.assertEqual(token.value,'1999/2/1 2:29:19.76')
+            elif cpt == 17:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 18:
+                self.assertEqual(token.type,'STALIST')
+                self.assertEqual(token.value,'sta_list')
+            elif cpt == 19:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'ABC')
+            elif cpt == 20:
+                self.assertEqual(token.type,'COMMA')
+                self.assertEqual(token.value,',')
+            elif cpt == 21:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'DEF')
+            elif cpt == 22:
+                self.assertEqual(token.type,'COMMA')
+                self.assertEqual(token.value,',')
+            elif cpt == 23:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'FGH')
+            elif cpt == 24:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 25:
+                self.assertEqual(token.type,'ALERTTEMP')
+                self.assertEqual(token.value,'alert_temp')
+            elif cpt == 26:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 27:
+                self.assertEqual(token.type,'STOP')
+                self.assertEqual(token.value,'stop')
+            elif cpt == 28:
+                self.assertEqual(token.type,Token.ENDMARKER)
+                self.assertEqual(token.value,None)
+            
+            cpt += 1
+    
+    def test_time_3(self):
+        ''' test time with 0 '''
+        tokenizer = IMSTokenizer()
+        
+        io_prog = StringIO.StringIO("     begin IMS2.0     \nmsg_type data \nmsg_id 54695 ctbto_idc\ne-mail guillaume.aubert@ctbto.org     \ntime 1999/02/01 0:0:1.7 to 1999/2/1 2:0:19.76\nsta_list ABC,DEF, FGH  \nalert_temp\n    stop")
+         
+        tokenizer.set_io_prog(io_prog)
+    
+        cpt = 0
+        for token in tokenizer:
+            #print("\nToken = %s"%(token))
+            
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'IMS2.0')
+            elif cpt == 2:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 3:
+                self.assertEqual(token.type,'MSGTYPE')
+                self.assertEqual(token.value,'msg_type')
+            elif cpt == 4:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'data')
+            elif cpt == 5:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 6:
+                self.assertEqual(token.type,'MSGID')
+                self.assertEqual(token.value,'msg_id')
+            elif cpt == 7:
+                self.assertEqual(token.type,'NUMBER')
+                self.assertEqual(token.value,'54695')
+            elif cpt == 8:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'ctbto_idc')
+            elif cpt == 9:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 10:
+                self.assertEqual(token.type,'EMAIL')
+                self.assertEqual(token.value,'e-mail')
+            elif cpt == 11:
+                self.assertEqual(token.type,'EMAILADDR')
+                self.assertEqual(token.value,'guillaume.aubert@ctbto.org')
+            elif cpt == 12:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 13:
+                self.assertEqual(token.type,'TIME')
+                self.assertEqual(token.value,'time')
+            elif cpt == 14:
+                self.assertEqual(token.type,'DATETIME')
+                self.assertEqual(token.value,'1999/02/01 0:0:1.7')
+            elif cpt == 15:
+                self.assertEqual(token.type,'TO')
+                self.assertEqual(token.value,'to')
+            elif cpt == 16:
+                self.assertEqual(token.type,'DATETIME')
+                self.assertEqual(token.value,'1999/2/1 2:0:19.76')
             elif cpt == 17:
                 self.assertEqual(token.type,Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
@@ -1385,6 +1490,118 @@ class LexerTest(TestCase):
         
         self.assertEqual(token.type,'ID')
         self.assertEqual(token.value,'data')
+        
+    
+    def test_sphdf_sphdp(self):
+        """ """
+        
+        tokenizer = IMSTokenizer()
+        
+        str = "begin ims1.0\nmsg_type request\nmsg_id ex026\ne-mail foo.bar@google.com\ntime 1999/07/01 to 2000/08/01\nsta_list AU*\nsphdf rms2.0\nsphdp rms2.0\nstop\n"
+        
+        io_prog = StringIO.StringIO(str)
+         
+        tokenizer.set_io_prog(io_prog)
+        
+        cpt = 0
+        
+        token = tokenizer.next()
+        
+        while token.type != Token.ENDMARKER:
+            #print("\nToken = %s"%(token))
+    
+            if cpt == 0:
+                # retrieve token
+                self.assertEqual(token.type,'BEGIN')
+                self.assertEqual(token.value,'begin')
+            elif cpt == 1:
+                self.assertEqual(token.type,'MSGFORMAT')
+                self.assertEqual(token.value,'ims1.0')
+            elif cpt == 2:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 3:
+                self.assertEqual(token.type,'MSGTYPE')
+                self.assertEqual(token.value,'msg_type')
+            elif cpt == 4:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'request')
+            elif cpt == 5:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 6:
+                self.assertEqual(token.type,'MSGID')
+                self.assertEqual(token.value,'msg_id')
+            elif cpt == 7:
+                self.assertEqual(token.type,'ID')
+                self.assertEqual(token.value,'ex026')
+            elif cpt == 8:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 9:
+                self.assertEqual(token.type,'EMAIL')
+                self.assertEqual(token.value,'e-mail')
+            elif cpt == 10:
+                self.assertEqual(token.type,'EMAILADDR')
+                self.assertEqual(token.value,'foo.bar@google.com')
+            elif cpt == 11:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 12:
+                self.assertEqual(token.type,Token.TIME)
+                self.assertEqual(token.value,'time')
+            elif cpt == 13:
+                self.assertEqual(token.type,Token.DATETIME)
+                self.assertEqual(token.value,'1999/07/01')
+            elif cpt == 14:
+                self.assertEqual(token.type,Token.TO)
+                self.assertEqual(token.value,'to')
+            elif cpt == 15:
+                self.assertEqual(token.type,Token.DATETIME)
+                self.assertEqual(token.value,'2000/08/01')
+            elif cpt == 16:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 17:
+                self.assertEqual(token.type,Token.STALIST)
+                self.assertEqual(token.value,'sta_list')
+            elif cpt == 18:
+                self.assertEqual(token.type,Token.WCID)
+                self.assertEqual(token.value,'AU*')
+            elif cpt == 19:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 20:
+                self.assertEqual(token.type,Token.SPHDF)
+                self.assertEqual(token.value,'sphdf')
+            elif cpt == 21:
+                self.assertEqual(token.type,Token.MSGFORMAT)
+                self.assertEqual(token.value,'rms2.0')
+            elif cpt == 22:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 23:
+                self.assertEqual(token.type,Token.SPHDP)
+                self.assertEqual(token.value,'sphdp')
+            elif cpt == 24:
+                self.assertEqual(token.type,Token.MSGFORMAT)
+                self.assertEqual(token.value,'rms2.0')
+            elif cpt == 25:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 26:
+                self.assertEqual(token.type,'STOP')
+                self.assertEqual(token.value,'stop')
+            elif cpt == 27:
+                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.value,'\n')
+            elif cpt == 28:
+                self.assertEqual(token.type,Token.ENDMARKER)
+                self.assertEqual(token.value,None)
+            
+            
+            token = tokenizer.next()
+            cpt += 1
          
                  
     def ztest_read_from_email(self):
