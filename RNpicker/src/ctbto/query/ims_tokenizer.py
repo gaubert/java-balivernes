@@ -98,7 +98,10 @@ class Token(object):
     BEGIN         = 'BEGIN'
     STOP          = 'STOP'
     TO            = 'TO'
+    OF            = 'OF'
+    PART          = 'PART'
     MSGTYPE       = 'MSGTYPE'
+    REFID         = 'REFID'
     MSGID         = 'MSGID'
     EMAIL         = 'EMAIL'
     TIME          = 'TIME'
@@ -293,126 +296,139 @@ MINUS_RE     = re.compile(r'-')
 # Language keywords
 
 # BEGIN 
-BEGIN_RE      = re.compile('BEGIN',re.IGNORECASE)
+BEGIN_RE      = re.compile('BEGIN', re.IGNORECASE)
 # STOP
-STOP_RE       = re.compile('STOP',re.IGNORECASE)
+STOP_RE       = re.compile('STOP', re.IGNORECASE)
 # TO
-TO_RE         = re.compile('TO',re.IGNORECASE)
+TO_RE         = re.compile('TO', re.IGNORECASE)
+# OF
+OF_RE         = re.compile('OF', re.IGNORECASE)
+# PART
+PART_RE         = re.compile('PART', re.IGNORECASE)
 # MSGTYPE
-MSGTYPE_RE    = re.compile('MSG_TYPE',re.IGNORECASE)
+MSGTYPE_RE    = re.compile('MSG_TYPE', re.IGNORECASE)
 # MSGID
-MSGID_RE      = re.compile('MSG_ID',re.IGNORECASE)
+MSGID_RE      = re.compile('MSG_ID', re.IGNORECASE)
+# REFID
+REFID_RE      = re.compile('REF_ID', re.IGNORECASE)
 # EMAIL
-EMAIL_RE      = re.compile('E-MAIL',re.IGNORECASE)
+EMAIL_RE      = re.compile('E-MAIL', re.IGNORECASE)
 # TIME
-TIME_RE       = re.compile('TIME',re.IGNORECASE)
+TIME_RE       = re.compile('TIME', re.IGNORECASE)
 # STALIST
-STALIST_RE    = re.compile('STA_LIST',re.IGNORECASE)
+STALIST_RE    = re.compile('STA_LIST', re.IGNORECASE)
 # BULL_TYPE
-BULLTYPE_RE   = re.compile('BULL_TYPE',re.IGNORECASE)
+BULLTYPE_RE   = re.compile('BULL_TYPE', re.IGNORECASE)
 # DEPTH
-DEPTH_RE      = re.compile('DEPTH',re.IGNORECASE)
+DEPTH_RE      = re.compile('DEPTH', re.IGNORECASE)
 # MAG
-MAG_RE        = re.compile('MAG',re.IGNORECASE)
+MAG_RE        = re.compile('MAG', re.IGNORECASE)
 #MAGTYPE
-MAGTYPE_RE    = re.compile('MAG_TYPE',re.IGNORECASE)
+MAGTYPE_RE    = re.compile('MAG_TYPE', re.IGNORECASE)
 #CHANLIST
-CHANLIST_RE   = re.compile('CHAN_LIST',re.IGNORECASE)
+CHANLIST_RE   = re.compile('CHAN_LIST', re.IGNORECASE)
 #RELATIVE_TO
-RELATIVETO_RE = re.compile('RELATIVE_TO',re.IGNORECASE)
+RELATIVETO_RE = re.compile('RELATIVE_TO', re.IGNORECASE)
 # HELP
-HELP_RE       = re.compile('HELP',re.IGNORECASE)
+HELP_RE       = re.compile('HELP', re.IGNORECASE)
 # LAT
-LAT_RE        = re.compile('LAT',re.IGNORECASE)
+LAT_RE        = re.compile('LAT', re.IGNORECASE)
 # LON
-LON_RE        = re.compile('LON',re.IGNORECASE)
+LON_RE        = re.compile('LON', re.IGNORECASE)
 
-KEYWORDS_TOKENS = [Token.BEGIN,Token.STOP,Token.TO,Token.MSGTYPE,Token.MSGID,Token.EMAIL,Token.TIME,Token.STALIST,Token.BULLTYPE,Token.DEPTH,Token.MAG,Token.MAGTYPE,Token.CHANLIST,Token.RELATIVETO,Token.HELP,Token.LAT,Token.LON]
+KEYWORDS_TOKENS = [Token.BEGIN, Token.STOP, Token.TO, Token.OF, Token.PART, Token.MSGTYPE, Token.MSGID, Token.REFID, Token.EMAIL, \
+                   Token.TIME,  Token.STALIST, Token.BULLTYPE, Token.DEPTH, Token.MAG, Token.MAGTYPE, Token.CHANLIST, \
+                   Token.RELATIVETO, Token.HELP, Token.LAT, Token.LON]
 
 # products
 
 #BULLETIN
-BULLETIN_RE      = re.compile('BULLETIN',re.IGNORECASE)
+BULLETIN_RE      = re.compile('BULLETIN', re.IGNORECASE)
 #WAVEFORM
-WAVEFORM_RE      = re.compile('WAVEFORM',re.IGNORECASE)
+WAVEFORM_RE      = re.compile('WAVEFORM', re.IGNORECASE)
 #SLSD
-SLSD_RE          = re.compile('SLSD',re.IGNORECASE)
+SLSD_RE          = re.compile('SLSD', re.IGNORECASE)
 # ARRIVAL
-ARRIVAL_RE       = re.compile('ARRIVAL',re.IGNORECASE)
+ARRIVAL_RE       = re.compile('ARRIVAL', re.IGNORECASE)
 #STA_STATUS
-STA_STATUS_RE    = re.compile('STA_STATUS',re.IGNORECASE)
+STA_STATUS_RE    = re.compile('STA_STATUS', re.IGNORECASE)
 #CHAN_STATUS
-CHAN_STATUS_RE   = re.compile('CHAN_STATUS',re.IGNORECASE)
+CHAN_STATUS_RE   = re.compile('CHAN_STATUS', re.IGNORECASE)
 #CHANNEL
-CHANNEL_RE       = re.compile('CHANNEL',re.IGNORECASE)
+CHANNEL_RE       = re.compile('CHANNEL', re.IGNORECASE)
 #WAVE_MISSION
-WAVE_MISSION_RE  = re.compile('WAVE_MISSION',re.IGNORECASE)
+WAVE_MISSION_RE  = re.compile('WAVE_MISSION', re.IGNORECASE)
 #WAVE_QUALITY
-WAVE_QUALITY_RE  = re.compile('WAVE_QUALITY',re.IGNORECASE)
+WAVE_QUALITY_RE  = re.compile('WAVE_QUALITY', re.IGNORECASE)
 #STATION
-STATION_RE       = re.compile('STATION',re.IGNORECASE)
+STATION_RE       = re.compile('STATION', re.IGNORECASE)
 #EVENT
-EVENT_RE         = re.compile('EVENT',re.IGNORECASE)
+EVENT_RE         = re.compile('EVENT', re.IGNORECASE)
 #EXECSUM
-EXECSUM_RE       = re.compile('EXECSUM',re.IGNORECASE)
+EXECSUM_RE       = re.compile('EXECSUM', re.IGNORECASE)
 #COMMENT
-COMMENT_RE       = re.compile('COMMENT',re.IGNORECASE)
+COMMENT_RE       = re.compile('COMMENT', re.IGNORECASE)
 #COMM_STATUS
-COMM_STATUS      = re.compile('COMM_STATUS',re.IGNORECASE)
+COMM_STATUS      = re.compile('COMM_STATUS', re.IGNORECASE)
 #ORIGIN
-ORIGIN_RE        = re.compile('ORIGIN',re.IGNORECASE)
+ORIGIN_RE        = re.compile('ORIGIN', re.IGNORECASE)
 #OUTAGE
-OUTAGE_RE        = re.compile('OUTAGE',re.IGNORECASE)
+OUTAGE_RE        = re.compile('OUTAGE', re.IGNORECASE)
 #RESPONSE
-RESPONSE_RE      = re.compile('RESPONSE',re.IGNORECASE)
+RESPONSE_RE      = re.compile('RESPONSE', re.IGNORECASE)
 
 #DETBKPHD
-DETBKPHD_RE      = re.compile('DETBKPHD',re.IGNORECASE)
+DETBKPHD_RE      = re.compile('DETBKPHD', re.IGNORECASE)
 #GASBKPHD
-GASBKPHD_RE      = re.compile('GASBKPHD',re.IGNORECASE)
+GASBKPHD_RE      = re.compile('GASBKPHD', re.IGNORECASE)
 #BLANKPHD
-BLANKPHD_RE      = re.compile('BLANKPHD',re.IGNORECASE)
+BLANKPHD_RE      = re.compile('BLANKPHD', re.IGNORECASE)
 #CALIBPHD
-CALIBPHD_RE      = re.compile('CALIBPHD',re.IGNORECASE)
+CALIBPHD_RE      = re.compile('CALIBPHD', re.IGNORECASE)
 #QCPHD
-QCPHD_RE         = re.compile('QCPHD',re.IGNORECASE)
+QCPHD_RE         = re.compile('QCPHD', re.IGNORECASE)
 #SPHDP
-SPHDP_RE         = re.compile('SPHDP',re.IGNORECASE)
+SPHDP_RE         = re.compile('SPHDP', re.IGNORECASE)
 #SPHDF
-SPHDF_RE         = re.compile('SPHDF',re.IGNORECASE)
+SPHDF_RE         = re.compile('SPHDF', re.IGNORECASE)
 #RLR
-RLR_RE           = re.compile('RLR',re.IGNORECASE)
+RLR_RE           = re.compile('RLR', re.IGNORECASE)
 #ARR
-ARR_RE           = re.compile('ARR',re.IGNORECASE)
+ARR_RE           = re.compile('ARR', re.IGNORECASE)
 #ARR
-RRR_RE           = re.compile('RRR',re.IGNORECASE)
+RRR_RE           = re.compile('RRR', re.IGNORECASE)
 #ALERTFLOW
-ALERTFLOW_RE     = re.compile('ALERT_FLOW',re.IGNORECASE)
+ALERTFLOW_RE     = re.compile('ALERT_FLOW', re.IGNORECASE)
 #ALERT_SYSTEM
-ALERTSYSTEM_RE   = re.compile('ALERT_SYSTEM',re.IGNORECASE)
+ALERTSYSTEM_RE   = re.compile('ALERT_SYSTEM', re.IGNORECASE)
 #ALERT_TEMP
-ALERTTEMP_RE     = re.compile('ALERT_TEMP',re.IGNORECASE)
+ALERTTEMP_RE     = re.compile('ALERT_TEMP', re.IGNORECASE)
 #ALERT_TEMP
-ALERTUPS_RE      = re.compile('ALERT_UPS',re.IGNORECASE)
+ALERTUPS_RE      = re.compile('ALERT_UPS', re.IGNORECASE)
 #MET
-MET_RE           = re.compile('MET',re.IGNORECASE)
+MET_RE           = re.compile('MET', re.IGNORECASE)
 #RNPS
-RNPS_RE          = re.compile('RNPS',re.IGNORECASE)
+RNPS_RE          = re.compile('RNPS', re.IGNORECASE)
 #SSREB
-SSREB_RE         = re.compile('SSREB',re.IGNORECASE)
+SSREB_RE         = re.compile('SSREB', re.IGNORECASE)
 #NETWORK
-NETWORK_RE       = re.compile('NETWORK',re.IGNORECASE)
+NETWORK_RE       = re.compile('NETWORK', re.IGNORECASE)
 #RMSSOH
-RMSSOH_RE        = re.compile('RMSSOH',re.IGNORECASE)
+RMSSOH_RE        = re.compile('RMSSOH', re.IGNORECASE)
 
 #Deprecated ?
 #ARMR
-ARMR_RE          = re.compile('ARMR',re.IGNORECASE)
+ARMR_RE          = re.compile('ARMR', re.IGNORECASE)
 #FPEB
-FPEB_RE          = re.compile('FPEB',re.IGNORECASE)
+FPEB_RE          = re.compile('FPEB', re.IGNORECASE)
 
-SHI_PRODUCTS_TOKENS   = [Token.BULLETIN, Token.WAVEFORM, Token.SLSD, Token.ARRIVAL,Token.EVENT,Token.ORIGIN, Token.EXECSUM, Token.OUTAGE, Token.RESPONSE, Token.STASTATUS, Token.CHANSTATUS, Token.CHANNEL, Token.WAVEMISSION,Token.WAVEQUALITY,Token.STATION, Token.COMMENT, Token.COMMSTATUS]
-RADIO_PRODUCTS_TOKENS = [Token.DETBKPHD, Token.BLANKPHD, Token.CALIBPHD, Token.QCPHD,Token.SPHDP, Token.SPHDF, Token.GASBKPHD, Token.ARR, Token.RRR, Token.SSREB, Token.RLR, Token.RNPS, Token.ALERTFLOW, Token.ALERTSYSTEM, Token.ALERTTEMP, Token.ALERTUPS, Token.RMSSOH, Token.MET, Token.NETWORK, Token.ARMR, Token.FPEB]
+SHI_PRODUCTS_TOKENS   = [Token.BULLETIN, Token.WAVEFORM, Token.SLSD, Token.ARRIVAL, Token.EVENT, Token.ORIGIN, Token.EXECSUM, \
+                         Token.OUTAGE, Token.RESPONSE, Token.STASTATUS, Token.CHANSTATUS, Token.CHANNEL, Token.WAVEMISSION, \
+                         Token.WAVEQUALITY, Token.STATION, Token.COMMENT, Token.COMMSTATUS]
+
+RADIO_PRODUCTS_TOKENS = [Token.DETBKPHD, Token.BLANKPHD, Token.CALIBPHD, Token.QCPHD, Token.SPHDP, Token.SPHDF, Token.GASBKPHD, \
+                         Token.ARR, Token.RRR, Token.SSREB, Token.RLR, Token.RNPS, Token.ALERTFLOW, Token.ALERTSYSTEM, \
+                         Token.ALERTTEMP, Token.ALERTUPS, Token.RMSSOH, Token.MET, Token.NETWORK, Token.ARMR, Token.FPEB]
 
 TOKENS_RE = {
            Token.ID           : ID_RE,
@@ -426,8 +442,11 @@ TOKENS_RE = {
            Token.BEGIN        : BEGIN_RE,
            Token.STOP         : STOP_RE,
            Token.TO           : TO_RE,
+           Token.OF           : OF_RE,
+           Token.PART         : PART_RE,
            Token.MSGTYPE      : MSGTYPE_RE,
            Token.MSGID        : MSGID_RE,
+           Token.REFID        : REFID_RE,
            Token.EMAIL        : EMAIL_RE,
            Token.TIME         : TIME_RE,
            Token.STALIST      : STALIST_RE,
@@ -493,7 +512,8 @@ TOKENS_RE = {
 
 # key ordered to optimize pattern matching
 # it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + SHI_PRODUCTS_TOKENS + RADIO_PRODUCTS_TOKENS + [Token.MSGFORMAT,Token.EMAILADDR, Token.ID,Token.NUMBER,Token.COMMA,Token.COLON,Token.MINUS,Token.NEWLINE]
+TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + SHI_PRODUCTS_TOKENS + RADIO_PRODUCTS_TOKENS \
+                 + [Token.MSGFORMAT, Token.EMAILADDR, Token.ID, Token.NUMBER,Token.COMMA, Token.COLON, Token.MINUS, Token.NEWLINE]
 
 # Literals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
@@ -531,7 +551,7 @@ class IMSTokenizer(object):
         # used by the iterator method
         self._gen            = None
         
-    def set_io_prog(self,a_io_prog):
+    def set_io_prog(self, a_io_prog):
         """ 
            Pass the io stream to parse and start reading from where it has been positioned 
            Args:
@@ -546,7 +566,7 @@ class IMSTokenizer(object):
         # reset generator
         self._gen            = None
     
-    def set_file_pos(self,a_file_pos):
+    def set_file_pos(self, a_file_pos):
         """ 
            Set the starting offset in the read io stream (file).
            Reset the generator as the file positio has changed.
@@ -568,9 +588,10 @@ class IMSTokenizer(object):
         return self._line_num
         
     def io_prog(self):
+        """ return the io prog """
         return self._io_prog
     
-    def _get_ID_type(self,a_value):
+    def _get_ID_type(self, a_value):
         """ get the type for a particular free form ID.
             There are 3 different kinds of IDs: 
             - WCID. WildCard ID. if a_value contains a *.
@@ -586,7 +607,7 @@ class IMSTokenizer(object):
             Raises:
                None
         """
-        if len(a_value) > 50 or re.search('[-/=+\<\>\(\)]',a_value):
+        if len(a_value) > 50 or re.search('[/=+\<\>\(\)]', a_value):
             return 'DATA'
         elif a_value.find('*') >= 0:
             return 'WCID'     
@@ -595,7 +616,7 @@ class IMSTokenizer(object):
     
         
         
-    def _create_tokenize_gen(self,a_starting_pos=-1):
+    def _create_tokenize_gen(self, a_starting_pos=-1):
         """ Use a generator to return an iterator on the tokens stream.
             Calling twice the tokenize method will reset the generator and the 
             position on the read stream. You can position the "cursor" on the
@@ -637,11 +658,11 @@ class IMSTokenizer(object):
                         
                 for key in TOKENS_ORDERED:
                     regexp = TOKENS_RE[key]
-                    match  = regexp.match(line,self._line_pos)
+                    match  = regexp.match(line, self._line_pos)
                     if match:
                        
                         val        = match.group()
-                        start, end = self._line_pos,(self._line_pos+len(val)-1)
+                        start, end = self._line_pos, (self._line_pos+len(val)-1)
                         
                         # when it is an ID check if this is a WCID
                         if key == Token.ID:
@@ -649,7 +670,7 @@ class IMSTokenizer(object):
                         else:
                             type = key
                         
-                        self._tok = Token(type,val,start,end,self._line_num,line,self._file_pos)
+                        self._tok = Token(type,val, start, end, self._line_num, line,  self._file_pos)
                     
                         #update pos
                         self._line_pos = end +1
@@ -665,7 +686,7 @@ class IMSTokenizer(object):
             
             
                 if not b_found:
-                    raise IllegalCharacterError(self._line_num,line,self._line_pos)            
+                    raise IllegalCharacterError(self._line_num, line, self._line_pos)            
         
         # All lines have been read return ENDMARKER Token
         self._tok = ENDMARKERToken(self._line_num)
@@ -698,7 +719,7 @@ class IMSTokenizer(object):
         
         return self._gen.next()
     
-    def consume_next_token(self,a_token_type):
+    def consume_next_token(self, a_token_type):
         """
            Consume the next token and check that it is the expected type otherwise send an exception
            
@@ -715,11 +736,11 @@ class IMSTokenizer(object):
         tok = self.next()
         
         if tok.type != a_token_type:
-            raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_type,tok)
+            raise BadTokenError(tok.line_num, tok.parsed_line, tok.begin, a_token_type, tok)
         else:
             return tok
         
-    def consume_while_next_token_is_in(self,a_token_types_list):
+    def consume_while_next_token_is_in(self, a_token_types_list):
         """
            Consume the next tokens as long as they have one of the passed types.
            This means that at least one token with one of the passed types needs to be matched.
@@ -740,7 +761,7 @@ class IMSTokenizer(object):
             if tok.type not in a_token_types_list:
                 return tok
     
-    def consume_while_current_token_is_in(self,a_token_types_list):
+    def consume_while_current_token_is_in(self, a_token_types_list):
         """
            Consume the tokens starting from the current token as long as they have one of the passed types.
            It is a classical token eater. It eats tokens as long as they are the specified type
@@ -761,7 +782,7 @@ class IMSTokenizer(object):
         
         
     
-    def consume_next_tokens(self,a_token_types_list):
+    def consume_next_tokens(self, a_token_types_list):
         """
            Consume the one of the next token types given in the list and check that it is the expected type otherwise send an exception
             
@@ -778,12 +799,12 @@ class IMSTokenizer(object):
         tok = self.next()
         
         if tok.type not in a_token_types_list:
-            raise BadTokenError(tok.line_num,tok.parsed_line,tok.begin,a_token_types_list,tok)
+            raise BadTokenError(tok.line_num, tok.parsed_line, tok.begin, a_token_types_list, tok)
         else:
             return tok
         
         
-    def advance_until(self,a_tokens_list):
+    def advance_until(self, a_tokens_list):
         """ 
             Advance in the stream of tokens until one of the desired tokens is found.
             
@@ -827,10 +848,10 @@ class IMSTokenizer(object):
             for key in tokens_to_match:
                 regexp = TOKENS_RE[key]
                 #here search anywhere in the line for the token
-                match  = regexp.search(line,self._line_pos)
+                match  = regexp.search(line, self._line_pos)
                 if match:
                     val        = match.group()
-                    start, end = self._line_pos,(self._line_pos+len(val)-1)
+                    start, end = self._line_pos, (self._line_pos+len(val)-1)
                      
                     # do all the tricks to return the right TOKENS (see SUB TOKENS like WCID DATA)
                         
@@ -840,7 +861,7 @@ class IMSTokenizer(object):
                     else:
                         type = key
                         
-                        self._tok = Token(type,val,start,end,self._line_num,line)
+                        self._tok = Token(type, val, start, end, self._line_num, line)
                     
                         #update pos
                         self._line_pos = end +1
@@ -852,9 +873,6 @@ class IMSTokenizer(object):
                     
                         #return token (no generator)
                         return self._tok
-                        
-                        #found on so quit for loop
-                        break
             
             self._file_pos = self._io_prog.tell()
             # not found go to next line
