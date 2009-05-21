@@ -39,7 +39,14 @@ class IMSParser(object):
     c_log = logging.getLogger("query.IMSParser")
     c_log.setLevel(logging.DEBUG)
     
-    c_PRODUCTS = [Token.BULLETIN, Token.SLSD, Token.ARRIVAL, Token.WAVEFORM]
+    c_SHI_PRODUCTS = [Token.BULLETIN,   Token.ARRIVAL, Token.WAVEFORM, Token.EVENT, Token.ORIGIN, Token.SLSD, Token.CHANNEL, Token.STASTATUS, \
+                      Token.CHANSTATUS, Token.OUTAGE, Token.RESPONSE, Token.COMMENT, Token.COMMSTATUS, Token.EXECSUM, Token.STATION]
+    
+    c_RAD_PRODUCTS = [Token.ARR, Token.RRR, Token.BLANKPHD, Token.SPHDF, Token.SPHDP, Token.CALIBPHD, Token.QCPHD, Token.DETBKPHD, Token.GASBKPHD, Token.RLR, \
+                      Token.RMSSOH, Token.RNPS, Token.MET, Token.NETWORK, Token.SSREB, ]
+    
+    c_ALL_PRODUCTS = c_SHI_PRODUCTS + c_RAD_PRODUCTS
+    c_PRODUCT      = 'PRODUCT'
     
     def __init__(self):
         """ constructor """
@@ -224,7 +231,10 @@ class IMSParser(object):
             # if the current token has already be seen
             # store the new product and create a new one with the same properties as the current one
             # product kind of inherit properties from the previous one
-            if token.type in seen_keywords:
+        
+            # if it is a product use c_PRODUCT marker
+            s_type = IMSParser.c_PRODUCT if (token.type in IMSParser.c_ALL_PRODUCTS) else token.type
+            if s_type in seen_keywords:
                 cpt += 1
                 product_name  = 'PRODUCT_%d'% (cpt)
                 result_dict[product_name] = copy.deepcopy(product)
@@ -300,13 +310,22 @@ class IMSParser(object):
                 
                 product.update(self._parse_latlon(token.type))
             
-            elif token.type == Token.BULLETIN or token.type == Token.SLSD or token.type == Token.ARRIVAL or token.type == Token.WAVEFORM:
+            # parse complex products
+            elif token.type in IMSParser.c_SHI_PRODUCTS:
                 
                 # to handle multiple product retrievals
                 # need to add all PRODUCTS
-                seen_keywords.extend(IMSParser.c_PRODUCTS)
+                seen_keywords.append(IMSParser.c_PRODUCT)
                 
-                product.update(self._parse_shi_product(token))
+                product.update(self._parse_complex_product(token))
+            
+            elif token.type in IMSParser.c_RAD_PRODUCTS:
+                
+                # to handle multiple product retrievals
+                # need to add all PRODUCTS
+                seen_keywords.append(IMSParser.c_PRODUCT)
+                
+                product.update(self._parse_complex_product(token))
                         
             elif token.type == Token.STALIST:
                                 
@@ -345,7 +364,7 @@ class IMSParser(object):
             token = self._tokenizer.next() 
         
             #should find an ID
-            if token.type == Token.ID:
+            if token.type == Token.ID or token.type == Token.WCID:
             
                 stations.append(token.value)
                 
@@ -362,12 +381,27 @@ class IMSParser(object):
         # if goes here then there is something in stations
         res_dict[Token.STALIST] = stations
         
-        return res_dict   
+        return res_dict  
+    
+    def _parse_simple_product(self, a_token):
+        """ Parse simple products.
+            These products don't have any parameters like a format and subformat.
             
-    def _parse_shi_product(self, a_token):
-        """ Parse shi product.
-            It should be a mag range mag [date1[time1]] to [date2[time2]]
+            Args: a_token: the current token
+            
+        """ 
+        res_dict = {}
         
+        # get product type
+        res_dict['TYPE'] = a_token.type
+        
+        # expect nothing else but NEWLINES
+        self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        
+        return res_dict
+            
+    def _parse_complex_product(self, a_token):
+        """ Parse complex products either SHI or Radionuclide
             Args: a_token: token
                
             Returns:
@@ -376,7 +410,6 @@ class IMSParser(object):
             Raises:
                exception 
         """
-        
         res_dict = {}
         
         # get product type
