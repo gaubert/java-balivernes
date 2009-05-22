@@ -218,11 +218,16 @@ class IMSParser(object):
         if token.type == Token.REFID:
             result['REFID'] = self._parse_ref_id_line()
             token = self._tokenizer.current_token()
+        
+        #optional line 4 or 5: PRODID. TODO check if it can leave with REFID
+        if token.type == Token.PRODID:
+            result['PRODID'] = self._parse_prod_id_line()
+            token = self._tokenizer.current_token()
             
         # line 4 or 5: e-mail foo.bar@domain_name
         # look for an EMAIL keyword
         if token.type != Token.EMAIL:
-            raise ParsingError(ParsingError.create_std_error_msg('an email', token), 'The email line is probably missing or misplaced', token)
+            raise ParsingError(ParsingError.create_std_error_msg('an email', token), 'The email line is probably missing or misplaced or there might be a misplaced PRODID line (before REFID)', token)
     
         token = self._tokenizer.next()
         # look for the EMAILADDR
@@ -236,6 +241,38 @@ class IMSParser(object):
         
         return result
     
+    def _parse_prod_id_line(self):
+        """ Parse a prod_id line
+        
+            Args: None
+               
+            Returns:
+               return a dictionary of pased values 
+        
+            Raises:
+               exception 
+        """ 
+        result_dict = {}
+        
+        token = self._tokenizer.next()
+        
+        if token.type not in (Token.NUMBER):
+            raise ParsingError(ParsingError.create_std_error_msg('a number', token), 'The prod_id line is missing a product_id or it is not well formatted', token)
+         
+        result_dict['PRODID'] = token.value
+        
+        token = self._tokenizer.next()
+        
+        if token.type not in (Token.NUMBER):
+            raise ParsingError(ParsingError.create_std_error_msg('a number', token), 'The prod_id line is missing a delivery_id or it is not well formatted', token)
+         
+        result_dict['DELIVERYID'] = token.value
+        
+        #eat current and next line characters
+        self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        
+        return result_dict
+
     def _parse_ref_id_line(self):
         """ Parse a ref_id line
         
