@@ -103,6 +103,7 @@ class Token(object):
     MSGTYPE       = 'MSGTYPE'
     REFID         = 'REFID'
     MSGID         = 'MSGID'
+    PRODID        = 'PRODID'
     EMAIL         = 'EMAIL'
     TIME          = 'TIME'
     STALIST       = 'STALIST'
@@ -309,6 +310,8 @@ PART_RE         = re.compile('PART', re.IGNORECASE)
 MSGTYPE_RE    = re.compile('MSG_TYPE', re.IGNORECASE)
 # MSGID
 MSGID_RE      = re.compile('MSG_ID', re.IGNORECASE)
+# PRODID
+PRODID_RE     = re.compile('PROD_ID', re.IGNORECASE)
 # REFID
 REFID_RE      = re.compile('REF_ID', re.IGNORECASE)
 # EMAIL
@@ -338,7 +341,7 @@ LON_RE        = re.compile('LON', re.IGNORECASE)
 
 KEYWORDS_TOKENS = [Token.BEGIN, Token.STOP, Token.TO, Token.OF, Token.PART, Token.MSGTYPE, Token.MSGID, Token.REFID, Token.EMAIL, \
                    Token.TIME,  Token.STALIST, Token.BULLTYPE, Token.DEPTH, Token.MAG, Token.MAGTYPE, Token.CHANLIST, \
-                   Token.RELATIVETO, Token.HELP, Token.LAT, Token.LON]
+                   Token.RELATIVETO, Token.HELP, Token.LAT, Token.LON,Token.PRODID]
 
 # products
 
@@ -447,6 +450,7 @@ TOKENS_RE = {
            Token.MSGTYPE      : MSGTYPE_RE,
            Token.MSGID        : MSGID_RE,
            Token.REFID        : REFID_RE,
+           Token.PRODID       : PRODID_RE,
            Token.EMAIL        : EMAIL_RE,
            Token.TIME         : TIME_RE,
            Token.STALIST      : STALIST_RE,

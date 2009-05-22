@@ -627,7 +627,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2009/05/11 05:20:16', 'SUBFORMAT': 'CM6', 'ENDDATE': '2009/05/11 05:27:00', 'FORMAT': 'IMS1.0', 'CHANLIST': ['BH*'], 'TYPE': 'WAVEFORM', 'STALIST': ['GUMO']})
         
-    def test_ref_part_1(self):
+    def test_refid_part_1(self):
         """ test with ref_id part 1 """
         
         message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID WS01-KURK186874 \nref_id 34370664 CTBT_IDC part 1\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
@@ -650,7 +650,7 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2009/05/11 05:20:16', 'SUBFORMAT': 'CM6', 'ENDDATE': '2009/05/11 05:27:00', 'FORMAT': 'IMS1.0', 'CHANLIST': ['BH*'], 'TYPE': 'WAVEFORM', 'STALIST': ['GUMO']})
     
-    def test_ref_part_2(self):
+    def test_refid_part_2(self):
         """ test with ref_id part 2 of x """
         
         message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID WS01-KURK186874 \nref_id 34370664 CTBT_IDC part 1 of 2\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
@@ -672,8 +672,8 @@ class IMSMessageParserTest(TestCase):
         
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2009/05/11 05:20:16', 'SUBFORMAT': 'CM6', 'ENDDATE': '2009/05/11 05:27:00', 'FORMAT': 'IMS1.0', 'CHANLIST': ['BH*'], 'TYPE': 'WAVEFORM', 'STALIST': ['GUMO']})
-     
-    def test_ref_part_3(self):
+
+    def test_refid_part_3(self):
         """ test with ref_id without part """
         
         message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID WS01-KURK186874 \nref_id 34370664\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
@@ -695,8 +695,68 @@ class IMSMessageParserTest(TestCase):
         
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2009/05/11 05:20:16', 'SUBFORMAT': 'CM6', 'ENDDATE': '2009/05/11 05:27:00', 'FORMAT': 'IMS1.0', 'CHANLIST': ['BH*'], 'TYPE': 'WAVEFORM', 'STALIST': ['GUMO']})
-               
+                       
+    def test_prodid_part_1(self):
+        """ test with prod_id without ref_id """
         
+        message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID WS01-KURK186874 \nprod_id 34370664 3423445\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'WS01-KURK186874')
+        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        
+        self.assertEqual(result['PRODID'],{'DELIVERYID': '3423445', 'PRODID': '34370664'})
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2009/05/11 05:20:16', 'SUBFORMAT': 'CM6', 'ENDDATE': '2009/05/11 05:27:00', 'FORMAT': 'IMS1.0', 'CHANLIST': ['BH*'], 'TYPE': 'WAVEFORM', 'STALIST': ['GUMO']})
+    
+    def test_prodid_part_2(self):
+        """ test with prod_id with ref_id """
+        
+        message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID WS01-KURK186874 \nref_id 34370664\nprod_id 34370664 3423445\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'WS01-KURK186874')
+        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        
+        self.assertEqual(result['REFID'],{'REFSTR': '34370664'})
+        self.assertEqual(result['PRODID'],{'DELIVERYID': '3423445', 'PRODID': '34370664'})
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '2009/05/11 05:20:16', 'SUBFORMAT': 'CM6', 'ENDDATE': '2009/05/11 05:27:00', 'FORMAT': 'IMS1.0', 'CHANLIST': ['BH*'], 'TYPE': 'WAVEFORM', 'STALIST': ['GUMO']})
+    
+    def test_prodid_part_3(self):
+        """ test with prod_id before ref_id => Error"""
+        
+        message = "  BEGIN IMS1.0\nMSG_TYPE REQUEST\nMSG_ID WS01-KURK186874 \nprod_id 34370664 3423445\nref_id 34370664\nE-MAIL messages@dc.ctbto.org\nTIME 2009/05/11 05:20:16 TO 2009/05/11 05:27:00\nSTA_LIST GUMO\nCHAN_LIST BH*\nWAVEFORM IMS1.0:CM6\nSTOP"
+        
+        parser = IMSParser()
+        
+        try:
+            parser.parse(message)
+            self.fail("should launch an exception")
+        except ParsingError, p_err:
+            self.assertEqual(p_err.message,"Error[line=5,pos=0]: Next keyword should be an email but instead was 'ref_id' (keyword type REFID).")
+      
+
     """ Add Errors:
         - (DONE) bad email address, 
         - (DONE) no stop,

@@ -1518,7 +1518,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'MSGFORMAT')
                 self.assertEqual(token.value,'ims1.0')
             elif cpt == 2:
-                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.type, Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 3:
                 self.assertEqual(token.type,'MSGTYPE')
@@ -1527,7 +1527,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'ID')
                 self.assertEqual(token.value,'request')
             elif cpt == 5:
-                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.type, Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 6:
                 self.assertEqual(token.type,'MSGID')
@@ -1536,7 +1536,7 @@ class LexerTest(TestCase):
                 self.assertEqual(token.type,'ID')
                 self.assertEqual(token.value,'ex026')
             elif cpt == 8:
-                self.assertEqual(token.type,Token.NEWLINE)
+                self.assertEqual(token.type, Token.NEWLINE)
                 self.assertEqual(token.value,'\n')
             elif cpt == 9:
                 self.assertEqual(token.type,'EMAIL')
