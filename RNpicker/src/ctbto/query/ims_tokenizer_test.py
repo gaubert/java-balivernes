@@ -7,7 +7,7 @@ import StringIO
 
 from unittest import TestCase
 
-from ims_tokenizer import IMSTokenizer, Token, IllegalCharacterError, BadTokenError, NonExistingTokenError, TokensNotFoundError
+from ims_tokenizer import IMSTokenizer, Token, IllegalCharacterError, BadTokenError, NonExistingTokenError, TokensNotFoundError, TokenCreator
 
 class LexerTest(TestCase):
     """ LexerTest """
@@ -1449,7 +1449,7 @@ class LexerTest(TestCase):
         except  BadTokenError, e:
             self.assertEqual(e.message,"Found Token with type NEWLINE and value [\n] in Line 2, position 14. Was expecting ['MSGID'].")
     
-    def test_consume_while_next_token_is_in(self):
+    def ztest_consume_while_next_token_is_in(self):
         ''' test consume while next token is in functionality '''
         
         tokenizer = IMSTokenizer()
@@ -1602,7 +1602,17 @@ class LexerTest(TestCase):
             
             token = tokenizer.next()
             cpt += 1
-         
+    
+    def test_token_creator(self):
+        """ create tokens """
+        
+        import re
+        
+        tokC = TokenCreator()
+        
+        tokC.register_token("ID",re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*'),'HEAD')
+        
+        tokC.ID     
                  
     def ztest_read_from_email(self):
         ''' test read from an email message and lex '''
