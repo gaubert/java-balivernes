@@ -146,17 +146,10 @@
       <element minOccurs="1" maxOccurs="1" name="CalibrationInformation" type="sml:calibrationInformationType" />
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
-    <attribute name="REFID" type="string">
+    <attribute name="UUID" type="string">
       <annotation>
         <documentation>
-					Reference ID. Unique ID given by the station
-				</documentation>
-      </annotation>
-    </attribute>
-    <attribute name="SID" type="string">
-      <annotation>
-        <documentation>
-					Sample ID. ID given by IDC when the data is analysed
+					Unique identifier for this measurement
 				</documentation>
       </annotation>
     </attribute>
@@ -312,13 +305,6 @@
         <annotation>
           <documentation>
 				S for SPHD, B for background, G for gas background
-		   </documentation>
-        </annotation>
-      </element>
-      <element minOccurs="1" maxOccurs="1" name="SampleID" type="string">
-        <annotation>
-          <documentation>
-				the SID associated to the current spectrum
 		   </documentation>
         </annotation>
       </element>

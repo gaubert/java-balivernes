@@ -531,7 +531,10 @@ class DBDataFetcher(object):
         if accessDatabase:
             DBDataFetcher.c_log.info("Read missing sample data from the database for %s.\n"%(self._sampleID))
           
-            #get refID
+            # save sampleID
+            self._dataBag[u'SAMPLE_ID'] = self._sampleID
+            
+            #get refID 
             self._fetchSampleRefId()
           
             # get station info
@@ -1322,7 +1325,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # it is in m3 and in the AUXILIARY_INFO
         aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
         # we need to a correction coefficient 0.087 according to Matthias
-        volume = aux.get('XE_VOLUME',0)
+        corr_volume = aux.get('XE_VOLUME',0) / 0.087
         
         # add results in a list which will become a list of dicts
         res = []
@@ -1341,8 +1344,10 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
           
             # get activity. If no volume or no activity results are 0
-            data[u'ACTIVITY'] = data.get(u'CONC',0)*volume
-            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
+            data[u'ACTIVITY'] = data.get(u'CONC',0)*corr_volume
+            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*corr_volume
+            
+            SaunaNobleGasDataFetcher.c_log.debug("Vol = %s, corr_vol = %s, activity = %s, concentration = %s \n"%(aux.get('XE_VOLUME',0), corr_volume, data.get(u'CONC',0)*corr_volume, data.get(u'CONC',0)))
           
             # to avoid div by 0 check that quotient is not nul
             if data[u'ACTIVITY'] != 0:
@@ -1352,8 +1357,8 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             if data.get(u'CONC',0) != 0:
                 data[u'CONC_ERR_PERC'] = abs((data.get(u'CONC_ERR',0)*100)/data.get(u'CONC'))
           
-            data[u'LC_ACTIVITY'] = data.get(u'LC',0)*volume  
-            data[u'LD_ACTIVITY'] = data.get(u'LD',0)*volume
+            data[u'LC_ACTIVITY'] = data.get(u'LC',0)* corr_volume 
+            data[u'LD_ACTIVITY'] = data.get(u'LD',0)* corr_volume
           
             res.append(data)
             data = {}
@@ -1466,7 +1471,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_VAL'%(aDataname)]   = diff_in_sec
         self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_TEST'%(aDataname)]  = 'x between 4h and 25h'
         
-        # response time 84 h (302400 sec) tramsit_dtg - collect_start
+        # response time 48 h (302400 sec) tramsit_dtg - collect_start
         max_respond_time = 302400
         transmit_time = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag[u'%s_DATA_TRANSMIT_DTG'%(aDataname)])
         diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start,transmit_time)
@@ -1477,7 +1482,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_FLAG'%(aDataname)] = 'Pass'
         
         self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_VAL'%(aDataname)]   = diff_in_sec
-        self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_TEST'%(aDataname)]  = 'no more than 84h'
+        self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_TEST'%(aDataname)]  = 'no more than 48h'
     
            
     def _fetchParameters(self,sid,dataname):

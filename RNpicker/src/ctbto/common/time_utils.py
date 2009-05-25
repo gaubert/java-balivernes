@@ -64,7 +64,7 @@ def transformISO8601PeriodInFormattedTime(aPeriod):
     """ get an ISO period seconds such as PT29405s and transform it into DD-HH-MM-SS"""
     
     # extract seconds value
-    res = scanf.scanf("PT%dS",aPeriod)
+    res = scanf("PT%dS",aPeriod)
     
     if len(res) == 0:
         # Error

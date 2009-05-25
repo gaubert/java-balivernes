@@ -563,7 +563,7 @@ class SpalaxRenderer(BaseRenderer):
                 #add Calibration references
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (sindict_id))
                 if l is None :
-                    SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                    SpalaxRenderer.c_log.warning("No calibration information for sample %s" % (ty))
                     l = []
                 else:
                     # add calibration info
@@ -753,6 +753,8 @@ class SpalaxRenderer(BaseRenderer):
              
             group_spec_template = re.sub("\${SPECTRUM_TYPE}",str(self._fetcher.get("%s_G_DATA_SPECTRAL_QUALIFIER" % (ty))), group_spec_template)
             group_spec_template = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_G_DATA_DATA_TYPE" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${SAMPLEID}",ty.split("_")[1] if len(ty.split("_")) >=2 else "N/A", group_spec_template)
+            
             # add quantity and geometry
             group_spec_template = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_G_DATA_SAMPLE_QUANTITY" % (ty))), group_spec_template)
             group_spec_template = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_G_DATA_FLOW_RATE" % (ty))), group_spec_template)
@@ -1307,6 +1309,8 @@ class SaunaRenderer(BaseRenderer):
              
             spectrumTemplate = re.sub("\${SPECTRUM_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE" % (ty))), spectrumTemplate)
+            
+            spectrumTemplate = re.sub("\${SAMPLEID}",ty.split("_")[1] if len(ty.split("_")) >=2 else "N/A", spectrumTemplate)
             # add quantity and geometry
             spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_DATA_FLOW_RATE" % (ty))), spectrumTemplate)

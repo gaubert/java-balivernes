@@ -112,7 +112,7 @@ def main():
      
         validator = XSDValidator("/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/xsd/%s"%(schema_file))
         
-        dir = "/tmp/15Jan_NobleGas/samples"
+        dir = "/tmp/TestNewFormat/samples"
         dirList=os.listdir(dir)
         
         for path in dirList:
