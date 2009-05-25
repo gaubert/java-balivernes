@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
-<schema xmlns:sml="http://www.ctbto.org/SAMPML/0.7" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.7" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema xmlns:sml="http://www.ctbto.org/SAMPML/0.6.1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.6.1" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
   <include schemaLocation="SAMPML-common.xsd" />
   <annotation>
     <documentation>
 			SAMPML IDC Format for describing RN Sample information
-			Version: 0.7
+			Version: 0.6.1
 		</documentation>
   </annotation>
   <element name="SampML">
@@ -146,17 +146,10 @@
       <element minOccurs="1" maxOccurs="1" name="CalibrationInformation" type="sml:calibrationInformationType" />
       <any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </sequence>
-    <attribute name="REFID" type="string">
+    <attribute name="UUID" type="string">
       <annotation>
         <documentation>
-					Reference ID. Unique ID given by the station
-				</documentation>
-      </annotation>
-    </attribute>
-    <attribute name="SID" type="string">
-      <annotation>
-        <documentation>
-					Sample ID. ID given by IDC when the data is analysed
+					Unique identifier for this measurement
 				</documentation>
       </annotation>
     </attribute>
@@ -312,13 +305,6 @@
         <annotation>
           <documentation>
 				S for SPHD, B for background, G for gas background
-		   </documentation>
-        </annotation>
-      </element>
-      <element minOccurs="1" maxOccurs="1" name="SampleID" type="string">
-        <annotation>
-          <documentation>
-				the SID associated to the current spectrum
 		   </documentation>
         </annotation>
       </element>

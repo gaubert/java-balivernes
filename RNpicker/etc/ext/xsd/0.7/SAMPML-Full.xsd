@@ -315,13 +315,6 @@
 		   </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="SampleID" type="string">
-        <annotation>
-          <documentation>
-				the SID associated to the current spectrum
-		   </documentation>
-        </annotation>
-      </element>
       <element minOccurs="1" maxOccurs="1" name="SpectrumType" type="sml:enumSpectrumType">
         <annotation>
           <documentation>

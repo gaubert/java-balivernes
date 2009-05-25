@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created with Liquid XML Studio 1.0.8.0 (http://www.liquid-technologies.com) -->
-<schema xmlns:sml="http://www.ctbto.org/SAMPML/0.7" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.7" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema xmlns:sml="http://www.ctbto.org/SAMPML/0.6.1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.ctbto.org/SAMPML/0.6.1" id="sampml" xmlns="http://www.w3.org/2001/XMLSchema">
   <annotation>
     <documentation>
 			SAMPML IDC Format for describing RN Sample information
-			Version: 0.7
+			Version: 0.6.1
 			SAMPML Common Types to all different formats (Noble Gas, Particulate)
 		</documentation>
   </annotation>
