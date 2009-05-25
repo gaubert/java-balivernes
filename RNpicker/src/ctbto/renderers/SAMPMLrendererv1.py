@@ -1309,13 +1309,20 @@ class SaunaRenderer(BaseRenderer):
              
             spectrumTemplate = re.sub("\${SPECTRUM_TYPE}",str(self._fetcher.get("%s_DATA_SPECTRAL_QUALIFIER" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${MEASUREMENT_TYPE}",str(self._fetcher.get("%s_DATA_DATA_TYPE" % (ty))), spectrumTemplate)
-            
             spectrumTemplate = re.sub("\${SAMPLEID}",ty.split("_")[1] if len(ty.split("_")) >=2 else "N/A", spectrumTemplate)
+            
             # add quantity and geometry
             spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_DATA_FLOW_RATE" % (ty))), spectrumTemplate)
                 
             spectrumTemplate = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY" % (ty))), spectrumTemplate)
+            
+            # add Xe Volume and Xe Volume 
+            aux = self._dataBag.get('%s_AUXILIARY_INFO'%(ty),{})
+            v = aux.get('XE_VOLUME',0)
+            spectrumTemplate = re.sub("\${XE_VOL}",v if (v!=0) else "N/A")
+            
+            
             
             # add the calibration info
             l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))

@@ -222,14 +222,14 @@
       <element minOccurs="1" maxOccurs="1" name="Geometry" type="string">
         <annotation>
           <documentation>
-				Quantity of air sucked
+				detector geometry (should be moved in detector)
 		  </documentation>
         </annotation>
       </element>
-      <element minOccurs="1" maxOccurs="1" name="Quantity" type="sml:physicalValueType">
+      <element minOccurs="1" maxOccurs="1" name="AirVolume" type="sml:physicalValueType">
         <annotation>
           <documentation>
-				detector geometry (should be moved in detector)
+				Quantity of air sucked
 		  </documentation>
         </annotation>
       </element>
@@ -237,6 +237,13 @@
         <annotation>
           <documentation>
 				Flow rate of air sucked
+		  </documentation>
+        </annotation>
+      </element>
+      <element minOccurs="1" maxOccurs="1" name="XeVolume" type="sml:physicalValueType">
+        <annotation>
+          <documentation>
+				Quantity of Xenon measured
 		  </documentation>
         </annotation>
       </element>
