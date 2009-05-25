@@ -82,6 +82,38 @@ class NonExistingTokenError(LexerError):
 class TokensNotFoundError(LexerError):
     pass
 
+class TokenCreator(object):
+    
+    _TOKENS_RE = {}
+    
+    _HEAD            = []
+    _TAIL            = []
+    _KEYWORDS_TOKENS = []
+    _SHI_PRODUCTS    = []
+    _RAD_PRODUCTS    = []
+    
+    TOKENS_ORDERED_LIST = _HEAD + _KEYWORDS_TOKENS + _SHI_PRODUCTS + _RAD_PRODUCTS + _TAIL
+    
+    TOKEN_TYPE = {'KEYWORD':_KEYWORDS_TOKENS,'SHI_PRODUCT':_SHI_PRODUCTS,'RAD_PRODUCT':_RAD_PRODUCTS,'HEAD':_HEAD, 'TAIL':_TAIL}
+    
+    
+    def register_token(self, a_name, a_re, a_type):
+        """ """
+        
+        if a_type not in TokenCreator.TOKEN_TYPE:
+            raise Exception("No token type with name %s has been registered"%(a_name))
+        else:
+            TokenCreator.TOKEN_TYPE[a_type].append(a_name)
+            TokenCreator._TOKENS_RE[a_name] = a_re
+      
+    def __getattr__(self, a_name):
+        """ """
+       
+        if a_name not in TokenCreator._TOKENS_RE:
+            raise Exception("No token with name %s has been registered"%(a_name))
+        
+        return a_name
+
 class Token(object):
     
     ID            = 'ID'
