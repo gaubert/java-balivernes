@@ -1318,9 +1318,9 @@ class SaunaRenderer(BaseRenderer):
             spectrumTemplate = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY" % (ty))), spectrumTemplate)
             
             # add Xe Volume and Xe Volume 
-            aux = self._dataBag.get('%s_AUXILIARY_INFO'%(ty),{})
+            aux = self._fetcher.get('%s_AUXILIARY_INFO'%(ty),{})
             v = aux.get('XE_VOLUME',0)
-            spectrumTemplate = re.sub("\${XE_VOL}",v if (v!=0) else "N/A")
+            spectrumTemplate = re.sub("\${XE_VOL}",str(v) if (v!=0) else "N/A",spectrumTemplate)
             
             
             
