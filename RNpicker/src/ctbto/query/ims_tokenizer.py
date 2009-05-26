@@ -10,9 +10,9 @@ import re
 class LexerError(Exception):
     """LexerError Class"""
     
-    def __init__(self,a_msg):
+    def __init__(self, a_msg):
         
-        super(LexerError,self).__init__(a_msg)
+        super(LexerError, self).__init__(a_msg)
         
 
 class IllegalCharacterError(LexerError):
@@ -46,17 +46,19 @@ class IllegalCharacterError(LexerError):
         return self._pos
     
     def illegal_character(self):
+        """ return the illegal character """
         return self._line[self._pos]
 
 class BadTokenError(LexerError):
+    """ BadTokenError Exception """
     
     def __init__(self, a_line_num, a_line, a_pos, a_expected_token_types, a_found_token):
-         
+        
         self._line     = a_line
         self._pos      = a_pos
         self._line_num = a_line_num
          
-        msg = "Found Token with type %s and value [%s] in Line %s, position %s. Was expecting %s."% (a_found_token.type,a_found_token.value,a_line_num,a_pos,a_expected_token_types)
+        msg = "Found Token with type %s and value [%s] in Line %s, position %s. Was expecting %s."% (a_found_token.type, a_found_token.value, a_line_num, a_pos, a_expected_token_types)
 
         super(BadTokenError, self).__init__(msg)
          
@@ -82,121 +84,369 @@ class NonExistingTokenError(LexerError):
 class TokensNotFoundError(LexerError):
     pass
 
-class TokenCreator(object):
+
+
+# functor tools to assemble tokens
+def group(*choices)   : return '(' + '|'.join(choices) + ')'
+def any(*choices)     : return group(*choices) + '*'
+def maybe(*choices)   : return group(*choices) + '?'
+
+class TokenNames(object):
+    """ 
+       Utility Class to get all token names
+    """
+    def __init__(self):
+        pass
     
-    _TOKENS_RE = {}
-    
-    _HEAD            = []
-    _TAIL            = []
-    _KEYWORDS_TOKENS = []
-    _SHI_PRODUCTS    = []
-    _RAD_PRODUCTS    = []
-    
-    TOKENS_ORDERED_LIST = _HEAD + _KEYWORDS_TOKENS + _SHI_PRODUCTS + _RAD_PRODUCTS + _TAIL
-    
-    TOKEN_TYPE = {'KEYWORD':_KEYWORDS_TOKENS,'SHI_PRODUCT':_SHI_PRODUCTS,'RAD_PRODUCT':_RAD_PRODUCTS,'HEAD':_HEAD, 'TAIL':_TAIL}
-    
-    
-    def register_token(self, a_name, a_re, a_type):
-        """ """
-        
-        if a_type not in TokenCreator.TOKEN_TYPE:
-            raise Exception("No token type with name %s has been registered"%(a_name))
-        else:
-            TokenCreator.TOKEN_TYPE[a_type].append(a_name)
-            TokenCreator._TOKENS_RE[a_name] = a_re
-      
     def __getattr__(self, a_name):
-        """ """
-       
-        if a_name not in TokenCreator._TOKENS_RE:
+        """ to be used to check if a token exist """
+        if a_name not in  TokenCreator.get_instance().get_all_tokens():
             raise Exception("No token with name %s has been registered"%(a_name))
         
         return a_name
+    
+
+class TokenCreator(object):
+    """ Class used to host the Grammar Tokens.
+        this class needs to be instanciated to use the __getattr__ facility
+    """ 
+    # singleton instance
+    __instance = None
+    
+    HEAD        = 'HEAD'
+    TAIL        = 'TAIL'
+    KEYWORD     = 'KEYWORD'
+    SHI_PRODUCT = 'SHI_PRODUCT'
+    RAD_PRODUCT = 'RAD_PRODUCT'
+    
+    TokenNames  = TokenNames()
+    
+    @classmethod
+    def get_instance(cls):
+        """ get_instance class method """
+        if cls.__instance == None:
+            cls.__instance = TokenCreator()
+        return cls.__instance
+    
+    def __init__(self):
+        
+        #init all types
+        self._head            = []
+        self._tail            = []
+        self._keywords        = []
+        self._shi_products    = []
+        self._rad_products    = []
+        
+        self._static_tokens   = []
+        
+        #init Token RE
+        self._tokens_re       = {}
+        
+        # create token types
+        self._token_type      = { TokenCreator.HEAD   : self._head,  TokenCreator.TAIL : self._tail, \
+                                  TokenCreator.KEYWORD : self._keywords, TokenCreator.SHI_PRODUCT : self._shi_products, \
+                                  TokenCreator.RAD_PRODUCT : self._rad_products 
+                                }
+       
+    
+    def register_token(self, a_name, a_re, a_type):
+        """ register a token with its associated regexpr
+            
+            Args:
+               a_name : Token name
+               a_re   : Token regular expression
+               a_type : Token type (HEAD or KEYWORD or SHI_PRODUCT or RAD_PRODUCT or TAIL)
+        
+        """
+        
+        if a_type not in self._token_type:
+            raise Exception("No token type with name %s has been registered"%(a_name))
+        else:
+            self._token_type[a_type].append(a_name)
+            self._tokens_re[a_name] = a_re
+    
+    def register_static_token(self,a_name):
+        """ used to register token such as sub tokens or static token that will not be matched by the tokenizer.
+            For example MIN, MAX, WCID, DATA
+        """
+        self._static_tokens.append(a_name)
+    
+    def get_ordered_tokens_list(self):
+        """ return ordered list of matchable tokens. This is used to follow the precedence rules defined when registering the token
+        """
+        return self._head + self._keywords + self._shi_products + self._rad_products + self._tail
+    
+    def get_tokens_re(self):
+        """ return the dictionary of tokens regexpr """
+        return self._tokens_re
+    
+    def get_tokens_with_type(self,a_type):
+        """ get all tokens for a particular type """
+        
+        if a_type not in self._token_type:
+            raise Exception("No token type with name %s has been registered"%(a_name))
+        
+        return self._token_type[a_type]
+    
+    def get_all_tokens(self):
+        """ return the full list of tokens """
+        return self._static_tokens + self.get_ordered_tokens_list()
+    
+    
+# register all tokens
+tok_creator = TokenCreator.get_instance()
+
+# add static tokens
+tok_creator.register_static_token('ENDMARKER')
+
+tok_creator.register_static_token('MAX')
+
+tok_creator.register_static_token('MIN')
+
+tok_creator.register_static_token('WCID')
+
+tok_creator.register_static_token('DATA')
+
+#register matchable tokens
+
+#date time
+DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[0-9])([:]?([0-5][0-9]|[0-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
+tok_creator.register_token('DATETIME',DATETIME_RE,TokenCreator.HEAD)
+
+#Add all keywords
+
+# BEGIN 
+BEGIN_RE      = re.compile('BEGIN', re.IGNORECASE)
+tok_creator.register_token('BEGIN',BEGIN_RE,TokenCreator.KEYWORD)
+# STOP
+STOP_RE       = re.compile('STOP', re.IGNORECASE)
+tok_creator.register_token('STOP',STOP_RE,TokenCreator.KEYWORD)
+# TO
+TO_RE         = re.compile('TO', re.IGNORECASE)
+tok_creator.register_token('TO',TO_RE,TokenCreator.KEYWORD)
+# OF
+OF_RE         = re.compile('OF', re.IGNORECASE)
+tok_creator.register_token('OF',OF_RE,TokenCreator.KEYWORD)
+# PART
+PART_RE         = re.compile('PART', re.IGNORECASE)
+tok_creator.register_token('PART',PART_RE,TokenCreator.KEYWORD)
+# MSGTYPE
+MSGTYPE_RE    = re.compile('MSG_TYPE', re.IGNORECASE)
+tok_creator.register_token('MSGTYPE',MSGTYPE_RE,TokenCreator.KEYWORD)
+# MSGID
+MSGID_RE      = re.compile('MSG_ID', re.IGNORECASE)
+tok_creator.register_token('MSGID',MSGID_RE,TokenCreator.KEYWORD)
+# LAT
+LAT_RE        = re.compile('LAT', re.IGNORECASE)
+tok_creator.register_token('LAT',LAT_RE,TokenCreator.KEYWORD)
+# LON
+LON_RE        = re.compile('LON', re.IGNORECASE)
+tok_creator.register_token('LON',LON_RE,TokenCreator.KEYWORD)
+# REFID
+REFID_RE      = re.compile('REF_ID', re.IGNORECASE)
+tok_creator.register_token('REFID',REFID_RE,TokenCreator.KEYWORD)
+# EMAIL
+EMAIL_RE      = re.compile('E-MAIL', re.IGNORECASE)
+tok_creator.register_token('EMAIL',EMAIL_RE,TokenCreator.KEYWORD)
+# TIME
+TIME_RE       = re.compile('TIME', re.IGNORECASE)
+tok_creator.register_token('TIME',TIME_RE,TokenCreator.KEYWORD)
+# STALIST
+STALIST_RE    = re.compile('STA_LIST', re.IGNORECASE)
+tok_creator.register_token('STALIST',STALIST_RE,TokenCreator.KEYWORD)
+# BULL_TYPE
+BULLTYPE_RE   = re.compile('BULL_TYPE', re.IGNORECASE)
+tok_creator.register_token('BULLTYPE',BULLTYPE_RE,TokenCreator.KEYWORD)
+# DEPTH
+DEPTH_RE      = re.compile('DEPTH', re.IGNORECASE)
+tok_creator.register_token('DEPTH',DEPTH_RE,TokenCreator.KEYWORD)
+# MAG
+MAG_RE        = re.compile('MAG', re.IGNORECASE)
+tok_creator.register_token('MAG',MAG_RE,TokenCreator.KEYWORD)
+#MAGTYPE
+MAGTYPE_RE    = re.compile('MAG_TYPE', re.IGNORECASE)
+tok_creator.register_token('MAGTYPE',MAGTYPE_RE,TokenCreator.KEYWORD)
+#CHANLIST
+CHANLIST_RE   = re.compile('CHAN_LIST', re.IGNORECASE)
+tok_creator.register_token('CHANLIST',CHANLIST_RE,TokenCreator.KEYWORD)
+#RELATIVE_TO
+RELATIVETO_RE = re.compile('RELATIVE_TO', re.IGNORECASE)
+tok_creator.register_token('RELATIVETO',RELATIVETO_RE,TokenCreator.KEYWORD)
+# HELP
+HELP_RE       = re.compile('HELP', re.IGNORECASE)
+tok_creator.register_token('HELP',HELP_RE,TokenCreator.KEYWORD)
+# PRODID
+PRODID_RE     = re.compile('PROD_ID', re.IGNORECASE)
+tok_creator.register_token('PRODID',PRODID_RE,TokenCreator.KEYWORD)
+
+# Products
+
+# SHI products
+#BULLETIN
+BULLETIN_RE      = re.compile('BULLETIN', re.IGNORECASE)
+tok_creator.register_token('BULLETIN',BULLETIN_RE,TokenCreator.SHI_PRODUCT)
+#WAVEFORM
+WAVEFORM_RE      = re.compile('WAVEFORM', re.IGNORECASE)
+tok_creator.register_token('WAVEFORM',WAVEFORM_RE,TokenCreator.SHI_PRODUCT)
+#SLSD
+SLSD_RE          = re.compile('SLSD', re.IGNORECASE)
+tok_creator.register_token('SLSD',SLSD_RE,TokenCreator.SHI_PRODUCT)
+# ARRIVAL
+ARRIVAL_RE       = re.compile('ARRIVAL', re.IGNORECASE)
+tok_creator.register_token('ARRIVAL',ARRIVAL_RE,TokenCreator.SHI_PRODUCT)
+#STA_STATUS
+STASTATUS_RE    = re.compile('STA_STATUS', re.IGNORECASE)
+tok_creator.register_token('STASTATUS',STASTATUS_RE,TokenCreator.SHI_PRODUCT)
+#CHAN_STATUS
+CHANSTATUS_RE   = re.compile('CHAN_STATUS', re.IGNORECASE)
+tok_creator.register_token('CHANSTATUS',CHANSTATUS_RE,TokenCreator.SHI_PRODUCT)
+#CHANNEL
+CHANNEL_RE       = re.compile('CHANNEL', re.IGNORECASE)
+tok_creator.register_token('CHANNEL',CHANNEL_RE,TokenCreator.SHI_PRODUCT)
+#WAVE_MISSION
+WAVEMISSION_RE  = re.compile('WAVE_MISSION', re.IGNORECASE)
+tok_creator.register_token('WAVEMISSION',WAVEMISSION_RE,TokenCreator.SHI_PRODUCT)
+#WAVE_QUALITY
+WAVEQUALITY_RE  = re.compile('WAVE_QUALITY', re.IGNORECASE)
+tok_creator.register_token('WAVEQUALITY',WAVEQUALITY_RE,TokenCreator.SHI_PRODUCT)
+#STATION
+STATION_RE       = re.compile('STATION', re.IGNORECASE)
+tok_creator.register_token('STATION',STATION_RE,TokenCreator.SHI_PRODUCT)
+#EVENT
+EVENT_RE         = re.compile('EVENT', re.IGNORECASE)
+tok_creator.register_token('EVENT',EVENT_RE,TokenCreator.SHI_PRODUCT)
+#EXECSUM
+EXECSUM_RE       = re.compile('EXECSUM', re.IGNORECASE)
+tok_creator.register_token('EXECSUM',EXECSUM_RE,TokenCreator.SHI_PRODUCT)
+#COMMENT
+COMMENT_RE       = re.compile('COMMENT', re.IGNORECASE)
+tok_creator.register_token('COMMENT',COMMENT_RE,TokenCreator.SHI_PRODUCT)
+#COMM_STATUS
+COMMSTATUS_RE    = re.compile('COMM_STATUS', re.IGNORECASE)
+tok_creator.register_token('COMMSTATUS',COMMSTATUS_RE,TokenCreator.SHI_PRODUCT)
+#ORIGIN
+ORIGIN_RE        = re.compile('ORIGIN', re.IGNORECASE)
+tok_creator.register_token('ORIGIN',ORIGIN_RE,TokenCreator.SHI_PRODUCT)
+#OUTAGE
+OUTAGE_RE        = re.compile('OUTAGE', re.IGNORECASE)
+tok_creator.register_token('OUTAGE',OUTAGE_RE,TokenCreator.SHI_PRODUCT)
+#RESPONSE
+RESPONSE_RE      = re.compile('RESPONSE', re.IGNORECASE)
+tok_creator.register_token('RESPONSE',RESPONSE_RE,TokenCreator.SHI_PRODUCT)
+
+#DETBKPHD
+DETBKPHD_RE      = re.compile('DETBKPHD', re.IGNORECASE)
+tok_creator.register_token('DETBKPHD',DETBKPHD_RE,TokenCreator.RAD_PRODUCT)
+#GASBKPHD
+GASBKPHD_RE      = re.compile('GASBKPHD', re.IGNORECASE)
+tok_creator.register_token('GASBKPHD',RESPONSE_RE,TokenCreator.RAD_PRODUCT)
+#BLANKPHD
+BLANKPHD_RE      = re.compile('BLANKPHD', re.IGNORECASE)
+tok_creator.register_token('BLANKPHD',BLANKPHD_RE,TokenCreator.RAD_PRODUCT)
+#CALIBPHD
+CALIBPHD_RE      = re.compile('CALIBPHD', re.IGNORECASE)
+tok_creator.register_token('CALIBPHD',CALIBPHD_RE,TokenCreator.RAD_PRODUCT)
+#QCPHD
+QCPHD_RE         = re.compile('QCPHD', re.IGNORECASE)
+tok_creator.register_token('QCPHD',QCPHD_RE,TokenCreator.RAD_PRODUCT)
+#SPHDP
+SPHDP_RE         = re.compile('SPHDP', re.IGNORECASE)
+tok_creator.register_token('SPHDP',SPHDP_RE,TokenCreator.RAD_PRODUCT)
+#SPHDF
+SPHDF_RE         = re.compile('SPHDF', re.IGNORECASE)
+tok_creator.register_token('SPHDF',SPHDF_RE,TokenCreator.RAD_PRODUCT)
+#RLR
+RLR_RE           = re.compile('RLR', re.IGNORECASE)
+tok_creator.register_token('RLR',RLR_RE,TokenCreator.RAD_PRODUCT)
+#ARR
+ARR_RE           = re.compile('ARR', re.IGNORECASE)
+tok_creator.register_token('ARR',ARR_RE,TokenCreator.RAD_PRODUCT)
+#ARR
+RRR_RE           = re.compile('RRR', re.IGNORECASE)
+tok_creator.register_token('RRR',RRR_RE,TokenCreator.RAD_PRODUCT)
+#ALERTFLOW
+ALERTFLOW_RE     = re.compile('ALERT_FLOW', re.IGNORECASE)
+tok_creator.register_token('ALERTFLOW',ALERTFLOW_RE,TokenCreator.RAD_PRODUCT)
+#ALERT_SYSTEM
+ALERTSYSTEM_RE   = re.compile('ALERT_SYSTEM', re.IGNORECASE)
+tok_creator.register_token('ALERTSYSTEM',ALERTSYSTEM_RE,TokenCreator.RAD_PRODUCT)
+#ALERT_TEMP
+ALERTTEMP_RE     = re.compile('ALERT_TEMP', re.IGNORECASE)
+tok_creator.register_token('ALERTTEMP',ALERTTEMP_RE,TokenCreator.RAD_PRODUCT)
+#ALERT_TEMP
+ALERTUPS_RE      = re.compile('ALERT_UPS', re.IGNORECASE)
+tok_creator.register_token('ALERTUPS',ALERTUPS_RE,TokenCreator.RAD_PRODUCT)
+#MET
+MET_RE           = re.compile('MET', re.IGNORECASE)
+tok_creator.register_token('MET',MET_RE,TokenCreator.RAD_PRODUCT)
+#RNPS
+RNPS_RE          = re.compile('RNPS', re.IGNORECASE)
+tok_creator.register_token('RNPS',RNPS_RE,TokenCreator.RAD_PRODUCT)
+#SSREB
+SSREB_RE         = re.compile('SSREB', re.IGNORECASE)
+tok_creator.register_token('SSREB',SSREB_RE,TokenCreator.RAD_PRODUCT)
+#NETWORK
+NETWORK_RE       = re.compile('NETWORK', re.IGNORECASE)
+tok_creator.register_token('NETWORK',NETWORK_RE,TokenCreator.RAD_PRODUCT)
+#RMSSOH
+RMSSOH_RE        = re.compile('RMSSOH', re.IGNORECASE)
+tok_creator.register_token('RMSSOH',RMSSOH_RE,TokenCreator.RAD_PRODUCT)
+
+#Deprecated ?
+#ARMR
+ARMR_RE          = re.compile('ARMR', re.IGNORECASE)
+tok_creator.register_token('ARMR',ARMR_RE,TokenCreator.RAD_PRODUCT)
+#FPEB
+FPEB_RE          = re.compile('FPEB', re.IGNORECASE)
+tok_creator.register_token('FPEB',FPEB_RE,TokenCreator.RAD_PRODUCT)
+
+# the rest in tail
+# MSGFORMAT
+MSGFORMAT_RE = re.compile(r'[A-Za-z]{3}(\d+\.\d+)')
+tok_creator.register_token('MSGFORMAT',MSGFORMAT_RE,TokenCreator.TAIL)
+
+
+# EMAIL Address regexpr as defined in RFC 2822 (do not support square brackets and double quotes)
+EMAILADDR_RE = re.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", re.IGNORECASE)
+tok_creator.register_token('EMAILADDR',EMAILADDR_RE,TokenCreator.TAIL)
+
+# ID 
+ID_RE       = re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*')
+tok_creator.register_token('ID',ID_RE,TokenCreator.TAIL)
+
+# NUMBER
+#regular expressions for number
+Hexnumber = r'0[xX][\da-fA-F]*[lL]?'
+Octnumber = r'0[0-7]*[lL]?'
+Decnumber = r'[1-9]\d*[lL]?'
+Intnumber = group(Hexnumber, Octnumber, Decnumber)
+Exponent = r'[eE][-+]?\d+'
+Pointfloat = group(r'\d+\.\d*', r'\.\d+') + maybe(Exponent)
+Expfloat = r'\d+' + Exponent
+Floatnumber = group(Pointfloat, Expfloat)
+Imagnumber = group(r'\d+[jJ]', Floatnumber + r'[jJ]')
+Number = group(Imagnumber, Floatnumber, Intnumber)
+
+NUMBER_RE = re.compile(Number)
+tok_creator.register_token('NUMBER',NUMBER_RE,TokenCreator.TAIL)
+
+# SEPARATORS
+COMMA_RE     = re.compile(r',')
+tok_creator.register_token('COMMA',COMMA_RE,TokenCreator.TAIL)
+
+COLON_RE     = re.compile(r':')
+tok_creator.register_token('COLON',COLON_RE,TokenCreator.TAIL)
+
+MINUS_RE     = re.compile(r'-')
+tok_creator.register_token('MINUS',MINUS_RE,TokenCreator.TAIL)
+
+# NEWLINE Token
+NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
+tok_creator.register_token('NEWLINE',NEWLINE_RE,TokenCreator.TAIL)
+
 
 class Token(object):
     
-    ID            = 'ID'
-    DATA          = 'DATA'
-    WCID          = 'WCID'
-    EMAILADDR     = 'EMAILADDR'
-    DATETIME      = 'DATETIME'
-    NUMBER        = 'NUMBER'
-    NEWLINE       = 'NEWLINE'
-    MSGFORMAT     = 'MSGFORMAT'
-    COMMA         = 'COMMA'
-    COLON         = 'COLON'
-    MINUS         = 'MINUS'
-    BEGIN         = 'BEGIN'
-    STOP          = 'STOP'
-    TO            = 'TO'
-    OF            = 'OF'
-    PART          = 'PART'
-    MSGTYPE       = 'MSGTYPE'
-    REFID         = 'REFID'
-    MSGID         = 'MSGID'
-    PRODID        = 'PRODID'
-    EMAIL         = 'EMAIL'
-    TIME          = 'TIME'
-    STALIST       = 'STALIST'
-    BULLTYPE      = 'BULLTYPE'
-    DEPTH         = 'DEPTH'
-    MAG           = 'MAG'
-    MAGTYPE       = 'MAGTYPE'
-    CHANLIST      = 'CHANLIST'
-    RELATIVETO    = 'RELATIVETO'
-    HELP          = 'HELP'
-    LAT           = 'LAT'
-    LON           = 'LON'
-    # ENDMARKER Token to signal end of program
-    ENDMARKER     = 'ENDMARKER'
-    MAX           = 'MAX'
-    MIN           = 'MIN'
-    # waveform products
-    BULLETIN       = 'BULLETIN'
-    WAVEFORM       = 'WAVEFORM'
-    EVENT          = 'EVENT'
-    ORIGIN         = 'ORIGIN'
-    EXECSUM        = 'EXECSUM'
-    SLSD           = 'SLSD'
-    ARRIVAL        = 'ARRIVAL'
-    OUTAGE         = 'OUTAGE'
-    STASTATUS      = 'STASTATUS'
-    CHANSTATUS     = 'CHANSTATUS'
-    CHANNEL        = 'CHANNEL'
-    WAVEMISSION    = 'WAVEMISSION'
-    WAVEQUALITY    = 'WAVEQUALITY'
-    STATION        = 'STATION'
-    COMMSTATUS     = 'COMM_STATUS'
-    COMMENT        = 'COMMENT'
-    RESPONSE       = 'RESPONSE'
-    
-    # radionuclide prodcuts
-    DETBKPHD       = 'DETBKPHD'
-    BLANKPHD       = 'BLANKPHD'
-    CALIBPHD       = 'CALIBPHD'
-    GASBKPHD       = 'GASBKPHD'
-    QCPHD          = 'QCPHD'
-    SPHDP          = 'SPHDP'
-    SPHDF          = 'SPHDF'
-    ARR            = 'ARR'
-    RRR            = 'RRR'
-    RLR            = 'RLR'
-    SSREB          = 'SSREB'
-    ALERTFLOW      = 'ALERTFLOW'
-    ALERTSYSTEM    = 'ALERTSYSTEM'
-    ALERTTEMP      = 'ALERTTEMP'
-    ALERTUPS       = 'ALERTUPS'
-    MET            = 'MET'
-    RNPS           = 'RNPS'
-    NETWORK        = 'NETWORK'
-    RMSSOH         = 'RMSSOH'
-    
-    #deprecated
-    ARMR           = 'ARMR'
-    FPEB           = 'FPEB'
-    
-         
     def __init__(self, type, value, begin, end, line_num, parsed_line, file_pos=-1):
         
         self._type         = type
@@ -250,7 +500,7 @@ class ENDMARKERToken(Token):
     
     def __init__(self, a_line_num):
         
-        super(ENDMARKERToken, self).__init__(Token.ENDMARKER, None, -1, -1, a_line_num, "")
+        super(ENDMARKERToken, self).__init__(TokenCreator.TokenNames.ENDMARKER, None, -1, -1, a_line_num, "")
 
     @property
     def type(self):
@@ -279,277 +529,6 @@ class ENDMARKERToken(Token):
     
     def __repr__(self):
         return "ENDMARKER Token line_num = %d"% (self._line_num)  
-
-
-# functor tools to assemble tokens
-def group(*choices)   : return '(' + '|'.join(choices) + ')'
-def any(*choices)     : return group(*choices) + '*'
-def maybe(*choices)   : return group(*choices) + '?'
-
-
-# All the regular expr for the different tokens
-
-# NUMBER
-#regular expressions for number
-Hexnumber = r'0[xX][\da-fA-F]*[lL]?'
-Octnumber = r'0[0-7]*[lL]?'
-Decnumber = r'[1-9]\d*[lL]?'
-Intnumber = group(Hexnumber, Octnumber, Decnumber)
-Exponent = r'[eE][-+]?\d+'
-Pointfloat = group(r'\d+\.\d*', r'\.\d+') + maybe(Exponent)
-Expfloat = r'\d+' + Exponent
-Floatnumber = group(Pointfloat, Expfloat)
-Imagnumber = group(r'\d+[jJ]', Floatnumber + r'[jJ]')
-Number = group(Imagnumber, Floatnumber, Intnumber)
-
-NUMBER_RE = re.compile(Number)
-# ID 
-ID_RE       = re.compile(r'[/\*A-Za-z_\+=\(\)\<\>]([\w]|[/=\<\>\(\)\.@\*\+-])*')
-
-# DATETIME regexpr
-DATETIME_RE = re.compile(r'((19|20|21)\d\d)[-/.]?(0[1-9]|1[012]|[1-9])[-/.]?(0[1-9]|[12][0-9]|3[01]|[1-9])([tT ]?([0-1][0-9]|2[0-3]|[0-9])([:]?([0-5][0-9]|[0-9]))?([:]([0-5][0-9]|[1-9]))?([.]([0-9])+)?)?')
-
-# EMAIL Address regexpr as defined in RFC 2822 (do not support square brackets and double quotes)
-EMAILADDR_RE = re.compile("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",re.IGNORECASE)
- 
-
-# NEWLINE Token
-NEWLINE_RE = re.compile(r'\n+|(\r\n)+')
-
-# MSGFORMAT
-MSGFORMAT_RE = re.compile(r'[A-Za-z]{3}(\d+\.\d+)')
-
-# SEPARATORS
-COMMA_RE     = re.compile(r',')
-
-COLON_RE     = re.compile(r':')
-
-MINUS_RE     = re.compile(r'-')
-
-# Language keywords
-
-# BEGIN 
-BEGIN_RE      = re.compile('BEGIN', re.IGNORECASE)
-# STOP
-STOP_RE       = re.compile('STOP', re.IGNORECASE)
-# TO
-TO_RE         = re.compile('TO', re.IGNORECASE)
-# OF
-OF_RE         = re.compile('OF', re.IGNORECASE)
-# PART
-PART_RE         = re.compile('PART', re.IGNORECASE)
-# MSGTYPE
-MSGTYPE_RE    = re.compile('MSG_TYPE', re.IGNORECASE)
-# MSGID
-MSGID_RE      = re.compile('MSG_ID', re.IGNORECASE)
-# PRODID
-PRODID_RE     = re.compile('PROD_ID', re.IGNORECASE)
-# REFID
-REFID_RE      = re.compile('REF_ID', re.IGNORECASE)
-# EMAIL
-EMAIL_RE      = re.compile('E-MAIL', re.IGNORECASE)
-# TIME
-TIME_RE       = re.compile('TIME', re.IGNORECASE)
-# STALIST
-STALIST_RE    = re.compile('STA_LIST', re.IGNORECASE)
-# BULL_TYPE
-BULLTYPE_RE   = re.compile('BULL_TYPE', re.IGNORECASE)
-# DEPTH
-DEPTH_RE      = re.compile('DEPTH', re.IGNORECASE)
-# MAG
-MAG_RE        = re.compile('MAG', re.IGNORECASE)
-#MAGTYPE
-MAGTYPE_RE    = re.compile('MAG_TYPE', re.IGNORECASE)
-#CHANLIST
-CHANLIST_RE   = re.compile('CHAN_LIST', re.IGNORECASE)
-#RELATIVE_TO
-RELATIVETO_RE = re.compile('RELATIVE_TO', re.IGNORECASE)
-# HELP
-HELP_RE       = re.compile('HELP', re.IGNORECASE)
-# LAT
-LAT_RE        = re.compile('LAT', re.IGNORECASE)
-# LON
-LON_RE        = re.compile('LON', re.IGNORECASE)
-
-KEYWORDS_TOKENS = [Token.BEGIN, Token.STOP, Token.TO, Token.OF, Token.PART, Token.MSGTYPE, Token.MSGID, Token.REFID, Token.EMAIL, \
-                   Token.TIME,  Token.STALIST, Token.BULLTYPE, Token.DEPTH, Token.MAG, Token.MAGTYPE, Token.CHANLIST, \
-                   Token.RELATIVETO, Token.HELP, Token.LAT, Token.LON,Token.PRODID]
-
-# products
-
-#BULLETIN
-BULLETIN_RE      = re.compile('BULLETIN', re.IGNORECASE)
-#WAVEFORM
-WAVEFORM_RE      = re.compile('WAVEFORM', re.IGNORECASE)
-#SLSD
-SLSD_RE          = re.compile('SLSD', re.IGNORECASE)
-# ARRIVAL
-ARRIVAL_RE       = re.compile('ARRIVAL', re.IGNORECASE)
-#STA_STATUS
-STA_STATUS_RE    = re.compile('STA_STATUS', re.IGNORECASE)
-#CHAN_STATUS
-CHAN_STATUS_RE   = re.compile('CHAN_STATUS', re.IGNORECASE)
-#CHANNEL
-CHANNEL_RE       = re.compile('CHANNEL', re.IGNORECASE)
-#WAVE_MISSION
-WAVE_MISSION_RE  = re.compile('WAVE_MISSION', re.IGNORECASE)
-#WAVE_QUALITY
-WAVE_QUALITY_RE  = re.compile('WAVE_QUALITY', re.IGNORECASE)
-#STATION
-STATION_RE       = re.compile('STATION', re.IGNORECASE)
-#EVENT
-EVENT_RE         = re.compile('EVENT', re.IGNORECASE)
-#EXECSUM
-EXECSUM_RE       = re.compile('EXECSUM', re.IGNORECASE)
-#COMMENT
-COMMENT_RE       = re.compile('COMMENT', re.IGNORECASE)
-#COMM_STATUS
-COMM_STATUS      = re.compile('COMM_STATUS', re.IGNORECASE)
-#ORIGIN
-ORIGIN_RE        = re.compile('ORIGIN', re.IGNORECASE)
-#OUTAGE
-OUTAGE_RE        = re.compile('OUTAGE', re.IGNORECASE)
-#RESPONSE
-RESPONSE_RE      = re.compile('RESPONSE', re.IGNORECASE)
-
-#DETBKPHD
-DETBKPHD_RE      = re.compile('DETBKPHD', re.IGNORECASE)
-#GASBKPHD
-GASBKPHD_RE      = re.compile('GASBKPHD', re.IGNORECASE)
-#BLANKPHD
-BLANKPHD_RE      = re.compile('BLANKPHD', re.IGNORECASE)
-#CALIBPHD
-CALIBPHD_RE      = re.compile('CALIBPHD', re.IGNORECASE)
-#QCPHD
-QCPHD_RE         = re.compile('QCPHD', re.IGNORECASE)
-#SPHDP
-SPHDP_RE         = re.compile('SPHDP', re.IGNORECASE)
-#SPHDF
-SPHDF_RE         = re.compile('SPHDF', re.IGNORECASE)
-#RLR
-RLR_RE           = re.compile('RLR', re.IGNORECASE)
-#ARR
-ARR_RE           = re.compile('ARR', re.IGNORECASE)
-#ARR
-RRR_RE           = re.compile('RRR', re.IGNORECASE)
-#ALERTFLOW
-ALERTFLOW_RE     = re.compile('ALERT_FLOW', re.IGNORECASE)
-#ALERT_SYSTEM
-ALERTSYSTEM_RE   = re.compile('ALERT_SYSTEM', re.IGNORECASE)
-#ALERT_TEMP
-ALERTTEMP_RE     = re.compile('ALERT_TEMP', re.IGNORECASE)
-#ALERT_TEMP
-ALERTUPS_RE      = re.compile('ALERT_UPS', re.IGNORECASE)
-#MET
-MET_RE           = re.compile('MET', re.IGNORECASE)
-#RNPS
-RNPS_RE          = re.compile('RNPS', re.IGNORECASE)
-#SSREB
-SSREB_RE         = re.compile('SSREB', re.IGNORECASE)
-#NETWORK
-NETWORK_RE       = re.compile('NETWORK', re.IGNORECASE)
-#RMSSOH
-RMSSOH_RE        = re.compile('RMSSOH', re.IGNORECASE)
-
-#Deprecated ?
-#ARMR
-ARMR_RE          = re.compile('ARMR', re.IGNORECASE)
-#FPEB
-FPEB_RE          = re.compile('FPEB', re.IGNORECASE)
-
-SHI_PRODUCTS_TOKENS   = [Token.BULLETIN, Token.WAVEFORM, Token.SLSD, Token.ARRIVAL, Token.EVENT, Token.ORIGIN, Token.EXECSUM, \
-                         Token.OUTAGE, Token.RESPONSE, Token.STASTATUS, Token.CHANSTATUS, Token.CHANNEL, Token.WAVEMISSION, \
-                         Token.WAVEQUALITY, Token.STATION, Token.COMMENT, Token.COMMSTATUS]
-
-RADIO_PRODUCTS_TOKENS = [Token.DETBKPHD, Token.BLANKPHD, Token.CALIBPHD, Token.QCPHD, Token.SPHDP, Token.SPHDF, Token.GASBKPHD, \
-                         Token.ARR, Token.RRR, Token.SSREB, Token.RLR, Token.RNPS, Token.ALERTFLOW, Token.ALERTSYSTEM, \
-                         Token.ALERTTEMP, Token.ALERTUPS, Token.RMSSOH, Token.MET, Token.NETWORK, Token.ARMR, Token.FPEB]
-
-TOKENS_RE = {
-           Token.ID           : ID_RE,
-           #different ID Flavours
-           Token.WCID         : ID_RE,
-           Token.DATA         : ID_RE,
-           Token.EMAILADDR    : EMAILADDR_RE,
-           Token.DATETIME     : DATETIME_RE,
-           Token.NUMBER       : NUMBER_RE,
-           Token.MSGFORMAT    : MSGFORMAT_RE,
-           Token.BEGIN        : BEGIN_RE,
-           Token.STOP         : STOP_RE,
-           Token.TO           : TO_RE,
-           Token.OF           : OF_RE,
-           Token.PART         : PART_RE,
-           Token.MSGTYPE      : MSGTYPE_RE,
-           Token.MSGID        : MSGID_RE,
-           Token.REFID        : REFID_RE,
-           Token.PRODID       : PRODID_RE,
-           Token.EMAIL        : EMAIL_RE,
-           Token.TIME         : TIME_RE,
-           Token.STALIST      : STALIST_RE,
-           Token.BULLTYPE     : BULLTYPE_RE,
-           Token.DEPTH        : DEPTH_RE,
-           Token.MAG          : MAG_RE,
-           Token.MAGTYPE      : MAGTYPE_RE,
-           Token.CHANLIST     : CHANLIST_RE,
-           Token.RELATIVETO   : RELATIVETO_RE,
-           Token.HELP         : HELP_RE,
-           Token.LAT          : LAT_RE,
-           Token.LON          : LON_RE,
-           
-           # ID refined tokens
-           #SHI products
-           Token.BULLETIN     : BULLETIN_RE,
-           Token.WAVEFORM     : WAVEFORM_RE,
-           Token.EVENT        : EVENT_RE,
-           Token.EXECSUM      : EXECSUM_RE,
-           Token.SLSD         : SLSD_RE,
-           Token.ARRIVAL      : ARRIVAL_RE,
-           Token.STASTATUS    : STA_STATUS_RE,
-           Token.CHANSTATUS   : CHAN_STATUS_RE,
-           Token.CHANNEL      : CHANNEL_RE,
-           Token.WAVEMISSION  : WAVE_MISSION_RE,
-           Token.WAVEQUALITY  : WAVE_QUALITY_RE,
-           Token.STATION      : STATION_RE, 
-           Token.COMMENT      : COMMENT_RE,
-           Token.COMMSTATUS   : COMM_STATUS, 
-           Token.ORIGIN       : ORIGIN_RE,
-           Token.OUTAGE       : OUTAGE_RE,
-           Token.RESPONSE     : RESPONSE_RE,
-           #radio nuclide products
-           Token.DETBKPHD     : DETBKPHD_RE,
-           Token.BLANKPHD     : BLANKPHD_RE,
-           Token.CALIBPHD     : CALIBPHD_RE,
-           Token.GASBKPHD     : GASBKPHD_RE,
-           Token.QCPHD        : QCPHD_RE,
-           Token.SPHDP        : SPHDP_RE,
-           Token.SPHDF        : SPHDF_RE,
-           Token.RLR          : RLR_RE,
-           Token.ARR          : ARR_RE,
-           Token.RRR          : RRR_RE,
-           Token.RNPS         : RNPS_RE,
-           Token.ALERTFLOW    : ALERTFLOW_RE,
-           Token.ALERTSYSTEM  : ALERTSYSTEM_RE,
-           Token.ALERTTEMP    : ALERTTEMP_RE,
-           Token.ALERTUPS     : ALERTUPS_RE,
-           Token.MET          : MET_RE,
-           Token.SSREB        : SSREB_RE,
-           Token.NETWORK      : NETWORK_RE,
-           Token.RMSSOH       : RMSSOH_RE,
-           
-           Token.ARMR         : ARMR_RE,
-           Token.FPEB         : FPEB_RE,
-           
-           Token.COMMA        : COMMA_RE,
-           Token.COLON        : COLON_RE,
-           Token.MINUS        : MINUS_RE,
-           Token.NEWLINE      : NEWLINE_RE,
-           Token.ENDMARKER    : None,
-         }
-
-# key ordered to optimize pattern matching
-# it also defines the pattern matching rule precedence
-TOKENS_ORDERED = [Token.DATETIME]  + KEYWORDS_TOKENS + SHI_PRODUCTS_TOKENS + RADIO_PRODUCTS_TOKENS \
-                 + [Token.MSGFORMAT, Token.EMAILADDR, Token.ID, Token.NUMBER,Token.COMMA, Token.COLON, Token.MINUS, Token.NEWLINE]
 
 # Literals to ignore
 IGNORED_LITERALS = " \f\t\x0c"
@@ -586,6 +565,9 @@ class IMSTokenizer(object):
         # internal generator on current stream
         # used by the iterator method
         self._gen            = None
+        
+        #ref on token creator
+        self._tok_c  = TokenCreator.get_instance()
         
     def set_io_prog(self, a_io_prog):
         """ 
@@ -668,6 +650,8 @@ class IMSTokenizer(object):
             Raises:
                exception LexerError if no specified Token found
         """
+        ordered_tokens = self._tok_c.get_ordered_tokens_list()
+        tokens_re      = self._tok_c.get_tokens_re()
         
         # position 0 in io stream
         if a_starting_pos != -1:
@@ -692,8 +676,8 @@ class IMSTokenizer(object):
             
                 #print("Try to match from [%s]\n"%(line[pos:]))
                         
-                for key in TOKENS_ORDERED:
-                    regexp = TOKENS_RE[key]
+                for key in ordered_tokens:
+                    regexp = tokens_re[key]
                     match  = regexp.match(line, self._line_pos)
                     if match:
                        
@@ -701,7 +685,7 @@ class IMSTokenizer(object):
                         start, end = self._line_pos, (self._line_pos+len(val)-1)
                         
                         # when it is an ID check if this is a WCID
-                        if key == Token.ID:
+                        if key == TokenCreator.TokenNames.ID:
                             type = self._get_ID_type(val)
                         else:
                             type = key
@@ -858,11 +842,13 @@ class IMSTokenizer(object):
         has_to_match_endmarker = False
         # last possible cursor position in the current line
         max                    = -1
+        tokens_re              = self._tok_c.get_tokens_re()
+        
         
         for tok in a_tokens_list:
-            if TOKENS_RE.has_key(tok):
+            if tokens_re.has_key(tok):
                 # ENDMARKER needs to be differentiated
-                if tok == Token.ENDMARKER:
+                if tok == TokenCreator.TokenNames.ENDMARKER:
                     has_to_match_endmarker = True
                 else:
                     tokens_to_match.append(tok)
@@ -882,7 +868,7 @@ class IMSTokenizer(object):
             #print("Try to match from [%s]\n"%(line[pos:]))
                         
             for key in tokens_to_match:
-                regexp = TOKENS_RE[key]
+                regexp = tokens_re[key]
                 #here search anywhere in the line for the token
                 match  = regexp.search(line, self._line_pos)
                 if match:
@@ -892,7 +878,7 @@ class IMSTokenizer(object):
                     # do all the tricks to return the right TOKENS (see SUB TOKENS like WCID DATA)
                         
                     # when it is an ID check if this is a WCID
-                    if key == Token.ID:
+                    if key == TokenCreator.TokenNames.ID:
                         type = self._get_ID_type(val)
                     else:
                         type = key

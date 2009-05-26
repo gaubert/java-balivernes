@@ -9,7 +9,7 @@ import StringIO
 import copy
 
 
-from ims_tokenizer import IMSTokenizer, Token, ENDMARKERToken
+from ims_tokenizer import IMSTokenizer, Token, ENDMARKERToken, TokenCreator
 
 class ParsingError(Exception):
     """Base class for All exceptions"""
@@ -69,15 +69,14 @@ class IMSParser(object):
     c_log = logging.getLogger("query.IMSParser")
     c_log.setLevel(logging.DEBUG)
     
-    c_SHI_PRODUCTS = [Token.BULLETIN,   Token.ARRIVAL, Token.WAVEFORM, Token.EVENT, Token.ORIGIN, Token.SLSD, Token.CHANNEL, Token.STASTATUS, \
-                      Token.CHANSTATUS, Token.OUTAGE, Token.RESPONSE, Token.COMMENT, Token.COMMSTATUS, Token.EXECSUM, Token.STATION]
+    c_SHI_PRODUCTS = [TokenCreator.TokenNames.BULLETIN,   TokenCreator.TokenNames.ARRIVAL, TokenCreator.TokenNames.WAVEFORM, TokenCreator.TokenNames.EVENT, TokenCreator.TokenNames.ORIGIN, TokenCreator.TokenNames.SLSD, TokenCreator.TokenNames.CHANNEL, TokenCreator.TokenNames.STASTATUS, \
+                      TokenCreator.TokenNames.CHANSTATUS, TokenCreator.TokenNames.OUTAGE, TokenCreator.TokenNames.RESPONSE, TokenCreator.TokenNames.COMMENT, TokenCreator.TokenNames.COMMSTATUS, TokenCreator.TokenNames.EXECSUM, TokenCreator.TokenNames.STATION]
     
     # rad products + Help
-    c_RAD_PRODUCTS = [Token.ARR, Token.RRR, Token.BLANKPHD, Token.SPHDF, Token.SPHDP, Token.CALIBPHD, Token.QCPHD, Token.DETBKPHD, Token.GASBKPHD, Token.RLR, \
-                      Token.HELP, Token.RMSSOH, Token.RNPS, Token.MET, Token.NETWORK, Token.SSREB, ]
+    c_RAD_PRODUCTS = [TokenCreator.TokenNames.ARR, TokenCreator.TokenNames.RRR, TokenCreator.TokenNames.BLANKPHD, TokenCreator.TokenNames.SPHDF, TokenCreator.TokenNames.SPHDP, TokenCreator.TokenNames.CALIBPHD, TokenCreator.TokenNames.QCPHD, TokenCreator.TokenNames.DETBKPHD, TokenCreator.TokenNames.GASBKPHD, TokenCreator.TokenNames.RLR, \
+                      TokenCreator.TokenNames.HELP, TokenCreator.TokenNames.RMSSOH, TokenCreator.TokenNames.RNPS, TokenCreator.TokenNames.MET, TokenCreator.TokenNames.NETWORK, TokenCreator.TokenNames.SSREB, ]
     
     c_ALL_PRODUCTS = c_SHI_PRODUCTS + c_RAD_PRODUCTS
-    
     c_PRODUCT      = 'PRODUCT'
     
     def __init__(self):
@@ -122,7 +121,7 @@ class IMSParser(object):
         result_dict = self._parse_header_message()
         
         # 3 choices from there: data, request or subscription message
-        req_type = result_dict[Token.MSGTYPE]
+        req_type = result_dict[TokenCreator.TokenNames.MSGTYPE]
         
         if   req_type == 'request':
             result_dict.update(self._parse_request_message())
@@ -155,89 +154,89 @@ class IMSParser(object):
         
         # look for line 1 BEGIN message_format
         # format: begin message_format
-        if token.type != Token.BEGIN:
+        if token.type != TokenCreator.TokenNames.BEGIN:
             raise ParsingError(ParsingError.create_std_error_msg('a begin', token), 'The begin line is missing or not well formatted', token)
     
         token = self._tokenizer.next()
         
         # look for a message_format
-        if token.type != Token.MSGFORMAT:
+        if token.type != TokenCreator.TokenNames.MSGFORMAT:
             raise ParsingError(ParsingError.create_std_error_msg('a msg format id (ex:ims2.0)', token), 'The begin line is not well formatted', token)
             
-        result[Token.MSGFORMAT] = token.value.lower()
+        result[TokenCreator.TokenNames.MSGFORMAT] = token.value.lower()
         
         #eat next line characters
-        token = self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        token = self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         # line 2: get the message type
         # format: msg_type request
-        if token.type != Token.MSGTYPE:
+        if token.type != TokenCreator.TokenNames.MSGTYPE:
             raise ParsingError(ParsingError.create_std_error_msg('a msg_type', token), 'The msg_type id line is missing', token)
             
         token = self._tokenizer.next()
         
-        if token.type != Token.ID:
+        if token.type != TokenCreator.TokenNames.ID:
             raise ParsingError(ParsingError.create_std_error_msg('a id', token), 'The msg_type id is missing or the msg_type line is mal-formated', token)
         
-        result[Token.MSGTYPE] = token.value.lower()
+        result[TokenCreator.TokenNames.MSGTYPE] = token.value.lower()
          
         #eat next line characters
-        token = self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        token = self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         # line 3: get the message id
         # format: msg_id id_string [source]
-        if token.type != Token.MSGID:
+        if token.type != TokenCreator.TokenNames.MSGID:
             raise ParsingError(ParsingError.create_std_error_msg('a msg_id', token), 'The msg_id line is missing', token)
             
         token = self._tokenizer.next()
         
         # next token is an ID 
         # TODO: the id_string should be up to 20 characters and should not contains blanks or \
-        if token.type not in (Token.ID, Token.NUMBER):
+        if token.type not in (TokenCreator.TokenNames.ID, TokenCreator.TokenNames.NUMBER):
             raise ParsingError(ParsingError.create_std_error_msg('an id', token), 'The msg_id line is missing the id or is not well formatted', token)
-        result[Token.MSGID] = token.value
+        result[TokenCreator.TokenNames.MSGID] = token.value
         
         token = self._tokenizer.next()
         
         # it can be a source or a NEWLINE
         
         # this is a source and source format 3-letter country code followed by _ndc (ex: any_ndc)
-        if token.type in (Token.ID, Token.EMAILADDR):
+        if token.type in (TokenCreator.TokenNames.ID, TokenCreator.TokenNames.EMAILADDR):
             result['SOURCE'] = token.value 
             
             # go to next token
             self._tokenizer.next()
                      
-        elif token.type != Token.NEWLINE:
+        elif token.type != TokenCreator.TokenNames.NEWLINE:
             raise ParsingError(ParsingError.create_std_error_msg('a newline or a source', token), 'The msg_id line is not well formatted', token)
         
         #eat current and next line characters
-        token = self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
+        token = self._tokenizer.consume_while_current_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         #optional line 4: it could now be the optional REF_ID
-        if token.type == Token.REFID:
+        if token.type == TokenCreator.TokenNames.REFID:
             result['REFID'] = self._parse_ref_id_line()
             token = self._tokenizer.current_token()
         
         #optional line 4 or 5: PRODID. TODO check if it can leave with REFID
-        if token.type == Token.PRODID:
+        if token.type == TokenCreator.TokenNames.PRODID:
             result['PRODID'] = self._parse_prod_id_line()
             token = self._tokenizer.current_token()
             
         # line 4 or 5: e-mail foo.bar@domain_name
         # look for an EMAIL keyword
-        if token.type != Token.EMAIL:
+        if token.type != TokenCreator.TokenNames.EMAIL:
             raise ParsingError(ParsingError.create_std_error_msg('an email', token), 'The email line is probably missing or misplaced or there might be a misplaced PRODID line (before REFID)', token)
     
         token = self._tokenizer.next()
         # look for the EMAILADDR
-        if token.type != Token.EMAILADDR: 
+        if token.type != TokenCreator.TokenNames.EMAILADDR: 
             raise ParsingError(ParsingError.create_std_error_msg('an email address', token), 'The email address might be missing or is malformated', token)
            
-        result[Token.EMAIL] = token.value.lower()
+        result[TokenCreator.TokenNames.EMAIL] = token.value.lower()
         
         #eat next line characters
-        self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         return result
     
@@ -256,20 +255,20 @@ class IMSParser(object):
         
         token = self._tokenizer.next()
         
-        if token.type not in (Token.NUMBER):
+        if token.type not in (TokenCreator.TokenNames.NUMBER):
             raise ParsingError(ParsingError.create_std_error_msg('a number', token), 'The prod_id line is missing a product_id or it is not well formatted', token)
          
         result_dict['PRODID'] = token.value
         
         token = self._tokenizer.next()
         
-        if token.type not in (Token.NUMBER):
+        if token.type not in (TokenCreator.TokenNames.NUMBER):
             raise ParsingError(ParsingError.create_std_error_msg('a number', token), 'The prod_id line is missing a delivery_id or it is not well formatted', token)
          
         result_dict['DELIVERYID'] = token.value
         
         #eat current and next line characters
-        self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         return result_dict
 
@@ -288,7 +287,7 @@ class IMSParser(object):
         
         token = self._tokenizer.next()
         
-        if token.type not in (Token.ID, Token.NUMBER):
+        if token.type not in (TokenCreator.TokenNames.ID, TokenCreator.TokenNames.NUMBER):
             raise ParsingError(ParsingError.create_std_error_msg('an id', token), 'The ref_id line is missing a ref_src or it is not well formatted', token)
          
         result_dict['REFSTR'] = token.value
@@ -296,17 +295,17 @@ class IMSParser(object):
         token = self._tokenizer.next()
         
         # could be the optional ref_src
-        if token.type in (Token.ID, Token.NUMBER):
+        if token.type in (TokenCreator.TokenNames.ID, TokenCreator.TokenNames.NUMBER):
             result_dict['REFSRC'] = token.value
             token = self._tokenizer.next()
         
         # now the [part seq_num [of tot_num]]
-        if token.type == Token.PART:
+        if token.type == TokenCreator.TokenNames.PART:
             
             #get the seq num val
             token = self._tokenizer.next()
             
-            if token.type not in (Token.ID, Token.NUMBER):
+            if token.type not in (TokenCreator.TokenNames.ID, TokenCreator.TokenNames.NUMBER):
                 raise ParsingError(ParsingError.create_std_error_msg('an id', token), "The ref_id line is missing a the seq_num in the \'part\' construct: ref_id ref_str [ref_src] [part seq_num [of tot_num]]", token)
             
             result_dict['SEQNUM'] = token.value
@@ -314,12 +313,12 @@ class IMSParser(object):
             # look for OF token
             token = self._tokenizer.next()
             
-            if token.type == Token.OF:
+            if token.type == TokenCreator.TokenNames.OF:
                 
                 # get the tot_num val
                 token = self._tokenizer.next()
                 
-                if token.type not in (Token.ID, Token.NUMBER):
+                if token.type not in (TokenCreator.TokenNames.ID, TokenCreator.TokenNames.NUMBER):
                     raise ParsingError(ParsingError.create_std_error_msg('an id', token), "The ref_id line is missing a the tot_num in the \'of\' construct: ref_id ref_str [ref_src] [part seq_num [of tot_num]]", token)
             
                 result_dict['TOTNUM'] = token.value
@@ -327,11 +326,11 @@ class IMSParser(object):
                 #go to next
                 token = self._tokenizer.next()
         # it can then only be a new line
-        elif token.type != Token.NEWLINE:
+        elif token.type != TokenCreator.TokenNames.NEWLINE:
             raise ParsingError(ParsingError.create_std_error_msg('an id, a part or a new line ', token), "The ref_id line is mal formatted. It should follow ref_id ref_str [ref_src] [part seq_num [of tot_num]]", token)
              
         #eat current and next line characters
-        self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
+        self._tokenizer.consume_while_current_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         return result_dict
            
@@ -361,7 +360,7 @@ class IMSParser(object):
         seen_keywords = []
         
         # For the moment look for the different possible tokens
-        while token.type != Token.STOP and token.type != Token.ENDMARKER:
+        while token.type != TokenCreator.TokenNames.STOP and token.type != TokenCreator.TokenNames.ENDMARKER:
             
             # if the current token has already be seen
             # store the new product and create a new one with the same properties as the current one
@@ -379,65 +378,65 @@ class IMSParser(object):
                 seen_keywords = []
             
             # time keyword
-            if token.type == Token.TIME:
+            if token.type == TokenCreator.TokenNames.TIME:
                
                 product.update(self._parse_time())
                 
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
-                seen_keywords.append(Token.TIME)
+                seen_keywords.append(TokenCreator.TokenNames.TIME)
                    
             # bull_type 
             # they both expect an ID
-            elif token.type == Token.BULLTYPE:
+            elif token.type == TokenCreator.TokenNames.BULLTYPE:
                       
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
-                seen_keywords.append(Token.BULLTYPE) 
+                seen_keywords.append(TokenCreator.TokenNames.BULLTYPE) 
                   
                 # next token should be a ID (Bulletin type)
                 token = self._tokenizer.next()
                 
-                if token.type != Token.ID:
+                if token.type != TokenCreator.TokenNames.ID:
                     raise ParsingError(ParsingError.create_std_error_msg('a id', token), 'The bull_type id qualifying type of bulletin requested is missing', token)
 
-                product[Token.BULLTYPE] = token.value
+                product[TokenCreator.TokenNames.BULLTYPE] = token.value
                 
-                self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+                self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
             #RELATIVE_TO origin | event | bulletin or ID
-            elif token.type == Token.RELATIVETO:
+            elif token.type == TokenCreator.TokenNames.RELATIVETO:
                
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
-                seen_keywords.append(Token.RELATIVETO)
+                seen_keywords.append(TokenCreator.TokenNames.RELATIVETO)
                
                 # next token should be a ID (Bulletin type)
-                token = self._tokenizer.consume_next_tokens([Token.ORIGIN, Token.EVENT, Token.BULLETIN, Token.ID])
+                token = self._tokenizer.consume_next_tokens([TokenCreator.TokenNames.ORIGIN, TokenCreator.TokenNames.EVENT, TokenCreator.TokenNames.BULLETIN, TokenCreator.TokenNames.ID])
                 
-                product[Token.RELATIVETO] = token.value
+                product[TokenCreator.TokenNames.RELATIVETO] = token.value
 
-                self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])   
+                self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])   
                                  
             # mag keyword
-            elif token.type == Token.MAG:
+            elif token.type == TokenCreator.TokenNames.MAG:
                
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
-                seen_keywords.append(Token.MAG)
+                seen_keywords.append(TokenCreator.TokenNames.MAG)
                 
                 product.update(self._parse_mag()) 
                 
             #DEPTH
-            elif token.type == Token.DEPTH:
+            elif token.type == TokenCreator.TokenNames.DEPTH:
                  
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
-                seen_keywords.append(Token.DEPTH)
+                seen_keywords.append(TokenCreator.TokenNames.DEPTH)
                 
                 product.update(self._parse_depth())
                          
             #LAT or LON
-            elif token.type in (Token.LAT,Token.LON):
+            elif token.type in (TokenCreator.TokenNames.LAT,TokenCreator.TokenNames.LON):
                 
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
@@ -462,7 +461,7 @@ class IMSParser(object):
                 
                 product.update(self._parse_complex_product(token))
                         
-            elif token.type == Token.STALIST or token.type == Token.CHANLIST:
+            elif token.type == TokenCreator.TokenNames.STALIST or token.type == TokenCreator.TokenNames.CHANLIST:
                 
                 # to handle multiple product retrievals
                 # need to add all PRODUCTS
@@ -474,10 +473,10 @@ class IMSParser(object):
                 raise ParsingError('Unknown keyword %s (keyword type %s)' % (token.value, token.type), 'Request mal-formatted', token)
 
             # eat any left NEWLINE token
-            token = self._tokenizer.consume_while_current_token_is_in([Token.NEWLINE])
+            token = self._tokenizer.consume_while_current_token_is_in([TokenCreator.TokenNames.NEWLINE])
             
         # check if we have a stop
-        if token.type != Token.STOP:
+        if token.type != TokenCreator.TokenNames.STOP:
             raise ParsingError('End of request reached without encountering a stop keyword', 'Stop keyword missing or truncated request', token)
         
         return result_dict
@@ -505,15 +504,15 @@ class IMSParser(object):
             token = self._tokenizer.next() 
         
             #should find an ID
-            if token.type == Token.ID or token.type == Token.WCID:
+            if token.type == TokenCreator.TokenNames.ID or token.type == TokenCreator.TokenNames.WCID:
             
                 list.append(token.value)
                 
                 # should find a COMMA or NEWLINE
                 # IF COMMA loop again else leave loop
-                token = self._tokenizer.consume_next_tokens([Token.COMMA, Token.NEWLINE])
+                token = self._tokenizer.consume_next_tokens([TokenCreator.TokenNames.COMMA, TokenCreator.TokenNames.NEWLINE])
                 
-                if token.type == Token.NEWLINE:
+                if token.type == TokenCreator.TokenNames.NEWLINE:
                     #leave the loop
                     break
             else:
@@ -537,7 +536,7 @@ class IMSParser(object):
         res_dict['TYPE'] = a_token.type
         
         # expect nothing else but NEWLINES
-        self._tokenizer.consume_while_next_token_is_in([Token.NEWLINE])
+        self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
         
         return res_dict
             
@@ -558,42 +557,42 @@ class IMSParser(object):
         
         token = self._tokenizer.next()
         
-        if token.type == Token.NEWLINE:
+        if token.type == TokenCreator.TokenNames.NEWLINE:
             return res_dict
         
         # first try to consume the SUBTYPE if there is any
         # in that case, there is a subtype (only for SLSD and arrivals)
-        elif token.type == Token.COLON:
+        elif token.type == TokenCreator.TokenNames.COLON:
             
-            token = self._tokenizer.consume_next_token(Token.ID)
+            token = self._tokenizer.consume_next_token(TokenCreator.TokenNames.ID)
             res_dict['SUBTYPE'] = token.value
             
             # go to next token
             token = self._tokenizer.next()
         
         #if we have a new line our job is over 
-        if token.type == Token.NEWLINE:
+        if token.type == TokenCreator.TokenNames.NEWLINE:
             return res_dict
         
-        if token.type == Token.MSGFORMAT:
+        if token.type == TokenCreator.TokenNames.MSGFORMAT:
             res_dict['FORMAT'] = token.value
             
             #get the next token
             token = self._tokenizer.next()
             
             # if this is a COLON then there is a subformat
-            if token.type == Token.COLON:
+            if token.type == TokenCreator.TokenNames.COLON:
                 token = self._tokenizer.next()
-                if token.type == Token.ID:
+                if token.type == TokenCreator.TokenNames.ID:
                     
                     res_dict['SUBFORMAT'] = token.value
                     
                     #consume next NEWLINE token
-                    self._tokenizer.consume_next_token(Token.NEWLINE)
+                    self._tokenizer.consume_next_token(TokenCreator.TokenNames.NEWLINE)
                 else:
                     raise ParsingError(ParsingError.create_std_error_msg('a subformat value', token), 'The product line [product_type format[:subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
             # it could be a NEWLINE and there is no subformat
-            elif token.type != Token.NEWLINE:
+            elif token.type != TokenCreator.TokenNames.NEWLINE:
                 raise ParsingError(ParsingError.create_std_error_msg('a subformat value or a new line', token), 'The subformat or format part of the product line [product_type format:[subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a newline or a msg format (ex:ims2.0)', token), 'The product line [product_type format[:subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
@@ -617,31 +616,31 @@ class IMSParser(object):
         
         token = self._tokenizer.next()
         
-        if token.type == Token.NUMBER:
+        if token.type == TokenCreator.TokenNames.NUMBER:
             
             res_dict['STARTMAG'] = token.value
             
             # try to consume the next token that should be TO
-            self._tokenizer.consume_next_token(Token.TO)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.TO)
             
-        elif token.type == Token.TO:
+        elif token.type == TokenCreator.TokenNames.TO:
             # add the min value because begin value has been omitted
-            res_dict['STARTMAG'] = Token.MIN 
+            res_dict['STARTMAG'] = TokenCreator.TokenNames.MIN 
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The mag line is not well formatted', token)
             
         token = self._tokenizer.next()
         
         # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
-        if token.type == Token.NUMBER:
+        if token.type == TokenCreator.TokenNames.NUMBER:
             res_dict['ENDMAG'] = token.value
             
             #consume new line
-            self._tokenizer.consume_next_token(Token.NEWLINE)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.NEWLINE)
             
-        elif token.type == Token.NEWLINE:
+        elif token.type == TokenCreator.TokenNames.NEWLINE:
             
-            res_dict['ENDMAG'] = Token.MAX 
+            res_dict['ENDMAG'] = TokenCreator.TokenNames.MAX 
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a number or newline', token), 'The mag line is not well formatted', token)
         
@@ -666,31 +665,31 @@ class IMSParser(object):
         
         token = self._tokenizer.next()
         
-        if token.type == Token.NUMBER:
+        if token.type == TokenCreator.TokenNames.NUMBER:
             
             res_dict['STARTDEPTH'] = token.value
             
             # try to consume the next token that should be TO
-            self._tokenizer.consume_next_token(Token.TO)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.TO)
             
-        elif token.type == Token.TO:
+        elif token.type == TokenCreator.TokenNames.TO:
             # add the min value because begin value has been omitted
-            res_dict['STARTDEPTH'] = Token.MIN 
+            res_dict['STARTDEPTH'] = TokenCreator.TokenNames.MIN 
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The depth line is not well formatted', token)
             
         token = self._tokenizer.next()
         
         # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
-        if token.type == Token.NUMBER:
+        if token.type == TokenCreator.TokenNames.NUMBER:
             res_dict['ENDDEPTH'] = token.value
             
             #consume new line
-            self._tokenizer.consume_next_token(Token.NEWLINE)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.NEWLINE)
             
-        elif token.type == Token.NEWLINE:
+        elif token.type == TokenCreator.TokenNames.NEWLINE:
             
-            res_dict['ENDDEPTH'] = Token.MAX 
+            res_dict['ENDDEPTH'] = TokenCreator.TokenNames.MAX 
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a number or newline', token), 'The depth line is not well formatted', token)
         
@@ -716,36 +715,36 @@ class IMSParser(object):
         token = self._tokenizer.next()
         
         # negative number
-        if token.type == Token.MINUS:
+        if token.type == TokenCreator.TokenNames.MINUS:
             
             #expect a number
-            token = self._tokenizer.consume_next_token(Token.NUMBER)
+            token = self._tokenizer.consume_next_token(TokenCreator.TokenNames.NUMBER)
             
             res_dict['START%s' % (a_type)] = '-%s' % (token.value)
             
             # try to consume the next token that should be TO
-            self._tokenizer.consume_next_token(Token.TO)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.TO)
         # positive number
-        elif token.type == Token.NUMBER:
+        elif token.type == TokenCreator.TokenNames.NUMBER:
             
             res_dict['START%s' % (a_type)] = token.value
             
             # try to consume the next token that should be TO
-            self._tokenizer.consume_next_token(Token.TO)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.TO)
         # no min value    
-        elif token.type == Token.TO:
+        elif token.type == TokenCreator.TokenNames.TO:
             # add the min value because begin value has been omitted
-            res_dict['START%s' % (a_type)] = Token.MIN 
+            res_dict['START%s' % (a_type)] = TokenCreator.TokenNames.MIN 
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The lat or lon line is not well formatted', token)
             
         token = self._tokenizer.next()
         
         # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
-        if   token.type == Token.MINUS:
+        if   token.type == TokenCreator.TokenNames.MINUS:
             
             #expect a number
-            token = self._tokenizer.consume_next_token(Token.NUMBER)
+            token = self._tokenizer.consume_next_token(TokenCreator.TokenNames.NUMBER)
             
             res_dict['END%s' % (a_type)] = '-%s'% (token.value)
             
@@ -753,16 +752,16 @@ class IMSParser(object):
             #go to next token
             self._tokenizer.next()
             
-        elif token.type == Token.NUMBER:
+        elif token.type == TokenCreator.TokenNames.NUMBER:
             
             res_dict['END%s' % (a_type)] = token.value
             
             #consume new line
-            self._tokenizer.consume_next_token(Token.NEWLINE)
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.NEWLINE)
             
-        elif token.type == Token.NEWLINE:
+        elif token.type == TokenCreator.TokenNames.NEWLINE:
             
-            res_dict['END%s' % (a_type)] = Token.MAX 
+            res_dict['END%s' % (a_type)] = TokenCreator.TokenNames.MAX 
         else:
             raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The lat or lon line is not well formatted', token)
             
@@ -787,24 +786,24 @@ class IMSParser(object):
         
         token = self._tokenizer.next()
         
-        if token.type != Token.DATETIME:
+        if token.type != TokenCreator.TokenNames.DATETIME:
             raise ParsingError(ParsingError.create_std_error_msg('a datetime', token), 'The time line is incorrect. The datetime value is probably malformatted or missing.', token)
             
         time_dict['STARTDATE'] = token.value
         
         token = self._tokenizer.next()
         # it should be a TO
-        if token.type != Token.TO:
+        if token.type != TokenCreator.TokenNames.TO:
             raise ParsingError(ParsingError.create_std_error_msg('a to', token), 'The to keyword is missing in the line time', token)
             
         token = self._tokenizer.next()
-        if token.type != Token.DATETIME:
+        if token.type != TokenCreator.TokenNames.DATETIME:
             raise ParsingError(ParsingError.create_std_error_msg('a datetime', token), 'The time line is incorrect. The datetime value is probably malformatted or missing.', token)
             
         time_dict['ENDDATE'] = token.value
         
         #consume at least a NEWLINE
-        self._tokenizer.consume_next_token(Token.NEWLINE)
+        self._tokenizer.consume_next_token(TokenCreator.TokenNames.NEWLINE)
         
         return time_dict
     
