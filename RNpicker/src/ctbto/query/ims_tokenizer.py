@@ -259,9 +259,6 @@ TokenCreator.register_token('STALIST', STALIST_RE, TokenCreator.KEYWORD)
 # BULL_TYPE
 BULLTYPE_RE   = re.compile('BULL_TYPE', re.IGNORECASE)
 TokenCreator.register_token('BULLTYPE', BULLTYPE_RE, TokenCreator.KEYWORD)
-# DEPTH
-DEPTH_RE      = re.compile('DEPTH', re.IGNORECASE)
-TokenCreator.register_token('DEPTH', DEPTH_RE, TokenCreator.KEYWORD)
 # MAG
 MAG_RE        = re.compile('MAG', re.IGNORECASE)
 TokenCreator.register_token('MAG', MAG_RE, TokenCreator.KEYWORD)
@@ -280,18 +277,47 @@ TokenCreator.register_token('HELP', HELP_RE, TokenCreator.KEYWORD)
 # PRODID
 PRODID_RE     = re.compile('PROD_ID', re.IGNORECASE)
 TokenCreator.register_token('PRODID', PRODID_RE, TokenCreator.KEYWORD)
+#EVENTLIST
+EVENTLIST_RE   = re.compile('EVENT_LIST', re.IGNORECASE)
+TokenCreator.register_token('EVENTLIST', EVENTLIST_RE, TokenCreator.KEYWORD)
 #ARRIVALLIST
 ARRIVALLIST_RE   = re.compile('ARRIVAL_LIST', re.IGNORECASE)
 TokenCreator.register_token('ARRIVALLIST', ARRIVALLIST_RE, TokenCreator.KEYWORD)
-#ARRIVALLIST
-ARRIVALLIST_RE   = re.compile('ARRIVAL_LIST', re.IGNORECASE)
-TokenCreator.register_token('ARRIVALLIST', ARRIVALLIST_RE, TokenCreator.KEYWORD)
+#GROUPBULLLIST
+GROUPBULLLIST_RE   = re.compile('GROUP_BULL_LIST', re.IGNORECASE)
+TokenCreator.register_token('GROUPBULLLIST', GROUPBULLLIST_RE, TokenCreator.KEYWORD)
+#ORIGINLIST
+ORIGINLIST_RE   = re.compile('ORIGIN_LIST', re.IGNORECASE)
+TokenCreator.register_token('ORIGINLIST', ORIGINLIST_RE, TokenCreator.KEYWORD)
 #BEAMLIST
 BEAMLIST_RE   = re.compile('BEAM_LIST', re.IGNORECASE)
 TokenCreator.register_token('BEAMLIST', BEAMLIST_RE, TokenCreator.KEYWORD)
 #AUXLIST
 AUXLIST_RE   = re.compile('AUX_LIST', re.IGNORECASE)
 TokenCreator.register_token('AUXLIST', AUXLIST_RE, TokenCreator.KEYWORD)
+#COMLIST
+COMMLIST_RE   = re.compile('COMM_LIST', re.IGNORECASE)
+TokenCreator.register_token('COMMLIST', COMMLIST_RE, TokenCreator.KEYWORD)
+#DEPTH_CONF
+DEPTHCONF_RE   = re.compile('DEPTH_CONF', re.IGNORECASE)
+TokenCreator.register_token('DEPTHCONF', DEPTHCONF_RE, TokenCreator.KEYWORD)
+#DEPTH_KVALUE
+DEPTHKVALUE_RE   = re.compile('DEPTH_KVALUE', re.IGNORECASE)
+TokenCreator.register_token('DEPTHKVALUE', DEPTHKVALUE_RE, TokenCreator.KEYWORD)
+#DEPTHTHRESH
+DEPTHTHRESH_RE   = re.compile('DEPTH_THRESH', re.IGNORECASE)
+TokenCreator.register_token('DEPTHTHRESH', DEPTHTHRESH_RE, TokenCreator.KEYWORD)
+#DEPTHMINUSERROR
+DEPTHMINUSERROR_RE   = re.compile('DEPTH_MINUS_ERROR', re.IGNORECASE)
+TokenCreator.register_token('DEPTHMINUSERROR', DEPTHMINUSERROR_RE, TokenCreator.KEYWORD)
+# DEPTH
+DEPTH_RE      = re.compile('DEPTH', re.IGNORECASE)
+TokenCreator.register_token('DEPTH', DEPTH_RE, TokenCreator.KEYWORD)
+# EVENT_STA_DIST
+EVENTSTADIST_RE      = re.compile('EVENT_STA_DIST', re.IGNORECASE)
+TokenCreator.register_token('EVENTSTADIST', EVENTSTADIST_RE, TokenCreator.KEYWORD)
+
+
 
 # Products
 
