@@ -28,7 +28,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex009')
-        self.assertEqual(result['EMAIL'],'foo.bar.ssi@domain.name.de')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar.ssi@domain.name.de')
         
         # optional for this request
         self.assertEqual(result['SOURCE'],'any_ndc')
@@ -53,7 +54,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex009')
-        self.assertEqual(result['EMAIL'],'foo.bar.ssi@domain.name.de')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar.ssi@domain.name.de')
         
         # optional for this request
         self.assertFalse(result.has_key('SOURCE'))
@@ -79,7 +81,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex042')
-        self.assertEqual(result['EMAIL'],'foo.bar@pluto.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@pluto.com')
         
         # optional for this request
         self.assertEqual(result['SOURCE'],'myndc')
@@ -109,7 +112,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex042')
-        self.assertEqual(result['EMAIL'],'foo_bar.a.vb.bar@venus.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo_bar.a.vb.bar@venus.com')
         
         # optional for this request
         self.assertFalse(result.has_key('SOURCE'))
@@ -134,7 +138,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex042')
-        self.assertEqual(result['EMAIL'],'foo_bar.a.vb.bar@venus.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo_bar.a.vb.bar@venus.com')
         
         # optional for this request
         self.assertFalse(result.has_key('SOURCE'))
@@ -154,7 +159,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result1['MSGFORMAT'],'ims1.0')
         self.assertEqual(result1['MSGTYPE'],'request')
         self.assertEqual(result1['MSGID'],'ex042')
-        self.assertEqual(result1['EMAIL'],'foo.bar@pluto.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result1['EMAILADDR'],'foo.bar@pluto.com')
         
         # optional for this request
         self.assertEqual(result1['SOURCE'],'myndc')
@@ -186,7 +192,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex134')
-        self.assertEqual(result['EMAIL'],'foo_bar.a.vb.bar@venus.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo_bar.a.vb.bar@venus.com')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -214,7 +221,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex134')
-        self.assertEqual(result['EMAIL'],'foo_bar.a.vb.bar@venus.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo_bar.a.vb.bar@venus.com')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -241,7 +249,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex007')
-        self.assertEqual(result['EMAIL'],'guillaume.aubert@gmail.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'guillaume.aubert@gmail.com')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -267,7 +276,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex002')
-        self.assertEqual(result['EMAIL'],'john.doo@ndc.gov.tr')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'john.doo@ndc.gov.tr')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -299,7 +309,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex002')
-        self.assertEqual(result['EMAIL'],'john.doo@ndc.gov.tr')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'john.doo@ndc.gov.tr')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -325,7 +336,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex002')
-        self.assertEqual(result['EMAIL'],'john.doo@ndc.gov.tr')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'john.doo@ndc.gov.tr')
         
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -351,7 +363,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex029')
-        self.assertEqual(result['EMAIL'],'foo@bar.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo@bar.com')
    
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -379,7 +392,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex015')
-        self.assertEqual(result['EMAIL'],'guillaume.aubert@ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'guillaume.aubert@ctbto.org')
    
         # optional for this request
         self.assertTrue(result.has_key('SOURCE'))
@@ -404,7 +418,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex013')
-        self.assertEqual(result['EMAIL'],'foo.bar@google.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@google.com')
    
         # optional for this request
         self.assertFalse(result.has_key('SOURCE'))
@@ -428,7 +443,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex013')
-        self.assertEqual(result['EMAIL'],'foo.bar@google.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@google.com')
    
         # optional for this request
         self.assertFalse(result.has_key('SOURCE'))
@@ -452,7 +468,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex026')
-        self.assertEqual(result['EMAIL'],'foo.bar@google.com')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@google.com')
    
         # optional for this request
         self.assertFalse(result.has_key('SOURCE'))
@@ -482,7 +499,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'ex005')
-        self.assertEqual(result['EMAIL'],'foo.bar@bar.fr')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
         
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
@@ -595,7 +613,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGID'],'xxx')
         self.assertEqual(result['SOURCE'],'ga')
         
-        self.assertEqual(result['EMAIL'],'guillaume.aubert@ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'guillaume.aubert@ctbto.org')
         
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
@@ -619,7 +638,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGID'],'34372481')
         self.assertEqual(result['SOURCE'],'CTBT_IDC')
         
-        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'messages@dc.ctbto.org')
         
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
@@ -640,7 +660,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'WS01-KURK186874')
-        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'messages@dc.ctbto.org')
         
         self.assertEqual(result['REFID'],{'SEQNUM': '1', 'REFSRC': 'CTBT_IDC', 'REFSTR': '34370664'})
         
@@ -663,7 +684,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'WS01-KURK186874')
-        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'messages@dc.ctbto.org')
         
         self.assertEqual(result['REFID'],{'SEQNUM': '1', 'TOTNUM':'2', 'REFSRC': 'CTBT_IDC', 'REFSTR': '34370664'})
         
@@ -686,7 +708,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'WS01-KURK186874')
-        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'messages@dc.ctbto.org')
         
         self.assertEqual(result['REFID'],{'REFSTR': '34370664'})
         
@@ -709,7 +732,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'WS01-KURK186874')
-        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'messages@dc.ctbto.org')
         
         self.assertEqual(result['PRODID'],{'DELIVERYID': '3423445', 'PRODID': '34370664'})
         
@@ -732,7 +756,8 @@ class IMSMessageParserTest(TestCase):
         self.assertEqual(result['MSGFORMAT'],'ims1.0')
         self.assertEqual(result['MSGTYPE'],'request')
         self.assertEqual(result['MSGID'],'WS01-KURK186874')
-        self.assertEqual(result['EMAIL'],'messages@dc.ctbto.org')
+        self.assertEqual(result['TARGET'],'EMAIL')
+        self.assertEqual(result['EMAILADDR'],'messages@dc.ctbto.org')
         
         self.assertEqual(result['REFID'],{'REFSTR': '34370664'})
         self.assertEqual(result['PRODID'],{'DELIVERYID': '3423445', 'PRODID': '34370664'})
@@ -754,8 +779,31 @@ class IMSMessageParserTest(TestCase):
             parser.parse(message)
             self.fail("should launch an exception")
         except ParsingError, p_err:
-            self.assertEqual(p_err.message,"Error[line=5,pos=0]: Next keyword should be an email but instead was 'ref_id' (keyword type REFID).")
+            self.assertEqual(p_err.message,"Error[line=5,pos=0]: Next keyword should be an email or ftp but instead was 'ref_id' (keyword type REFID).")
       
+    
+    def test_ftp_desT(self):
+        """ test a ftp desitnation instead of email """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'STALIST': ['FI001', 'UK001'], 'TYPE': 'ARR'})
+        
 
     """ Add Errors:
         - (DONE) bad email address, 
