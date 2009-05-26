@@ -247,6 +247,9 @@ TokenCreator.register_token('REFID', REFID_RE, TokenCreator.KEYWORD)
 # EMAIL
 EMAIL_RE      = re.compile('E-MAIL', re.IGNORECASE)
 TokenCreator.register_token('EMAIL', EMAIL_RE, TokenCreator.KEYWORD)
+# FTP
+FTP_RE      = re.compile('FTP', re.IGNORECASE)
+TokenCreator.register_token('FTP', FTP_RE, TokenCreator.KEYWORD)
 # TIME
 TIME_RE       = re.compile('TIME', re.IGNORECASE)
 TokenCreator.register_token('TIME', TIME_RE, TokenCreator.KEYWORD)

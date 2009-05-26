@@ -224,15 +224,17 @@ class IMSParser(object):
             
         # line 4 or 5: e-mail foo.bar@domain_name
         # look for an EMAIL keyword
-        if token.type != TokenCreator.TokenNames.EMAIL:
-            raise ParsingError(ParsingError.create_std_error_msg('an email', token), 'The email line is probably missing or misplaced or there might be a misplaced PRODID line (before REFID)', token)
+        if token.type not in  [TokenCreator.TokenNames.EMAIL, TokenCreator.TokenNames.FTP] :
+            raise ParsingError(ParsingError.create_std_error_msg('an email or ftp', token), 'The email or ftp line is probably missing or misplaced or there might be a misplaced PRODID line (before REFID)', token)
+    
+        result['TARGET'] = token.type
     
         token = self._tokenizer.next()
         # look for the EMAILADDR
         if token.type != TokenCreator.TokenNames.EMAILADDR: 
             raise ParsingError(ParsingError.create_std_error_msg('an email address', token), 'The email address might be missing or is malformated', token)
            
-        result[TokenCreator.TokenNames.EMAIL] = token.value.lower()
+        result[TokenCreator.TokenNames.EMAILADDR] = token.value.lower()
         
         #eat next line characters
         self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
