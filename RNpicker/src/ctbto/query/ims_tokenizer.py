@@ -280,6 +280,18 @@ TokenCreator.register_token('HELP', HELP_RE, TokenCreator.KEYWORD)
 # PRODID
 PRODID_RE     = re.compile('PROD_ID', re.IGNORECASE)
 TokenCreator.register_token('PRODID', PRODID_RE, TokenCreator.KEYWORD)
+#ARRIVALLIST
+ARRIVALLIST_RE   = re.compile('ARRIVAL_LIST', re.IGNORECASE)
+TokenCreator.register_token('ARRIVALLIST', ARRIVALLIST_RE, TokenCreator.KEYWORD)
+#ARRIVALLIST
+ARRIVALLIST_RE   = re.compile('ARRIVAL_LIST', re.IGNORECASE)
+TokenCreator.register_token('ARRIVALLIST', ARRIVALLIST_RE, TokenCreator.KEYWORD)
+#BEAMLIST
+BEAMLIST_RE   = re.compile('BEAM_LIST', re.IGNORECASE)
+TokenCreator.register_token('BEAMLIST', BEAMLIST_RE, TokenCreator.KEYWORD)
+#AUXLIST
+AUXLIST_RE   = re.compile('AUX_LIST', re.IGNORECASE)
+TokenCreator.register_token('AUXLIST', AUXLIST_RE, TokenCreator.KEYWORD)
 
 # Products
 
