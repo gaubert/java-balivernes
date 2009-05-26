@@ -462,7 +462,7 @@ class IMSParser(object):
                 
                 product.update(self._parse_complex_product(token))
                         
-            elif token.type == TokenCreator.TokenNames.STALIST or token.type == TokenCreator.TokenNames.CHANLIST:
+            elif token.type in [TokenCreator.TokenNames.STALIST, TokenCreator.TokenNames.CHANLIST, TokenCreator.TokenNames.ARRIVALLIST, TokenCreator.TokenNames.BEAMLIST, TokenCreator.TokenNames.AUXLIST]:
                 
                 # to handle multiple product retrievals
                 # need to add all PRODUCTS
@@ -505,7 +505,7 @@ class IMSParser(object):
             token = self._tokenizer.next() 
         
             #should find an ID
-            if token.type == TokenCreator.TokenNames.ID or token.type == TokenCreator.TokenNames.WCID:
+            if token.type == TokenCreator.TokenNames.ID or token.type == TokenCreator.TokenNames.WCID or token.type == TokenCreator.TokenNames.NUMBER:
             
                 list.append(token.value)
                 

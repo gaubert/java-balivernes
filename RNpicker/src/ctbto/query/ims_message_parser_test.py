@@ -782,7 +782,7 @@ class IMSMessageParserTest(TestCase):
             self.assertEqual(p_err.message,"Error[line=5,pos=0]: Next keyword should be an email or ftp but instead was 'ref_id' (keyword type REFID).")
       
     
-    def test_ftp_desT(self):
+    def test_ftp_dest(self):
         """ test a ftp desitnation instead of email """
         
         message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nsta_list FI001,UK001\narr rms2.0\nstop"
@@ -803,6 +803,95 @@ class IMSMessageParserTest(TestCase):
         
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'STALIST': ['FI001', 'UK001'], 'TYPE': 'ARR'})
+        
+    def test_list_type(self):
+        """ test a diffent kind of lists object """
+        
+        #ARRIVAL_LIST
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\narrival_list 8971234,90814\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'ARRIVALLIST': ['8971234', '90814'], 'TYPE': 'ARR'})
+        
+        #AUXLIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\naux_list chi, me*\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'AUXLIST': ['chi', 'me*'], 'TYPE': 'ARR'})
+    
+        #BEAM_LIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nbeam_list fkb\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'BEAMLIST': ['fkb'], 'TYPE': 'ARR'})
+    
+       
+        
+        
+    def test_list_star_type(self):
+        """ test a diffent kind of lists object """
+        
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\narrival_list *\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'ARRIVALLIST': ['*'], 'TYPE': 'ARR'})
         
 
     """ Add Errors:
