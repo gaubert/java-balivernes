@@ -78,6 +78,15 @@ class IMSParser(object):
     
     c_PRODUCT      = 'PRODUCT'
     
+    c_SIMPLE_PARAMS = [TokenCreator.TokenNames.DEPTHCONF, TokenCreator.TokenNames.DEPTHTHRESH, TokenCreator.TokenNames.DEPTHKVALUE, \
+                       TokenCreator.TokenNames.HYDROCPTHRESH, TokenCreator.TokenNames.HYDROTETHRESH, TokenCreator.TokenNames.LOCCONF, \
+                       TokenCreator.TokenNames.MBERR, TokenCreator.TokenNames.MBMSCONF, TokenCreator.TokenNames.MBMSSLOPE, \
+                       TokenCreator.TokenNames.MBMSTHRESH, TokenCreator.TokenNames.MINDPSNRPP ,TokenCreator.TokenNames.MINDPSNRSP, \
+                       TokenCreator.TokenNames.MINMB, TokenCreator.TokenNames.MINMOUVEOUTPP, TokenCreator.TokenNames.MINMOUVEOUTSP, \
+                       TokenCreator.TokenNames.MINNDEF, TokenCreator.TokenNames.MINNDPPP, TokenCreator.TokenNames.MINNDPSP, \
+                       TokenCreator.TokenNames.MINNSTAMS,TokenCreator.TokenNames.MINWDEPTHTHRESH, TokenCreator.TokenNames.MSERR, \
+                       TokenCreator.TokenNames.REGCONF ]
+    
     def __init__(self):
         """ constructor """
         
@@ -419,7 +428,7 @@ class IMSParser(object):
                 self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])   
                                  
             # mag keyword
-            elif token.type in (TokenCreator.TokenNames.MAG, TokenCreator.TokenNames.DEPTH, TokenCreator.TokenNames.EVENTSTADIST, TokenCreator.TokenNames.DEPTHMINUSERROR):
+            elif token.type in (TokenCreator.TokenNames.MAG, TokenCreator.TokenNames.DEPTH, TokenCreator.TokenNames.EVENTSTADIST, TokenCreator.TokenNames.DEPTHMINUSERROR,  TokenCreator.TokenNames.MBMINUSMS):
                
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
@@ -453,7 +462,9 @@ class IMSParser(object):
                 
                 product.update(self._parse_complex_product(token))
                         
-            elif token.type in [TokenCreator.TokenNames.STALIST, TokenCreator.TokenNames.CHANLIST, TokenCreator.TokenNames.EVENTLIST, TokenCreator.TokenNames.ARRIVALLIST, TokenCreator.TokenNames.BEAMLIST, TokenCreator.TokenNames.AUXLIST, TokenCreator.TokenNames.COMMLIST, TokenCreator.TokenNames.GROUPBULLLIST, TokenCreator.TokenNames.ORIGINLIST]:
+            elif token.type in [TokenCreator.TokenNames.STALIST, TokenCreator.TokenNames.CHANLIST, TokenCreator.TokenNames.EVENTLIST, \
+                                TokenCreator.TokenNames.ARRIVALLIST, TokenCreator.TokenNames.BEAMLIST, TokenCreator.TokenNames.AUXLIST,\
+                                TokenCreator.TokenNames.COMMLIST, TokenCreator.TokenNames.GROUPBULLLIST, TokenCreator.TokenNames.ORIGINLIST]:
                 
                 # to handle multiple product retrievals
                 # need to add all PRODUCTS
@@ -461,7 +472,7 @@ class IMSParser(object):
                                 
                 product.update(self._parse_list(token))
             #DEPTHCONF, DEPTHKVALUE, DEPTHTHRESHOLD
-            elif token.type in [TokenCreator.TokenNames.DEPTHCONF, TokenCreator.TokenNames.DEPTHTHRESH, TokenCreator.TokenNames.DEPTHKVALUE]:
+            elif token.type in IMSParser.c_SIMPLE_PARAMS:
                 
                 type = token.type
                  
