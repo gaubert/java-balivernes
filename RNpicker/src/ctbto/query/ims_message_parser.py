@@ -419,23 +419,14 @@ class IMSParser(object):
                 self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])   
                                  
             # mag keyword
-            elif token.type == TokenCreator.TokenNames.MAG:
+            elif token.type in (TokenCreator.TokenNames.MAG, TokenCreator.TokenNames.DEPTH, TokenCreator.TokenNames.EVENTSTADIST, TokenCreator.TokenNames.DEPTHMINUSERROR):
                
                 # to handle multiple product retrievals
                 # add current token type in seen_keywords
                 seen_keywords.append(TokenCreator.TokenNames.MAG)
                 
-                product.update(self._parse_mag()) 
+                product[token.type] = self._parse_range(token) 
                 
-            #DEPTH
-            elif token.type == TokenCreator.TokenNames.DEPTH:
-                 
-                # to handle multiple product retrievals
-                # add current token type in seen_keywords
-                seen_keywords.append(TokenCreator.TokenNames.DEPTH)
-                
-                product.update(self._parse_depth())
-                         
             #LAT or LON
             elif token.type in (TokenCreator.TokenNames.LAT,TokenCreator.TokenNames.LON):
                 
@@ -462,13 +453,32 @@ class IMSParser(object):
                 
                 product.update(self._parse_complex_product(token))
                         
-            elif token.type in [TokenCreator.TokenNames.STALIST, TokenCreator.TokenNames.CHANLIST, TokenCreator.TokenNames.ARRIVALLIST, TokenCreator.TokenNames.BEAMLIST, TokenCreator.TokenNames.AUXLIST]:
+            elif token.type in [TokenCreator.TokenNames.STALIST, TokenCreator.TokenNames.CHANLIST, TokenCreator.TokenNames.EVENTLIST, TokenCreator.TokenNames.ARRIVALLIST, TokenCreator.TokenNames.BEAMLIST, TokenCreator.TokenNames.AUXLIST, TokenCreator.TokenNames.COMMLIST, TokenCreator.TokenNames.GROUPBULLLIST, TokenCreator.TokenNames.ORIGINLIST]:
                 
                 # to handle multiple product retrievals
                 # need to add all PRODUCTS
                 seen_keywords.append(token.type)
                                 
                 product.update(self._parse_list(token))
+            #DEPTHCONF, DEPTHKVALUE, DEPTHTHRESHOLD
+            elif token.type in [TokenCreator.TokenNames.DEPTHCONF, TokenCreator.TokenNames.DEPTHTHRESH, TokenCreator.TokenNames.DEPTHKVALUE]:
+                
+                type = token.type
+                 
+                # to handle multiple product retrievals
+                # add current token type in seen_keywords
+                seen_keywords.append(type)
+                
+                # next token should be a number (depth conf)
+                token = self._tokenizer.next()
+                
+                if token.type != TokenCreator.TokenNames.NUMBER:
+                    raise ParsingError(ParsingError.create_std_error_msg('a number', token), 'The depth paramter (conf, kvalue or threshold) number is missing', token)
+
+                product[type] = token.value
+                
+                self._tokenizer.consume_while_next_token_is_in([TokenCreator.TokenNames.NEWLINE])
+                
                                       
             else:
                 raise ParsingError('Unknown keyword %s (keyword type %s)' % (token.value, token.type), 'Request mal-formatted', token)
@@ -484,7 +494,7 @@ class IMSParser(object):
     
     def _parse_list(self, a_token):
         """ Parse a station list or a channel list.
-            It should be a mag range mag [date1[time1]] to [date2[time2]]
+            l = a,b,c,d
         
             Args: a_token: The token that defines the type (STALIST or CHANLIST)
                
@@ -599,7 +609,50 @@ class IMSParser(object):
             raise ParsingError(ParsingError.create_std_error_msg('a newline or a msg format (ex:ims2.0)', token), 'The product line [product_type format[:subformat]] (ex:waveform ims2.0:cm6) is not well formatted', token)
             
         return res_dict  
+    
+    def _parse_range(self,a_token):
+        """ parse a range of values.
+            range keyword [min] to [max]
+        
+            Args: a_token: The token that defines the type 
+        """
+        res_dict = {}
+        
+        type = a_token.type
+        
+        token = self._tokenizer.next() 
+        
+        if token.type == TokenCreator.TokenNames.NUMBER:  
             
+            res_dict['START'] = token.value
+            
+             # try to consume the next token that should be TO
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.TO)
+        
+        elif token.type == TokenCreator.TokenNames.TO:
+            # add the min value because begin value has been omitted
+            res_dict['START'] = TokenCreator.TokenNames.MIN 
+        else:
+            raise ParsingError(ParsingError.create_std_error_msg('a number or to', token), 'The %s line is not well formatted'% (type), token)
+            
+        token = self._tokenizer.next()
+        
+        # it can be either NUMBER (ENDMAG) or NEWLINE (this means that it will magnitude max)
+        if token.type == TokenCreator.TokenNames.NUMBER:
+            res_dict['END'] = token.value
+            
+            #consume new line
+            self._tokenizer.consume_next_token(TokenCreator.TokenNames.NEWLINE)
+            
+        elif token.type == TokenCreator.TokenNames.NEWLINE:
+            res_dict['END'] = TokenCreator.TokenNames.MAX 
+        else:
+            raise ParsingError(ParsingError.create_std_error_msg('a number or newline', token), 'The %s line is not well formatted'% (type), token)
+        
+        #go to next token
+        self._tokenizer.next()
+       
+        return res_dict    
     
     def _parse_mag(self):
         """ Parse magnitude component.

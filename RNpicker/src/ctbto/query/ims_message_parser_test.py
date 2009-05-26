@@ -90,12 +90,12 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result.has_key('PRODUCT_1'))
         
-        self.assertEqual(result['PRODUCT_1'], {'ENDLON': '-140', 'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'STARTDEPTH': 'MIN', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDMAG': '5.0', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_1'], {'ENDLON': '-140', 'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30','BULLTYPE': 'idc_reb', 'STARTLON': '-180', 'TYPE': 'BULLETIN', 'MAG': {'START': '3.5', 'END': '5.0'}, 'DEPTH': {'START': 'MIN', 'END': '30'} })
      
         # product_2
         self.assertTrue(result.has_key('PRODUCT_2'))
      
-        self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result['PRODUCT_2'], {'STARTDATE': '1999/06/01', 'ENDDATE': '1999/07/01', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'ENDLON': '140', 'STARTLON': '110', 'TYPE': 'BULLETIN', 'MAG': {'START': '3.5', 'END': '5.0'}, 'DEPTH': {'START': 'MIN', 'END': '30'} })
       
     def test_multiple_lat_lon_request(self): 
         """ test multiple products request message with different lat/lon taken from AutoDRM Help response message """ 
@@ -168,12 +168,12 @@ class IMSMessageParserTest(TestCase):
         # product_1
         self.assertTrue(result1.has_key('PRODUCT_1'))
         
-        self.assertEqual(result1['PRODUCT_1'], {'ENDLON': '-140', 'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'STARTDEPTH': 'MIN', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDMAG': '5.0', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result1['PRODUCT_1'], {'ENDLON': '-140', 'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'MAG': {'START': '3.5', 'END': '5.0'}, 'DEPTH': {'START': 'MIN', 'END': '30'}, 'FORMAT': 'ims1.0', 'ENDLAT': '-20', 'STARTLAT': '-30', 'BULLTYPE': 'idc_reb', 'STARTLON': '-180', 'TYPE': 'BULLETIN'})
      
         # product_2
         self.assertTrue(result1.has_key('PRODUCT_2'))
      
-        self.assertEqual(result1['PRODUCT_2'], {'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'ENDDEPTH': '30', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'STARTLAT': '75', 'STARTDEPTH': 'MIN', 'SUBFORMAT': 'cm6', 'BULLTYPE': 'idc_reb', 'STARTMAG': '3.5', 'ENDLON': '140', 'ENDMAG': '5.0', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
+        self.assertEqual(result1['PRODUCT_2'], {'STARTDATE': '2005/06/01', 'ENDDATE': '2006/07/01', 'FORMAT': 'ims2.0', 'ENDLAT': '79', 'SUBFORMAT': 'cm6', 'STARTLAT': '75', 'DEPTH': {'START': 'MIN', 'END': '30'}, 'BULLTYPE': 'idc_reb', 'MAG': {'START': '3.5', 'END': '5.0'}, 'ENDLON': '140', 'STARTLON': '110', 'TYPE': 'BULLETIN'})
       
         
     
@@ -868,9 +868,87 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'BEAMLIST': ['fkb'], 'TYPE': 'ARR'})
     
-       
+        #COMM_LIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\ncomm_list ABC,DEF\narr rms2.0\nstop"
         
+        parser = IMSParser()
         
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'COMMLIST': ['ABC','DEF'], 'TYPE': 'ARR'})
+    
+        #EVENT_LIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nEvent_list AQWER*\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'EVENTLIST': ['AQWER*'], 'TYPE': 'ARR'})
+        
+        #ORIGIN_LIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\norigin_list 1324567,323456789\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'ORIGINLIST': ['1324567','323456789'], 'TYPE': 'ARR'})
+    
+        #GROUP_BULL_LIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\ngroup_bull_list SEL3, SEL1\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'GROUPBULLLIST': ['SEL3','SEL1'], 'TYPE': 'ARR'})
+    
+    
     def test_list_star_type(self):
         """ test a diffent kind of lists object """
         
@@ -893,6 +971,113 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'ARRIVALLIST': ['*'], 'TYPE': 'ARR'})
         
+    def test_depth_parameter(self):
+        """ test a diffent depth parameter """
+        
+        #DEPTH_CONF
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\narrival_list 8971234,90814\ndepth_conf 0.9775\nbulletin ims2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'ims2.0', 'ENDDATE': '1999/05/01', 'ARRIVALLIST': ['8971234', '90814'],'DEPTHCONF': '0.9775', 'TYPE': 'BULLETIN'})
+        
+        #DEPTH_THRESH
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\ndepth_thresh 10.2\nbulletin ims2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'ims2.0', 'ENDDATE': '1999/05/01', 'DEPTHTHRESH': '10.2', 'TYPE': 'BULLETIN'})
+    
+        #DEPTH_KVALUE
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\ndepth_kvalue 30\nbulletin ims2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'FORMAT': 'ims2.0', 'ENDDATE': '1999/05/01', 'DEPTHKVALUE': '30', 'TYPE': 'BULLETIN'})
+    
+    def test_range_type(self):
+        """ test a diffent kind of range object """
+        
+        #DEPTH_MINUS_ERROR
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\ndepth_Minus_error 0.0 to 10\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'DEPTHMINUSERROR': {'START': '0.0', 'END': '10'}, 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'TYPE': 'ARR'})
+        
+        #EVENT_STA_DIST
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nevent_sta_dist 0 to 20\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'EVENTSTADIST': {'START': '0', 'END': '20'}, 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'TYPE': 'ARR'})
+        
+
 
     """ Add Errors:
         - (DONE) bad email address, 
@@ -903,6 +1088,11 @@ class IMSMessageParserTest(TestCase):
         - (Done) incomplete type:subtype format),
         - bad station list (ZA,),
         - missing essential elements,
+        - number* (123457*)
+        - depth param with a number
+        
+        - change lat-lon construct LAT = {MIN, MAX}
+        - add negative numbers in range
         
     """
         
