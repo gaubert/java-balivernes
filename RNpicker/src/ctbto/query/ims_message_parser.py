@@ -9,7 +9,7 @@ import StringIO
 import copy
 
 
-from ims_tokenizer import IMSTokenizer, Token, ENDMARKERToken, TokenCreator
+from ims_tokenizer import IMSTokenizer, ENDMARKERToken, TokenCreator
 
 class ParsingError(Exception):
     """Base class for All exceptions"""
@@ -69,14 +69,13 @@ class IMSParser(object):
     c_log = logging.getLogger("query.IMSParser")
     c_log.setLevel(logging.DEBUG)
     
-    c_SHI_PRODUCTS = [TokenCreator.TokenNames.BULLETIN,   TokenCreator.TokenNames.ARRIVAL, TokenCreator.TokenNames.WAVEFORM, TokenCreator.TokenNames.EVENT, TokenCreator.TokenNames.ORIGIN, TokenCreator.TokenNames.SLSD, TokenCreator.TokenNames.CHANNEL, TokenCreator.TokenNames.STASTATUS, \
-                      TokenCreator.TokenNames.CHANSTATUS, TokenCreator.TokenNames.OUTAGE, TokenCreator.TokenNames.RESPONSE, TokenCreator.TokenNames.COMMENT, TokenCreator.TokenNames.COMMSTATUS, TokenCreator.TokenNames.EXECSUM, TokenCreator.TokenNames.STATION]
-    
+    c_SHI_PRODUCTS = TokenCreator.get_tokens_with_type(TokenCreator.SHI_PRODUCT)
+   
     # rad products + Help
-    c_RAD_PRODUCTS = [TokenCreator.TokenNames.ARR, TokenCreator.TokenNames.RRR, TokenCreator.TokenNames.BLANKPHD, TokenCreator.TokenNames.SPHDF, TokenCreator.TokenNames.SPHDP, TokenCreator.TokenNames.CALIBPHD, TokenCreator.TokenNames.QCPHD, TokenCreator.TokenNames.DETBKPHD, TokenCreator.TokenNames.GASBKPHD, TokenCreator.TokenNames.RLR, \
-                      TokenCreator.TokenNames.HELP, TokenCreator.TokenNames.RMSSOH, TokenCreator.TokenNames.RNPS, TokenCreator.TokenNames.MET, TokenCreator.TokenNames.NETWORK, TokenCreator.TokenNames.SSREB, ]
+    c_RAD_PRODUCTS = TokenCreator.get_tokens_with_type(TokenCreator.RAD_PRODUCT) + [TokenCreator.TokenNames.HELP]
     
     c_ALL_PRODUCTS = c_SHI_PRODUCTS + c_RAD_PRODUCTS
+    
     c_PRODUCT      = 'PRODUCT'
     
     def __init__(self):
