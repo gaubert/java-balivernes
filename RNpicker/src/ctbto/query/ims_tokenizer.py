@@ -310,12 +310,75 @@ TokenCreator.register_token('DEPTHTHRESH', DEPTHTHRESH_RE, TokenCreator.KEYWORD)
 #DEPTHMINUSERROR
 DEPTHMINUSERROR_RE   = re.compile('DEPTH_MINUS_ERROR', re.IGNORECASE)
 TokenCreator.register_token('DEPTHMINUSERROR', DEPTHMINUSERROR_RE, TokenCreator.KEYWORD)
-# DEPTH
+#DEPTH
 DEPTH_RE      = re.compile('DEPTH', re.IGNORECASE)
 TokenCreator.register_token('DEPTH', DEPTH_RE, TokenCreator.KEYWORD)
-# EVENT_STA_DIST
+#EVENT_STA_DIST
 EVENTSTADIST_RE      = re.compile('EVENT_STA_DIST', re.IGNORECASE)
 TokenCreator.register_token('EVENTSTADIST', EVENTSTADIST_RE, TokenCreator.KEYWORD)
+#MB_MINUS_MS
+MBMINUSMS_RE      = re.compile('MB_MINUS_MS', re.IGNORECASE)
+TokenCreator.register_token('MBMINUSMS', MBMINUSMS_RE, TokenCreator.KEYWORD)
+
+#TOTEST
+#MSERR
+MSERR_RE      = re.compile('MS_ERR', re.IGNORECASE)
+TokenCreator.register_token('MSERR', MSERR_RE, TokenCreator.KEYWORD)
+#MINMB
+MINMB_RE      = re.compile('MIN_MB', re.IGNORECASE)
+TokenCreator.register_token('MINMB', MINMB_RE, TokenCreator.KEYWORD)
+#HYDROCPTHRESH
+HYDROCPTHRESH_RE      = re.compile('HYDRO_CP_THRESH', re.IGNORECASE)
+TokenCreator.register_token('HYDROCPTHRESH', HYDROCPTHRESH_RE, TokenCreator.KEYWORD)
+#HYDROTETHRESH
+HYDROTETHRESH_RE      = re.compile('HYDRO_TE_THRESH', re.IGNORECASE)
+TokenCreator.register_token('HYDROTETHRESH', HYDROTETHRESH_RE, TokenCreator.KEYWORD)
+#LOCCONF
+LOCCONF_RE            = re.compile('LOC_CONF', re.IGNORECASE)
+TokenCreator.register_token('LOCCONF', LOCCONF_RE, TokenCreator.KEYWORD)
+#MBERR
+MBERR_RE              = re.compile('MB_ERR', re.IGNORECASE)
+TokenCreator.register_token('MBERR', MBERR_RE, TokenCreator.KEYWORD)
+#MBMSCONF
+MBMSCONF_RE           = re.compile('MBMS_CONF', re.IGNORECASE)
+TokenCreator.register_token('MBMSCONF', MBMSCONF_RE, TokenCreator.KEYWORD)
+#MBMSSLOPE
+MBMSSLOPE_RE          = re.compile('MBMS_SLOPE', re.IGNORECASE)
+TokenCreator.register_token('MBMSSLOPE', MBMSSLOPE_RE, TokenCreator.KEYWORD)
+#MBMSTHRESH
+MBMSTHRESH_RE         = re.compile('MBMS_THRESH', re.IGNORECASE)
+TokenCreator.register_token('MBMSTHRESH', MBMSTHRESH_RE, TokenCreator.KEYWORD)
+#MINDPSNRPP
+MINDPSNRPP_RE         = re.compile('MIN_DP_SNR_PP', re.IGNORECASE)
+TokenCreator.register_token('MINDPSNRPP', MINDPSNRPP_RE, TokenCreator.KEYWORD)
+#MINDPSNRSP
+MINDPSNRSP_RE         = re.compile('MIN_DP_SNR_SP', re.IGNORECASE)
+TokenCreator.register_token('MINDPSNRSP', MINDPSNRSP_RE, TokenCreator.KEYWORD)
+#MINMOVEOUTPP
+MINMOUVEOUTPP_RE      = re.compile('MIN_MOUVEOUT_PP', re.IGNORECASE)
+TokenCreator.register_token('MINMOUVEOUTPP', MINMOUVEOUTPP_RE, TokenCreator.KEYWORD)
+#MINMOVEOUTPP
+MINMOUVEOUTSP_RE      = re.compile('MIN_MOUVEOUT_SP', re.IGNORECASE)
+TokenCreator.register_token('MINMOUVEOUTSP', MINMOUVEOUTSP_RE , TokenCreator.KEYWORD)
+#MINNDEF
+MINNDEF_RE             = re.compile('MIN_NDEF', re.IGNORECASE)
+TokenCreator.register_token('MINNDEF', MINNDEF_RE , TokenCreator.KEYWORD)
+#MINNDPPP
+MINNDPPP_RE            = re.compile('MIN_NDP_PP', re.IGNORECASE)
+TokenCreator.register_token('MINNDPPP', MINNDPPP_RE , TokenCreator.KEYWORD)
+#MINNDEF
+MINNDPSP_RE            = re.compile('MIN_NDP_SP', re.IGNORECASE)
+TokenCreator.register_token('MINNDPSP', MINNDPSP_RE , TokenCreator.KEYWORD)
+#MINNSTAMS
+MINNSTAMS_RE            = re.compile('MIN_NSTA_MS', re.IGNORECASE)
+TokenCreator.register_token('MINNSTAMS', MINNSTAMS_RE , TokenCreator.KEYWORD)
+#MINNSTAMS
+MINWDEPTHTHRESH_RE      = re.compile('MIN_WDEPTH_THRESH', re.IGNORECASE)
+TokenCreator.register_token('MINWDEPTHTHRESH', MINWDEPTHTHRESH_RE , TokenCreator.KEYWORD)
+#REGCONF
+REGCONF_RE              = re.compile('REG_CONF', re.IGNORECASE)
+TokenCreator.register_token('REGCONF', REGCONF_RE , TokenCreator.KEYWORD)
+
 
 
 

@@ -1077,6 +1077,26 @@ class IMSMessageParserTest(TestCase):
         # validate that there is a sta_list and a subtype
         self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'EVENTSTADIST': {'START': '0', 'END': '20'}, 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'TYPE': 'ARR'})
         
+         # MB_MINUS_MS
+        message = "begin ims1.0\nmsg_type request\nmsg_id ex005\nftp foo.bar@bar.fr\ntime 1999/04/01 to 1999/05/01\nmb_minus_ms 1.0 to 2.0\narr rms2.0\nstop"
+        
+        parser = IMSParser()
+        
+        result = parser.parse(message)
+        
+        # check mandatory fields
+        self.assertEqual(result['MSGFORMAT'],'ims1.0')
+        self.assertEqual(result['MSGTYPE'],'request')
+        self.assertEqual(result['MSGID'],'ex005')
+        self.assertEqual(result['TARGET'],'FTP')
+        self.assertEqual(result['EMAILADDR'],'foo.bar@bar.fr')
+        
+        # product_1
+        self.assertTrue(result.has_key('PRODUCT_1'))
+        
+        # validate that there is a sta_list and a subtype
+        self.assertEqual(result['PRODUCT_1'], {'STARTDATE': '1999/04/01', 'MBMINUSMS': {'START': '1.0', 'END': '2.0'}, 'FORMAT': 'rms2.0', 'ENDDATE': '1999/05/01', 'TYPE': 'ARR'})
+        
 
 
     """ Add Errors:
@@ -1093,6 +1113,8 @@ class IMSMessageParserTest(TestCase):
         
         - change lat-lon construct LAT = {MIN, MAX}
         - add negative numbers in range
+        - optimize for speed
+        - miss TIMESTAMP, MAG_TYPE
         
     """
         
