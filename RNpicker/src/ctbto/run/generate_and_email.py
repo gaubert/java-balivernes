@@ -457,9 +457,9 @@ class Runner(object):
         for type in a_stations_types:
         
             if   type == 'SAUNA':
-                result = self._ngMainConn.execute(SQL_GETALLSAUNASTATIONCODES)
+                result = self._ngMainConn.execute(self._conf.get("Products","Sauna_Stations_SQL",SQL_GETALLSAUNASTATIONCODES))
             elif type == 'SPALAX':
-                result = self._ngMainConn.execute(SQL_GETALLSPALAXSTATIONCODES)
+                result = self._ngMainConn.execute(self._conf.get("Products","Spalax_Stations_SQL",SQL_GETALLSPALAXSTATIONCODES))
         
             sta_codes  = []
            
@@ -799,7 +799,10 @@ class Runner(object):
         
         # directory containing the data
         # restrict to samples
-        dir_data = "%s/samples"%(dir_to_send)
+        if self._conf.getboolean('Products','withARR',False):
+            dir_data = "%s" % (dir_to_send)
+        else:
+            dir_data = "%s/samples"%(dir_to_send)
         
         tarfile_name = "%s-%s.tar.gz"%(tarfile_name_prefix,printable_day)
         
@@ -901,8 +904,11 @@ class Runner(object):
             self._remove_expired_days_from_db_dict(db_dict,dir_group_db,id)
             
             list_of_searched_days = self._get_list_of_days_to_search(db_dict,a_args['from'])
+            
+            #types of stations
+            station_types = self._conf.getlist("Products","stations_types","SAUNA,SPALAX")
              
-            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,list_of_searched_days,a_args['station_types'],a_args['force_send']) 
+            list_to_fetch = self._get_list_of_new_samples_to_email(db_dict,list_of_searched_days,station_types,a_args['force_send']) 
         
         if len(list_to_fetch) > 0:    
             

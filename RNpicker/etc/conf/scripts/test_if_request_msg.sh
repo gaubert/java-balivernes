@@ -32,7 +32,9 @@ if (\$arrsize <=0)
 
 my \$fhandle;
 my \$find = "REQUEST";
+my \$find_data = "DATA";
 
+my \$ok = -1;
 
 foreach my \$file (@sorted)
 {
@@ -40,12 +42,28 @@ foreach my \$file (@sorted)
   while (<\$fhandle>)
   {
     my \$line = \$_;
-    if (\$line =~ /\$find/)
+    if (\$line =~ /\$find/i)
     {
-       print "\$file\n";
+       \$ok = 0;
+    }
+    
+    if (\$line =~ /\$find_data/i)
+    {
+       #quit as we only want request
        last;
     }
   }
+  
+   if (\$ok == 0)
+   {
+     print "\$file\n";
+     \$ok = -1;
+   }
+   else
+   {
+     \$ok = -1;
+   }
+  
   #close($fhandle);
 }
 

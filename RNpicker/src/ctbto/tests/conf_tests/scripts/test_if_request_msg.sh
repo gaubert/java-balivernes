@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 
 # quick script for extracting spectrum from archive file
 #$1 ssh hostname (need to have a public key installed)"
@@ -7,7 +7,7 @@ set -x
 #$3 file where to put the results
 #$4 remote user
 # return a the list of matching files in stdout
-
+  
 
 tempfile="/tmp/job.$$.remote"
 
@@ -21,7 +21,7 @@ my \$dir = "$2";
 my @not_sorted = <\$dir/*.msg>;
 
 my @sorted = sort { lc(\$a) cmp lc(\$b) } @not_sorted;
-
+  
 my \$arrsize = @sorted;
 
 if (\$arrsize <=0)
@@ -32,7 +32,9 @@ if (\$arrsize <=0)
 
 my \$fhandle;
 my \$find = "REQUEST";
+my \$find_data = "MSG_TYPE\\\s+DATA";
 
+my \$ok = -1;
 
 foreach my \$file (@sorted)
 {
@@ -40,12 +42,29 @@ foreach my \$file (@sorted)
   while (<\$fhandle>)
   {
     my \$line = \$_;
-    if (\$line =~ /\$find/)
+    if (\$line =~ m/\$find/i)
     {
-       print "\$file\n";
+       \$ok = 0;
+    }
+    
+    if (\$line =~ m/\$find_data/i)
+    {
+       #quit as we only want request
+       \$ok = -1;
        last;
     }
   }
+  
+   if (\$ok == 0)
+   {
+     print "\$file\n";
+     \$ok = -1;
+   }
+   else
+   {
+     \$ok = -1;
+   }
+  
   #close($fhandle);
 }
 
@@ -56,7 +75,7 @@ cat $tempfile | ssh $4@$1 perl > $3
 #cat $tempfile | ssh $4@$1 perl 
 res="$?"
 
-#rm -f $tempfile
+rm -f $tempfile
 
 if [ $res != 0 ];
 then

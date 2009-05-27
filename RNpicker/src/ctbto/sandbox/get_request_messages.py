@@ -71,7 +71,7 @@ def main():
     # create an empty shell Conf object
     conf = Conf.get_instance()
     
-    local_dir = '/tmp/req_messages'
+    local_dir = '/tmp/only_req_messages'
     # cheat and always ask for 5 MB
     remote_file_size =5 * 1024 * 1024
     
