@@ -484,7 +484,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">Half-Life</th>
-      <th class="centre">Conc(uBq/m3)</th>
+      <th class="centre">Conc(mBq/m3)</th>
       <th class="centre">Abs Error</th>
     </tr>
     {% for q_item in quantified_nuclides %}
@@ -508,7 +508,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">MDC (uBq/m3)</th>
+      <th class="centre">MDC (mBq/m3)</th>
       <!--<th class="centre">NID-Flag</th>-->
     </tr>
    {% for nq_item in non_quantified_nuclides %}
@@ -535,10 +535,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">Activity (Bq)</th>
-      <th class="centre">Abs Activity Error (Bq)</th>
-      <th class="centre">Critical Limit (Bq)</th>
-      <th class="centre">Detection Limit (Bq)</th>
+      <th class="centre">Activity (mBq)</th>
+      <th class="centre">Abs Activity Error (mBq)</th>
+      <th class="centre">Critical Limit (mBq)</th>
+      <th class="centre">Detection Limit (mBq)</th>
     </tr>
    {% for a_item in activities_nuclides %}
     <tr>
