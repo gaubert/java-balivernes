@@ -144,13 +144,22 @@ class XML2HTMLRenderer(object):
                 self._context['sample_geometry'] = res[0].text
            
             # get quantity
-            res = elem.xpath(expr,name = "Quantity")
+            res = elem.xpath(expr,name = "AirVolume")
             if len(res) == 0:
                 self._context['sample_quantity']      = UNDEFINED
-                self._context['sample_quantity_unit'] = UNDEFINED 
+                self._context['sample_quantity_unit'] = "" 
             else:
                 self._context['sample_quantity']      = utils.round_as_string(res[0].text,3)
                 self._context['sample_quantity_unit'] = res[0].get('unit') 
+                
+             # get Xe volume
+            res = elem.xpath(expr,name = "XeVolume")
+            if len(res) == 0:
+                self._context['xe_vol']      = UNDEFINED
+                self._context['xe_vol_unit'] = "" 
+            else:
+                self._context['xe_vol']      = utils.round_as_string(res[0].text,3)
+                self._context['xe_vol_unit'] = res[0].get('unit') 
            
             # all timing information
             c_start = time_utils.getOracleDateFromISO8601(elem.xpath(expr,name = "CollectionStart")[0].text)
