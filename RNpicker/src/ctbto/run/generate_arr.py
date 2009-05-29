@@ -16,9 +16,9 @@ import ctbto.common.xml_utils
 import ctbto.common.time_utils
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
-from ctbto.db          import DatabaseConnector,DBDataFetcher
-from ctbto.renderers   import BaseRenderer,SpalaxRenderer,SaunaRenderer
-from ctbto.transformer import XML2HTMLRenderer
+from ctbto.db          import DatabaseConnector, DBDataFetcher
+from ctbto.renderers   import BaseRenderer, SpalaxRenderer, SaunaRenderer
+from ctbto.transformer import SAUNAXML2HTMLRenderer, SPALAXXML2HTMLRenderer
 
 NAME        = "generate_arr"
 VERSION     = "1.0"
@@ -665,21 +665,30 @@ class Runner(object):
                 # pretty print and save in file
                 ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
             
-                if fetcher.get('SAMPLE_TYPE') == 'SPALAX':
-                    Runner.c_log.info("No ARR For Spalax at the moment")
-                    continue
-            
-                Runner.c_log.info("Create ARR from SAMPML data file for %s"%(sid))
+                if fetcher.get('SAMPLE_TYPE') == 'SAUNA':
+                    Runner.c_log.info("Create ARR from SAUNA SAMPML data file for %s"%(sid))
            
-                r = XML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'ArrHtml.html')
+                    r = SAUNAXML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'ArrHtml.html')
     
-                result = r.render(path)
+                    result = r.render(path)
             
-                path = "%s/ARR/ARR-%s.html"%(dir,sid)
+                    path = "%s/ARR/ARR-%s.html"%(dir,sid)
             
-                Runner.c_log.info("save file in %s"%(path))
+                    Runner.c_log.info("save file in %s"%(path))
             
-                ctbto.common.utils.printInFile(result,path)
+                    ctbto.common.utils.printInFile(result,path)
+                elif fetcher.get('SAMPLE_TYPE') == 'SPALAX':
+                    Runner.c_log.info("Create ARR from SPALAX SAMPML data file for %s"%(sid))
+           
+                    r = SPALAXXML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'SpalaxArrHtml.html')
+    
+                    result = r.render(path)
+            
+                    path = "%s/ARR/ARR-%s.html"%(dir,sid)
+            
+                    Runner.c_log.info("save file in %s"%(path))
+                    
+                    ctbto.common.utils.printInFile(result,path)
             
             else:
                 Runner.c_log.info("products are already existing in %s for %s"%(dir,sid)) 

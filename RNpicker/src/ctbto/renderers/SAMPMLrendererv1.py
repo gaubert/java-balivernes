@@ -761,6 +761,11 @@ class SpalaxRenderer(BaseRenderer):
                 
             group_spec_template = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_G_DATA_SAMPLE_GEOMETRY" % (ty))), group_spec_template)
             
+            # add Xe Volume and Xe Volume 
+            aux = self._fetcher.get('%s_AUXILIARY_INFO'%(ty),{})
+            v = aux.get('XE_VOLUME',0)
+            group_spec_template = re.sub("\${XE_VOL}",str(v) if (v!=0) else "N/A",group_spec_template)
+            
             # add the calibration info
             l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))
             if l is None:
