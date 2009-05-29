@@ -2356,9 +2356,11 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # only one row in result set
         rows = result.fetchall()   
         
-        # get the volume to comp[ute activity from concentration
-        # it is in m3
-        volume = self._dataBag.get('%s_G_DATA_SAMPLE_QUANTITY'%(dataname),0)
+        # get the volume of mesured xenon to compute activities from concentration
+        # it is in m3 and in the AUXILIARY_INFO
+        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
+        # we need to a correction coefficient 0.087 according to Matthias
+        corr_volume = aux.get('XE_VOLUME',0) / 0.087
        
         # add results in a list which will become a list of dicts
         res = []
@@ -2400,11 +2402,11 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             # calculate volumes and concentration (need vol for that)
             # get activity. If no volume or no activity results are 0
             # if volume = 0 (I think that 1 m3 means nothing)
-            if volume >= 0:
-                data[u'ACTIVITY']     = data.get(u'CONC',0)*volume
-                data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*volume
-                data[u'LC_ACTIVITY']  = data.get(u'LC',0)*volume  
-                data[u'LD_ACTIVITY']  = data.get(u'LD',0)*volume
+            if corr_volume >= 0:
+                data[u'ACTIVITY']     = data.get(u'CONC',0)*corr_volume
+                data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*corr_volume
+                data[u'LC_ACTIVITY']  = data.get(u'LC',0)*corr_volume
+                data[u'LD_ACTIVITY']  = data.get(u'LD',0)*corr_volume
             else:
                 data[u'ACTIVITY']     = UNDEFINED
                 data[u'ACTIVITY_ERR'] = UNDEFINED

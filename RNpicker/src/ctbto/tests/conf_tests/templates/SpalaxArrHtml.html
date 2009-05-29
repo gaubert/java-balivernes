@@ -416,7 +416,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <td colspan="2"></td>
     </tr>
     <tr>
-      <td colspan="2">Station Location: {{station_location}}</td>
+      <td colspan="2">ARR Station Location: {{station_location}}</td>
     </tr>
     <tr>
       <td colspan="2">Coordinates: <a class="coord" href="{{station_gmaps}}">[lat={{station_lat}},lon={{station_lon}},h={{station_height}}]</a> <span class="preview" onclick="show()"> (prev/hide) </span> 
@@ -555,97 +555,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <p></p>
 <div class="page-break"></div> 
 
-{% if sample_type is "SAUNA" %}
-
-<h2>Processing Specific Parameters and Results:</h2>
-
-<h3>Method 1 (Net Count Calculation)</h3>
-
-<h4> ROI Net Count Results </h4>
-
-<table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th >ROI</th>
-      <th class="centre">Nuclide</th>
-      <th class="centre">NetCounts</th>
-      <th class="centre">Abs NetError</th>
-      <th class="centre">LC</th>
-      <th class="centre">Efficiency</th>
-      <th class="centre">Abs Efficiency Error</th>
-    </tr>
-   {% for r_item in roi_results %}
-    <tr>
-      <td class="centre">{{ r_item.roi_number }}</td>
-      <td class="centre">{{ r_item.name }}</td>
-      <td class="centre">{{ r_item.net_counts }}</td>
-      <td class="centre">{{ r_item.net_counts_err }}</td>
-      <td class="centre">{{ r_item.lc }}</td>
-      <td class="centre">{{ r_item.efficiency }}</td>
-      <td class="centre" title="Rel Error: {{ r_item.efficiency_rel_error }}%">{{ r_item.efficiency_abs_error }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>
-</table>
-
-<h4> ROI Boundaries </h4>
-
-<table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="centre">ROI</th>
-      <th class="centre">GammaLow (keV)</th>
-      <th class="centre">GammaHigh (keV)</th>
-      <th class="centre">BetaLow (keV)</th>
-      <th class="centre">BetaHigh (keV)</th>
-    </tr>
-   {% for rb_item in roi_boundaries %}
-    <tr>
-      <td class="centre">{{ rb_item.roi_number }}</td>
-      <td class="centre">{{ rb_item.gammalow }}</td>
-      <td class="centre">{{ rb_item.gammahigh }}</td>
-      <td class="centre">{{ rb_item.betalow }}</td>
-      <td class="centre">{{ rb_item.betahigh }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>
-</table>
-{% endif %}
-<p></p>
-<div class="rule"></div>
-
-<h2> Timeliness and Data Quality Flags </h2>
-
-<table class="std1">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="centre">Name</th>
-      <th class="centre">Pass/Fail</th>
-      <th class="centre">Value</th>
-      <th class="centre">Test</th>
-    </tr>
-   {% for flag in flags %}
-    <tr>
-      <td class="centre">{{ flag.name}}</td>
-      <td class="centre">{{ flag.result }}</td>
-      <td class="centre">{{ flag.value }}</td>
-      <td class="centre">{{ flag.test }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>
-</table>
 <p></p>
 
 <div class="page-break"></div>
@@ -665,6 +574,26 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
      </tbody>
     </table>
 {% endfor %}
+
+{% if eff_calibration %}
+   <table class="calib">
+    <tbody>
+     <tr>
+       <th>Efficiency: </th>
+     </tr>
+     {% for eq in eff_calibration %}
+       <tr>
+         <th>equation : {{ eq.form }}</th>
+       </tr>
+         {% for c in eq.coeffs %}
+          <tr>
+            <td>{{ c.name }} : {{ c.val }}</td>
+          </tr>
+         {% endfor %}
+     {% endfor %}
+     </tbody>
+    </table>
+{% endif %}
 
 </body>
 </html>
