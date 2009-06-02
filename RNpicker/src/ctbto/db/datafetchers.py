@@ -2359,8 +2359,8 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # get the volume of mesured xenon to compute activities from concentration
         # it is in m3 and in the AUXILIARY_INFO
         aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
-        # we need to a correction coefficient 0.087 according to Matthias
-        corr_volume = aux.get('XE_VOLUME',0) / 0.087
+        # we need a vol in l
+        corr_volume = aux.get('XE_VOLUME',0)/(1000)
        
         # add results in a list which will become a list of dicts
         res = []
@@ -2525,7 +2525,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         calIDs_list.append(cal_id)
         
         # add the list of calib_infos in the bag
-        self._dataBag[u'%s_G_DATA_ALL_CALS'%(prefix)] = calIDs_list
+        self._dataBag[u'%s_G_DATA_ALL_CALS' % (prefix)] = calIDs_list
         
         result.close()
         
