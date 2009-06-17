@@ -46,9 +46,15 @@ def run(a_args):
     header_written = False
     #get complete list of available dates from day2
     all_dates = the_matrix[sorted_keys[0]].keys()
-    all_dates.sort()
+    
+    rows = []
     
     for day in sorted_keys:
+        
+        local_dates = the_matrix[day].keys()
+        
+        all_dates = list( set(all_dates) | set(local_dates) )
+        all_dates.sort()
         
         row = []
         #add row header
@@ -60,20 +66,23 @@ def run(a_args):
             if val is not None:
                 row.append(val)
             else:
-                row.append('X')
+                row.append(' ')
         
         #print "%s : %s\n" % (day, row)
         
-        #add column header
-        if not header_written:
-            header_written = True
-            lis = [' ']
-            lis.extend(all_dates)
-            wri_csv.writerow(lis)
-        
-        wri_csv.writerow(row)
+        rows.append(row)
         
     #print "Matrix %s\n" %(the_matrix)
+    
+    #add column header
+    if not header_written:
+        header_written = True
+        lis = [' ']
+        lis.extend(all_dates)
+        wri_csv.writerow(lis)
+    
+    for row in rows:
+        wri_csv.writerow(row)
                                                 
     return the_matrix
         
