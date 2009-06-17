@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 Created on Jun 17, 2009
 
@@ -178,7 +179,7 @@ def parse_arguments(a_args):
     
     # missing parameters
     if result['dir'] is None:
-        print ("missing --dir option\n")
+        print ("Error: Missing --dir option")
         usage()
         sys.exit(2)
             
