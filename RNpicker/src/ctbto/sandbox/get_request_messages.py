@@ -71,11 +71,11 @@ def main():
     # create an empty shell Conf object
     conf = Conf.get_instance()
     
-    local_dir = '/tmp/n_messages'
+    local_dir = '/tmp/25May_messages'
     # cheat and always ask for 5 MB
     remote_file_size =5 * 1024 * 1024
     
-    fd = get_list_messages_to_copy(conf.get("RemoteAccess","getRequestMessage"), conf.get("RemoteAccess","devlanAccessHost"),"/ops/data/shared/messages/2009/133",local_dir,conf.get("RemoteAccess","devlanAccessUser"))
+    fd = get_list_messages_to_copy(conf.get("RemoteAccess","getRequestMessage"), conf.get("RemoteAccess","devlanAccessHost"),"/ops/data/shared/messages/2009/145",local_dir,conf.get("RemoteAccess","devlanAccessUser"))
     #fd = open('/tmp/req_messages/result.msgs','r')
 
     cpt = 0

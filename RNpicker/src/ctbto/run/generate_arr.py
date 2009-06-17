@@ -17,7 +17,7 @@ import ctbto.common.time_utils
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector, DBDataFetcher
-from ctbto.renderers   import BaseRenderer, SpalaxRenderer, SaunaRenderer
+from ctbto.renderers   import BaseRenderer
 from ctbto.transformer import SAUNAXML2HTMLRenderer, SPALAXXML2HTMLRenderer
 
 NAME        = "generate_arr"
