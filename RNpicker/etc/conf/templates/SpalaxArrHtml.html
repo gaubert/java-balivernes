@@ -571,6 +571,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h2>Processing Specific Parameters and Results:</h2>
 
+{% if decay_analysis_matrix %}
 <h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
 
 <table class="std2">
@@ -596,8 +597,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	{% endfor %}
   </tbody>
 </table>
+{% endif %}
 <p></p>
 
+{% if decay_analysis_matrix %}
 <h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
 
 <table class="std2">
@@ -618,6 +621,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
 	{% endfor %}
 </table>
+{% endif %}
 <p></p>
 
 <div class="page-break"></div> 
