@@ -420,7 +420,7 @@ class SAUNAXML2HTMLRenderer(object):
 class SPALAXXML2HTMLRenderer(object):
     """ Base Class used to transform the SPALAX XML in SAUNA """
     
-    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='ArrHtml.html'):
+    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='SpalaxArrHtml.html'):
         
         self._env         = Environment(loader=FileSystemLoader(TemplateDir))
         
@@ -643,8 +643,52 @@ class SPALAXXML2HTMLRenderer(object):
             self._context['activities_nuclides']     = a_nuclides 
         
             # Add Cov matrixes here
+            # used to respect order of the columns
+            self._context['matrix_row_order'] = ['XE-131M','XE-133M','XE-133','XE-135']
             
-            
+            #first peak fit method
+            covMatrix = "//*[local-name() = 'XeCovarianceMatrixes']/*[local-name() = 'XeCovarianceMatrix' and contains(@method,$method)]"
+            res = root.xpath(covMatrix,method = "Peak Fit Method")
+            matrix_result = {}
+            matrix_col = {'XE_131M':0,'XE_133M':1,'XE_133':2,'XE_135':3}
+            if len(res) > 0:
+                matrix_elem = res[0]
+                for cell in matrix_elem:
+                    key = cell.get('row')
+                    if matrix_result.has_key(key):
+                        d = matrix_result[key]
+                    else:
+                        d = {}
+                        matrix_result[key] = d
+                    
+                    col = cell.get('col').upper()
+                    #get position 
+                    d[matrix_col[col]] = cell.text
+                    
+            self._context['peak_fit_matrix'] = matrix_result 
+   
+            #second Decay Analysis Method
+            covMatrix = "//*[local-name() = 'XeCovarianceMatrixes']/*[local-name() = 'XeCovarianceMatrix' and contains(@method,$method)]"
+            res = root.xpath(covMatrix,method = "Decay Analysis Method")
+            matrix_result = {}
+            matrix_col = {'XE_131M':0,'XE_133M':1,'XE_133':2,'XE_135':3}
+            if len(res) > 0:
+                matrix_elem = res[0]
+                for cell in matrix_elem:
+                    key = cell.get('row')
+                    if matrix_result.has_key(key):
+                        d = matrix_result[key]
+                    else:
+                        d = {}
+                        matrix_result[key] = d
+                    
+                    col = cell.get('col').upper()
+                    #get position 
+                    d[matrix_col[col]] = utils.round_as_string(cell.text,RDIGITS)
+                    
+            self._context['decay_analysis_matrix'] = matrix_result         
+                    
+                        
             # Add Flags
            
             # timeliness flags
