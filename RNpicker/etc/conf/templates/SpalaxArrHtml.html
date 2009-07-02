@@ -267,6 +267,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	   font-size: 14px;
 	   text-align: justify;
 	}
+	
+	td.lbold
+    {
+	   font-size   : 14px;
+	   font-weight : bold;
+	   text-align  : left;
+	}
   }
   
   /* printer style */
@@ -353,13 +360,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {
 	   font-size   : 10pt;
 	   font-weight : bold;
-	   text-align  : centre;
+	   text-align  : justify;
 	}
     
     td.centre 
     {
 	   font-size: 10pt;
-	   text-align: justify;
+	   text-align: center;
+	}
+	
+	td.lbold
+    {
+	   font-size   : 10pt;
+	   font-weight : bold;
+	   text-align  : left;
 	}
 	
 	a
@@ -385,6 +399,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   }
    
 </style>
+
 <h3 style="text-align:center;">IDC Generated Report</h3>
 
 <h1 style="text-align:center;">Automated Radionuclide Report</h1>
@@ -553,11 +568,62 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 <p></p>
+
+<h2>Processing Specific Parameters and Results:</h2>
+
+<h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
+
+<table class="std2">
+  <caption/>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th class="th"></th>
+      <th class="th">XE-131M</th>
+      <th class="th">XE-133M</th>
+      <th class="th">XE-133</th>
+      <th class="th">XE-135</th>
+    </tr>
+	{% for a_key in matrix_row_order %}
+	<tr>
+        <td class="lbold">{{ a_key }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][0] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][1] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][2] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][3] }}</td>
+    </tr>
+	{% endfor %}
+  </tbody>
+</table>
+<p></p>
+
+<h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
+
+<table class="std2">
+    <tr>
+      <th ></th>
+      <th class="th">XE-131M</th>
+      <th class="th">XE-133M</th>
+      <th class="th">XE-133</th>
+      <th class="th">XE-135</th>
+    </tr>
+	{% for a_key in matrix_row_order %}
+	<tr>
+        <td class="lbold">{{ a_key }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][0] }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][1] }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][2] }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][3] }}</td>
+    </tr>
+	{% endfor %}
+</table>
+<p></p>
+
 <div class="page-break"></div> 
 
 <p></p>
 
-<div class="page-break"></div>
 <h2> Calibration Equations </h2>
 
 {% for calibration in calibrations %}

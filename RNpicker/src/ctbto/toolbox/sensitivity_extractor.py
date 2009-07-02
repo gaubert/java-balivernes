@@ -142,8 +142,8 @@ Usage: sensitivity_extractor [options]
        
     print(usage_string)
     
-NAME        = "sens_extractor"
-VERSION     = "1.0"
+NAME        = "sensitivity_extractor"
+VERSION     = "1.1"
 
 def parse_arguments(a_args):
     """
