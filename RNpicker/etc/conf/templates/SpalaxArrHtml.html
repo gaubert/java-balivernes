@@ -74,18 +74,18 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
-	table.std2
+	table.std1
     {
-       width: 100%;
+       width: 80%;
        border: 0;
        text-align: center;
        border-collapse: separate;
        empty-cells: show
     }
-    
-    table.std1
+	
+	table.std2
     {
-       width: 80%;
+       width: 100%;
        border: 0;
        text-align: center;
        border-collapse: separate;
@@ -113,6 +113,15 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   /* screen syle */
   @media screen
   {
+  	table.std3
+    {
+       width: 80%;
+       border: 0;
+       text-align: center;
+       border-collapse: separate;
+       empty-cells: show
+    }
+  	
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
@@ -240,8 +249,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  	  font-size   : 12px; 
  	} 
     
-    
-    
     th
     {
 	   font-size   : 14px;
@@ -279,6 +286,15 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   /* printer style */
   @media print
   {
+  	table.std3
+    {
+       width: 100%;
+       border: 0;
+       text-align: center;
+       border-collapse: separate;
+       empty-cells: show
+    }
+	
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
@@ -286,8 +302,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {
 	   background: white;
 	   font-size: 10pt;
-	   font-family : verdana,arial,sans-serif;
-	   /*font-family:times new roman, serif;*/
+	   /*font-family : verdana,arial,sans-serif;*/
+	   font-family:times new roman, serif;
 	   margin-top: 10pt;
 	   margin-bottom: 10pt;
 	   margin-right: 10pt;
@@ -360,13 +376,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {
 	   font-size   : 10pt;
 	   font-weight : bold;
-	   text-align  : justify;
+	   text-align  : left;
 	}
     
     td.centre 
     {
 	   font-size: 10pt;
-	   text-align: center;
+	   text-align: left;
 	}
 	
 	td.lbold
@@ -389,7 +405,16 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     
 	
 	/* page break */
-	.page-break { display:block; page-break-before:always; }  
+	.page-break 
+	{ 
+	  border-top: 2pt solid #000;
+      width: 90%;
+      height: 3pt;
+      text-align: center;
+	  
+	  display:block; 
+	  page-break-before:always; 
+	}  
 	
 	
 	.preview 
@@ -453,7 +478,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
          <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
          <div onclick="show()" class="hide-button">click to hide</div>
 </div>
-<table class="std1">
+<table class="std3">
   <tbody>
     <tr>
       <td>Sample ID: {{sample_id}}</td>
@@ -537,7 +562,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 <p></p>
-<div class="rule"></div>
+
+<div class="page-break"></div> 
 
 <h2>Sample Activity Results:</h2>
 
@@ -569,9 +595,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </table>
 <p></p>
 
+{% if peak_fit_matrix or decay_analysis_matrix %}
 <h2>Processing Specific Parameters and Results:</h2>
 
-{% if decay_analysis_matrix %}
+{% if peak_fit_matrix %}
 <h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
 
 <table class="std2">
@@ -600,6 +627,36 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 <p></p>
 
+<!-- To remove -->
+{% if peak_fit_matrix %}
+<h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
+
+<table class="std2">
+  <caption/>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th class="th"></th>
+      <th class="th">XE-131M</th>
+      <th class="th">XE-133M</th>
+      <th class="th">XE-133</th>
+      <th class="th">XE-135</th>
+    </tr>
+	{% for a_key in matrix_row_order %}
+	<tr>
+        <td class="lbold">{{ a_key }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][0] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][1] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][2] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][3] }}</td>
+    </tr>
+	{% endfor %}
+  </tbody>
+</table>
+{% endif %}
+<!-- to remove -->
+
 {% if decay_analysis_matrix %}
 <h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
 
@@ -624,9 +681,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 <p></p>
 
-<div class="page-break"></div> 
+<div class="rule"></div>
 
 <p></p>
+{% endif %}
 
 <h2> Calibration Equations </h2>
 
