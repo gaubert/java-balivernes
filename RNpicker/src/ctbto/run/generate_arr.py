@@ -668,7 +668,7 @@ class Runner(object):
                 if fetcher.get('SAMPLE_TYPE') == 'SAUNA':
                     Runner.c_log.info("Create ARR from SAUNA SAMPML data file for %s"%(sid))
            
-                    r = SAUNAXML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'ArrHtml.html')
+                    r = SAUNAXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
     
                     result = r.render(path)
             
@@ -680,7 +680,7 @@ class Runner(object):
                 elif fetcher.get('SAMPLE_TYPE') == 'SPALAX':
                     Runner.c_log.info("Create ARR from SPALAX SAMPML data file for %s"%(sid))
            
-                    r = SPALAXXML2HTMLRenderer('%s/%s'%(get_tests_dir_path(),'templates'),'SpalaxArrHtml.html')
+                    r = SPALAXXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
     
                     result = r.render(path)
             

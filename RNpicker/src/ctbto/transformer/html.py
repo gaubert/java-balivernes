@@ -24,7 +24,7 @@ class XML2HTMLRenderer(object):
 class SAUNAXML2HTMLRenderer(object):
     """ Base Class used to transform SAUNA XML in HTML """
     
-    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='ArrHtml.html'):
+    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='SaunaArrHtml.html'):
         
         self._env         = Environment(loader=FileSystemLoader(TemplateDir))
         
