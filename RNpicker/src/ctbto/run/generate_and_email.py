@@ -745,7 +745,7 @@ class Runner(object):
                 shutil.move(a_tarfile,a_destination_dir)
         except Exception, e: #IGNORE:W0703,W0702
             # hide error in logs because it is a minor error
-            Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(a_origin_dir,a_destination_dir,e))
+            Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(dir_to_delete,a_destination_dir,e))
         finally:
             # clean the dirs
             try:
@@ -753,7 +753,7 @@ class Runner(object):
                 ctbto.common.utils.delete_all_under(dir_to_delete,delete_top_dir=True)
             except Exception, e: #IGNORE:W0703,W0702
                 # hide error in logs because it is a minor error
-                Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
+                Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(dir_to_delete,e))
             
 
     def _clean_group_db(self,a_dir,a_id):
@@ -832,10 +832,10 @@ class Runner(object):
             Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
             Runner.c_log.info("*************************************************************")
                 
-            #emailer.send_email_attached_files(sender,emails,[tarfile_name], '[%s:%s]. %d samples retrieved for %s'%(group,timestamp_id,len(list_to_fetch),printable_day),text_message)
+            emailer.send_email_attached_files(sender,emails,[tarfile_name], '[%s:%s]. %d samples retrieved for %s'%(group,timestamp_id,len(list_to_fetch),printable_day),text_message)
         
         # cleaning the file business
-        #self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
+        self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
                
     
     def _get_now_timestamp(self):

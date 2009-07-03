@@ -627,36 +627,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 <p></p>
 
-<!-- To remove -->
-{% if peak_fit_matrix %}
-<h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
-
-<table class="std2">
-  <caption/>
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="th"></th>
-      <th class="th">XE-131M</th>
-      <th class="th">XE-133M</th>
-      <th class="th">XE-133</th>
-      <th class="th">XE-135</th>
-    </tr>
-	{% for a_key in matrix_row_order %}
-	<tr>
-        <td class="lbold">{{ a_key }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][0] }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][1] }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][2] }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][3] }}</td>
-    </tr>
-	{% endfor %}
-  </tbody>
-</table>
-{% endif %}
-<!-- to remove -->
-
 {% if decay_analysis_matrix %}
 <h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
 
