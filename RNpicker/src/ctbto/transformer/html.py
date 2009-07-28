@@ -607,7 +607,7 @@ class SPALAXXML2HTMLRenderer(object):
                     # get Name, 
                     d['name']      = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                     hl = nuclide.find('{%s}HalfLife'%(XML2HTMLRenderer.c_namespaces['sml']))
-                    d['half_life'] = hl.text if hl != None else "N/A"
+                    d['half_life'] = hl.text if hl != None else UNDEFINED
                     d['conc']      = utils.round_as_string(nuclide.find('{%s}Concentration'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
                     d['conc_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
                     d['conc_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeConcentrationError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
@@ -621,7 +621,7 @@ class SPALAXXML2HTMLRenderer(object):
                     if mdc != "N/A":
                         d['mdc']       = utils.round_as_string(mdc,RDIGITS)
                     else:
-                        d['mdc']       = "N/A"
+                        d['mdc']       = UNDEFINED
                
                     # get numeric val for the moment but can put some text there
                     # removed as asked by Matthias
@@ -631,9 +631,12 @@ class SPALAXXML2HTMLRenderer(object):
                 # in any cases fill Activity results dict
                 d = {}
                 d['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['activity']          = utils.round_as_string(nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['activity_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['activity_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
+                temp_val               = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['activity']          = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val               = nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['activity_abs_err']  = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val               = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['activity_rel_err']  = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 d['lc']                = utils.round_as_string(nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
                 d['ld']                = utils.round_as_string(nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
                 a_nuclides.append(d)
