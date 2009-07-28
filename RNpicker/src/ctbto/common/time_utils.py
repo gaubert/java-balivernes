@@ -64,13 +64,15 @@ def getSecondsInHours(aSec):
 def transformISO8601PeriodInFormattedTime(aPeriod):
     """ get an ISO period seconds such as PT29405s and transform it into DD-HH-MM-SS"""
     
-    # extract seconds value
-
-    res = scanf("PT%dS",aPeriod)
+    # deal with negative values in that case it will start with - and it has to be stripped
+    period = aPeriod.strip('-')
     
-    if len(res) == 0:
+    # extract seconds value
+    res = scanf("PT%dS",period)
+    
+    if res == None or len(res) == 0:
         # Error
-        raise ValueError("Unvalid Period %s. The only acceptable format is PT3212S"%(aPeriod))
+        raise ValueError("Unvalid Period %s. The only acceptable format is PT3212S"%(period))
     else:
         return getSecondsInFormattedTime(res[0])
     
