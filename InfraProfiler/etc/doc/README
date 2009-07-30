@@ -40,48 +40,47 @@ Dimensions and variables definition
 
 netcdf infra-profile-4 {
 dimensions:
-    longitude = 1;
-    latitude =  1;
-// 361 levels in km
-    altitude = 361 ;
-    time = 1 ;
+        time = 1 ;
+        latitude = 1 ;
+        longitude = 1 ;
+        altitude = 361 ;
 variables:
-    float longitude(longitude) ;
-        longitude:units = "degrees_east" ;
-        longitude:long_name = "longitude" ;
-    float latitude(latitude) ;
-        latitude:units = "degrees_north" ;
-        latitude:long_name = "latitude" ;
-    int altitude(altitude) ;
-        altitude:long_name = "altitude" ;
-        altitude:units     = "m" ;
-    int time(time) ;
-        time:units = "hours since 1900-01-01 00:00:0.0" ;
-        time:long_name = "time" ;
-    short t(time, levelist, latitude, longitude) ;
-        t:units = "K" ;
-        t:long_name = "Temperature" ;
-    short u(time, levelist, latitude, longitude) ;
-        u:units = "m s**-1" ;
-        u:long_name = "U velocity" ;
-    short v(time, levelist, latitude, longitude) ;
-        v:units = "m s**-1" ;
-        v:long_name = "V velocity";
-    short lnsp(time, levelist, latitude, longitude) ;
-        lnsp:units = "-" ;
-        lnsp:long_name = "Logarithm of surface pressure" ;
-    short q(time, levelist, latitude, longitude) ;
-        q:units = "kg kg**-1" ;
-        q:long_name = "Specific humidity" ;
-    short z(time, latitude, longitude) ;
-        z:units = "m**2 s**-2" ;
-        z:long_name = "Geopotential" ;
-
+        double time(time) ;
+                time:units = "hours since 0001-01-01 00:00:00.0" ;
+                time:calendar = "gregorian" ;
+                time:long_name = "Time" ;
+        float latitude(latitude) ;
+                latitude:units = "degrees north" ;
+                latitude:long_name = "Latitude" ;
+        float longitude(longitude) ;
+                longitude:units = "degrees east" ;
+                longitude:long_name = "Longitude" ;
+        float altitude(altitude) ;
+                altitude:units = "m" ;
+                altitude:long_name = "Altitude" ;
+        float t(time, altitude, latitude, longitude) ;
+                t:units = "K" ;
+                t:long_name = "Temperature" ;
+        float u(time, altitude, latitude, longitude) ;
+                u:units = "m s**-1" ;
+                u:long_name = "U velocity" ;
+        float v(time, altitude, latitude, longitude) ;
+                v:units = "m s**-1" ;
+                v:long_name = "V velocity" ;
+        float lnsp(time, altitude, latitude, longitude) ;
+                lnsp:units = "-" ;
+                lnsp:long_name = "Logarithm of surface pressure" ;
+        float q(time, altitude, latitude, longitude) ;
+                q:units = "kg kg**-1" ;
+                q:long_name = "Specific Humidity" ;
+        float z(time, latitude, longitude) ;
+                z:units = "m**2 s**-2" ;
+                z:long_name = "Geopotential" ;
 
 // global attributes:
-        :Conventions = "CF-1.4" ;
-        :history = "2009-07-29 14:38:14 GMT by infra-profile-gen-v1.2.2" ;
+                :description = "CTBTO Infrasound wind profiles" ;
+                :history = "Created Thu Jul 30 13:38:38 2009 by infra-profile-generator-v1.2.2" ;
+                :source = "infra-profile-generator-v1.2.2" ;
+                :version = "infrasound profile v1.0-20090801" ;
+                :station = "IS42"
 }
-
-
-
