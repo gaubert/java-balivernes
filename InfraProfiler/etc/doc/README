@@ -1,0 +1,87 @@
+Installation
+------------
+
+For the dependencies go to cd /home/aubert/dev/python/netcdf/c-libs
+
+Compilation
+------------
+
+HDF5:
+./configure --enable-hl --enable-shared --prefix=/home/aubert/dev/python/netcdf/c-libs/binaries/hdf5-1.8.3
+
+NETCDF4:
+export HDF5_DIR=/home/aubert/dev/python/netcdf/c-libs/binaries/hdf5-1.8.3
+./configure --prefix=/home/aubert/dev/python/netcdf/c-libs/binaries/netcdf-4.0.1 --enable-netcdf-4 --with-hdf5=$HDF5_DIR --enable-shared
+
+numpy:
+export HDF5_DIR=/home/aubert/dev/python/netcdf/c-libs/binaries/hdf5-1.8.3
+export NETCDF4_DIR=/home/aubert/dev/python/netcdf/c-libs/binaries/netcdf-4.0.1
+/home/aubert/dev/python/netcdf/netcdf-env/bin/python setup.py install
+
+netCDF4-0.8.1:
+export HDF5_DIR=/home/aubert/dev/python/netcdf/c-libs/binaries/hdf5-1.8.3
+export NETCDF4_DIR=/home/aubert/dev/python/netcdf/c-libs/binaries/netcdf-4.0.1
+cd /home/aubert/dev/python/netcdf/c-libs/netCDF4-0.8.1
+/home/aubert/dev/python/netcdf/netcdf-env/bin/python setup.py install
+
+
+Notes on the netcdf format definition
+-------------------------------------
+
+in the ASCII ECMWF profiles the distance is the distance in degree between the interpolated point (given from ECMWF data) and the station position
+
+dimensions levels, param, time, lat, lon
+levels => 91 for the moment more in the future, 61 in the past
+param  => T,U,V,SP,Q,Z
+where SP and Z only on level 0
+
+Dimensions and variables definition
+-----------------------------------
+
+netcdf infra-profile-4 {
+dimensions:
+    longitude = 1;
+    latitude =  1;
+// 361 levels in km
+    altitude = 361 ;
+    time = 1 ;
+variables:
+    float longitude(longitude) ;
+        longitude:units = "degrees_east" ;
+        longitude:long_name = "longitude" ;
+    float latitude(latitude) ;
+        latitude:units = "degrees_north" ;
+        latitude:long_name = "latitude" ;
+    int altitude(altitude) ;
+        altitude:long_name = "altitude" ;
+        altitude:units     = "m" ;
+    int time(time) ;
+        time:units = "hours since 1900-01-01 00:00:0.0" ;
+        time:long_name = "time" ;
+    short t(time, levelist, latitude, longitude) ;
+        t:units = "K" ;
+        t:long_name = "Temperature" ;
+    short u(time, levelist, latitude, longitude) ;
+        u:units = "m s**-1" ;
+        u:long_name = "U velocity" ;
+    short v(time, levelist, latitude, longitude) ;
+        v:units = "m s**-1" ;
+        v:long_name = "V velocity";
+    short lnsp(time, levelist, latitude, longitude) ;
+        lnsp:units = "-" ;
+        lnsp:long_name = "Logarithm of surface pressure" ;
+    short q(time, levelist, latitude, longitude) ;
+        q:units = "kg kg**-1" ;
+        q:long_name = "Specific humidity" ;
+    short z(time, latitude, longitude) ;
+        z:units = "m**2 s**-2" ;
+        z:long_name = "Geopotential" ;
+
+
+// global attributes:
+        :Conventions = "CF-1.4" ;
+        :history = "2009-07-29 14:38:14 GMT by infra-profile-gen-v1.2.2" ;
+}
+
+
+
