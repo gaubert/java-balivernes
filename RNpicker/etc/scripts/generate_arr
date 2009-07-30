@@ -108,7 +108,7 @@ fi
 # keep args in variables
 ARGS="$@"
 
-cat > /tmp/rnpicker.bootstrap << EOF
+cat > /tmp/rnpicker.bootstrap.$$ << EOF
 import ctbto.run.generate_arr as runner
 runner.run()
 EOF
@@ -117,7 +117,12 @@ echo "INFO - *************************************************************"
 echo ""
 
 #./generate_arr $ARGS
-$PYTHON_BIN /tmp/rnpicker.bootstrap $ARGS
+$PYTHON_BIN /tmp/rnpicker.bootstrap.$$ $ARGS
+res="$?"
+
+rm -f /tmp/rnpicker.bootstrap.$$
+
+exit $res
 
 
 
