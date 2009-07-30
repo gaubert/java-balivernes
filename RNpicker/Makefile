@@ -63,7 +63,7 @@ conf-egg-dist: init
 	echo "distribution stored in $(CONFBUILDDIST)"
 
 clean: clean-build
-	cd $(RNDIST); rm -Rf build; rm -Rf RNPicker.egg-info; rm -Rf ctbto
+	cd $(RNDIST); rm -Rf build; rm -Rf RNPicker.egg-info; rm -Rf ctbto; rm -Rf conf; rm -Rf scripts
 	cd $(CONFDIST); rm -Rf build; rm -Rf conf.egg-info; rm -Rf dist; rm -Rf org
 	
 clean-build:
