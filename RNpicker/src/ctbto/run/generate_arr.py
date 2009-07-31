@@ -657,8 +657,10 @@ class Runner(object):
                 renderer = BaseRenderer.getRenderer(fetcher)
    
                 xmlStr = renderer.asXmlStr(request)
+                
+                station_code = fetcher.get('STATION_CODE')
            
-                path = "%s/samples/sampml-full-%s.xml"%(dir,sid)
+                path = "%s/samples/sampml-full-%s-%s.xml"%(dir,station_code,sid)
    
                 Runner.c_log.info("Save SAMPML data in %s"%(path))
             
@@ -666,14 +668,14 @@ class Runner(object):
                 ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
             
                 #create ARR if possible
-                self._create_arr(fetcher,dir,path,sid)
+                self._create_arr(fetcher, dir, path, sid, station_code)
             
             else:
                 Runner.c_log.info("products are already existing in %s for %s"%(dir,sid)) 
             
             Runner.c_log.info("*************************************************************\n")
 
-    def _create_arr(self,a_fetcher,a_dir,a_path,a_sid):
+    def _create_arr(self,a_fetcher,a_dir,a_path,a_sid, a_station_code):
         """ create the ARR if possible.
             ARRs will be created only for SPHDF and SPHDP
         """
@@ -693,7 +695,7 @@ class Runner(object):
         
                     result = ren.render(a_path)
                     
-                    path = "%s/ARR/ARR-%s.html" % (a_dir, a_sid)
+                    path = "%s/ARR/ARR-%s-%s.html" % (a_dir, a_station_code, a_sid)
                     
                     Runner.c_log.info("save file in %s"%(path))
                     
@@ -706,7 +708,7 @@ class Runner(object):
             
                     result = ren.render(a_path)
                     
-                    path = "%s/ARR/ARR-%s.html" % (a_dir, a_sid)
+                    path = "%s/ARR/ARR-%s-%s.html" % (a_dir, a_station_code, a_sid)
                     
                     Runner.c_log.info("save file in %s" % (path))
                             
