@@ -25,7 +25,7 @@ import ctbto.run.generate_arr as arr_generator
 from ctbto.email import DataEmailer
 
 NAME        = "generate_and_email"
-VERSION     = "0.5"
+VERSION     = "0.6"
 DATE_FORMAT = "%Y-%m-%d"
 
 def usage():
@@ -238,7 +238,7 @@ def parse_arguments(a_args):
 #SQL_GETSAMPLEIDS                   = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (collect_stop between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and ROWNUM <= %s order by SAMPLE_ID"
 #transmit DTG should be the time reference we can only send in realtime what we receive
 # also select only SPHDF 
-SQL_GETSAMPLEIDS                   = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (TRANSMIT_DTG between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and data_type not in ('Q','D','G') and ROWNUM <= %s order by SAMPLE_ID"
+SQL_GETSAMPLEIDS                   = "select SAMPLE_ID from GARDS_SAMPLE_DATA where station_id in (%s) and (TRANSMIT_DTG between to_date('%s','YYYY-MM-DD HH24:MI:SS') and to_date('%s','YYYY-MM-DD HH24:MI:SS')) and  spectral_qualifier='%s' and data_type not in ('Q','D','G','C') and ROWNUM <= %s order by SAMPLE_ID"
 
 # original
 #SQL_GETALLSAUNASTATIONCODES        = "select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where type='SAUNA' or type='ARIX-4'"

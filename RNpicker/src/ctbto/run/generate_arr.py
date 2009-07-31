@@ -665,35 +665,57 @@ class Runner(object):
                 # pretty print and save in file
                 ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
             
-                if fetcher.get('SAMPLE_TYPE') == 'SAUNA':
-                    Runner.c_log.info("Create ARR from SAUNA SAMPML data file for %s"%(sid))
-           
-                    r = SAUNAXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
-    
-                    result = r.render(path)
-            
-                    path = "%s/ARR/ARR-%s.html"%(dir,sid)
-            
-                    Runner.c_log.info("save file in %s"%(path))
-            
-                    ctbto.common.utils.printInFile(result,path)
-                elif fetcher.get('SAMPLE_TYPE') == 'SPALAX':
-                    Runner.c_log.info("Create ARR from SPALAX SAMPML data file for %s"%(sid))
-           
-                    r = SPALAXXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
-    
-                    result = r.render(path)
-            
-                    path = "%s/ARR/ARR-%s.html"%(dir,sid)
-            
-                    Runner.c_log.info("save file in %s"%(path))
-                    
-                    ctbto.common.utils.printInFile(result,path)
+                #create ARR if possible
+                self._create_arr(fetcher,dir,path,sid)
             
             else:
                 Runner.c_log.info("products are already existing in %s for %s"%(dir,sid)) 
             
             Runner.c_log.info("*************************************************************\n")
+
+    def _create_arr(self,a_fetcher,a_dir,a_path,a_sid):
+        """ create the ARR if possible.
+            ARRs will be created only for SPHDF and SPHDP
+        """
+        current = a_fetcher.get('CURRENT_CURR')
+        
+        if current != None:
+            splitted = current.split('_')
+        
+            measurement_type = splitted[0]
+            
+            # generate arr only for SPHD (FULL and PREL) normally
+            if measurement_type == 'SPHD':
+                if a_fetcher.get('SAMPLE_TYPE') == 'SAUNA':
+                    Runner.c_log.info("Create ARR from SAUNA SAMPML data file for %s" % (a_sid))
+               
+                    ren = SAUNAXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
+        
+                    result = ren.render(a_path)
+                    
+                    path = "%s/ARR/ARR-%s.html" % (a_dir, a_sid)
+                    
+                    Runner.c_log.info("save file in %s"%(path))
+                    
+                    ctbto.common.utils.printInFile(result, path)
+                    
+                elif a_fetcher.get('SAMPLE_TYPE') == 'SPALAX':
+                    Runner.c_log.info("Create ARR from SPALAX SAMPML data file for %s" % (a_sid))
+                   
+                    ren = SPALAXXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
+            
+                    result = ren.render(a_path)
+                    
+                    path = "%s/ARR/ARR-%s.html" % (a_dir, a_sid)
+                    
+                    Runner.c_log.info("save file in %s" % (path))
+                            
+                    ctbto.common.utils.printInFile(result, path)
+            else:
+                Runner.c_log.info("Cannot create a ARR for a sample with a type %s" % (measurement_type))
+        else:
+            Runner.c_log.error("Sample %s hasn't got any CURRENT_CURR in its fetcher"% (a_sid))
+        
 
 def run_automatic_tests():
     """ run the automatic test suite """
