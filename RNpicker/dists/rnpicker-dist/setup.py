@@ -2,8 +2,9 @@ import os
 #from setuptools import setup, find_packages
 from distutils.core import setup
 
-# new version 1.2.3 released 290709
-version = '1.2.3'
+# new version 1.2.4 released 310709
+# add zip support for the sent archive files
+version = '1.2.4'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 setup(name='RNPicker',

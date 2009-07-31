@@ -341,6 +341,8 @@ class DBDataFetcher(object):
             return (("QC_%s"%(aSampleID)).strip(),'QC')
         elif aDataType == 'D':
             return (("DETBK_%s"%(aSampleID)).strip(),'DETBK')
+        elif aDataType == 'C':
+            return (("CALBK_%s"%(aSampleID)).strip(),'CALBK')
         elif aDataType == 'G' and aSpectralQualifier == 'FULL':
             return (("GASBK_%s"%(aSampleID)).strip(),'GASBK')
         elif aDataType == 'B' and aSpectralQualifier == 'FULL':
