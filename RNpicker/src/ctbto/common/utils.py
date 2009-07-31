@@ -182,6 +182,20 @@ def ftimer(func, args, kwargs, result = [], number=1, timer=time.time): #IGNORE:
             gc.enable()
         
     return t1 - t0
+
+def dirwalk(dir):
+    """
+     Walk a directory tree, using a generator.
+     This implementation returns only the files in all the subdirectories.
+     Beware, this is a generator.
+    """
+    for f in os.listdir(dir):
+        fullpath = os.path.join(dir,f)
+        if os.path.isdir(fullpath) and not os.path.islink(fullpath):
+            for x in dirwalk(fullpath):  # recurse into subdir
+                yield x
+        else:
+            yield fullpath
       
 
 

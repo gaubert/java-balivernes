@@ -622,8 +622,26 @@ def email_parser():
             if part.get_content_type() == 'text/plain':
                 print("To Parser %s\n"%(part.get_payload()))
 
+def dirwalk(dir):
+    "walk a directory tree, using a generator"
+    for f in os.listdir(dir):
+        fullpath = os.path.join(dir,f)
+        if os.path.isdir(fullpath) and not os.path.islink(fullpath):
+            for x in dirwalk(fullpath):  # recurse into subdir
+                yield x
+        else:
+            yield fullpath
+
+
 
 if __name__ == '__main__':
     
+   import zipfile
+   zip_name = "/tmp/test.zip"
+   z = zipfile.ZipFile(zip_name,"w")
+            
+   for f_name in ctbto.common.utils.dirwalk('/tmp/t-zip'):
+     z.write(f_name, arcname=os.path.basename(f_name))
+     
+   z.close()
    
-   test_reg_expr()
