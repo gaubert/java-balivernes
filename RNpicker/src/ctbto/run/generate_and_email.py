@@ -7,6 +7,7 @@
 import getopt, sys
 import os
 import tarfile
+import zipfile
 import pickle
 import datetime
 import logging
@@ -765,9 +766,43 @@ class Runner(object):
         
         if os.path.exists(path):
             os.remove(path)
+            
+    def _create_archive(self,a_archive_filename,a_dir_data):
+        """ create the archive that will be sent to the users """
+        
+        arch_type = self._conf.get('AutomaticEmailingInformation','archiveType','tar')
+        
+        arch_name = None
+        
+        Runner.c_log.info("*************************************************************")
+        
+        if arch_type == 'zip':
+            Runner.c_log.info("Create a zip archive file")       
+            arch_name = "%s.zip"%(a_archive_filename)
+            z = zipfile.ZipFile(arch_name,"w",zipfile.ZIP_DEFLATED)
+            for f_name in ctbto.common.utils.dirwalk(a_dir_data):
+                z.write(f_name, arcname=os.path.basename(f_name))
+            z.close()
+        elif arch_type == 'tar' or arch_type == 'tar.gz':
+            Runner.c_log.info("Create a tar.gz archive file")
+            arch_name = "%s.tar.gz"%(a_archive_filename)
+            t = tarfile.open(name = arch_name, mode = 'w:gz')
+            t.add(a_dir_data,arcname=os.path.basename(a_dir_data))
+            t.close()
+        else:
+            Runner.c_log.info("Unknown archive type %s. Create a tar.gz archive file."%(arch_type))
+            arch_name = "%s.tar.gz"%(a_archive_filename)
+            t = tarfile.open(name = arch_name, mode = 'w:gz')
+            t.add(a_dir_data,arcname=os.path.basename(a_dir_data))
+            t.close()
+            
+        Runner.c_log.info("*************************************************************\n")
+            
+        return arch_name
+        
     
     def _send_products_for_each_day(self,day,list_to_fetch,tarfile_name_prefix,dir_to_send,id,dir_files_db,timestamp_id):
-        
+        """ send the created products to the users """
         
         # keep only the date part
         printable_day = day.split('T')[0]
@@ -793,10 +828,6 @@ class Runner(object):
         
         arr_generator.run_with_args(args)
         
-        Runner.c_log.info("*************************************************************")
-        Runner.c_log.info("Create Tar the file")
-        Runner.c_log.info("*************************************************************\n")
-        
         # directory containing the data
         # restrict to samples
         if self._conf.getboolean('Products','withARR',False):
@@ -804,11 +835,8 @@ class Runner(object):
         else:
             dir_data = "%s/samples"%(dir_to_send)
         
-        tarfile_name = "%s-%s.tar.gz"%(tarfile_name_prefix,printable_day)
-        
-        t = tarfile.open(name = tarfile_name, mode = 'w:gz')
-        t.add(dir_data,arcname=os.path.basename(dir_data))
-        t.close()
+        #create archive and return complete filename (full path and extension: .zip or .tar.gz)
+        archfile_name = self._create_archive("%s-%s"%(tarfile_name_prefix,printable_day), dir_data)
             
         groups = [id]
         
@@ -820,7 +848,7 @@ class Runner(object):
         sender  = self._conf.get('AutomaticEmailingInformation','sender',None)
             
         # the text message that will apear in the email
-        text_message = 'The following %d samples from day %s are in the attached tar file %s\nList of samples : %s'%(len(list_to_fetch),printable_day,tarfile_name,list_to_fetch)
+        text_message = 'The following %d samples from day %s are in the attached tar file %s\nList of samples : %s'%(len(list_to_fetch),printable_day,archfile_name,list_to_fetch)
         
         for group in groups:
             
@@ -832,10 +860,10 @@ class Runner(object):
             Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
             Runner.c_log.info("*************************************************************")
                 
-            emailer.send_email_attached_files(sender,emails,[tarfile_name], '[%s:%s]. %d samples retrieved for %s'%(group,timestamp_id,len(list_to_fetch),printable_day),text_message)
+            emailer.send_email_attached_files(sender,emails,[archfile_name], '[%s:%s]. %d samples retrieved for %s'%(group,timestamp_id,len(list_to_fetch),printable_day),text_message)
         
         # cleaning the file business
-        self._move_sent_tarfile_to_files_db(tarfile_name,'%s'%(dir_files_db),dir_to_send)
+        self._move_sent_tarfile_to_files_db(archfile_name,'%s'%(dir_files_db),dir_to_send)
                
     
     def _get_now_timestamp(self):
