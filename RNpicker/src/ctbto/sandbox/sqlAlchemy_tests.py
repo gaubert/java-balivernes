@@ -98,12 +98,49 @@ def test_with_metadata():
     
 def test_with_metadata_and_select():
     
+    engine = create_engine('oracle://centre:data@idcdev', echo=False)
+
+    conn = engine.connect()
+
+    print "Connected to test database"
+
+    # create MetaData 
+    meta = MetaData()
+    
+    # bind to an engine
+    meta.bind = engine
+
+    the_schema = 'sel3'
+    
+    origin   = Table('ORIGIN', meta, schema= the_schema, autoload=True)
+    assoc    = Table('ASSOC', meta, schema= the_schema, autoload=True)
+    origerr  = Table('ORIGERR', meta, schema= the_schema, autoload=True)
+    
+    the_printed_vals = [origin.c.orid, origin.c.time, origin.c.commid, origin.c.depth, origin.c.ml, origin.c.ms, origin.c.mb]
+    the_wheres       = and_()
+    the_wheres.append(origin.c.orid == 4874580)
+    the_wheres.append(origin.c.orid == assoc.c.orid)
+    
+    sel = select(the_printed_vals).where(the_wheres).distinct()
+    
+    print("executed request: \n[\n%s\n]\n"%(sel))
+    
+    result = conn.execute(sel)
+    
+    row = result.fetchone()
+    
+    result.close()
+    
+    print("orid = %s"% (row.orid) )
+    
+    
+    
 
 
 def main():
     print "Hello %d, string = %s"%(1,"my String")
 
-    test_with_metadata()
+    test_with_metadata_and_select()
 
 
 
