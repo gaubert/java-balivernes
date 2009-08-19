@@ -154,7 +154,35 @@ class Resource(object):
             if val is None:
                 val = self._getFromConf()
                 if (val is None) and aRaiseException:
-                    raise ResourceError("Cannot find any ressource having the commandline argument %s, nor the Env Variable %s, nor the Conf Group:[%s] and Property=%s\n"%(self._cliArg,self._envVar,self._confGroup,self._confProperty))
+                    
+                    the_str = "Cannot find "
+                    add_nor = 0
+                    
+                    if self._cliArg is not None:
+                        the_str += "commandline argument %s" % (self._cliArg)
+                        add_nor += 1
+                    
+                    if self._envVar is not None:
+                        
+                        if add_nor > 0:
+                            the_str += ", nor "
+                    
+                        the_str += "the Env Variable %s" % (self._envVar)
+                        add_nor += 1
+                    
+                    if self._confGroup is not None:
+                        if add_nor > 0:
+                            the_str += ", nor "
+                        
+                        the_str += "the Conf Group:[%s] and Property=%s" % (self._confGroup, self._confProperty)
+                        add_nor += 1
+                        
+                    if add_nor == 0:
+                        the_str += " any defined commandline argument, nor any env variable or Conf group and properties. They are all None, fatal error"
+                    else:
+                        the_str += ". One of them should be defined"
+                    
+                    raise ResourceError(the_str)
     
         # we do have a val
         return val

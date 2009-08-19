@@ -223,15 +223,15 @@ class RemoteFSDataSource(BaseRemoteDataSource):
     c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
     c_log.setLevel(logging.DEBUG)
     
-    def __init__(self, aDataPath,aID,aOffset,aSize,aRemoteHostname=None):
+    def __init__(self, aDataPath, aID, aOffset, aSize, aRemoteHostname=None, aRemoteScript=None,aRemoteUser=None):
         
         super(RemoteFSDataSource,self).__init__(aDataPath,aID,aOffset,aSize)
         
-        self._remoteScript      = self._conf.get("RemoteAccess","prodAccessScript")
+        self._remoteScript      = self._conf.get("RemoteAccess","prodAccessScript") if aRemoteScript == None else aRemoteScript
         
         self._remoteHostname    = (self._conf.get("RemoteAccess","prodAccessHost") if aRemoteHostname == None else aRemoteHostname)
         
-        self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser",self._getCurrentUser())
+        self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser",self._getCurrentUser()) if aRemoteUser == None else aRemoteUser
         
         self._getRemoteFile()
     
@@ -265,6 +265,8 @@ class RemoteFSDataSource(BaseRemoteDataSource):
             res   = []
         
             while tries < 4:
+       
+                #print("Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
        
                 func = subprocess.call
             
