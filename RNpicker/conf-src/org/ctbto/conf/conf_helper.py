@@ -370,7 +370,7 @@ class Conf(object):
                     else:
                         dummy = self._sections[g][self.optionxform(o)]
                 except KeyError, ke: #IGNORE:W0612
-                    raise SubstitutionError(lineno,location,"Property %s[%s] doesn't exist in this configuration file \n"%(g,o))
+                    raise SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n"%(g,o))
             
             toparse = toparse.replace(var,dummy)
             
