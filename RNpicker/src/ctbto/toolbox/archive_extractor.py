@@ -20,6 +20,8 @@ SQL_GET_FILEPRODUCT_PER_CHANID    = "select * from IDCX.FILEPRODUCT where chan l
 
 SQL_GET_FPDESCRIPTION_CONTENT    = "select * from IDCX.FPDESCRIPTION"
 
+SQL_GET_GARDS_STATIONS    = "select * from rmsman.GARDS_STATIONS"
+
 
 class RNArchiveExctractor(object):
     """
@@ -50,6 +52,7 @@ class RNArchiveExctractor(object):
         
         input_gards_sample_data   = sqlalchemy.Table('GARDS_SAMPLE_DATA',  input_meta, schema='RMSAUTO', autoload=True)
         input_file_product        = sqlalchemy.Table('FILEPRODUCT',  input_meta, schema='IDCX', autoload=True)
+        input_gards_stations      = sqlalchemy.Table('GARDS_STATIONS',  input_meta, schema='RMSMAN', autoload=True)
         input_fp_description      = sqlalchemy.Table('FPDESCRIPTION',  input_meta, schema='IDCX', autoload=True)
         
         #print("gards_sample_data.cols = %s" % (gards_sample_data1.columns) )
@@ -61,6 +64,7 @@ class RNArchiveExctractor(object):
         rows = result.fetchall()
     
         gards_sample_result   = []
+        gards_stations_result  = []
         file_product_result   = []
         fp_description_result = []
     
@@ -78,6 +82,18 @@ class RNArchiveExctractor(object):
         else:
             if cpt == 1:
                 print "no rows in results for GARDS_SAMPLE_DATA_REQ\n"
+                
+        print("Get rmsman.gards_stations info \n")
+        
+        result = self._input_conn.execute(SQL_GET_GARDS_STATIONS)
+        for r in result:
+            #first elem is chan, second is typeid
+            d = [0, {}]
+            for col in input_gards_stations.columns:
+                if col.name == "typeid":
+                    d[0] = r[col]
+                d[1][col] = r[col]
+            gards_stations_result.append(d)
         
         print("Get file product info \n")
         
@@ -128,6 +144,7 @@ class RNArchiveExctractor(object):
         # autoload tables
         sqlalchemy.Table('GARDS_SAMPLE_DATA',  output_meta, schema='RMSAUTO', autoload=True)
         fileproduct         = sqlalchemy.Table('FILEPRODUCT', output_meta, schema='IDCX', autoload=True)
+        sqlalchemy.Table('GARDS_STATIONS',  output_meta, schema='RMSMAN', autoload=True)
         sqlalchemy.Table('FPDESCRIPTION',  output_meta, schema= 'IDCX', autoload=True)
         
         #then bind it to the output engine to create delete and populate tables
@@ -149,9 +166,10 @@ class RNArchiveExctractor(object):
         
         output_meta.create_all()
         
-        output_gards_sample_data    = sqlalchemy.Table('GARDS_SAMPLE_DATA', output_meta,  schema='RMSAUTO', autoload=True)
-        output_file_product         = sqlalchemy.Table('FILEPRODUCT',      output_meta, schema='IDCX',    autoload=True)
-        output_fpdescription        = sqlalchemy.Table('FPDESCRIPTION',    output_meta, schema= 'IDCX', autoload=True)
+        output_gards_sample_data    = sqlalchemy.Table('GARDS_SAMPLE_DATA', output_meta,  schema= 'RMSAUTO', autoload=True)
+        output_file_product         = sqlalchemy.Table('FILEPRODUCT',       output_meta,  schema= 'IDCX',    autoload=True)
+        output_fpdescription        = sqlalchemy.Table('FPDESCRIPTION',     output_meta,  schema= 'IDCX',    autoload=True)
+        output_gards_stations       = sqlalchemy.Table('GARDS_STATIONS',    output_meta,  schema= 'RMSMAN', autoload=True)
         
         print("Import GARDS_SAMPLE_DATA if not already there")
         
@@ -162,6 +180,17 @@ class RNArchiveExctractor(object):
             
             if len(rows) == 0:
                 self._output_conn.execute(output_gards_sample_data.insert().values(elem[1]))
+                
+        print("Import GARDS_STATIONS if not already there")
+        
+        for elem in gards_stations_result:
+            result = self._output_conn.execute(output_gards_stations.select(output_gards_stations.c.station_id == elem[0]))
+            
+            rows = result.fetchall()
+            
+            if len(rows) == 0:
+                self._output_conn.execute(output_gards_stations.insert().values(elem[1]))
+        
         
         print("Import FP_DESCRIPTION if not already there")
         
@@ -245,7 +274,7 @@ def main():
     
     # begin and end date
     a_begin_date = '2007-01-01'
-    a_end_date   = '2007-01-31'
+    a_end_date   = '2007-01-05'
     
     dest_dir = "/tmp/data"
     
@@ -254,7 +283,7 @@ def main():
     archive_db = 'oracle://centre:data@moorea.ctbto.org'
     idcdev_db  = 'oracle://centre:data@idcdev.ctbto.org'
                                                                                                           
-    rn_extractor = RNArchiveExctractor(a_input_url=archive_db, a_output_url='oracle://system:oracle@127.0.0.1', a_destination_dir = dest_dir, a_remote_hostname = remote_host, a_remote_script= remote_script, a_remote_user = remote_user)
+    rn_extractor = RNArchiveExctractor(a_input_url=archive_db, a_output_url='oracle://system:oracle@172.27.71.153/orcl', a_destination_dir = dest_dir, a_remote_hostname = remote_host, a_remote_script= remote_script, a_remote_user = remote_user)
     
     rn_extractor.copy_from_rn_archive_database(a_begin_date, a_end_date, a_has_to_drop_tables = False)
     
