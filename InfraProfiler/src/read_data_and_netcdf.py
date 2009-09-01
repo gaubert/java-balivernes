@@ -11,69 +11,69 @@ import numpy
 
 def call_g2s():
 
-   libg2s = cdll.LoadLibrary("/home/smd/aubert/public/infrasound/g2s_profile_generator/lib/libg2sclient.so")
-
-   print("libg2s = %s\n" % (libg2s) )
-
-   # call the g2sclient
-   g2sclient_pt = libg2s.g2sclient_pt
-
-   err       = -1
-   pt_err    = byref(c_int(err))
-
-   nb_points    = 2
-   pt_nb_points = byref(c_int(nb_points))
-
-   # Prepare type double * nb of lat points
-   lat_arr = c_double * nb_points
-   lon_arr = c_double * nb_points
-
-   # allocate and add values (lat=10 and lon=10)
-   lat_points = lat_arr(10,45)
-   lon_points = lon_arr(10,-45)
-
-   nz = 401 
-   pt_nz = byref(c_int(401))
-   dz = 0.5
-   pt_dz = byref(c_double(0.5))
-   #command     = 'extract'
-   # need to pad with space chars the command string
-   command     = string.ljust('extract',128)
-   pt_command  = c_char_p(command)
-
-   #filename    = '/home/smd/aubert/public/infrasound/G2SGCSx2009071518_HWM07.bin'
-   filename    = string.ljust('./G2SGCSx2009071518_HWM07.bin',128)
-   pt_filename = c_char_p(filename)
-   
-   # add datetime
-   the_date = '2009071518'
-   dt = datetime.datetime.strptime(the_date, '%Y%m%d%H')
-
-   # create the 3 array types
-   cz_t = c_double * nz * nb_points
-   uz_t = c_double * nz * nb_points
-   vz_t = c_double * nz * nb_points
-
-   cz = cz_t()
-   uz = uz_t()
-   vz = vz_t()
-
-   print("Calling g2sclient_pt")
-   g2sclient_pt(pt_err,lat_points, lon_points, pt_nb_points, pt_filename, pt_command, pt_nz, pt_dz, cz, uz, vz)
-   print("After to call g2sclient_pt")
-   print("cz = %s" %(cz) )
-   print("len(cz) = %s" %(len(cz)) )
-
-   #if pt_err:
-   #   return pt_err
-
-   #for pt in range(nb_points):
-   #   for lev in range(nz):
-   #      print("pt_ind=%s,lev_ind=%s,celerity=%s,uwind=%s,vwind=%s\n" %(pt, lev, cz[pt][lev], uz[pt][lev], vz[pt][lev]))
-
-   err = create_netcdf(lat_points, lon_points, nz, cz, uz, vz, dt, 'dummy_loc')
-
-   return err
+    libg2s = cdll.LoadLibrary("/home/smd/aubert/public/infrasound/g2s_profile_generator/lib/libg2sclient.so")
+    
+    print("libg2s = %s\n" % (libg2s) )
+    
+    # call the g2sclient
+    g2sclient_pt = libg2s.g2sclient_pt
+    
+    err = -1
+    pt_err = byref(c_int(err))
+    
+    nb_points = 2
+    pt_nb_points = byref(c_int(nb_points))
+    
+    # Prepare type double * nb of lat points
+    lat_arr = c_double * nb_points
+    lon_arr = c_double * nb_points
+    
+    # allocate and add values (lat=10 and lon=10)
+    lat_points = lat_arr(10,45)
+    lon_points = lon_arr(10,-45)
+    
+    nz = 401 
+    pt_nz = byref(c_int(401))
+    dz = 0.5
+    pt_dz = byref(c_double(0.5))
+    #command  = 'extract'
+    # need to pad with space chars the command string
+    command  = string.ljust('extract',128)
+    pt_command  = c_char_p(command)
+    
+    #filename = '/home/smd/aubert/public/infrasound/G2SGCSx2009071518_HWM07.bin'
+    filename = string.ljust('./G2SGCSx2009071518_HWM07.bin',128)
+    pt_filename = c_char_p(filename)
+    
+    # add datetime
+    the_date = '2009071518'
+    dt = datetime.datetime.strptime(the_date, '%Y%m%d%H')
+    
+    # create the 3 array types
+    cz_t = c_double * nz * nb_points
+    uz_t = c_double * nz * nb_points
+    vz_t = c_double * nz * nb_points
+    
+    cz = cz_t()
+    uz = uz_t()
+    vz = vz_t()
+    
+    print("Calling g2sclient_pt")
+    g2sclient_pt(pt_err,lat_points, lon_points, pt_nb_points, pt_filename, pt_command, pt_nz, pt_dz, cz, uz, vz)
+    print("After to call g2sclient_pt")
+    print("cz = %s" %(cz) )
+    print("len(cz) = %s" %(len(cz)) )
+    
+    #if pt_err:
+    #return pt_err
+    
+    #for pt in range(nb_points):
+    #for lev in range(nz):
+    #print("pt_ind=%s,lev_ind=%s,celerity=%s,uwind=%s,vwind=%s\n" %(pt, lev, cz[pt][lev], uz[pt][lev], vz[pt][lev]))
+    
+    err = create_netcdf(lat_points, lon_points, nz, cz, uz, vz, dt, 'dummy_loc')
+    
+    return err
 
 def create_netcdf(a_lat_points,a_lon_points, a_nb_levels, a_celerity_arr, a_u_arr, a_v_arr, a_time,a_loc_name):
    """

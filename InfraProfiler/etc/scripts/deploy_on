@@ -1,3 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
-scp /home/aubert/dev/src-reps/java-balivernes/InfraProfiler/src/*.py aubert@dls013:/home/smd/aubert/public/infrasound
+host=dls013
+srcdir=/home/aubert/dev/src-reps/java-balivernes/InfraProfiler/src/
+confdir=/home/aubert/dev/src-reps/java-balivernes/InfraProfiler/conf
+confdestdir=/home/smd/aubert/public/infrasound/conf
+destdir=/home/smd/aubert/public/infrasound
+scriptdir=/home/aubert/dev/src-reps/java-balivernes/InfraProfiler/scripts
+scriptdestdir=/home/smd/aubert/public/infrasound/scripts
+
+echo "copy all python files within $srcdir to $host:$destdir"
+
+scp $srcdir/*.py aubert@$host:$destdir
+scp $confdir/*.config aubert@$host:$confdestdir
+scp $scriptdir/* aubert@$host:$scriptdestdir
+
+echo "copy done"
