@@ -61,7 +61,7 @@ EOF
 cat $tempfile | ssh $6@$1 perl > $5
 res="$?"
 
-#rm -f $tempfile
+rm -f $tempfile
 
 if [ $res != 0 ];
 then

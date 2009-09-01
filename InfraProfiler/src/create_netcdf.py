@@ -1,10 +1,11 @@
+#!/home/smd/aubert/public/infrasound/infrasound_profile_runtime/bin/python
 
 from netCDF4 import Dataset
 import time
 import numpy 
 
 #create file
-dataset = rootgrp = Dataset('/tmp/test.nc', 'w', format='NETCDF4')
+dataset = rootgrp = Dataset('test.nc', 'w', format='NETCDF4')
 
 #create dimension
 dataset.createDimension('longitude', 1)

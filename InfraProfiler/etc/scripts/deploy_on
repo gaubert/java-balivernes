@@ -1,0 +1,3 @@
+#!/bin/sh
+
+scp /home/aubert/dev/src-reps/java-balivernes/InfraProfiler/src/*.py aubert@dls013:/home/smd/aubert/public/infrasound
