@@ -1,12 +1,15 @@
 #!/bin/bash
 
 host=dls013
+
 srcdir=/home/aubert/dev/src-reps/java-balivernes/InfraProfiler/src/
+destdir=/home/smd/aubert/public/infrasound/profile-test-env
+
 confdir=/home/aubert/dev/src-reps/java-balivernes/InfraProfiler/conf
-confdestdir=/home/smd/aubert/public/infrasound/conf
-destdir=/home/smd/aubert/public/infrasound
+confdestdir=$destdir/conf
+
 scriptdir=/home/aubert/dev/src-reps/java-balivernes/InfraProfiler/scripts
-scriptdestdir=/home/smd/aubert/public/infrasound/scripts
+scriptdestdir=$destdir/scripts
 
 echo "copy all python files within $srcdir to $host:$destdir"
 

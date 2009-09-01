@@ -9,7 +9,7 @@ import datetime
 import fnmatch
 import re
 import cStringIO
-from   subprocess import Popen, PIPE, STDOUT
+from   subprocess import Popen, PIPE, STDOUT, call
 
 from org.ctbto.conf import Conf
 
@@ -137,6 +137,17 @@ def load_configuration(a_args):
         return Conf.get_instance()
     else:
         raise ConfAccessError('The conf dir %s set with the env variable INFRAPROFILER_CONF_DIR is not a dir' % (dir))
+
+def makedirs(a_path):
+    """ my own version of makedir """
+    
+    if os.path.isdir(a_path):
+        # it already exists so return
+        return
+    elif os.path.isfile(a_path):
+        raise OSError("a file with the same name as the desired dir, '%s', already exists."%(aPath))
+
+    os.makedirs(a_path)
 
 def get_files_from(a_dir, a_file_list):
     """
@@ -303,9 +314,56 @@ def get_noaa_indices(a_ecmwf_file_name):
         
         print("All = %s,%s,%s\n" %(f107, f107a, ap))
         return (f107, f107a, ap)
- 
 
-            
+def run_g2s(a_filename, a_f107, a_f107a, a_ap):
+    """
+    $g2smodel_dir/$g2smodel -v -d $output_dir -i $F107 $F107a $Ap $ECMWF_ops/$ENfilename >& $logdir/$g2s_logfile
+    """
+    
+    conf = Conf.get_instance()
+    
+    #get info from conf          
+    output_dir = conf.get('G2S','gs2_out_dir')
+    log_dir    = conf.get('G2S','g2s_log_dir')
+    the_dir    = conf.get('G2S', 'dir')
+    exe        = conf.get('G2S', 'exe')
+    
+    log_file = '%s/g2s_%s.log' % (log_dir,os.path.basename(a_filename))
+    
+    print("log_dir = %s\n" % (log_dir))
+    print("output_dir = %s\n" % (output_dir) )
+    
+    # makedirs
+    makedirs(output_dir)
+    makedirs(log_dir)
+
+    # substitute command line
+    exe = re.sub(r'\${log_file}', log_file, exe)
+    exe = re.sub(r'\${output_dir}', output_dir, exe)
+    
+    # substitue params
+    exe = re.sub(r'\${f107}', a_f107, exe)
+    exe = re.sub(r'\${f107a}', a_f107a ,exe)
+    exe = re.sub(r'\${ap}', a_ap, exe)
+    # substitute ecmwf file
+    exe = re.sub(r'\${ecmwf_file}', a_filename ,exe)
+    
+    command = '%s/%s' % (the_dir, exe)
+    
+    print('will run [%s]\n' % (command) )
+    
+    # call the command
+    retcode = call(command, shell=True)
+    
+    print("retcode %s\n" %(retcode) )
+    
+    if retcode != 0:
+        raise Exception("Cannot run g2s for %s. Check error in %s"%(a_filename, log_file))
+    
+    # locate path to the bin file
+    bin_file_path = ""
+    
+    return bin_file_path        
 
 if __name__ == "__main__":
     
@@ -317,15 +375,21 @@ if __name__ == "__main__":
     
     print("Ecmwf data paths %s\n" %(ecmwf_data_paths))
     
-    f107  = None
-    f107a = None
-    ap    = None
-        
+    f107  = ""
+    f107a = ""
+    ap    = ""
+
     
+
     for path in ecmwf_data_paths:
         #(f107, f107a, ap) = get_noaa_indices(path)
-        result = get_noaa_indices(path)
-        print('result = %s\n' % (result))
+        (f107, f107a, ap) = get_noaa_indices(path)
+        
+        bin_file_path = run_g2s(path, f107, f107a, ap)
+        
+        
+        
+
         
         
     
