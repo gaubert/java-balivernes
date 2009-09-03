@@ -64,6 +64,8 @@ def call_g2s():
     print("cz = %s" %(cz) )
     print("len(cz) = %s" %(len(cz)) )
     
+   
+    
     #if pt_err:
     #return pt_err
     

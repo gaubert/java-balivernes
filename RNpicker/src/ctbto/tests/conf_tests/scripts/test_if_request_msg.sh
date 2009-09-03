@@ -26,7 +26,7 @@ my \$arrsize = @sorted;
 
 if (\$arrsize <=0)
 {
-   printf "No sql files found into %s\n",\$dir;
+   printf "No msg files found into remote dir %s\n",\$dir;
    exit 1;
 }
 
@@ -75,7 +75,7 @@ cat $tempfile | ssh $4@$1 perl > $3
 #cat $tempfile | ssh $4@$1 perl 
 res="$?"
 
-rm -f $tempfile
+#rm -f $tempfile
 
 if [ $res != 0 ];
 then

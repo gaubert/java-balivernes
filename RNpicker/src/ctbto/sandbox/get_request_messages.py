@@ -22,6 +22,8 @@ def get_list_messages_to_copy(a_script,a_hostname,a_origin_dir,a_local_dir,a_rem
     func = subprocess.call
       
     res   = []  
+    
+    print("run (using ssh): \"%s %s %s %s %s\n"%(a_script,a_hostname,a_origin_dir,destinationPath,a_remote_user,) )
               
     t = ftimer(func,[[a_script,a_hostname,a_origin_dir,destinationPath,a_remote_user]],{},res,number=1)
     
@@ -71,11 +73,11 @@ def main():
     # create an empty shell Conf object
     conf = Conf.get_instance()
     
-    local_dir = '/tmp/25May_messages'
+    local_dir = '/tmp/request_data'
     # cheat and always ask for 5 MB
     remote_file_size =5 * 1024 * 1024
     
-    fd = get_list_messages_to_copy(conf.get("RemoteAccess","getRequestMessage"), conf.get("RemoteAccess","devlanAccessHost"),"/ops/data/shared/messages/2009/145",local_dir,conf.get("RemoteAccess","devlanAccessUser"))
+    fd = get_list_messages_to_copy(conf.get("RemoteAccess","getRequestMessage"), conf.get("RemoteAccess","devlanAccessHost"),"/ops/data/shared/messages/2009/207",local_dir,conf.get("RemoteAccess","devlanAccessUser"))
     #fd = open('/tmp/req_messages/result.msgs','r')
 
     cpt = 0
