@@ -79,7 +79,7 @@ rm -f $tempfile
 if [ $res != 0 ];
 then
   echo "Error.delete $3"
-  #rm -f $3
+  rm -f $3
 fi
 
 
