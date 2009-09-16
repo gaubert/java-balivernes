@@ -57,7 +57,7 @@ def round_as_string(aFloat,aNbDigits):
     assert aNbDigits > 0
     
     # create string in two steps. There is surely a better way to do it in one step
-    formatting_str = '%sf'%(aNbDigits)
+    formatting_str = '%sf' % (aNbDigits)
     formatting_str = '%.' + '%sf'%(aNbDigits)
     
     return formatting_str%(float(aFloat))
