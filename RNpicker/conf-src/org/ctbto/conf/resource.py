@@ -270,7 +270,7 @@ class TestResource(unittest.TestCase):
         
         self.assertEqual("My ENV Value",r.getValue())
         
-    def testResourcePriorityRules(self):
+    def ztestResourcePriorityRules(self):
         """testResourcePriorityRules: test priority rules"""   
         r = Resource(CliArgument="--LongName",EnvVariable="MYENVVAR")
   
