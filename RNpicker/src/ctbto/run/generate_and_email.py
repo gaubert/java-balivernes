@@ -338,7 +338,8 @@ class Runner(object):
             Args:
                None 
                
-            Returns: 
+            Returns:
+               return a conf object
         
             Raises:
                exception
@@ -348,32 +349,38 @@ class Runner(object):
             if len(logging.root.handlers) == 0:
             
                 # if file exists check that the user can write in there otherwise create a new log file with the pid:
-                self._log_path = self._conf.get('Logging','fileLogging','/tmp/generate_arr.log')
+                self._log_path = self._conf.get('Logging', 'file_name', '/tmp/generate_arr_and_email.log')
                 
-                if os.path.exists(self._log_path) and not os.access(self._log_path,os.R_OK | os.W_OK):
-                    n_log_path = '%s.%d'%(self._log_path,os.getpid())
+                if os.path.exists(self._log_path) and not os.access(self._log_path, os.R_OK | os.W_OK):
+                    n_log_path = '%s.%d' % (self._log_path, os.getpid())
                     print("WARNING - *************************************************************")
-                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead'%(self._log_path,n_log_path))
+                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead' \
+                          % (self._log_path, n_log_path))
                     print("WARNING - *************************************************************")
                     self._log_path = n_log_path
                 
+                mode        =   self._conf.get('Logging', 'mode', 'a')
+                max_bytes    =   self._conf.getint('Logging', 'max_file_size', 5 *1024 * 1024)
+                backup_count =   self._conf.getint('Logging', 'backup_count', 10)
                 
                 # create logger that logs in rolling file
-                file_handler = logging.handlers.RotatingFileHandler(self._log_path, "a", 5000000, 4)
+                file_handler = logging.handlers.RotatingFileHandler(self._log_path, mode = mode , \
+                                                                    maxBytes = max_bytes  , \
+                                                                    backupCount = backup_count)
                 file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
                 file_handler.setFormatter(file_formatter)
             
                 # create logger that logs in console
                 console = logging.StreamHandler()
                 console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-                console_filter    = logging.Filter(self._conf.get('Logging','consoleFilter','Runner'))
+                console_filter    = logging.Filter(self._conf.get('Logging', 'consoleFilter', 'Runner'))
                 console.setFormatter(console_formatter)
                 console.addFilter(console_filter)
         
                 logging.root.addHandler(file_handler)
                 logging.root.addHandler(console)
                 
-        except Exception, e: #IGNORE:W0612
+        except Exception, _: #IGNORE:W0612
             # Fatal error when setuping the logger
             print("Fatal Error when setuping the logging system. Exception Traceback: %s."%(get_exception_traceback()))
             raise LoggingSetupError('Cannot setup the loggers properly. See Exception Traceback printed in stdout')
