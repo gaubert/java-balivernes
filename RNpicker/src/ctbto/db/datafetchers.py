@@ -812,16 +812,16 @@ class DBDataFetcher(object):
 class SaunaNobleGasDataFetcher(DBDataFetcher):
     """ Class for fetching SAUNA-ARIX related data """
     
-      # Class members
+    # Class members
     c_log = logging.getLogger("datafetchers.SaunaNobleGasDataFetcher")
     c_log.setLevel(logging.INFO)
 
 
-    def __init__(self,aMainDbConnector=None,aArchiveDbConnector=None,aSampleID=None):
+    def __init__(self, a_main_db_conn = None, a_archive_db_conn = None, a_sample_id = None):
         
-        super(SaunaNobleGasDataFetcher,self).__init__(aMainDbConnector,aArchiveDbConnector,aSampleID)
+        super(SaunaNobleGasDataFetcher, self).__init__(a_main_db_conn, a_archive_db_conn, a_sample_id)
         
-        self._dataBag['SAMPLE_TYPE']='SAUNA'
+        self._dataBag['SAMPLE_TYPE'] = 'SAUNA'
     
     def _fetchDETBKSpectrumData(self):
         """get the Background data.
@@ -838,7 +838,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         """
         
         # precondition do nothing if there the curr sample is a Detector background itself
-        prefix = self._dataBag.get(u'CURRENT_CURR',"")
+        prefix = self._dataBag.get(u'CURRENT_CURR', "")
         if self._dataBag.get(u"%s_DATA_DATA_TYPE"%(prefix),'') == 'D':
             return
         
@@ -1291,17 +1291,17 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 DBDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
                 # extract id from dataname
-                [pre,sid] = dataname.split('_') #IGNORE:W0612
+                [pre, sid] = dataname.split('_') #IGNORE:W0612
           
                 #self._fetchCategoryResults(sid,dataname)
         
-                self._fetchNuclidesResults(sid,dataname)
+                self._fetchNuclidesResults(sid, dataname)
              
-                self._fetchROIResults(sid,dataname)
+                self._fetchROIResults(sid, dataname)
                  
-                self._fetchFlags(sid,dataname)
+                self._fetchFlags(sid, dataname)
         
-                self._fetchParameters(sid,dataname)
+                self._fetchParameters(sid, dataname)
    
    
     def _fetchNuclidesResults(self,sid,dataname):
@@ -1318,16 +1318,19 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                    exception"""
         
         # get identified Nuclides
-        result = self._mainConnector.execute(sqlrequests.SQL_SAUNA_GET_IDENTIFIED_NUCLIDES%(sid))
+        result = self._mainConnector.execute(sqlrequests.SQL_SAUNA_GET_IDENTIFIED_NUCLIDES % (sid))
        
         # only one row in result set
         rows = result.fetchall()   
        
         # get the volume of mesured xenon to compute activities from concentration
         # it is in m3 and in the AUXILIARY_INFO
-        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
-        # we need to a correction coefficient 0.087 according to Matthias
-        corr_volume = aux.get('XE_VOLUME',0) / 0.087
+        aux = self._dataBag.get('%s_AUXILIARY_INFO' % (dataname), {})
+        
+        # we need to a correction coefficient 0.087 according to Radionuclide scientists
+        corr_volume = aux.get('XE_VOLUME', 0) / 0.087
+        # add corr volume in the dataBag Aux info group
+        aux['XE_CORR_VOLUME'] = corr_volume
         
         # add results in a list which will become a list of dicts
         res = []
@@ -1346,21 +1349,21 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
           
             # get activity. If no volume or no activity results are 0
-            data[u'ACTIVITY'] = data.get(u'CONC',0)*corr_volume
-            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*corr_volume
+            data[u'ACTIVITY'] = data.get(u'CONC',0) * corr_volume
+            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0) * corr_volume
             
-            SaunaNobleGasDataFetcher.c_log.debug("Vol = %s, corr_vol = %s, activity = %s, concentration = %s \n"%(aux.get('XE_VOLUME',0), corr_volume, data.get(u'CONC',0)*corr_volume, data.get(u'CONC',0)))
+            SaunaNobleGasDataFetcher.c_log.debug("Vol = %s, corr_vol = %s, activity = %s, concentration = %s \n"%(aux.get('XE_VOLUME',0), corr_volume, data.get(u'CONC',0) * corr_volume, data.get(u'CONC',0)))
           
             # to avoid div by 0 check that quotient is not nul
             if data[u'ACTIVITY'] != 0:
-                data[u'ACTIVITY_ERR_PERC'] = abs((data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY'))
+                data[u'ACTIVITY_ERR_PERC'] = abs((data.get(u'ACTIVITY_ERR',0) * 100) / data.get(u'ACTIVITY'))
           
             # add concentration error in percent
             if data.get(u'CONC',0) != 0:
-                data[u'CONC_ERR_PERC'] = abs((data.get(u'CONC_ERR',0)*100)/data.get(u'CONC'))
+                data[u'CONC_ERR_PERC'] = abs((data.get(u'CONC_ERR',0) * 100) / data.get(u'CONC'))
           
-            data[u'LC_ACTIVITY'] = data.get(u'LC',0)* corr_volume 
-            data[u'LD_ACTIVITY'] = data.get(u'LD',0)* corr_volume
+            data[u'LC_ACTIVITY'] = data.get(u'LC',0) * corr_volume 
+            data[u'LD_ACTIVITY'] = data.get(u'LD',0) * corr_volume
           
             res.append(data)
             data = {}

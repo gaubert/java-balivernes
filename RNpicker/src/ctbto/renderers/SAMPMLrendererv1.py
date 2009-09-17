@@ -837,14 +837,6 @@ class SaunaRenderer(BaseRenderer):
         # get template path from conf
         self._template = self._conf.get("SaunaTemplatingSystem", "saunaBaseTemplate")
         
-        # old version => template was read from a file
-        #path = self._conf.get("SaunaTemplatingSystem", "saunaBaseTemplate")
-        # assert that the file exists
-        #ctbto.common.utils.file_exits(path)
-        # read the full template in a string buffer
-        #f = open(path, "r") 
-        #self._template = f.read()
-        
         self._populatedTemplate = self._template
     
     def asXmlStr(self, aRequest=""):
@@ -1317,15 +1309,19 @@ class SaunaRenderer(BaseRenderer):
             spectrumTemplate = re.sub("\${SAMPLEID}",ty.split("_")[1] if len(ty.split("_")) >=2 else "N/A", spectrumTemplate)
             
             # add quantity and geometry
-            spectrumTemplate = re.sub("\${QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${AIR_QUANTITY}", str(self._fetcher.get("%s_DATA_SAMPLE_QUANTITY" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${FLOW_RATE}", str(self._fetcher.get("%s_DATA_FLOW_RATE" % (ty))), spectrumTemplate)
                 
             spectrumTemplate = re.sub("\${GEOMETRY}", str(self._fetcher.get("%s_DATA_SAMPLE_GEOMETRY" % (ty))), spectrumTemplate)
             
-            # add Xe Volume and Xe Volume 
+            # add Xe Volume and Xe Corr Volume 
             aux = self._fetcher.get('%s_AUXILIARY_INFO'%(ty),{})
+            
             v = aux.get('XE_VOLUME',0)
             spectrumTemplate = re.sub("\${XE_VOL}",str(v) if (v!=0) else "N/A",spectrumTemplate)
+            
+            v = aux.get('XE_CORR_VOLUME',0)
+            spectrumTemplate = re.sub("\${XE_CORR_VOL}",str(v) if (v!=0) else "N/A",spectrumTemplate)
             
             
             
