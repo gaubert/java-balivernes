@@ -1,20 +1,23 @@
-""" 
-    Copyright 2008 CTBTO Organisation
-    
-    module: generate_noble_gaz_arr
+
+"""
+    :Summary: generate noble gaz arr
+    :Creation date: 2008-01-15
+    :Version: 1.0
+    :Authors: guillaume.aubert@ctbto.org
+    :Copyright: 2008 CTBTO Organisation
+
 """
 
 import getopt, sys
 import datetime
 import os
-import logging
 import logging.handlers
 import StringIO
 import traceback
 
-import ctbto.common.xml_utils
 import ctbto.common.time_utils
 import ctbto.common.utils
+import ctbto.common.xml_utils
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector, DBDataFetcher
 from ctbto.renderers   import BaseRenderer
@@ -25,6 +28,9 @@ VERSION     = "1.0"
 DATE_FORMAT = "%Y-%m-%d"
 
 def usage():
+    """
+     Usage message
+    """
     
     usage_string = """
 Usage: generate_arr [options] 
@@ -109,7 +115,7 @@ def get_tests_dir_path():
     """    
     fmod_path = ctbto.tests.__path__
         
-    test_dir = "%s/conf_tests"%fmod_path[0]
+    test_dir = "%s/conf_tests" % fmod_path[0]
         
     return test_dir
 
@@ -126,26 +132,26 @@ def get_exception_traceback():
             Raises:
                
     """
-    f = StringIO.StringIO()
-    exceptionType, exceptionValue, exceptionTraceback = sys.exc_info() #IGNORE:W0702
-    traceback.print_exception(exceptionType, exceptionValue, exceptionTraceback,file=f)
-    return f.getvalue()
+    the_file = StringIO.StringIO()
+    exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
+    traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
+    return the_file.getvalue()
 
 def reassociate_arguments(a_args):
     """
         reassociate arguments passed in the program arguments when they are spearated by a space.
         a, b , c will become 'a, b ,c'
     """
-    l = len(a_args)
+    the_list = len(a_args)
     
-    if l <= 1:
+    if the_list <= 1:
         return a_args
     else:
         res = []
-        _reassoc_arguments(a_args[0],a_args[1:],res)
+        _reassoc_arguments(a_args[0], a_args[1:], res)
         return res
 
-def _reassoc_arguments(head,tail,res,memo=''): 
+def _reassoc_arguments(head, tail, res, memo=''): 
     """
             private function used to recurse in reassociate_arguments
     """
@@ -153,14 +159,14 @@ def _reassoc_arguments(head,tail,res,memo=''):
     if len(tail) == 0:
         # if command separate
         if head.startswith('-'):
-            res.extend([memo,head])
+            res.extend([memo, head])
             return
         else:
             res.append(memo + head)
             return
     
     if head.endswith(',') or head.startswith(','):
-        _reassoc_arguments(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head)
+        _reassoc_arguments(tail[0], tail[1:] if len(tail) > 1 else [], res, memo+head)
     elif head.startswith('-'):
         # we do have a command so separate it from the rest
         if len(memo) > 0:
@@ -168,10 +174,10 @@ def _reassoc_arguments(head,tail,res,memo=''):
             
         res.append(head)
         
-        _reassoc_arguments(tail[0],tail[1:] if len(tail) > 1 else [],res,'')
+        _reassoc_arguments(tail[0], tail[1:] if len(tail) > 1 else [], res, '')
     else:  
         # it is not a command 
-        _reassoc_arguments(tail[0],tail[1:] if len(tail) > 1 else [],res,memo+head) 
+        _reassoc_arguments(tail[0], tail[1:] if len(tail) > 1 else [], res, memo+head) 
             
     
 
@@ -197,12 +203,16 @@ def parse_arguments(a_args):
     result['clean_cache']           = False
     result['automatic_tests']       = False
     result['clean_local_spectra']   = False
-    result['station_types']         = ['SAUNA','SPALAX']
+    result['station_types']         = ['SAUNA', 'SPALAX']
     result['always_recreate_files'] = True
     
     try:
         reassoc_args = reassociate_arguments(a_args)
-        (opts,_) = getopt.gnu_getopt(reassoc_args, "ht:i:s:f:e:d:c:v3lao", ["help","clean_local_spectra","clean_cache","stations=","sids=","from=","end=","dir=","conf_dir=","version","vvv","automatic_tests"])
+        (opts, _) = getopt.gnu_getopt(reassoc_args, "ht:i:s:f:e:d:c:v3lao", ["help", "clean_local_spectra", \
+                                                                             "clean_cache", "stations=", \
+                                                                             "sids=", "from=", "end=", \
+                                                                             "dir=", "conf_dir=", "version", \
+                                                                             "vvv", "automatic_tests"])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -240,13 +250,13 @@ def parse_arguments(a_args):
             if a.find(',') != -1:
                 stations = a.split(',')
                 
-                l = []
+                t_list = []
                 for elem in stations:
-                    l.append("\'%s\'"%(elem.strip()))
+                    t_list.append("\'%s\'" % (elem.strip()))
                 
-                result['stations'] = l  
+                result['stations'] = t_list  
             else:
-                result['stations'] = ["\'%s\'"%(a.strip())]                
+                result['stations'] = ["\'%s\'" % (a.strip())]                
         elif o in ("-d", "--dir"):
             # try to make the dir if necessary
             ctbto.common.utils.makedirs(a)
@@ -256,14 +266,14 @@ def parse_arguments(a_args):
         elif o in ("-f", "--from"):
             try:
                 #check that the passed string a date
-                datetime.datetime.strptime(a,DATE_FORMAT)
+                datetime.datetime.strptime(a, DATE_FORMAT)
                 result['from'] = a
             except:
                 raise ParsingError("Invalid --from or -f date %s"%(a))
         elif o in ("-e", "--end"):
             try:
                 #check that the passed string a date
-                datetime.datetime.strptime(a,DATE_FORMAT)
+                datetime.datetime.strptime(a, DATE_FORMAT)
                 result['end'] = a
             except:
                 raise ParsingError("Invalid --from or -f date %s"%(a))
@@ -291,7 +301,7 @@ def parse_arguments(a_args):
             except:
                 raise ParsingError("Invalid --clean_local_spectra or -o %s"%(a))
         else:
-            raise ParsingError("Unknown option %s = %s"%(o,a))
+            raise ParsingError("Unknown option %s = %s"%(o, a))
     
     return result
 
@@ -311,31 +321,34 @@ class CLIError(Exception):
 class ParsingError(CLIError):
     """Error when the command line is parsed"""
 
-    def __init__(self,a_error_msg):
-        super(ParsingError,self).__init__()
+    def __init__(self, a_error_msg):
+        super(ParsingError, self).__init__()
         self._error_message = a_error_msg
         
     def get_message_error(self):
+        """ return error message """
         return self._error_message
         
 class ConfAccessError(CLIError):
     """The only exception where a logger as not yet been set as it depends on the conf"""
 
-    def __init__(self,a_error_msg):
-        super(ConfAccessError,self).__init__()
+    def __init__(self, a_error_msg):
+        super(ConfAccessError, self).__init__()
         self._error_message = a_error_msg
     
     def get_message_error(self):
+        """ return error message """
         return self._error_message
 
 class LoggingSetupError(CLIError):
     """Error when the logger cannot be setuped"""
 
-    def __init__(self,a_error_msg):
-        super(LoggingSetupError,self).__init__()
+    def __init__(self, a_error_msg):
+        super(LoggingSetupError, self).__init__()
         self._error_message = a_error_msg
     
     def get_message_error(self):
+        """ return error message """
         return self._error_message
 
 class Runner(object):
@@ -345,9 +358,9 @@ class Runner(object):
     c_log = logging.getLogger("Runner")
     c_log.setLevel(logging.INFO)
 
-    def __init__(self,a_args):
+    def __init__(self, a_args):
         
-        super(Runner,self).__init__()
+        super(Runner, self).__init__()
           
         # create an empty shell Conf object
         self._conf     = self._load_configuration(a_args)
@@ -357,22 +370,23 @@ class Runner(object):
         self._set_logging_configuration()
     
         # setup the prod database and connect to it
-        self._ngDatabase        = self._conf.get("NobleGazDatabaseAccess","hostname")
-        self._ngUser            = self._conf.get("NobleGazDatabaseAccess","user")
-        self._ngPassword        = self._conf.get("NobleGazDatabaseAccess","password")
-        self._ngActivateTimer   = self._conf.getboolean("NobleGazDatabaseAccess","activateTimer",True)
+        self._ngDatabase        = self._conf.get("NobleGazDatabaseAccess", "hostname")
+        self._ngUser            = self._conf.get("NobleGazDatabaseAccess", "user")
+        self._ngPassword        = self._conf.get("NobleGazDatabaseAccess", "password")
+        self._ngActivateTimer   = self._conf.getboolean("NobleGazDatabaseAccess", "activateTimer", True)
    
         # create DB connector
-        self._ngMainConn = DatabaseConnector(self._ngDatabase,self._ngUser,self._ngPassword,self._ngActivateTimer)
+        self._ngMainConn = DatabaseConnector(self._ngDatabase, self._ngUser, self._ngPassword, self._ngActivateTimer)
 
         # setup the archive database and connect to it
-        self._ParticulateArchiveDatabaseAccess       = self._conf.get("ParticulateArchiveDatabaseAccess","hostname")
-        self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess","user")
-        self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess","password")
-        self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess","activateTimer",True)
+        self._ParticulateArchiveDatabaseAccess       = self._conf.get("ParticulateArchiveDatabaseAccess", "hostname")
+        self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess", "user")
+        self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess", "password")
+        self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess", "activateTimer", True)
         
         # create DB connector
-        self._ngArchConn = DatabaseConnector(self._ParticulateArchiveDatabaseAccess,self._archiveUser,self._archivePassword,self._archiveActivateTimer)
+        self._ngArchConn = DatabaseConnector(self._ParticulateArchiveDatabaseAccess, self._archiveUser, \
+                                             self._archivePassword, self._archiveActivateTimer)
         
         #connect to the DBs
         self._ngMainConn.connect()
@@ -400,38 +414,44 @@ class Runner(object):
             if len(logging.root.handlers) == 0:
             
                 # if file exists check that the user can write in there otherwise create a new log file with the pid:
-                self._log_path = self._conf.get('Logging','fileLogging','/tmp/generate_arr.log')
+                self._log_path = self._conf.get('Logging', 'file_name', '/tmp/rnpicker.log')
                 
-                if os.path.exists(self._log_path) and not os.access(self._log_path,os.R_OK | os.W_OK):
-                    n_log_path = '%s.%d'%(self._log_path,os.getpid())
+                if os.path.exists(self._log_path) and not os.access(self._log_path, os.R_OK | os.W_OK):
+                    n_log_path = '%s.%d' % (self._log_path, os.getpid())
                     print("WARNING - *************************************************************")
-                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead'%(self._log_path,n_log_path))
+                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead' \
+                          % (self._log_path, n_log_path))
                     print("WARNING - *************************************************************")
                     self._log_path = n_log_path
                 
+                mode        =   self._conf.get('Logging', 'mode', 'a')
+                max_bytes    =   self._conf.getint('Logging', 'max_file_size', 5 *1024 * 1024)
+                backup_count =   self._conf.getint('Logging', 'backup_count', 10)
                 
                 # create logger that logs in rolling file
-                file_handler = logging.handlers.RotatingFileHandler(self._log_path, "a", 5000000, 4)
+                file_handler = logging.handlers.RotatingFileHandler(self._log_path, mode = mode , \
+                                                                    maxBytes = max_bytes  , \
+                                                                    backupCount = backup_count)
                 file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
                 file_handler.setFormatter(file_formatter)
             
                 # create logger that logs in console
                 console = logging.StreamHandler()
                 console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-                console_filter    = logging.Filter(self._conf.get('Logging','consoleFilter','Runner'))
+                console_filter    = logging.Filter(self._conf.get('Logging', 'consoleFilter', 'Runner'))
                 console.setFormatter(console_formatter)
                 console.addFilter(console_filter)
         
                 logging.root.addHandler(file_handler)
                 logging.root.addHandler(console)
                 
-        except Exception, e: #IGNORE:W0612
+        except Exception, _: #IGNORE:W0612
             # Fatal error when setuping the logger
             print("Fatal Error when setuping the logging system. Exception Traceback: %s."%(get_exception_traceback()))
             raise LoggingSetupError('Cannot setup the loggers properly. See Exception Traceback printed in stdout')
     
     @classmethod
-    def log_in_file(self,aMessage):
+    def log_in_file(self, aMessage):
         """ to log in the file as the ROOT logger """
         
         log = logging.getLogger("ROOT")
