@@ -8,7 +8,7 @@ import logging
 import ctbto.common.utils as utils
 import ctbto.common.time_utils as time_utils
 
-UNDEFINED="N/A"
+UNDEFINED = "N/A"
 RDIGITS   = 5 
 BGDIGITS  = 2
 HDIGITS   = 2
@@ -24,7 +24,7 @@ class XML2HTMLRenderer(object):
 class SAUNAXML2HTMLRenderer(object):
     """ Base Class used to transform SAUNA XML in HTML """
     
-    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='SaunaArrHtml.html'):
+    def __init__(self, TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='SaunaArrHtml.html'):
         
         self._env         = Environment(loader=FileSystemLoader(TemplateDir))
         
@@ -32,15 +32,15 @@ class SAUNAXML2HTMLRenderer(object):
         
         self._context     = {}
     
-    def render(self,aXmlPath):
-          
+    def render(self, aXmlPath):
+        """ render the file using a template engine """  
         self._fill_values(aXmlPath)
        
-        XML2HTMLRenderer.c_log.debug("context = %s\n"%(self._context))
+        XML2HTMLRenderer.c_log.debug("context = %s\n" % (self._context))
          
         return self._template.render(self._context)    
       
-    def _fill_values(self,aXmlPath):
+    def _fill_values(self, aXmlPath):
         
         dom_tree = etree.parse(open(aXmlPath,'r'))
        
@@ -133,7 +133,7 @@ class SAUNAXML2HTMLRenderer(object):
             # get attribute id
             curr_spectrum_id = elem.get('id')
             l = curr_spectrum_id.split('-')
-            self._context['sample_id'] = '%s-%s'%(l[0],l[1])
+            self._context['sample_id'] = '%s'%(l[1])
            
             # get calibrationIDs
             self._context['calibration_ids'] = elem.get('calibrationIDs').split(' ')
@@ -146,22 +146,31 @@ class SAUNAXML2HTMLRenderer(object):
                 self._context['sample_geometry'] = res[0].text
            
             # get quantity
-            res = elem.xpath(expr,name = "AirVolume")
+            res = elem.xpath(expr,name = "ProcessedAirVolume")
             if len(res) == 0:
                 self._context['sample_quantity']      = UNDEFINED
                 self._context['sample_quantity_unit'] = "" 
             else:
-                self._context['sample_quantity']      = utils.round_as_string(res[0].text,3)
+                self._context['sample_quantity']      = utils.round_as_string(res[0].text, 3)
                 self._context['sample_quantity_unit'] = res[0].get('unit') 
                 
-             # get Xe volume
-            res = elem.xpath(expr,name = "XeVolume")
+            # get Xe volume
+            res = elem.xpath(expr, name = "XeVolume")
             if len(res) == 0:
                 self._context['xe_vol']      = UNDEFINED
                 self._context['xe_vol_unit'] = "" 
             else:
                 self._context['xe_vol']      = utils.round_as_string(res[0].text,3)
                 self._context['xe_vol_unit'] = res[0].get('unit') 
+            
+            #get Corr Xe volume also called sample quantity
+            res = elem.xpath(expr,name = "SampleQuantity")
+            if len(res) == 0:
+                self._context['xe_corr_vol']      = UNDEFINED
+                self._context['xe_corr_vol_unit'] = "" 
+            else:
+                self._context['xe_corr_vol']      = utils.round_as_string(res[0].text,3)
+                self._context['xe_corr_vol_unit'] = res[0].get('unit')
            
             # all timing information
             c_start = time_utils.getOracleDateFromISO8601(elem.xpath(expr,name = "CollectionStart")[0].text)
@@ -529,7 +538,7 @@ class SPALAXXML2HTMLRenderer(object):
             # get attribute id
             curr_spectrum_id = elem.get('id')
             l = curr_spectrum_id.split('-')
-            self._context['sample_id'] = '%s-%s'%(l[0],l[1])
+            self._context['sample_id'] = '%s'%(l[1])
            
             # get calibrationIDs
             self._context['calibration_ids'] = elem.get('calibrationIDs').split(' ')
