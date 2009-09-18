@@ -39,7 +39,7 @@ class NobleGasDecayCorrector(object):
             'XE-133' :'m2'  ,
         }
 
-    def __init__(self,a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_real=0):
+    def __init__(self,a_coll_start=0,a_coll_stop=0,a_acq_start=0,a_acq_stop=0,a_real = None):
         """ Constructor. 
             
             Args:
@@ -70,7 +70,7 @@ class NobleGasDecayCorrector(object):
         self.set_time_information(a_coll_start, a_coll_stop, a_acq_start, a_acq_stop, a_real)
         
         
-    def set_time_information(self,a_coll_start,a_coll_stop,a_acq_start,a_acq_stop,a_real):
+    def set_time_information(self,a_coll_start,a_coll_stop,a_acq_start,a_acq_stop,a_real = None):
         """
            add the necessary time info
         """
@@ -78,18 +78,16 @@ class NobleGasDecayCorrector(object):
         self._coll_start = a_coll_start
         self._acq_stop   = a_acq_stop
         self._acq_start  = a_acq_start
-        self._a_real     = a_real
         
-        self._calculate_time_coeffs()
+        self._calculate_time_coeffs(a_real)
         
         
-    def _calculate_time_coeffs(self):
+    def _calculate_time_coeffs(self,a_real = None):
         """"""
         
         self._t_count = str(time_utils.getDifferenceInTime(self._coll_start,self._coll_stop))
         self._t_prep  = str(time_utils.getDifferenceInTime(self._coll_stop,self._acq_start))
-        self._t_real  = str(time_utils.getDifferenceInTime(self._acq_start,self._acq_stop))
-        self._t_real  = str(self._a_real)
+        self._t_real  = str(time_utils.getDifferenceInTime(self._acq_start,self._acq_stop)) if a_real is None else a_real
         
     def _calculate_fi(self,a_half_life_string):
         """ calculate f(i) = f(1)*f(2)*f(3)
@@ -120,15 +118,27 @@ class NobleGasDecayCorrector(object):
         sec_exp     =  Decimal(str(math.exp(-(Decimal(self._t_prep))*A_coeff)))
         third_exp   =  (B_coeff/Decimal(self._t_real))*Decimal(str((1-math.exp(-Decimal(self._t_real)*A_coeff))))
         
-        f_divider   = (first_exp*sec_exp*third_exp)
-    
         fi_result = Decimal(str(first_exp*sec_exp*third_exp))
                                          
         return fi_result
+    
+    def undecay_correct(self, a_XE131M_act, a_XE133_act, a_XE133M_act, a_XE135_act):
+        """ get all activities of all XE isotopes for a particular sample and undecay correct them 
+        """
         
-    def undecay_correct(self,a_isotope_name,a_activity_concentration):
-        """ decay correct the values passed 
-            ACuncorr = ACorr*f(i)
+        xe131_res  = self.undecay_correct_method1('XE-131M', a_XE131M_act)
+        
+        xe133M_res = self.undecay_correct_method1('XE-133M', a_XE133M_act)
+        
+        xe133_res  = self.undecay_correct_method2(a_XE133_act, a_XE133M_act)
+        
+        xe135_res  = self.undecay_correct_method1('XE-135' , a_XE135_act)
+        
+        return (xe131_res, xe133_res , xe133M_res, xe135_res)
+        
+        
+    def undecay_correct_method1(self,a_isotope_name, a_activity_concentration):
+        """ decay correction method one used for XE135, XE133, XE131M 
         """
          
         half_life_string = NobleGasDecayCorrector.c_default_half_life.get(a_isotope_name,None)
@@ -140,7 +150,7 @@ class NobleGasDecayCorrector(object):
         
         return Decimal(str(a_activity_concentration)) * fi 
     
-    def undecay_correct_XE133(self,a_XE133_activity_concentration,a_XE133M_activity_concentration):
+    def undecay_correct_method2(self,a_XE133_activity_concentration,a_XE133M_activity_concentration):
         """ undecay correction for XE133 is special due to the metastable isotopes """
         
         XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133',None)
@@ -156,7 +166,8 @@ class NobleGasDecayCorrector(object):
         
         return (1/fi_XE133) * Decimal(str(a_XE133_activity_concentration)) + (lbdas*((1/fi_XE133) - (1/fi_XE133M))*Decimal(str(a_XE133M_activity_concentration)))
 
-time_unit_to_sec = { 'S' : 1 ,
+time_unit_to_sec = { 
+               'S' : 1 ,
                'M' : 60,
                'H' : 3600,
                'D' : 86400,
@@ -253,26 +264,32 @@ class TestDataModule(unittest.TestCase):
         r = convert_half_life_in_sec("22.300 Y")
        
         self.assertEqual(703719449.800,float(r))
+        
     
-    def testCalculateFi(self):
+    def testCalculate(self):
+        """ Caclulate uncorrected values for one sample"""
         
-        coll_start = time_utils.getDateTimeFromISO8601('2009-04-06T08:48:00')
-        coll_stop  = time_utils.getDateTimeFromISO8601('2009-04-06T20:48:00')
+        coll_start = time_utils.getDateTimeFromISO8601('2009-01-01T12:00:00')
+        coll_stop  = time_utils.getDateTimeFromISO8601('2009-01-02T11:30:00')
         
-        acq_start = time_utils.getDateTimeFromISO8601('2009-04-07T03:48:58')
-        acq_stop  = time_utils.getDateTimeFromISO8601('2009-04-07T14:58:58')
+        acq_start = time_utils.getDateTimeFromISO8601('2009-01-02T12:30:00')
+        acq_stop  = time_utils.getDateTimeFromISO8601('2009-01-03T12:31:00')
         
-        live = 40201
+        #activity concentrations
+        XE_131M_conc = 1.061635915
+        XE_133_conc  = 112.7781
+        XE_133M_conc = 13.74831626
+        XE_135_conc  = 5.053032873
+                        
+        nbCorrector = NobleGasDecayCorrector(coll_start, coll_stop,acq_start, acq_stop)
         
-        #activity concentration
-        XE_135_conc = 1.465804
-                                            #(a_coll_start=0,         a_coll_stop=0,        a_acq_start=0         a_acq_stop=0,       a_live=0)
-        nbCorrector = NobleGasDecayCorrector(coll_start,coll_stop,acq_start,acq_stop,live)
+        (X_131M_uncorr , X_133_uncorr, X_133M_uncorr, X_135_uncorr) = nbCorrector.undecay_correct(XE_131M_conc, XE_133_conc, XE_133M_conc, XE_135_conc)
         
-        v = nbCorrector.undecay_correct('XE-135', XE_135_conc)
-        
-        print "corrected value = %f, uncorrected value = %f"%(XE_135_conc,float(v)) 
-   
+        print("131M  (corr, uncorr) = (%f, %f) \n, 133  (corr, uncorr) = (%f, %f) \n, 133M  (corr, uncorr) = (%f, %f) \n, 135  (corr, uncorr) = (%f, %f) \n" % \
+              (XE_131M_conc, X_131M_uncorr, \
+               XE_133_conc, X_133_uncorr, \
+               XE_133M_conc, X_133M_uncorr, \
+               XE_135_conc, X_135_uncorr) )
 
 if __name__ == '__main__':
     tests()     

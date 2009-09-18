@@ -24,7 +24,7 @@ class XML2HTMLRenderer(object):
 class SAUNAXML2HTMLRenderer(object):
     """ Base Class used to transform SAUNA XML in HTML """
     
-    def __init__(self, TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='SaunaArrHtml.html'):
+    def __init__(self, TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='NewSaunaArrHtml.html'):
         
         self._env         = Environment(loader=FileSystemLoader(TemplateDir))
         
@@ -397,11 +397,12 @@ class SAUNAXML2HTMLRenderer(object):
                     cid = calibration.get('ID')
                     if cid in self._context['calibration_ids']:
                         d   = {}
-                        d['type'] = calibration.get('Type','N/A')
+                        d['desc'] = calibration.get('Type','N/A')
                
                         equation  = calibration.find("{%s}Equation"%(XML2HTMLRenderer.c_namespaces['sml']))
                         if equation is not None:
                             d['form']  = equation.get('Form','N/A')
+                            d['model'] = equation.get('Model','N/A')
                   
                             # get coefficients
                             coefficients = equation.find("{%s}Coefficients"%(XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -411,12 +412,13 @@ class SAUNAXML2HTMLRenderer(object):
                                 c_list = []
                                 cpt    = 0
                                 for coeff in coefficients.split(' '):
-                                    c_list.append({'name':'Term%s'%(cpt),'val':coeff})
+                                    c_list.append({'name':'t%s'%(cpt),'val':coeff})
                                     cpt +=1
                       
                                     d['coeffs'] = c_list  
                         else:
                             d['form']  = 'N/A'
+                            d['model'] = 'N/A'
                 
                         calibrations.append(d)
                
@@ -429,7 +431,7 @@ class SAUNAXML2HTMLRenderer(object):
 class SPALAXXML2HTMLRenderer(object):
     """ Base Class used to transform the SPALAX XML in SAUNA """
     
-    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='SpalaxArrHtml.html'):
+    def __init__(self,TemplateDir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', TemplateName='NewSpalaxArrHtml.html'):
         
         self._env         = Environment(loader=FileSystemLoader(TemplateDir))
         
@@ -780,9 +782,11 @@ class SPALAXXML2HTMLRenderer(object):
                     cid = calibration.get('ID')
                     if cid in self._context['calibration_ids']:
                         d   = {}
-                        d['type'] = calibration.get('Type','N/A')
                         
-                        if d['type'].lower() != 'efficiency':
+                        d['desc']  = calibration.get('Type','N/A')
+                        d['model'] = calibration.get('Model','N/A')
+                        
+                        if d['desc'].lower() != 'efficiency':
                             
                             equation  = calibration.find("{%s}Equation"%(XML2HTMLRenderer.c_namespaces['sml']))
                             if equation is not None:
@@ -796,7 +800,7 @@ class SPALAXXML2HTMLRenderer(object):
                                     c_list = []
                                     cpt    = 0
                                     for coeff in coefficients.split(' '):
-                                        c_list.append({'name':'Term%s'%(cpt),'val':coeff})
+                                        c_list.append({'name':'t%s'%(cpt),'val':coeff})
                                         cpt +=1
                           
                                         d['coeffs'] = c_list  
@@ -811,6 +815,7 @@ class SPALAXXML2HTMLRenderer(object):
                             for eq in equations:
                                 d = {}
                                 d['form']  = eq.get('Form','N/A')
+                                d['model'] = eq.get('Model','N/A')
                                 
                                 # get coefficients
                                 coefficients = eq.find("{%s}Coefficients"%(XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -820,7 +825,7 @@ class SPALAXXML2HTMLRenderer(object):
                                     c_list = []
                                     cpt    = 0
                                     for coeff in coefficients.split(' '):
-                                        c_list.append({'name':'Term%s'%(cpt),'val':coeff})
+                                        c_list.append({'name':'t%s'%(cpt),'val':coeff})
                                         cpt +=1
                           
                                         d['coeffs'] = c_list  
