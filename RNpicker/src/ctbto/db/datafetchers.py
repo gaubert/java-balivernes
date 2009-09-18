@@ -916,15 +916,15 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
          # follow the same method as the one defined in bg_analyse
         # first look for the gas bk id in gards_sample_aux and then try to get the corresponding id.
         # if no sample_id is found look use the mrp method
-        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_AUX_GASBK_ID%(self._sampleID))
+        (rows, nb_results,_) = self.execute(sqlrequests.SQL_GET_SAUNA_AUX_GASBK_ID % (self._sampleID))
         id_found = False
-        if nbResults == 1:
+        if nb_results == 1:
             # get ID from the measurement ID
             mid = rows[0]['mid']
             
-            (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_GASBK_SAMPLEID_FROM_MID%(mid))
+            (rows, nb_results,_) = self.execute(sqlrequests.SQL_GET_SAUNA_GASBK_SAMPLEID_FROM_MID % (mid))
             
-            if nbResults >= 1:
+            if nb_results >= 1:
                 sid =  rows[0]['sid']
                 id_found = True
             else:
@@ -932,14 +932,14 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 
         if not id_found:
             # need to get the latest GAS BK sample_id
-            (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
+            (rows, nb_results ,_) = self.execute(sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID % (self._dataBag[u'STATION_ID'], self._dataBag[u'DETECTOR_ID'], self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
        
-            if nbResults == 0:
+            if nb_results == 0:
                 SaunaNobleGasDataFetcher.c_log.info("Warning. There is no Background for %s.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
                 self._dataBag[u'CONTENT_NOT_PRESENT'].add('GASBK')
                 return
        
-            if nbResults > 1:
+            if nb_results > 1:
                 SaunaNobleGasDataFetcher.c_log.info("There is more than one Background for %s. Take the first result.\n request %s \n Database query result %s"%(self._sampleID,sqlrequests.SQL_GET_SAUNA_MRP_GASBK_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID']),rows))
            
             sid = rows[0]['SAMPLE_ID']

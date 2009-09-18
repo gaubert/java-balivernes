@@ -74,18 +74,18 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
-	table.std2
+	table.std1
     {
-       width: 100%;
+       width: 80%;
        border: 0;
        text-align: center;
        border-collapse: separate;
        empty-cells: show
     }
-    
-    table.std1
+	
+	table.std2
     {
-       width: 80%;
+       width: 100%;
        border: 0;
        text-align: center;
        border-collapse: separate;
@@ -100,6 +100,24 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
        border-collapse: separate;
        empty-cells: show 
     }
+	
+	.italobold
+	{
+		font-weight: bold;
+		font-style: italic;
+	}
+	
+	.smallitalo
+	{
+		font-style: italic;
+		font-size:70%; 
+	}
+	
+	.smallmath
+	{
+		font-style: italic;
+		font-size:70%; 
+	}
     
     .rule 
     {
@@ -108,11 +126,169 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       height: 3pt;
       text-align: center;
     }
+	
+	/* --------------------------------- */
+	/* Math part for rendering equations */
+	/* --------------------------------- */
+	
+	/* display equations appear on their own line.  */
+    /* (note: don't use display:block on tables, it screws up NN tables) */
+    span.display_eqn 
+	{ 
+         display: block; 
+    }
+    
+	.fraction, 
+    .display_eqn, 
+    .centered 
+	{ 
+      margin-top:0.5em; 
+      margin-bottom:0.5em; 
+      text-align: center; 
+      vertical-align: middle; 
+    }
+
+    /* inline fraction table  NOT USED??? */
+    table.inline_frac 
+	{ 
+      display:inline; 
+      margin-top:0; 
+      margin-bottom:0;
+      text-align: center; 
+      vertical-align: middle; 
+    }
+
+    /* bigger line-height helps make eqns without ^2 more equal to those with ^2 */
+    .display_eqn, 
+    table.num_eqn 
+	{ 
+      line-height: 2em; 
+    }
+	
+    .fraction 
+	{ 
+      line-height: normal; /* for when fraction is wrapped by num_eqn */
+    }  
+
+    /* numbered equations done with a table */
+    /* width slightly less than 100% because of bugs in IE when alongside an image
+       see dbl_pendulum page. */
+    table.num_eqn 
+	{
+      width:99%;  
+      text-align: center; 
+      vertical-align: middle;
+      margin-top:0.5em; 
+      margin-bottom:0.5em; 
+    }
+
+    /* sup style needed for Opera (why?) */
+    sup 
+	{ 
+      vertical-align: 0.8ex; 
+      font-size:95%; 
+    }
+	
+    sub 
+	{ 
+      vertical-align: -0.6ex; 
+      font-size:75%; 
+    }
+	
+	/* only used by the math part. Do not use it for something else */
+	i
+	{
+	  font-size:75%;
+	  /* smaller text within math expressions */
+	}
+	
+    span.bigg 
+	{ 
+	   font-size:140%; 
+	}  /* for big math symbols */
+
+    span.over 
+	{
+		text-decoration:overline;
+	}  /* for vectors */
+
+    span.nobr 
+	{ 
+	   white-space:nowrap; 
+	}  /* for setting where to break long equations */
+
+    td.upper_line 
+	{ 
+	   border-top:solid 1px black; 
+	} /* for horiz line in fractions */
+	
+	td.eq_centered
+	{
+	   margin-top:0.5em; 
+       margin-bottom:0.5em; 
+       text-align: center; 
+       vertical-align: middle;
+	}
+
+    td.eqn_blank 
+	{ 
+	   text-align:left; width:2em; 
+	} /* for left side of numbered equations */
+	
+    td.eqn_number 
+	{ 
+	   text-align:right; width:2em; 
+	} /* for numbered equations */
+
+    .emphasized 
+	{  
+	   border: solid 2px #f90; 
+	}
+	
+    span.text 
+	{ 
+	  font-size:90%; 
+	}  /* smaller text within math expressions */
+	
+	
+    p.eqn 
+	{
+		text-align:center;  
+        margin-top:0cm; margin-bottom:0cm;
+	}
+	
+    pre.eqn 
+	{
+		font-family:Courier, monospace; font-size:10pt; color:blue; margin-bottom:0.1cm;
+	}
+
+    span.sym 
+	{
+		font-family:Symbol, serif;
+	}
+	
+    span.cursive 
+	{
+		font-family:cursive;
+	}
+	
+	/* ---------------------------------------- */
+	/* End of Math part for rendering equations */
+	/* ---------------------------------------- */
   }
   
   /* screen syle */
   @media screen
   {
+  	table.std3
+    {
+       width: 80%;
+       border: 0;
+       text-align: center;
+       border-collapse: separate;
+       empty-cells: show
+    }
+  	
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
@@ -240,8 +416,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  	  font-size   : 12px; 
  	} 
     
-    
-    
     th
     {
 	   font-size   : 14px;
@@ -267,11 +441,27 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	   font-size: 14px;
 	   text-align: justify;
 	}
+	
+	td.lbold
+    {
+	   font-size   : 14px;
+	   font-weight : bold;
+	   text-align  : left;
+	}
   }
   
   /* printer style */
   @media print
   {
+  	table.std3
+    {
+       width: 100%;
+       border: 0;
+       text-align: center;
+       border-collapse: separate;
+       empty-cells: show
+    }
+	
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
@@ -279,8 +469,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {
 	   background: white;
 	   font-size: 10pt;
-	   font-family : verdana,arial,sans-serif;
-	   /*font-family:times new roman, serif;*/
+	   /*font-family : verdana,arial,sans-serif;*/
+	   font-family:times new roman, serif;
 	   margin-top: 10pt;
 	   margin-bottom: 10pt;
 	   margin-right: 10pt;
@@ -353,13 +543,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {
 	   font-size   : 10pt;
 	   font-weight : bold;
-	   text-align  : centre;
+	   text-align  : left;
 	}
     
     td.centre 
     {
 	   font-size: 10pt;
-	   text-align: justify;
+	   text-align: left;
+	}
+	
+	td.lbold
+    {
+	   font-size   : 10pt;
+	   font-weight : bold;
+	   text-align  : left;
 	}
 	
 	a
@@ -375,7 +572,16 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     
 	
 	/* page break */
-	.page-break { display:block; page-break-before:always; }  
+	.page-break 
+	{ 
+	  border-top: 2pt solid #000;
+      width: 90%;
+      height: 3pt;
+      text-align: center;
+	  
+	  display:block; 
+	  page-break-before:always; 
+	}  
 	
 	
 	.preview 
@@ -385,6 +591,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   }
    
 </style>
+
 <h3 style="text-align:center;">IDC Generated Report</h3>
 
 <h1 style="text-align:center;">Automated Radionuclide Report</h1>
@@ -443,7 +650,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
          <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
          <div onclick="show()" class="hide-button">click to hide</div>
 </div>
-<table class="std1">
+<table class="std3">
   <tbody>
     <tr>
       <td>Sample ID: {{sample_id}}</td>
@@ -451,11 +658,11 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
     <tr>
       <td >Sample Type: {{sample_type}}</td>
-	  <td>Total Processed Air Quantity : {{sample_quantity}} {{sample_quantity_unit}}</td>
+      <td colspan="1"></td>
     </tr>
     <tr>
       <td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
-      <td>Sample Quantity : {{xe_corr_vol}} {{xe_corr_vol_unit}}</td>
+	  <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
     </tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
@@ -527,7 +734,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 <p></p>
-<div class="rule"></div>
+
+<div class="page-break"></div> 
 
 <h2>Sample Activity Results:</h2>
 
@@ -558,115 +766,137 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 <p></p>
-<div class="page-break"></div> 
 
+{% if peak_fit_matrix or decay_analysis_matrix %}
 <h2>Processing Specific Parameters and Results:</h2>
 
-<h3>Method 1 (Net Count Calculation)</h3>
-
-<h4> ROI Net Count Results </h4>
+{% if peak_fit_matrix %}
+<h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
 
 <table class="std2">
-  <caption></caption>
-  <col />
+  <caption/>
   <col />
   <col />
   <tbody>
     <tr>
-      <th >ROI</th>
-      <th class="centre">Nuclide</th>
-      <th class="centre">NetCounts</th>
-      <th class="centre">Abs NetError</th>
-      <th class="centre">LC</th>
-      <th class="centre">Efficiency</th>
-      <th class="centre">Abs Efficiency Error</th>
+      <th class="th"></th>
+      <th class="th">XE-131M</th>
+      <th class="th">XE-133M</th>
+      <th class="th">XE-133</th>
+      <th class="th">XE-135</th>
     </tr>
-   {% for r_item in roi_results %}
-    <tr>
-      <td class="centre">{{ r_item.roi_number }}</td>
-      <td class="centre">{{ r_item.name }}</td>
-      <td class="centre">{{ r_item.net_counts }}</td>
-      <td class="centre">{{ r_item.net_counts_err }}</td>
-      <td class="centre">{{ r_item.lc }}</td>
-      <td class="centre">{{ r_item.efficiency }}</td>
-      <td class="centre" title="Rel Error: {{ r_item.efficiency_rel_error }}%">{{ r_item.efficiency_abs_error }}</td>
+	{% for a_key in matrix_row_order %}
+	<tr>
+        <td class="lbold">{{ a_key }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][0] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][1] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][2] }}</td>
+        <td class="td">{{ peak_fit_matrix[a_key][3] }}</td>
     </tr>
-   {% endfor %}
+	{% endfor %}
   </tbody>
 </table>
-
-<h4> ROI Boundaries </h4>
-
-<table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="centre">ROI</th>
-      <th class="centre">GammaLow (keV)</th>
-      <th class="centre">GammaHigh (keV)</th>
-      <th class="centre">BetaLow (keV)</th>
-      <th class="centre">BetaHigh (keV)</th>
-    </tr>
-   {% for rb_item in roi_boundaries %}
-    <tr>
-      <td class="centre">{{ rb_item.roi_number }}</td>
-      <td class="centre">{{ rb_item.gammalow }}</td>
-      <td class="centre">{{ rb_item.gammahigh }}</td>
-      <td class="centre">{{ rb_item.betalow }}</td>
-      <td class="centre">{{ rb_item.betahigh }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>
-</table>
+{% endif %}
 <p></p>
+
+{% if decay_analysis_matrix %}
+<h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
+
+<table class="std2">
+    <tr>
+      <th ></th>
+      <th class="th">XE-131M</th>
+      <th class="th">XE-133M</th>
+      <th class="th">XE-133</th>
+      <th class="th">XE-135</th>
+    </tr>
+	{% for a_key in matrix_row_order %}
+	<tr>
+        <td class="lbold">{{ a_key }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][0] }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][1] }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][2] }}</td>
+        <td class="td">{{ decay_analysis_matrix[a_key][3] }}</td>
+    </tr>
+	{% endfor %}
+</table>
+{% endif %}
+<p></p>
+
 <div class="rule"></div>
 
-<h2> Timeliness and Data Quality Flags </h2>
-
-<table class="std1">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="centre">Name</th>
-      <th class="centre">Pass/Fail</th>
-      <th class="centre">Value</th>
-      <th class="centre">Test</th>
-    </tr>
-   {% for flag in flags %}
-    <tr>
-      <td class="centre">{{ flag.name}}</td>
-      <td class="centre">{{ flag.result }}</td>
-      <td class="centre">{{ flag.value }}</td>
-      <td class="centre">{{ flag.test }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>
-</table>
 <p></p>
+{% endif %}
 
-<div class="page-break"></div>
 <h2> Calibration Equations </h2>
 
 {% for calibration in calibrations %}
+
+   {% if calibration.desc == 'Energy' %}
+	    <table class="calib">
+		     <tbody>
+			     <tr>
+			     	<th class='italobold'>{{ calibration.desc }} : E(C)= t0 + t1 C + t2 C<sup>2</sup> + t3 C<sup>3</sup></th>
+			     </tr>
+		        {% for c in calibration.coeffs %}
+			      <tr>
+			        <td><i>{{ c.name }} : {{ c.val }}</i></td>
+			      </tr>
+		        {% endfor %}
+		     </tbody>
+	    </table>
+   {% endif %}
+   
+    {% if calibration.desc == 'Resolution' %}
+	    <table class="calib">
+		     <tbody>
+			     <tr>
+					<!-- <table style="margin-top:0.5em; margin-bottom:0.5em; text-align: center;"align="center" cellpadding="0" cellspacing="0" > -->
+    				  <table style="margin-top:0.5em; margin-bottom:0.5em; cellpadding="0" cellspacing="0">
+					  <tr>
+        				<td class='italobold' nowrap="nowrap" align="right">
+            				{{ calibration.desc }} : R(C)= <span style="font-size: 150%;">&radic;</span>
+        				</td>
+						<td style="border-top:solid 1px black; font-weight: bold; font-style: italic; " nowrap="nowrap">
+            				&nbsp;(t0 + t1 E + t2 E<sup>2</sup>)
+        				</td>
+    				  </tr>
+					</table>
+			     </tr>
+		        {% for c in calibration.coeffs %}
+			      <tr>
+			        <td><i>{{ c.name }} : {{ c.val }}</i></br></td>
+			      </tr>
+				  </tr>
+		        {% endfor %}
+		     </tbody>
+	    </table>
+   {% endif %}
+   
+{% endfor %}
+
+  {% if eff_calibration %}
+    
    <table class="calib">
     <tbody>
      <tr>
-       <th>{{ calibration.desc }} : {{ calibration.form }}</th>
+       <th>Efficiency: </th>
      </tr>
-     {% for c in calibration.coeffs %}
-      <tr>
-        <td>{{ c.name }} : {{ c.val }}</td>
-      </tr>
+     {% for eq in eff_calibration %}
+	    {% if eq.model == 'Exponential' %}
+	       <tr>
+	         <th>equation : {{ eq.form }}</th>
+	       </tr>
+	         {% for c in eq.coeffs %}
+	          <tr>
+	            <td>{{ c.name }} : {{ c.val }}</td>
+	          </tr>
+	         {% endfor %}
+		{% endif %}
      {% endfor %}
      </tbody>
     </table>
-{% endfor %}
+  {% endif %}
 
 </body>
 </html>

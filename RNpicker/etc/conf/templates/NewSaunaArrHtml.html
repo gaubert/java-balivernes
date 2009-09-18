@@ -106,6 +106,18 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		font-weight: bold;
 		font-style: italic;
 	}
+	
+	.smallitalo
+	{
+		font-style: italic;
+		font-size:70%; 
+	}
+	
+	.smallmath
+	{
+		font-style: italic;
+		font-size:70%; 
+	}
     
     table.calib
     {
@@ -189,12 +201,19 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     sub 
 	{ 
       vertical-align: -0.6ex; 
-      font-size:80%; 
+      font-size:75%; 
     }
+	
+	/* only used by the math part. Do not use it for something else */
+	i
+	{
+	  font-size:75%;
+	  /* smaller text within math expressions */
+	}
 	
     span.bigg 
 	{ 
-	   font-size:150%; 
+	   font-size:140%; 
 	}  /* for big math symbols */
 
     span.over 
@@ -239,7 +258,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	{ 
 	  font-size:90%; 
 	}  /* smaller text within math expressions */
-
+	
+	
     p.eqn 
 	{
 		text-align:center;  
@@ -681,8 +701,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <div class="rule"></div>
 
 <h2>Sample Activity Results:</h2>
-
-<p>Sample activities are decay corrected. They give the number of detected decays divided by the measurment time</p>
+<p></p>
+<p class="italobold">Decay corrected sample activities:</p>
 
 <table class="std2">
   <caption></caption>
@@ -710,44 +730,37 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </table>
 <p></p>
 
-<p class="italobold">Non decay corrected values. The following non-decay correction method is used:
-<p></p>
-<table class="std3">
+<p class="italobold">Non decay corrected values:</p>
+<p>The following non-decay correction method is used</p>
+<table >
   <tbody>
-  	<tr>
-      <td class="italobold" colspan="2">With i=ROI region number.</td>
-    </tr>
 	<tr>
-	  <td class="italobold" colspan="2">	ROI 2=Xe135,3=Xe133,5=Xe131m,6=Xe133m </td>
+	  <td class="smallitalo">i = ROI region number.</td>
 	</tr>
-	<tr>
-      <td colspan="2"/>
-    </tr>
 	<tr>
 	   <td>
 	  	 <table class="fraction" cellpadding="0" cellspacing="0" >
            <tr>
             <td rowspan="2">
-              <i>f</i><sub>i</sub> &nbsp; = &nbsp;
+              f<sub>i</sub> &nbsp; = &nbsp;
             </td>
             <td class="eq_centered" nowrap="nowrap">
-             <i>&lambda;</i><sub>i</sub><sup>2</sup>
+             &lambda;<sub>i</sub><sup>2</sup>
             </td>
            </tr>
 		   <tr>
              <td class="upper_line" nowrap="nowrap">
-               (<i>1</i>&minus;<i>e</i><sup>&minus;<i>&lambda;</i><sub>i</sub><i>t</i><sub><i>count</i></sub></sup>)<i>e</i><sup>&minus;<i>&lambda;</i><sub>i</sub><i>t</i><sub><i>prep</i></sub></sup>(<i>1</i>&minus;<i>e</i><sup>&minus;<i>&lambda;</i><sub>i</sub><i>t</i><sub><i>real</i></sub></sup>)
+               (<i>1</i>&minus;<i>e</i><sup>&minus;&lambda;<sub>i</sub>t<sub>count</sub></sup>)<i>e</i><sup>&minus;&lambda;<sub>i</sub>t<sub>prep</sub></sup>(<i>1</i>&minus;<i>e</i><sup>&minus;&lambda;<sub>i</sub>t<sub>real</sub></sup>)
             </td>
           </tr>
          </table>
 	    </td>
-	</tr>
-	<tr>
-	    <td>
+		<td class="smallitalo" cellpadding="0" cellspacing="0" > with </td>
+		<td>
 		   <table class="fraction" cellpadding="0" cellspacing="0" >
              <tr>
                <td rowspan="2">
-                 <i>&lambda;</i><sub>i</sub> &nbsp; = &nbsp;
+                 &lambda;<sub>i</sub> &nbsp; = &nbsp;
                </td>
                <td class="eq_centered" nowrap="nowrap">
                  <i>ln(2)</i> 
@@ -755,14 +768,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
              </tr>
 			 <tr>
                <td class="upper_line" nowrap="nowrap">
-                  <i><span>T</span></i><sub>1/2</sub>
+                  <span><i>T</i></span><sub>1/2</sub>
                </td>
              </tr>
             </table>
 		</td>
 	</tr>
 	<tr>
-      <td class="italobold" colspan="2">For i=2,5,6</td>
 	  <td>
 		<table class="fraction" cellpadding="0" cellspacing="0" >
          <tr>
@@ -774,12 +786,11 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
            </td>
          </tr>
         </table>
-       </td>
-	  
+      </td>
+      <td class="smallitalo" colspan="2">For i = 2 (Xe135) , 5 (Xe131m), 6 (Xe133m)</td>
     </tr>
     <tr>
-      <td class="italobold" colspan="2">For i=3</td>
-	   <td>
+	  <td>
 	   <table class="fraction" cellpadding="0" cellspacing="0">
            <tr>
               <td rowspan="2">
@@ -813,6 +824,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
               <td rowspan="2">
                <span class="bigg">)</span>&nbsp;<i>AC</i><sub>6</sub>
               </td>
+			  <td rowspan="2">&nbsp;&nbsp; 
+              </td>
             </tr>
 			<tr>
               <td class="upper_line" nowrap="nowrap">
@@ -830,6 +843,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
             </tr>
          </table>
 		</td>
+		<td class="smallitalo">For i = 3 (Xe133)</td>
 	</tr>
     <tr>
 	 
@@ -933,18 +947,21 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h2> Calibration Equations </h2>
 
 {% for calibration in calibrations %}
-   <table class="calib">
+	<table class="calib">
     <tbody>
      <tr>
-       <th>{{ calibration.type }} : {{ calibration.form }}</th>
-     </tr>
-     {% for c in calibration.coeffs %}
-      <tr>
-        <td>{{ c.name }} : {{ c.val }}</td>
-      </tr>
-     {% endfor %}
+     	{% if calibration.model == 'Polynomial' %}
+		<th class='italobold'>{{ calibration.desc }} : E(C)= t0 + t1 C + t2 C<sup>2</sup></th>
+       </tr>
+	   {% for c in calibration.coeffs %}
+       <tr>
+        <td><i>{{ c.name }} : {{ c.val }}</i></td>
+       </tr>
+	   {% endfor %}
+	   {% endif %}
      </tbody>
     </table>
+	
 {% endfor %}
 
 </body>
