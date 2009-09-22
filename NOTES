@@ -1,0 +1,6 @@
+1) Push from the xubuntu virtual machine on java-balivernes
+-----------------------------------------------------------
+git push git@github.com:gaubert/java-balivernes.git
+
+to pull 
+git pull git@github.com:gaubert/java-balivernes.git
