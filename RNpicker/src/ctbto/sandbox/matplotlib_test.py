@@ -143,8 +143,9 @@ def test_my_plot():
     
     import matplotlib.pyplot as plt
     import pylab
+    from matplotlib.dates import MONDAY, SATURDAY
     import matplotlib.dates as mdates
-    from matplotlib.dates import YearLocator, MonthLocator, DayLocator, DateFormatter
+    from matplotlib.dates import YearLocator, MonthLocator, DayLocator, WeekdayLocator, DateFormatter
 
 
     #read csv file and get the data
@@ -166,45 +167,77 @@ def test_my_plot():
     
     # figure
     fig = plt.figure()
+    # change the figure margins
+    fig.subplots_adjust(left=0.025, bottom=None, right=None, wspace=None, hspace=None)
+    
+    #send the figure size
+    fig.set_size_inches([17., 6.])
+    
     plot1 = fig.add_subplot(212)
     
     # create plot for XE133
-    plot1.plot_date(pylab.date2num(sorted_dates), XE133_sorted_values, marker='^', color='r') 
+    plot1.plot_date(pylab.date2num(sorted_dates), XE133_sorted_values, marker='^', color='y', label='xe133') 
+    plot1.grid(True)
+
+    #add legend
+    plt.legend(shadow=True, fancybox=True, bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
     
-    #plot2.plot_date(pylab.date2num(sorted_dates), sorted_values, marker='^') 
-    # format
-     
-    #xaxis = plot1.gca().xaxis
+    leg = plot1.get_legend() # all the text.Text instance in the legend
+    for ltext in leg.get_texts():
+        ltext.set_fontsize('small')
+
     xaxis1 = plot1.xaxis
-    
-    # define xaxis beg and end limits
-    #begin = dateutil.parser.parse('2009-07-31 00:00')
-    #end   = dateutil.parser.parse('2009-08-03 00:00')
-    #plt.xlim( (begin,end) )
     
     # format xaxis with dates
     xaxis1.set_major_locator(MonthLocator())
-    xaxis1.set_major_formatter(mdates.DateFormatter('%b-%y'))
+    xaxis1.set_major_formatter(mdates.DateFormatter('%m-%y'))
+    
+    xaxis1.get_label().set_text('Monthly Report')
+    
+    # to put a minor locator and formatter
+    mondays   = WeekdayLocator(MONDAY)
+    #xaxis1.set_major_locator(MonthLocator())
+    #xaxis1.set_major_formatter(mdates.DateFormatter('%m-%y'))
+    
+    #xaxis1.set_minor_locator(mondays)
+    #plot1.autoscale_view()
+
+    print("dir(Axis) = %s\n"%(dir(xaxis1)))
     
     # for day formatting
     #xaxis.set_major_locator(DayLocator())
     #xaxis.set_major_formatter(mdates.DateFormatter('%y-%m-%d'))
 
-    plot1.set_ylim( (0, 1) )
+    plot1.set_ylim( (0, 20) )
+    plot1.set_xlim( (dateutil.parser.parse('01-01-2008'), dateutil.parser.parse('01-01-2009') ) )
     
-    
+    plot1.set_title("CNX22, XE-133 History")
+   
     #create plot for metastables
+    #plot2 = fig.add_subplot(211, sharex=plot1)
     plot2 = fig.add_subplot(211)
     
-    plot2.plot_date(pylab.date2num(sorted_dates), sorted_values, marker='^', color='y') 
-    plot2.plot_date(pylab.date2num(sorted_dates), sorted_values2, marker='*', color='b')
+    plot2.plot_date(pylab.date2num(sorted_dates), XE131M_sorted_values, marker='.', color='b',label='xe131m') 
+    plot2.plot_date(pylab.date2num(sorted_dates), XE133M_sorted_values, marker='.', color='r', label='xe133m')
+    plot2.grid(True)
     
-    xaxis2 = plot1.xaxis
+    xaxis2 = plot2.xaxis
     
     xaxis2.set_major_locator(MonthLocator())
-    xaxis2.set_major_formatter(mdates.DateFormatter('%b-%y'))
+    xaxis2.set_major_formatter(mdates.DateFormatter('%m-%y'))
     
-    plot2.set_ylim( (0, 3) )
+    xaxis2.set_minor_locator(mondays)
+    plot2.autoscale_view()
+
+    plot2.set_ylim( (-1, 1.5) )
+    
+    plt.legend(shadow=True, fancybox=True, bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0.)
+    
+    leg = plot2.get_legend() # all the text.Text instance in the legend
+    for ltext in leg.get_texts():
+        ltext.set_fontsize('small')
+
+    plot2.set_title("CNX22, Metastables History")
     
      # to have tick names in diagonals
     fig.autofmt_xdate()
@@ -212,11 +245,66 @@ def test_my_plot():
     #save figure
     plt.savefig('/tmp/example.png',format='png')
     
+    plt.savefig('/tmp/example.svg',format='svg')
+    
     plt.show()
+
+def test_legend():
+    from matplotlib.pyplot import *
+
+    subplot(211)
+    plot([1,2,3], label="test1")
+    plot([3,2,1], label="test2")
+    #legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=2, mode="expand", borderaxespad=0.)
+
+    subplot(223)
+    plot([1,2,3], label="test1")
+    plot([3,2,1], label="test2")
+    legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+
+    show()
+
+def make_thumbnail():
+    """ make a simple thumbnail """
+    from PIL import Image
+    from cStringIO import StringIO
+    
+    # Set our max thumbnail size in a tuple (max width, max height)
+    THUMBNAIL_SIZE = (600, 600)
+
+    # Open original photo which we want to thumbnail using PIL's Image
+    # object
+    image = Image.open("/tmp/example.png")
+
+    # Convert to RGB if necessary
+    # Thanks to Limodou on DjangoSnippets.org
+    # http://www.djangosnippets.org/snippets/20/
+    if image.mode not in ('L', 'RGB'):
+        image = image.convert('RGB')
+
+     # We use our PIL Image object to create the thumbnail, which already
+    # has a thumbnail() convenience method that contrains proportions.
+    # Additionally, we use Image.ANTIALIAS to make the image look better.
+    # Without antialiasing the image pattern artifacts may result.
+    image.thumbnail(THUMBNAIL_SIZE, Image.ANTIALIAS)
+
+    # Save the thumbnail
+    image.save("/tmp/thumbnail-example.png", 'png')
+
+
+
+
+
+    
+    
+    
+
+
     
 def test_read_csv():
     import csv
-    csvReader = csv.reader(open('/home/aubert/cnx22-XE133-XE131M-XE133M.csv'), delimiter=',', quotechar='"')
+    csvReader = csv.reader(open('/home/gaubert/cnx22-XE133-XE131M-XE133M.csv'), delimiter=',', quotechar='"')
     
     XE133_dict  = {}
     XE131M_dict = {}
@@ -237,5 +325,7 @@ def test_read_csv():
     return  (XE131M_dict, XE133M_dict, XE133_dict)
 
 if __name__ == '__main__':
-    #test_read_csv()
+    #test_legend()
     test_my_plot()
+    
+    #make_thumbnail()
