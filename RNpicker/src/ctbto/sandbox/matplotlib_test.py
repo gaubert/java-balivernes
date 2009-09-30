@@ -23,19 +23,6 @@ def test_figure0():
     plt.ylabel('some numbers')
     plt.show()
 
-
-
-def test_figure1():
-    import numpy as np
-    import matplotlib
-    import matplotlib.pyplot as plt
-
-    matplotlib.rcParams['axes.unicode_minus'] = False
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(10*np.random.randn(100), 10*np.random.randn(100), 'o')
-    ax.set_title('My first Test')
-    plt.show()
     
 def test_multiple_figures():
     import matplotlib.pyplot as plt
@@ -292,19 +279,9 @@ def make_thumbnail():
     # Save the thumbnail
     image.save("/tmp/thumbnail-example.png", 'png')
 
-
-
-
-
-    
-    
-    
-
-
-    
 def test_read_csv():
     import csv
-    csvReader = csv.reader(open('/home/gaubert/cnx22-XE133-XE131M-XE133M.csv'), delimiter=',', quotechar='"')
+    csvReader = csv.reader(open('/home/aubert/workspace/RNpicker/src/ctbto/sandbox/cnx22-XE133-XE131M-XE133M.csv'), delimiter=',', quotechar='"')
     
     XE133_dict  = {}
     XE131M_dict = {}

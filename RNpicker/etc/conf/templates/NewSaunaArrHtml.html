@@ -851,6 +851,33 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 
+<p></p>
+
+<table class="std2">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th class="centre">Nuclide</th>
+      <th class="centre">Activity (Bq)</th>
+      <th class="centre">Abs Activity Error (Bq)</th>
+      <th class="centre">Critical Limit (Bq)</th>
+      <th class="centre">Detection Limit (Bq)</th>
+    </tr>
+   {% for a_item in activities_nuclides %}
+    <tr>
+      <td class="centre">{{ a_item.name }}</td>
+      <td class="centre">{{ a_item.activity }}</td>
+      <td class="centre" title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
+      <td class="centre">{{ a_item.lc }}</td>
+      <td class="centre">{{ a_item.ld }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+
 <div class="page-break"></div> 
 
 <h2>Processing Specific Parameters and Results:</h2>

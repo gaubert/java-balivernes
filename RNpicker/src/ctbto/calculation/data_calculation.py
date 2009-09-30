@@ -21,6 +21,11 @@ import math
 class NobleGasDecayCorrector(object):
     """ Apply decay correction on the noble gas activity concentration  """
     
+    XE131M = 'XE-131M'
+    XE133M = 'XE-133M'
+    XE135  = 'XE-135'
+    XE133  = 'XE-133'
+    
     # Class members
     c_log = logging.getLogger("NobleGasDecayCorrector")
     c_log.setLevel(logging.INFO)
@@ -122,7 +127,33 @@ class NobleGasDecayCorrector(object):
                                          
         return fi_result
     
-    def undecay_correct(self, a_XE131M_act, a_XE133_act, a_XE133M_act, a_XE135_act):
+    def undecay_correct(self,  a_iso_type, *args):
+        """ undecay correct for one unique nuclide.
+            Except a_iso_type which defines the type of isotope and one or two concentrations.
+            One in the case of XE131M, XE133M and XE135 two for XE133
+        """
+        
+        if len(args) <= 0 and len(args) > 2:
+            Exception("This method can accept only 1 or two variable arguments using the *args method")
+        
+        cls = self.__class__
+        
+        if a_iso_type in (cls.XE131M, cls.XE133M, cls.XE135):
+            
+            if len(args) != 1:
+                Exception("Should only have one variable arg in the case of XE-131, XE-133M, XE-135")
+            
+            return self.undecay_correct_method1(a_iso_type, args[0])
+        elif a_iso_type == cls.XE133:
+            
+            if len(args) != 2:
+                Exception("Should have two variable args in the case of XE-133")
+            
+            return self.undecay_correct_method2(args[0], args[1])
+        else:
+            raise Exception("unknown type %s\n" % (a_iso_type))
+    
+    def undecay_correct_all(self, a_XE131M_act, a_XE133_act, a_XE133M_act, a_XE135_act):
         """ get all activities of all XE isotopes for a particular sample and undecay correct them 
         """
         
@@ -150,7 +181,7 @@ class NobleGasDecayCorrector(object):
         
         return Decimal(str(a_activity_concentration)) * fi 
     
-    def undecay_correct_method2(self,a_XE133_activity_concentration,a_XE133M_activity_concentration):
+    def undecay_correct_method2(self, a_XE133_activity_concentration, a_XE133M_activity_concentration):
         """ undecay correction for XE133 is special due to the metastable isotopes """
         
         XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133',None)
@@ -283,7 +314,9 @@ class TestDataModule(unittest.TestCase):
                         
         nbCorrector = NobleGasDecayCorrector(coll_start, coll_stop,acq_start, acq_stop)
         
-        (X_131M_uncorr , X_133_uncorr, X_133M_uncorr, X_135_uncorr) = nbCorrector.undecay_correct(XE_131M_conc, XE_133_conc, XE_133M_conc, XE_135_conc)
+        nbCorrector.undecay_correct(NobleGasDecayCorrector.XE131M, XE_131M_conc)
+        
+        (X_131M_uncorr , X_133_uncorr, X_133M_uncorr, X_135_uncorr) = nbCorrector.undecay_correct_all(XE_131M_conc, XE_133_conc, XE_133M_conc, XE_135_conc)
         
         print("131M  (corr, uncorr) = (%f, %f) \n, 133  (corr, uncorr) = (%f, %f) \n, 133M  (corr, uncorr) = (%f, %f) \n, 135  (corr, uncorr) = (%f, %f) \n" % \
               (XE_131M_conc, X_131M_uncorr, \
