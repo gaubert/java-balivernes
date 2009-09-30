@@ -968,6 +968,7 @@ class SaunaRenderer(BaseRenderer):
             dummy_template = re.sub("\${ACTIVITY}", str(nuclide['ACTIVITY']), dummy_template)
             dummy_template = re.sub("\${ACTIVITY_ERROR}", str(nuclide['ACTIVITY_ERR']), dummy_template)
             dummy_template = re.sub("\${ACTIVITY_ERROR_PERC}", str(nuclide.get('ACTIVITY_ERR_PERC', UNDEFINED)), dummy_template)
+            dummy_template = re.sub("\${U_ACTIVITY}", str(nuclide.get('UNDECAYED_ACT', UNDEFINED)), dummy_template)
             dummy_template = re.sub("\${MDC}", "%s" % (str(nuclide['MDC'])), dummy_template)
             # LC and LD in concentration
             dummy_template = re.sub("\${LC}", "%s" % (str(nuclide['LC'])), dummy_template)

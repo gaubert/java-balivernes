@@ -41,7 +41,7 @@ class SAUNAXML2HTMLRenderer(object):
         return self._template.render(self._context)    
       
     def _fill_values(self, aXmlPath):
-        
+        """ fill the values """
         dom_tree = etree.parse(open(aXmlPath,'r'))
        
         root = dom_tree.getroot()
@@ -66,13 +66,15 @@ class SAUNAXML2HTMLRenderer(object):
         res = root.xpath(expr, name = "Coordinates")
         if len(res) > 0:
             dummy_str = res[0].text
-            if dummy_str != None:
-                (lat,lon,height) = dummy_str.split(' ')
+            if dummy_str:
+                (lat, lon, height) = dummy_str.split(' ')
                 self._context['station_lat'] = lat
                 self._context['station_lon'] = lon
                 self._context['station_height'] = height
-                self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=3"%(lat,lon,self._context['station_code'])
-                self._context['station_static_gmaps'] = "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=%s,%s,greens"%(lat,lon,lat,lon)
+                self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=3" \
+                                                     % (lat, lon, self._context['station_code'])
+                self._context['station_static_gmaps'] = "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=%s,%s,greens"\
+                                                     % (lat, lon, lat, lon)
             else:
                 self._context['station_lat']    = UNDEFINED
                 self._context['station_lon']    = UNDEFINED

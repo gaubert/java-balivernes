@@ -12,9 +12,10 @@ import ctbto.common.time_utils
 import ctbto.db.rndata
 import sqlrequests
 
-from ctbto.query import RequestParser
-from ctbto.common   import CTBTOError
-from org.ctbto.conf import Conf
+from ctbto.query       import RequestParser
+from ctbto.common      import CTBTOError
+from ctbto.calculation import NobleGasDecayCorrector 
+from org.ctbto.conf    import Conf
 
 UNDEFINED="N/A"
 
@@ -1336,40 +1337,81 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         res = []
         data = {}
         
+        # create undecay corrector
+        coll_start = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_DATA_COLLECT_START' % (dataname), {}))
+        coll_stop  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_DATA_COLLECT_STOP' % (dataname), {}))
+        acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_DATA_ACQ_START' % (dataname), {}))
+        acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_DATA_ACQ_STOP' % (dataname), {}))
+        
+        nbCorrector = NobleGasDecayCorrector(coll_start, coll_stop, acq_start, acq_stop)
+        xe133_data  = None
+        xe133_act  = None
+        xe133M_act = None
+        
         for row in rows:
             data.update(row.items())  
             
-            nidflag = data.get(u'NID_FLAG',None)
+            nidflag = data.get(u'NID_FLAG', None)
 
             # check if there is NID key
             if nidflag is not None:
-                val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
+                val = DBDataFetcher.c_nid_translation.get(nidflag, nidflag)
                 data[u'NID_FLAG']     = val
                 data[u'NID_FLAG_NUM'] = nidflag
         
           
             # get activity. If no volume or no activity results are 0
-            data[u'ACTIVITY'] = data.get(u'CONC',0) * corr_volume
-            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0) * corr_volume
+            data[u'ACTIVITY'] = data.get(u'CONC', 0) * corr_volume
+            data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR', 0) * corr_volume
             
-            SaunaNobleGasDataFetcher.c_log.debug("Vol = %s, corr_vol = %s, activity = %s, concentration = %s \n"%(aux.get('XE_VOLUME',0), corr_volume, data.get(u'CONC',0) * corr_volume, data.get(u'CONC',0)))
+            SaunaNobleGasDataFetcher.c_log.debug("Vol = %s, corr_vol = %s, activity = %s, concentration = %s \n" \
+                                                 % (aux.get('XE_VOLUME', 0), corr_volume, \
+                                                    data.get(u'CONC', 0) * corr_volume, \
+                                                    data.get(u'CONC', 0)))
           
             # to avoid div by 0 check that quotient is not nul
             if data[u'ACTIVITY'] != 0:
-                data[u'ACTIVITY_ERR_PERC'] = abs((data.get(u'ACTIVITY_ERR',0) * 100) / data.get(u'ACTIVITY'))
+                data[u'ACTIVITY_ERR_PERC'] = abs((data.get(u'ACTIVITY_ERR', 0) * 100) / data.get(u'ACTIVITY'))
+                
+                # add undecay corrected activity concentration if not XE133
+                # if XE133 memorize both XE133 and XE133M
+                if data['NAME'] != nbCorrector.XE133:
+                    data[u'UNDECAYED_ACT'] = float(nbCorrector.undecay_correct(data['NAME'], data.get(u'ACTIVITY')))
+                    
+                    if data['NAME'] == nbCorrector.XE133M:
+                        xe133M_act = data.get(u'ACTIVITY')
+                    else:
+                        # XE133
+                        xe133_act  = data.get(u'ACTIVITY')      
+                
           
             # add concentration error in percent
-            if data.get(u'CONC',0) != 0:
-                data[u'CONC_ERR_PERC'] = abs((data.get(u'CONC_ERR',0) * 100) / data.get(u'CONC'))
-          
-            data[u'LC_ACTIVITY'] = data.get(u'LC',0) * corr_volume 
-            data[u'LD_ACTIVITY'] = data.get(u'LD',0) * corr_volume
-          
-            res.append(data)
+            if data.get(u'CONC', 0) != 0:
+                data[u'CONC_ERR_PERC'] = abs((data.get(u'CONC_ERR', 0) * 100) / data.get(u'CONC'))
+                
+               
+
+                         
+                
+            data[u'LC_ACTIVITY'] = data.get(u'LC', 0) * corr_volume 
+            data[u'LD_ACTIVITY'] = data.get(u'LD', 0) * corr_volume
+            
+            
+            if data['NAME'] != nbCorrector.XE133:
+                res.append(data)
+            else:
+                xe133_data = data
+            
             data = {}
 
+        
+        # calculate undecay corrected values for XE133
+        if xe133_act != 0:
+            xe133_data[u'UNDECAYED_ACT'] = float(nbCorrector.undecay_correct(nbCorrector.XE133, xe133_act, xe133M_act))
+            res.append(xe133_data)
+
         # add in dataBag
-        self._dataBag[u'%s_IDED_NUCLIDES'%(dataname)] = res
+        self._dataBag[u'%s_IDED_NUCLIDES' % (dataname)] = res
             
         result.close()
     
