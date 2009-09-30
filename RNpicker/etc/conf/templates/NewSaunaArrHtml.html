@@ -674,6 +674,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h2>Activity Concentration Summary</h2>
 
 <h4>Nuclide Quantified:</h4>
+{% if quantified_nuclides|length == 0 %}
+    N/A
+{% else %}
 <table class="std1">
   <tbody>
     <tr>
@@ -692,9 +695,12 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
 
 <h4>MDCs for nuclides not quantified:</h4>
-
+{% if non_quantified_nuclides|length == 0 %}
+    N/A
+{% else %}
 <table class="std1">
   <caption></caption>
   <col />
@@ -715,6 +721,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
    {% endfor %}
   </tbody>
 </table>
+{% endif %}
 <p></p>
 <div class="rule"></div>
 
@@ -757,7 +764,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	</tr>
 	<tr>
 	   <td>
-	  	 <table class="fraction" cellpadding="0" cellspacing="0" >
+	  	 <table class="inline_frac" cellpadding="0" cellspacing="0" >
            <tr>
             <td rowspan="2">
               f<sub>i</sub> &nbsp; = &nbsp;
@@ -775,7 +782,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	    </td>
 		<td class="smallitalo" cellpadding="0" cellspacing="0" > with </td>
 		<td>
-		   <table class="fraction" cellpadding="0" cellspacing="0" >
+		   <table class="inline_frac" cellpadding="0" cellspacing="0" >
              <tr>
                <td rowspan="2">
                  &lambda;<sub>i</sub> &nbsp; = &nbsp;
@@ -794,7 +801,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	</tr>
 	<tr>
 	  <td>
-		<table class="fraction" cellpadding="0" cellspacing="0" >
+		<table class="inline_frac" cellpadding="0" cellspacing="0" >
          <tr>
            <td rowspan="2">
             <i>AC</i><sub>i,uncorr</sub> &nbsp; = &nbsp;
@@ -809,7 +816,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
     <tr>
 	  <td>
-	   <table class="fraction" cellpadding="0" cellspacing="0">
+	   <table class="inline_frac" cellpadding="0" cellspacing="0">
            <tr>
               <td rowspan="2">
                 <i>AC</i><sub>3,uncorr</sub> 
