@@ -125,11 +125,11 @@ class SAUNAXML2HTMLRenderer(object):
         #dateExpr = "//*[local-name() = \"Spectrum\" and ends-with(@id,\"SPHD-G\")]"
         # no ends-with in xpath 1.0 use contains instead substring('','') as it is simpler
         # and it does the trick
-        dateExpr             = "//*[local-name() = $name and contains(@id,$suffix)]"
+        date_expr            = "//*[local-name() = $name and contains(@id,$suffix)]"
         curr_spectrum_id     = None
  
         # res is Element Spectrum 
-        res = root.xpath(dateExpr,suffix = 'SPHD',name   = 'SpectrumGroup')
+        res = root.xpath(date_expr,suffix = 'SPHD',name   = 'SpectrumGroup')
         if len(res) > 0:
             elem = res[0]
             # get attribute id
@@ -149,6 +149,15 @@ class SAUNAXML2HTMLRenderer(object):
            
             # get quantity
             res = elem.xpath(expr,name = "ProcessedAirVolume")
+            if len(res) == 0:
+                self._context['processed_air_volume']      = UNDEFINED
+                self._context['processed_air_volume_unit'] = "" 
+            else:
+                self._context['processed_air_volume']      = utils.round_as_string(res[0].text, 3)
+                self._context['processed_air_volume_unit'] = res[0].get('unit') 
+            
+            # get sample quantity
+            res = elem.xpath(expr,name = "SampleQuantity")
             if len(res) == 0:
                 self._context['sample_quantity']      = UNDEFINED
                 self._context['sample_quantity_unit'] = "" 
@@ -204,7 +213,7 @@ class SAUNAXML2HTMLRenderer(object):
         # add Activity Concentration for Nuclides
         #concNuclideExpr = "//*[local-name() = $name and contains(@spectrumIDs,'NOX49-239646-SPHD-G')]"
         concNuclideExpr = "//*[local-name() = $name and contains(@spectrumIDs,$spectrum_id)]"
-        res = root.xpath(concNuclideExpr,name = "Analysis",spectrum_id=curr_spectrum_id )
+        res = root.xpath(concNuclideExpr, name = "Analysis", spectrum_id=curr_spectrum_id )
         if len(res) > 0:
             analysis_elem = res[0]
             # get all ided nuclides
@@ -212,6 +221,7 @@ class SAUNAXML2HTMLRenderer(object):
             q_nuclides  = []
             nq_nuclides = []
             a_nuclides  = []
+            un_a_nuclides = []
             # iterate over the children of ided nuclides => the nuclides
             for nuclide in res:
               
@@ -243,14 +253,30 @@ class SAUNAXML2HTMLRenderer(object):
                     nq_nuclides.append(d)
                 
                 # in any cases fill Activity results dict
-                d = {}
-                d['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['activity']          = utils.round_as_string(nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['activity_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['activity_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['lc']                = utils.round_as_string(nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                d['ld']                = utils.round_as_string(nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text,RDIGITS)
-                a_nuclides.append(d)
+                dummy = {}
+                
+                dummy['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                
+                dummy['activity']          = utils.round_as_string(nuclide.find('{%s}Activity' \
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                dummy['activity']          = utils.round_as_string(nuclide.find('{%s}Activity'\
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                
+                dummy['undecay_corr_activity']          = utils.round_as_string(nuclide.find('{%s}UndecayCorrectedActivity'\
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                
+                dummy['activity_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteActivityError'\
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                dummy['activity_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeActivityError'\
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                dummy['lc']                = utils.round_as_string(nuclide.find('{%s}LCActivity'\
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                dummy['ld']                = utils.round_as_string(nuclide.find('{%s}LDActivity'\
+                                             % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                a_nuclides.append(dummy)
+                
+                
+                
            
             self._context['non_quantified_nuclides'] = nq_nuclides
             self._context['quantified_nuclides']     = q_nuclides 
@@ -355,7 +381,7 @@ class SAUNAXML2HTMLRenderer(object):
                 d['result'] = timeflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 try:
                     d['value']  = utils.round_as_string(timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text,HDIGITS)
-                except Exception, e:
+                except Exception, _:
                     #cannot convert this number value so put the string as it is
                     d['value']  = timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                     
