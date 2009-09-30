@@ -2,10 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-  <title>ArrHtml</title>
+  <title>NewSpalaxArrHtml</title>
 </head>
 
 <body>
+<script type="text/javascript">
+function show(){
+var oIfr = document.getElementById('mapiframe');
+oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
+}
+</script>
 <script type="text/javascript">
 function show(){
 var oIfr = document.getElementById('mapiframe');
@@ -74,15 +80,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
-	table.std1
-    {
-       width: 80%;
-       border: 0;
-       text-align: center;
-       border-collapse: separate;
-       empty-cells: show
-    }
-	
 	table.std2
     {
        width: 100%;
@@ -92,13 +89,31 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
        empty-cells: show
     }
     
-    table.calib
+    table.std1
     {
-       width: 100%;
+       width: 80%;
        border: 0;
        text-align: center;
        border-collapse: separate;
-       empty-cells: show 
+       empty-cells: show
+    }
+	
+	table.std3
+    {
+       width: 50%;
+       border: 0;
+       text-align: center;
+       border-collapse: separate;
+       empty-cells: show
+    }
+	
+	table.std4
+    {
+       width: 50%;
+       border: 0;
+       text-align: left;
+       border-collapse: separate;
+       empty-cells: show
     }
 	
 	.italobold
@@ -118,6 +133,15 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		font-style: italic;
 		font-size:70%; 
 	}
+    
+    table.calib
+    {
+       width: 100%;
+       border: 0;
+       text-align: center;
+       border-collapse: separate;
+       empty-cells: show 
+    }
     
     .rule 
     {
@@ -275,20 +299,12 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	/* ---------------------------------------- */
 	/* End of Math part for rendering equations */
 	/* ---------------------------------------- */
+
   }
   
   /* screen syle */
   @media screen
   {
-  	table.std3
-    {
-       width: 80%;
-       border: 0;
-       text-align: center;
-       border-collapse: separate;
-       empty-cells: show
-    }
-  	
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
@@ -415,7 +431,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  	{
  	  font-size   : 12px; 
  	} 
-    
+	
+	
     th
     {
 	   font-size   : 14px;
@@ -441,36 +458,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	   font-size: 14px;
 	   text-align: justify;
 	}
-	
-	td.lbold
-    {
-	   font-size   : 14px;
-	   font-weight : bold;
-	   text-align  : left;
-	}
   }
   
   /* printer style */
   @media print
   {
-  	table.std3
-    {
-       width: 100%;
-       border: 0;
-       text-align: center;
-       border-collapse: separate;
-       empty-cells: show
-    }
-	
     /* ---------------------------- */
     /* Custom part defined by CTBTO */
     /* ---------------------------- */
     body 
     {
 	   background: white;
-	   font-size: 10pt;
-	   /*font-family : verdana,arial,sans-serif;*/
-	   font-family:times new roman, serif;
+	   font-size: 8pt;
+	   font-family : verdana,arial,sans-serif;
+	   /*font-family:times new roman, serif;*/
 	   margin-top: 10pt;
 	   margin-bottom: 10pt;
 	   margin-right: 10pt;
@@ -504,7 +505,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	
 	h4
 	{
-	  font-size   : 10pt;
+	  font-size   : 8pt;
 	  font-weight : bold;
 	  font-style  : italic;
 	  margin-top: 4pt;
@@ -514,7 +515,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  	
  	p       
  	{ 
- 	  font-size:10pt; 
+ 	  font-size:8pt; 
  	  margin:0 0 10pt 0; 
  	}  
     
@@ -525,38 +526,40 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       height: 3pt;
       text-align: center;
     } 
+	
+	table.std4
+    {
+       width: 70%;
+       border: 0;
+       text-align: left;
+       border-collapse: separate;
+       empty-cells: show
+    } 
     
     th
     {
-	   font-size   : 10pt;
+	   font-size   : 8pt;
 	   font-weight : bold;
 	   text-align  : left;
 	}
     
     td 
     {
-	   font-size: 10pt;
+	   font-size: 8pt;
 	   text-align: left;
 	}
     
     th.centre 
     {
-	   font-size   : 10pt;
+	   font-size   : 8pt;
 	   font-weight : bold;
-	   text-align  : left;
+	   text-align  : justify;
 	}
     
     td.centre 
     {
-	   font-size: 10pt;
-	   text-align: left;
-	}
-	
-	td.lbold
-    {
-	   font-size   : 10pt;
-	   font-weight : bold;
-	   text-align  : left;
+	   font-size: 8pt;
+	   text-align: justify;
 	}
 	
 	a
@@ -566,22 +569,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     
     .coord
  	{
- 	  font-size   : 10pt; 
+ 	  font-size   : 8pt; 
  	  display     : inline;
  	} 
     
 	
 	/* page break */
-	.page-break 
-	{ 
-	  border-top: 2pt solid #000;
-      width: 90%;
-      height: 3pt;
-      text-align: center;
-	  
-	  display:block; 
-	  page-break-before:always; 
-	}  
+	.page-break { display:block; page-break-before:always; }  
 	
 	
 	.preview 
@@ -692,6 +686,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h2>Activity Concentration Summary</h2>
 
 <h4>Nuclide Quantified:</h4>
+
+{% if quantified_nuclides|length == 0 %}
+ N/A
+{% else %}
 <table class="std1">
   <tbody>
     <tr>
@@ -710,6 +708,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     {% endfor %}
   </tbody>
 </table>
+
+{% endif %}
 
 <h4>MDCs for nuclides not quantified:</h4>
 
@@ -848,28 +848,22 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
    {% endif %}
    
     {% if calibration.desc == 'Resolution' %}
+	    <table>
+	    	<tr>
+                <td class='italobold' nowrap="nowrap">
+                  {{ calibration.desc }} : R(C)= <span style="font-size: 150%;">&radic;</span>
+                </td>
+	            <td style="border-top:solid 1px black; font-weight: bold; font-style: italic; " nowrap="nowrap">
+            	  &nbsp;(t0 + t1 E + t2 E<sup>2</sup>)
+                </td>
+            </tr>
+        </table>
 	    <table class="calib">
-		     <tbody>
-			     <tr>
-					<!-- <table style="margin-top:0.5em; margin-bottom:0.5em; text-align: center;"align="center" cellpadding="0" cellspacing="0" > -->
-    				  <table style="margin-top:0.5em; margin-bottom:0.5em; cellpadding="0" cellspacing="0">
-					  <tr>
-        				<td class='italobold' nowrap="nowrap" align="right">
-            				{{ calibration.desc }} : R(C)= <span style="font-size: 150%;">&radic;</span>
-        				</td>
-						<td style="border-top:solid 1px black; font-weight: bold; font-style: italic; " nowrap="nowrap">
-            				&nbsp;(t0 + t1 E + t2 E<sup>2</sup>)
-        				</td>
-    				  </tr>
-					</table>
-			     </tr>
 		        {% for c in calibration.coeffs %}
 			      <tr>
-			        <td><i>{{ c.name }} : {{ c.val }}</i></br></td>
+			        <td><i>{{ c.name }} : {{ c.val }}</i></td>
 			      </tr>
-				  </tr>
 		        {% endfor %}
-		     </tbody>
 	    </table>
    {% endif %}
    
@@ -877,24 +871,36 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
   {% if eff_calibration %}
     
-   <table class="calib">
-    <tbody>
-     <tr>
-       <th>Efficiency: </th>
-     </tr>
-     {% for eq in eff_calibration %}
-	    {% if eq.model == 'Exponential' %}
-	       <tr>
-	         <th>equation : {{ eq.form }}</th>
-	       </tr>
-	         {% for c in eq.coeffs %}
-	          <tr>
-	            <td>{{ c.name }} : {{ c.val }}</td>
-	          </tr>
-	         {% endfor %}
-		{% endif %}
-     {% endfor %}
-     </tbody>
+   <table class="calib" cellpadding="0" cellspacing="0" >
+	 <tr>
+	  <td class='italobold' nowrap="nowrap">Efficiency: E(L) = e<sup>(t0 + t1 L + t2 L<sup>2</sup> + t3 L<sup>3</sup> + t4 L<sup>4</sup> + t5 L<sup>5</sup>)</sup></td>
+	 </tr>
+	 {% for c in eff_calibration[1].coeffs %}
+	 <tr>
+	   <td><i>{{ c.name }} : {{ c.val }}</i></td>
+	 </tr>
+	 {% endfor %}
+	 <tr>
+		 <td>
+		   <table class="inline_frac" cellpadding="0" cellspacing="0">
+				 <tr>
+		           <td style="font-weight: bold;" rowspan="2">
+		            with L(E) &nbsp; =  &nbsp;
+		           </td>
+		           <td class="eq_centered" style="font-weight: bold;">
+		             ln(t0)
+		           </td>
+			     <tr>
+		           <td class="upper_line" style="font-weight: bold; text-align: center;" nowrap="nowrap">
+		             <span>E</span>
+		           </td>
+		         </tr>
+				 <tr>
+		           <td><i>t0 : {{ eff_calibration[0].coeffs[0].val }}</i></td>
+		         </tr>
+		   </table>
+		 </td>
+	 </tr>
     </table>
   {% endif %}
 
