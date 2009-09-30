@@ -608,8 +608,9 @@ class SPALAXXML2HTMLRenderer(object):
                 self._context['xe_vol']      = UNDEFINED
                 self._context['xe_vol_unit'] = "" 
             else:
-                self._context['xe_vol']      = utils.round_as_string(res[0].text, 3)
-                self._context['xe_vol_unit'] = res[0].get('unit') 
+                self._context['xe_vol']      = utils.round_as_string(res[0].text, 3) if res[0].text != UNDEFINED else UNDEFINED
+                if res[0].text != UNDEFINED:
+                    self._context['xe_vol_unit'] = res[0].get('unit') 
            
             # all timing information
             c_start = time_utils.getOracleDateFromISO8601(elem.xpath(expr, name = "CollectionStart")[0].text)
