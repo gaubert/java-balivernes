@@ -101,6 +101,15 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
        empty-cells: show
     }
 	
+	table.std4
+    {
+       width: 50%;
+       border: 0;
+       text-align: left;
+       border-collapse: separate;
+       empty-cells: show
+    }
+	
 	.italobold
 	{
 		font-weight: bold;
@@ -416,9 +425,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  	{
  	  font-size   : 12px; 
  	} 
-    
-    
-    
+	
+	
     th
     {
 	   font-size   : 14px;
@@ -455,7 +463,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     body 
     {
 	   background: white;
-	   font-size: 10pt;
+	   font-size: 8pt;
 	   font-family : verdana,arial,sans-serif;
 	   /*font-family:times new roman, serif;*/
 	   margin-top: 10pt;
@@ -491,7 +499,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	
 	h4
 	{
-	  font-size   : 10pt;
+	  font-size   : 8pt;
 	  font-weight : bold;
 	  font-style  : italic;
 	  margin-top: 4pt;
@@ -501,7 +509,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  	
  	p       
  	{ 
- 	  font-size:10pt; 
+ 	  font-size:8pt; 
  	  margin:0 0 10pt 0; 
  	}  
     
@@ -512,30 +520,39 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       height: 3pt;
       text-align: center;
     } 
+	
+	table.std4
+    {
+       width: 70%;
+       border: 0;
+       text-align: left;
+       border-collapse: separate;
+       empty-cells: show
+    } 
     
     th
     {
-	   font-size   : 10pt;
+	   font-size   : 8pt;
 	   font-weight : bold;
 	   text-align  : left;
 	}
     
     td 
     {
-	   font-size: 10pt;
+	   font-size: 8pt;
 	   text-align: left;
 	}
     
     th.centre 
     {
-	   font-size   : 10pt;
+	   font-size   : 8pt;
 	   font-weight : bold;
-	   text-align  : center;
+	   text-align  : justify;
 	}
     
     td.centre 
     {
-	   font-size: 10pt;
+	   font-size: 8pt;
 	   text-align: justify;
 	}
 	
@@ -546,7 +563,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     
     .coord
  	{
- 	  font-size   : 10pt; 
+ 	  font-size   : 8pt; 
  	  display     : inline;
  	} 
     
@@ -617,17 +634,18 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </div>
 <table class="std1">
   <tbody>
-    <tr>
+     <tr>
       <td>Sample ID: {{sample_id}}</td>
       <td>Sample Geometry: {{sample_geometry}}</td>
     </tr>
     <tr>
-      <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
-      <td >Sample Type: {{sample_type}}</td>
+      <td>Total Processed Air Quantity : {{processed_air_volume}} {{processed_air_volume_unit}}</td>
+	  <td >Sample Type: {{sample_type}}</td>
     </tr>
-    <tr>
-      <td colspan="2"></td>
-    </tr>
+	<tr>
+		<td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
+		<td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
+	</tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
       <td>Sampling Time: {{sampling_time}}</td>
@@ -642,7 +660,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
     <tr>
       <td>Acquisition Stop: {{acquisition_stop}}</td>
-      <td>Avg Flow Rate (m3/h): {{avg_flow_rate}}</td>
+	  <td colspan="1"></td>
     </tr>
   </tbody>
 </table>
@@ -712,10 +730,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">Activity (Bq)</th>
-      <th class="centre">Abs Activity Error (Bq)</th>
-      <th class="centre">Critical Limit (Bq)</th>
-      <th class="centre">Detection Limit (Bq)</th>
+      <th class="centre">Activity (mBq)</th>
+      <th class="centre">Abs Activity Error (mBq)</th>
+      <th class="centre">Critical Limit (mBq)</th>
+      <th class="centre">Detection Limit (mBq)</th>
     </tr>
    {% for a_item in activities_nuclides %}
     <tr>
@@ -853,32 +871,42 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <p></p>
 
-<table class="std2">
+<table class="std4">
   <caption></caption>
   <col />
   <col />
   <col />
-  <tbody>
+  <!--<tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">Activity (Bq)</th>
-      <th class="centre">Abs Activity Error (Bq)</th>
-      <th class="centre">Critical Limit (Bq)</th>
-      <th class="centre">Detection Limit (Bq)</th>
+      <th class="centre">Nondecay Corrected Activity (mBq)</th>
+      <th class="centre">Abs Activity Error (mBq)</th>
     </tr>
    {% for a_item in activities_nuclides %}
     <tr>
       <td class="centre">{{ a_item.name }}</td>
-      <td class="centre">{{ a_item.activity }}</td>
+      <td class="centre">{{ a_item.undecay_corr_activity }}</td>
       <td class="centre" title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
-      <td class="centre">{{ a_item.lc }}</td>
-      <td class="centre">{{ a_item.ld }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>-->
+  <tbody>
+    <tr>
+      <th>Nuclide</th>
+      <th>Nondecay Corrected Activity (mBq)</th>
+      <th>Abs Activity Error (mBq)</th>
+    </tr>
+   {% for a_item in activities_nuclides %}
+    <tr>
+      <td>{{ a_item.name }}</td>
+      <td>{{ a_item.undecay_corr_activity }}</td>
+      <td title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
     </tr>
    {% endfor %}
   </tbody>
 </table>
 
-<div class="page-break"></div> 
+<div class="rule"></div>
 
 <h2>Processing Specific Parameters and Results:</h2>
 
@@ -942,7 +970,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 <p></p>
-<div class="rule"></div>
+
+<div class="rule"></div> 
+
 
 <h2> Timeliness and Data Quality Flags </h2>
 
@@ -971,6 +1001,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <p></p>
 
 <div class="page-break"></div>
+
 <h2> Calibration Equations </h2>
 
 {% for calibration in calibrations %}
