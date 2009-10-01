@@ -151,7 +151,7 @@ class SAUNAXML2HTMLRenderer(object):
            
             # get quantity
             res = elem.xpath(expr, name = "ProcessedAirVolume")
-            if len(res) == 0:
+            if len(res) == 0 or res[0].text == UNDEFINED:
                 self._context['processed_air_volume']      = UNDEFINED
                 self._context['processed_air_volume_unit'] = "" 
             else:
@@ -160,7 +160,7 @@ class SAUNAXML2HTMLRenderer(object):
             
             # get sample quantity
             res = elem.xpath(expr, name = "SampleQuantity")
-            if len(res) == 0:
+            if len(res) == 0 or res[0].text == UNDEFINED:
                 self._context['sample_quantity']      = UNDEFINED
                 self._context['sample_quantity_unit'] = "" 
             else:
@@ -169,7 +169,7 @@ class SAUNAXML2HTMLRenderer(object):
                 
             # get Xe volume
             res = elem.xpath(expr, name = "XeVolume")
-            if len(res) == 0:
+            if len(res) == 0 or res[0].text == UNDEFINED:
                 self._context['xe_vol']      = UNDEFINED
                 self._context['xe_vol_unit'] = "" 
             else:
@@ -178,7 +178,7 @@ class SAUNAXML2HTMLRenderer(object):
             
             #get Corr Xe volume also called sample quantity
             res = elem.xpath(expr, name = "SampleQuantity")
-            if len(res) == 0:
+            if len(res) == 0or res[0].text == UNDEFINED :
                 self._context['xe_corr_vol']      = UNDEFINED
                 self._context['xe_corr_vol_unit'] = "" 
             else:
