@@ -184,8 +184,8 @@ class NobleGasDecayCorrector(object):
     def undecay_correct_method2(self, a_XE133_activity_concentration, a_XE133M_activity_concentration):
         """ undecay correction for XE133 is special due to the metastable isotopes """
         
-        XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133',None)
-        XE133M_half_life_string = NobleGasDecayCorrector.c_default_half_life.get('XE-133M',None)
+        XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133', None)
+        XE133M_half_life_string = NobleGasDecayCorrector.c_default_half_life.get('XE-133M', None)
         
         fi_XE133  = self._calculate_fi(XE133_half_life_string)
         fi_XE133M = self._calculate_fi(XE133M_half_life_string)
@@ -195,9 +195,10 @@ class NobleGasDecayCorrector(object):
         
         lbdas = lambda3_coeff / (lambda6_coeff - lambda3_coeff)
         
-        return (1/fi_XE133) * Decimal(str(a_XE133_activity_concentration)) + (lbdas*((1/fi_XE133) - (1/fi_XE133M))*Decimal(str(a_XE133M_activity_concentration)))
+        return (1/fi_XE133) * Decimal(str(a_XE133_activity_concentration)) \
+               + (lbdas*((1/fi_XE133) - (1/fi_XE133M))*Decimal(str(a_XE133M_activity_concentration)))
 
-time_unit_to_sec = { 
+TIME_UNIT_TO_SEC = { 
                'S' : 1 ,
                'M' : 60,
                'H' : 3600,
@@ -227,13 +228,13 @@ def convert_half_life_in_sec(a_half_life_string):
     if len(scan_result) != 2:
         raise Exception("Did not recognise the following string as a valid half-life")
     
-    number,time_unit = scan_result
+    number, time_unit = scan_result
     
     # if this is zero then there is a problem
-    result = Decimal(time_unit_to_sec.get(time_unit,0)) * Decimal(number)
+    result = Decimal(TIME_UNIT_TO_SEC.get(time_unit, 0)) * Decimal(number)
     
     if result == 0:
-        raise Exception("The value %s in %s cannot be used as a time_unit"%(time_unit,a_half_life_string))
+        raise Exception("The value %s in %s cannot be used as a time_unit" % (time_unit, a_half_life_string))
     
     return result
     
