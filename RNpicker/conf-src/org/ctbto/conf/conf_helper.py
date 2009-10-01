@@ -80,10 +80,12 @@ class ParsingError(Error):
         self.errors = []
 
     def append(self, lineno, line):
+        """ add error message """
         self.errors.append((lineno, line))
         self.message += '\n\t[line %2d]: %s' % (lineno, line)
         
     def get_error(self):
+        """ return the error """
         return self
         
 class MissingSectionHeaderError(ParsingError):
@@ -123,6 +125,7 @@ class Conf(object):
     
     @classmethod
     def get_instance(cls):
+        """ singleton method """
         if cls._instance == None:
             cls._instance = Conf()
         return cls._instance
@@ -140,9 +143,9 @@ class Conf(object):
         
         """
         #No conf info passed to the resource so the Resource will not look into the conf (to avoid recursive search)
-        r = resource.Resource(cls.CLINAME, cls.ENVNAME)
+        the_res = resource.Resource(cls.CLINAME, cls.ENVNAME)
         
-        filepath = r.getValue(aRaiseException=False)
+        filepath = the_res.getValue(aRaiseException=False)
         
         if (filepath is not None) and os.path.exists(filepath):
             return True
@@ -406,7 +409,7 @@ class Conf(object):
                         dummy = r.getValue()
                     else:
                         dummy = self._sections[g][self.optionxform(o)]
-                except KeyError, ke: #IGNORE:W0612
+                except KeyError, _: #IGNORE:W0612
                     raise SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n" % (g, o))
             
             toparse = toparse.replace(var, dummy)
@@ -417,6 +420,7 @@ class Conf(object):
 
 
     def _get(self, section, conv, option, default, fail_if_missing):
+        """ Internal getter """
         return conv(self.get(section, option, default, fail_if_missing))
 
     def getint(self, section, option, default=0, fail_if_missing=False):
@@ -449,7 +453,7 @@ class Conf(object):
     def optionxform(self, optionstr):
         return optionstr.lower()
     
-     #
+    #
     # Regular expressions for parsing section headers and options.
     #
     SECTCRE = re.compile(
@@ -502,7 +506,7 @@ class Conf(object):
         cursect = None                            # None, or a dictionary
         optname = None
         lineno = 0
-        e = None                                  # None, or an exception
+        err = None                                  # None, or an exception
         while True:
             line = fp.readline()
             if not line:
@@ -561,9 +565,9 @@ class Conf(object):
                         # exception but keep going. the exception will be
                         # raised at the end of the file and will contain a
                         # list of all bogus lines
-                        if not e:
-                            e = ParsingError(fpname)
-                        e.append(lineno, repr(line))
+                        if not err:
+                            err = ParsingError(fpname)
+                        err.append(lineno, repr(line))
         # if any parsing errors occurred, raise an exception
-        if e:
-            raise e.get_error()
+        if err:
+            raise err.get_error()

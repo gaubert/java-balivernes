@@ -682,7 +682,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">Half-Life</th>
-      <th class="centre">Conc(uBq/m3)</th>
+      <th class="centre">Conc(mBq/m3)</th>
       <th class="centre">Abs Error</th>
     </tr>
     {% for q_item in quantified_nuclides %}
@@ -709,14 +709,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">MDC (uBq/m3)</th>
+      <th class="centre">MDC (mBq/m3)</th>
       <!--<th class="centre">NID-Flag</th>-->
     </tr>
    {% for nq_item in non_quantified_nuclides %}
     <tr>
       <td class="centre">{{ nq_item.name }}</td>
       <td class="centre">{{ nq_item.mdc }}</td>
-      <!--<td class="centre">{{ nq_item.nid_flag }}</td>-->
     </tr>
    {% endfor %}
   </tbody>
@@ -760,7 +759,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <table >
   <tbody>
 	<tr>
-	  <td class="smallitalo">i = ROI region number.</td>
+	  <td class="smallitalo">i = Region of interest (ROI) number.</td>
 	</tr>
 	<tr>
 	   <td>
@@ -883,20 +882,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <col />
   <col />
   <col />
-  <!--<tbody>
-    <tr>
-      <th class="centre">Nuclide</th>
-      <th class="centre">Nondecay Corrected Activity (mBq)</th>
-      <th class="centre">Abs Activity Error (mBq)</th>
-    </tr>
-   {% for a_item in activities_nuclides %}
-    <tr>
-      <td class="centre">{{ a_item.name }}</td>
-      <td class="centre">{{ a_item.undecay_corr_activity }}</td>
-      <td class="centre" title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>-->
   <tbody>
     <tr>
       <th>Nuclide</th>
