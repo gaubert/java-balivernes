@@ -217,7 +217,14 @@ class TestConf(unittest.TestCase):
         result = self.conf.print_content( substitute_values )
         
         print("Result = \n%s\n " % (result) )
-
+        
+    def testListAsValue(self):
+        """ List as Value """
+        
+        the_list = self.conf.get('GroupTestValueStruct','list')
+        
+        print("l = %s" % (the_list))
+        result = []
         
 if __name__ == '__main__':
     tests()
