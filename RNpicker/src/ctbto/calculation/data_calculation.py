@@ -94,48 +94,14 @@ class NobleGasDecayCorrector(object):
         self._t_prep  = str(time_utils.getDifferenceInTime(self._coll_stop,self._acq_start))
         self._t_real  = str(time_utils.getDifferenceInTime(self._acq_start,self._acq_stop)) if a_real is None else a_real
         
-    def _old_calculate_fi(self,a_half_life_string):
-        """ calculate f(i) = f(1)*f(2)*f(3)
-            with 
-            f(1) = (half-life/ln(2)/tcount)*(1-exp(-tcount*A))
-            f(2) = (exp(-tprep*ln(2)/half-life)
-            f(3) = (half-life/ln(2)/treal)*(1-exp(-treal*A)
-            with A = ln(2)/half-life iso in sec.
-            
-            Args:
-            a_half_life_string  : the half life value as a string
-               
-            Returns:
-                a Decimal to avoid carrying numerical arithemic inprecision errors
-                To get a float do float(Decimal) and To get an int int(Decimal)
-         
-            Raises:
-            exception if cannot connect to the server
-        """
-        
-        # get a Decimal object 
-        half_life   = convert_half_life_in_sec(a_half_life_string)
-        
-        A_coeff     = Decimal(2).ln() / half_life
-        B_coeff     = half_life/Decimal(2).ln()
-        
-        first_exp   =  Decimal(str((1-math.exp(-Decimal(self._t_count)*A_coeff))))*(B_coeff/Decimal(self._t_count))
-        sec_exp     =  Decimal(str(math.exp(-(Decimal(self._t_prep))*A_coeff)))
-        third_exp   =  (B_coeff/Decimal(self._t_real))*Decimal(str((1-math.exp(-Decimal(self._t_real)*A_coeff))))
-        
-        fi_result = Decimal(str(first_exp*sec_exp*third_exp))
-        
-        print("factor %s\n" %(fi_result))
-                                         
-        return fi_result
     
     def _calculate_fi(self,a_half_life_string):
-        """ calculate f(i) = f(1)*f(2)*f(3)
+        """ calculate f(i) = (lambda*lambda*tcount*treal)/f(1)*f(2)*f(3)
             with 
-            f(1) = (half-life/ln(2)/tcount)*(1-exp(-tcount*A))
-            f(2) = (exp(-tprep*ln(2)/half-life)
-            f(3) = (half-life/ln(2)/treal)*(1-exp(-treal*A)
-            with A = ln(2)/half-life iso in sec.
+            lambda = ln(2)/half-life) iso in sec.
+            f(1)   = (1-exp(-tcount*lambda))
+            f(2)   = (exp(-tprep*lambda)
+            f(3)   = (1-exp(-treal*lambda)
             
             Args:
             a_half_life_string  : the half life value as a string
@@ -151,17 +117,17 @@ class NobleGasDecayCorrector(object):
         # get a Decimal object 
         half_life   = convert_half_life_in_sec(a_half_life_string)
         
-        A_coeff     = Decimal(2).ln() / half_life
+        lambda_coeff     = Decimal(2).ln() / half_life
         
         t_count     = Decimal(self._t_count)
         
-        first_exp   =  Decimal(str((1-math.exp(-t_count*A_coeff))))
-        sec_exp     =  Decimal(str(math.exp(-(Decimal(self._t_prep))*A_coeff)))
-        third_exp   =  Decimal(str((1-math.exp(-Decimal(self._t_real)*A_coeff))))
+        first_exp   =  Decimal(str((1-math.exp(-t_count*lambda_coeff))))
+        sec_exp     =  Decimal(str(math.exp(-(Decimal(self._t_prep))*lambda_coeff)))
+        third_exp   =  Decimal(str((1-math.exp(-Decimal(self._t_real)*lambda_coeff))))
         
-        fi_result = (A_coeff *A_coeff * t_count * Decimal(self._t_real)) / (first_exp*sec_exp*third_exp)
+        fi_result = (lambda_coeff *lambda_coeff * t_count * Decimal(self._t_real)) / (first_exp*sec_exp*third_exp)
         
-        print("factor %s\n" %(fi_result))
+        #print("factor %s\n" %(fi_result))
                                          
         return fi_result
     
