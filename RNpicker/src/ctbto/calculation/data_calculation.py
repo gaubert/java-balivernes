@@ -94,7 +94,7 @@ class NobleGasDecayCorrector(object):
         self._t_prep  = str(time_utils.getDifferenceInTime(self._coll_stop,self._acq_start))
         self._t_real  = str(time_utils.getDifferenceInTime(self._acq_start,self._acq_stop)) if a_real is None else a_real
         
-    def _calculate_fi(self,a_half_life_string):
+    def _old_calculate_fi(self,a_half_life_string):
         """ calculate f(i) = f(1)*f(2)*f(3)
             with 
             f(1) = (half-life/ln(2)/tcount)*(1-exp(-tcount*A))
@@ -124,6 +124,44 @@ class NobleGasDecayCorrector(object):
         third_exp   =  (B_coeff/Decimal(self._t_real))*Decimal(str((1-math.exp(-Decimal(self._t_real)*A_coeff))))
         
         fi_result = Decimal(str(first_exp*sec_exp*third_exp))
+        
+        print("factor %s\n" %(fi_result))
+                                         
+        return fi_result
+    
+    def _calculate_fi(self,a_half_life_string):
+        """ calculate f(i) = f(1)*f(2)*f(3)
+            with 
+            f(1) = (half-life/ln(2)/tcount)*(1-exp(-tcount*A))
+            f(2) = (exp(-tprep*ln(2)/half-life)
+            f(3) = (half-life/ln(2)/treal)*(1-exp(-treal*A)
+            with A = ln(2)/half-life iso in sec.
+            
+            Args:
+            a_half_life_string  : the half life value as a string
+               
+            Returns:
+                a Decimal to avoid carrying numerical arithemic inprecision errors
+                To get a float do float(Decimal) and To get an int int(Decimal)
+         
+            Raises:
+            exception if cannot connect to the server
+        """
+        
+        # get a Decimal object 
+        half_life   = convert_half_life_in_sec(a_half_life_string)
+        
+        A_coeff     = Decimal(2).ln() / half_life
+        
+        t_count     = Decimal(self._t_count)
+        
+        first_exp   =  Decimal(str((1-math.exp(-t_count*A_coeff))))
+        sec_exp     =  Decimal(str(math.exp(-(Decimal(self._t_prep))*A_coeff)))
+        third_exp   =  Decimal(str((1-math.exp(-Decimal(self._t_real)*A_coeff))))
+        
+        fi_result = (A_coeff *A_coeff * t_count * Decimal(self._t_real)) / (first_exp*sec_exp*third_exp)
+        
+        print("factor %s\n" %(fi_result))
                                          
         return fi_result
     
@@ -176,10 +214,11 @@ class NobleGasDecayCorrector(object):
         
         if half_life_string == None:
             raise Exception("No defined half_life for %s"%(a_isotope_name))
-       
+        
+        print("fi for %s\n" % (a_isotope_name) )
         fi = self._calculate_fi(half_life_string)
         
-        return Decimal(str(a_activity_concentration)) * fi 
+        return Decimal(str(a_activity_concentration)) / fi 
     
     def undecay_correct_method2(self, a_XE133_activity_concentration, a_XE133M_activity_concentration):
         """ undecay correction for XE133 is special due to the metastable isotopes """
@@ -187,7 +226,9 @@ class NobleGasDecayCorrector(object):
         XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133', None)
         XE133M_half_life_string = NobleGasDecayCorrector.c_default_half_life.get('XE-133M', None)
         
+        print("fi XE133\n")
         fi_XE133  = self._calculate_fi(XE133_half_life_string)
+        print("fi XE133M\n")
         fi_XE133M = self._calculate_fi(XE133M_half_life_string)
         
         lambda3_coeff   = Decimal(2).ln() / convert_half_life_in_sec(XE133_half_life_string)
