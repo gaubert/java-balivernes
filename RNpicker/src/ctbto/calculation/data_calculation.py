@@ -14,7 +14,7 @@ import logging
 import ctbto.common.scanf_util
 import ctbto.common.time_utils as time_utils
 
-from decimal import *
+from decimal import Decimal
 import math
 
 
@@ -181,7 +181,7 @@ class NobleGasDecayCorrector(object):
         if half_life_string == None:
             raise Exception("No defined half_life for %s"%(a_isotope_name))
         
-        print("fi for %s\n" % (a_isotope_name) )
+        #print("fi for %s\n" % (a_isotope_name) )
         fi = self._calculate_fi(half_life_string)
         
         return Decimal(str(a_activity_concentration)) / fi 
