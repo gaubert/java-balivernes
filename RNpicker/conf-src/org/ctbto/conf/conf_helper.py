@@ -270,7 +270,7 @@ class Conf(object):
             for option in section:
                 if option != '__name__':
                     if substitute_values:
-                        result_str += "%s = %s\n" % (option, self.get(section_name,option))
+                        result_str += "%s = %s\n" % (option, self.get(section_name, option))
                     else:
                         result_str += "%s = %s\n" % (option, self._sections[section_name][option])
             

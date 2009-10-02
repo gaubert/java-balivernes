@@ -329,7 +329,7 @@ class Compiler(object):
                 else:
                     raise ParsingError("Expected a STRING type but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             elif token.value == 'format':
-                 # next token and look for =
+                # next token and look for =
                 self._tokenizer.next()
                 token = self._tokenizer.consume_token('=')
                 
@@ -383,7 +383,7 @@ class Compiler(object):
                 else:
                     raise ParsingError("Expected a STRING type but instead got %s with type %s"%(token.value,token.type),token.begin[1],token.begin[0])
             elif token.value == 'format':
-                 # next token and look for =
+                # next token and look for =
                 self._tokenizer.next()
                 token = self._tokenizer.consume_token('=')
                 
