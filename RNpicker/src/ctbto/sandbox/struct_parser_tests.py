@@ -114,6 +114,29 @@ class TestListParser(unittest.TestCase):
         
         self.assertEqual(the_result, {'a':1, 'b':2 })
         
+    def test_dict_with_list(self):
+        """ list with dict """
+        
+        the_string = "{'a':1, b:[1,2,3,4,5] }"
+                
+        compiler = Compiler()
+        
+        the_result = compiler.compile_dict(the_string)
+        
+        self.assertEqual(the_result, {'a':1, 'b':[1,2,3,4,5]})
+        
+    def test_list_with_dict(self):
+        """ list with dict """
+        
+        the_string = "['a',1,'b',{2:3,4:5} ]"
+                
+        compiler = Compiler()
+        
+        the_result = compiler.compile_list(the_string)
+        
+        self.assertEqual(the_result, ['a',1,'b',{2:3,4:5} ])
+        
+        
         
 if __name__ == '__main__':
     tests()
