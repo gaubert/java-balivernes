@@ -58,7 +58,7 @@ class TestListParser(unittest.TestCase):
         
         self.assertEqual(the_result, ['a','b'])
     
-    def test_list_without_bracket_test_2(self):
+    def test_list_without_bracket_ztest_2(self):
         """ list without bracket test with a list inside """
         the_string = " 'a', b, ['a thing', 2]"
                 
@@ -77,7 +77,7 @@ class TestListParser(unittest.TestCase):
         try:
             the_result = compiler.compile_list(the_string)
         except CompilerError, err:
-            self.assertEqual(err.message, 'Expression "  a ]" cannot be converted as a list .')
+            self.assertEqual(err.message, 'Expression "  a ]" cannot be converted as a list.')
       
     def test_special_character_in_string(self):
         """ simple list without bracket test """
@@ -99,10 +99,8 @@ class TestListParser(unittest.TestCase):
         try:
             the_result = compiler.compile_list(the_string)
         except CompilerError, err:
-            self.assertEqual(err.message, 'Unsupported token (type: @, value : OP) (line=3,col=1).')
+            self.assertEqual(err.message, 'Unsupported token (type: @, value : OP) (line=1,col=3).')
         
-        #self.assertRaises(CompilerError,compiler.compile_list,the_string)
-    
     def test_simple_dict(self):
         """ simple dict """
         
@@ -114,8 +112,19 @@ class TestListParser(unittest.TestCase):
         
         self.assertEqual(the_result, {'a':1, 'b':2 })
         
+    def test_dict_error(self):
+        """ dict error """
+        the_string = "{'a':1, b:2 "
+                
+        compiler = Compiler()
+        
+        try:
+            the_result = compiler.compile_dict(the_string)
+        except CompilerError, err:
+            self.assertEqual(err.message, 'Expression "{\'a\':1, b:2 " cannot be converted as a dict.')
+        
     def test_dict_with_list(self):
-        """ list with dict """
+        """ dict with list """
         
         the_string = "{'a':1, b:[1,2,3,4,5] }"
                 
@@ -134,7 +143,29 @@ class TestListParser(unittest.TestCase):
         
         the_result = compiler.compile_list(the_string)
         
-        self.assertEqual(the_result, ['a',1,'b',{2:3,4:5} ])
+        self.assertEqual(the_result, ['a', 1, 'b', { 2 : 3 , 4 : 5} ])
+        
+    def test_noquotes_dict(self):
+        """ no quotes dict """
+        
+        the_string = "{ no12: a b , no10:a}"
+                
+        compiler = Compiler()
+        
+        the_result = compiler.compile_dict(the_string)
+        
+        self.assertEqual(the_result,{ 'no12': 'a b' , 'no10':'a'})
+        
+    def test_everything(self):
+        """ everything """
+        
+        the_string = "['a',1,'b',{2:3,4:[1,'hello', no quotes, [1,2,3,{1:2,3:4}]]} ]"
+                
+        compiler = Compiler()
+        
+        the_result = compiler.compile_list(the_string)
+        
+        self.assertEqual(the_result, ['a',1,'b',{2:3,4:[1,'hello', 'no quotes', [1,2,3,{1:2,3:4}]]} ])
         
         
         
