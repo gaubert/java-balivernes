@@ -102,8 +102,6 @@ class Tokenizer(object):
             Raises:
                exception TokenizerError if the syntax of the aString string is incorrect
         """
-        
-        
         g = tokenize.generate_tokens(StringIO.StringIO(a_program).readline)   # tokenize the string
         
         for toknum, tokval, tokbeg, tokend, tokline  in g:
@@ -234,12 +232,16 @@ class CompilerError(Exception):
         self._line = a_line
         self._col  = a_col
         
+        msg = ''
+        
         if self._line == None and self._col == None:
-            extra = "" 
+            extra = ""
+            msg = "%s." % (a_msg) 
         else:
             extra = "(line=%s,col=%s)" % (self._line, self._col)
+            msg = "%s %s." % (a_msg,extra)
         
-        super(CompilerError,self).__init__("%s %s." % (a_msg,extra))
+        super(CompilerError,self).__init__(msg)
     
 class Compiler(object):
     """ compile some python structures
@@ -281,7 +283,7 @@ class Compiler(object):
             #translate this error into something understandable. 
             #It is because the bloody tokenizer counts the brackets
             if err.args[0] == "EOF in multi-line statement":
-                raise CompilerError("Expression \"%s\" cannot be converted as a list" % (a_to_compile_str))
+                raise CompilerError("Expression \"%s\" cannot be converted as a dict" % (a_to_compile_str))
             else:
                 raise CompilerError(err)
             
@@ -319,7 +321,7 @@ class Compiler(object):
                             
             else:
                 raise CompilerError("Unsupported token (type: %s, value : %s)" \
-                                    % (the_token.type, the_token.value), the_token.begin[1], the_token.begin[0])
+                                    % (the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])
             
         #we should never reach that point (compilation error)
         raise CompilerError("End of line reached without finding a list. The line [%s] cannot be transformed as a list" \
@@ -335,10 +337,11 @@ class Compiler(object):
         
         # get key
         if the_token.type in ('STRING', 'NUMBER', 'NAME'):
+            
+            #next the_token is in _compile_litteral
             key = self._compile_litteral(a_tokenizer)
             
-            #next the_token
-            the_token = a_tokenizer.next()
+            the_token = a_tokenizer.current_token()
             
         else:
             raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[1], the_token.begin[0])  
@@ -346,7 +349,7 @@ class Compiler(object):
         #should have a comma now
         if the_token.type != 'OP' and the_token.value != ':':
             raise CompilerError("Expected a token (type:OP, value: :) but instead got (type: %s, value: %s)" \
-                                % (the_token.type, the_token.value), the_token.begin[1], the_token.begin[0])
+                                % (the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])
         else:
             #eat it
             the_token = a_tokenizer.next()
@@ -354,10 +357,10 @@ class Compiler(object):
         #get value
         # it can be a
         if the_token.type in ('STRING', 'NUMBER', 'NAME'):
+            #next the_token is in _compile_litteral
             val = self._compile_litteral(a_tokenizer)
             
-            #next token
-            the_token = a_tokenizer.next()
+            the_token = a_tokenizer.current_token()
         
         #check for a list
         elif the_token.value == '[' and the_token.type == 'OP':
@@ -377,7 +380,7 @@ class Compiler(object):
             the_token = a_tokenizer.next()
             
         else:
-            raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[1], the_token.begin[0])  
+            raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])  
         
         #if we have a comma then eat it as it means that we will have more than one values
         if the_token.type == 'OP' and the_token.value == ',':
@@ -389,25 +392,36 @@ class Compiler(object):
     def _compile_litteral(self, a_tokenizer):
         """ compile key. A key can be a NAME, STRING or NUMBER """
         
-        val = None
+        val   = None
+        
+        dummy = None
         
         the_token = a_tokenizer.current_token()
         
-        if the_token.type == 'STRING':  
-            # the value contains the quote or double quotes so remove them always
-            val = the_token.value[1:-1]
-                
-        elif the_token.type == 'NAME':
-            # intepret all non quoted names as a string
-            val = the_token.value
-                
-        elif the_token.type == 'NUMBER':  
+        while the_token.type not in ('OP', 'ENDMARKER'):
+            if the_token.type == 'STRING':  
+                # the value contains the quote or double quotes so remove them always
+                dummy = the_token.value[1:-1]
+                    
+            elif the_token.type == 'NAME':
+                # intepret all non quoted names as a string
+                dummy = the_token.value
+                    
+            elif the_token.type == 'NUMBER':  
+                     
+                dummy = self._create_number(the_token.value)
                  
-            val = self._create_number(the_token.value)
-             
-        else:
-            raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[1], the_token.begin[0])
+            else:
+                raise CompilerError("unexpected token (type: %s, value : %s)"%(the_token.type, the_token.value), the_token.begin[0], the_token.begin[1])
            
+            #if val is not None, it has to be a string
+            if val:
+                val = '%s %s' % (str(val), str(dummy))
+            else:
+                val = dummy
+            
+            the_token = a_tokenizer.next()
+            
         return val
     
     def _compile_list(self, a_tokenizer):
@@ -446,49 +460,28 @@ class Compiler(object):
                 # cannot find a closing bracket and a simple list mode
                 elif simple_list_mode == 1:
                     raise CompilerError("unexpected token (type: %s, value : %s)" \
-                                        % (the_token.value, the_token.type), the_token.begin[1], the_token.begin[0])
+                                        % (the_token.value, the_token.type), the_token.begin[0], the_token.begin[1])
             # the comma case
             elif the_token.type == 'OP' and the_token.value == ',':
                 # just eat it
                 the_token = a_tokenizer.next()
                 
-            elif the_token.type == 'STRING':
-                # find values outside of a list 
-                # this can be okay
-                if open_bracket == 0:
-                    simple_list_mode = 1
-                
-                # the value contains the quote or double quotes so remove them always
-                result.append(the_token.value[1:-1])
-                
-                #next token
-                the_token = a_tokenizer.next()
-                
-            elif the_token.type == 'NAME':
-                # find values outside of a list 
-                # this can be okay
-                if open_bracket == 0:
-                    simple_list_mode = 1
-                
-                # interpet all non quoted names as a string
-                result.append(the_token.value)
-                #next token
-                the_token = a_tokenizer.next()
-                
-            elif the_token.type == 'NUMBER':  
+            elif the_token.type in ('STRING', 'NUMBER', 'NAME'):
                 
                 # find values outside of a list 
                 # this can be okay
                 if open_bracket == 0:
                     simple_list_mode = 1
+                    
+                #next the_token is in _compile_litteral
+                result.append(self._compile_litteral(a_tokenizer))
                 
-                result.append(self._create_number(the_token.value))
-                #next token
-                the_token = a_tokenizer.next()
+                the_token = a_tokenizer.current_token()
+               
             else:
                 raise CompilerError("Unsupported token (type: %s, value : %s)"\
                                     % (the_token.value, the_token.type), \
-                                    the_token.begin[1], the_token.begin[0])
+                                    the_token.begin[0], the_token.begin[1])
             
         
         # if we are in simple_list_mode return list else error
