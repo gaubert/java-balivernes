@@ -1,7 +1,7 @@
 '''
 Created on Oct 1, 2009
 
-@author: guillaume.aubert
+@author: guillaume.aubert@gmail.com
 '''
 
 import logging

@@ -37,49 +37,49 @@ class TestConf(unittest.TestCase):
          
         self.conf = Conf(use_resource=False)
     
-        fp = open('%s/%s'%(self._get_tests_dir_path(),"test.config"))
+        fp = open('%s/%s' % (self._get_tests_dir_path(), "test.config"))
     
         self.conf._read(fp,"the file") #IGNORE:W0212
         
-    def testAPrintModulePath(self):
+    def test_print_module_path(self):
         
-        print("org.ctbto.conf module is loaded from %s\n"%(self._get_tests_dir_path()))
+        print("org.ctbto.conf module is loaded from %s\n" % (self._get_tests_dir_path()))
     
-    def testGetObjects(self):
+    def test_get_objects(self):
         """testGetObjects: test getter from all types """
         # get simple string
-        astring = self.conf.get("GroupTest1","astring")
+        astring = self.conf.get("GroupTest1", "astring")
         
         self.assertEqual(astring,"oracle.jdbc.driver.OracleDriver")
         
         # get an int
-        aint = self.conf.getint("GroupTest1","aint")
+        aint = self.conf.getint("GroupTest1", "aint")
         
         self.assertEqual(aint,10)
         
         # get floatcompile the statements
-        afloat = self.conf.getfloat("GroupTest1","afloat")
+        afloat = self.conf.getfloat("GroupTest1", "afloat")
         
         self.assertEqual(afloat,5.24)
         
         # get different booleans form
-        abool1 = self.conf.getboolean("GroupTest1","abool1")
+        abool1 = self.conf.getboolean("GroupTest1", "abool1")
         
-        self.assertEqual(abool1,True)
+        self.assertEqual(abool1, True)
         
-        abool2 = self.conf.getboolean("GroupTest1","abool2")
+        abool2 = self.conf.getboolean("GroupTest1", "abool2")
         
-        self.assertEqual(abool2,False)
+        self.assertEqual(abool2, False)
         
-        abool3 = self.conf.getboolean("GroupTest1","abool3")
+        abool3 = self.conf.getboolean("GroupTest1", "abool3")
         
-        self.assertEqual(abool3,True)
+        self.assertEqual(abool3, True)
         
-        abool4 = self.conf.getboolean("GroupTest1","abool4")
+        abool4 = self.conf.getboolean("GroupTest1", "abool4")
         
-        self.assertEqual(abool4,False)
+        self.assertEqual(abool4 ,False)
         
-    def testGetDefaults(self):
+    def test_get_defaults(self):
         """testGetDefaults: test defaults values """
         
          # get all defaults
@@ -110,7 +110,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(abool5,False)
         
-    def testVarSubstitutions(self):
+    def test_var_substitutions(self):
         """testVarSubstitutions: test variables substitutions"""
         
         # simple substitution
@@ -128,7 +128,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(nested,"this is done")  
         
-    def testInclude(self):
+    def test_include(self):
         """testInclude: test includes """
         val = self.conf.get("IncludedGroup","hello")
         
@@ -143,7 +143,7 @@ class TestConf(unittest.TestCase):
         f.flush()
         f.close()
     
-    def testUseConfENVNAMEResource(self):
+    def test_use_conf_ENVNAME_resource(self):
         """testUseConfENVNAMEResource: Use default resource ENVNAME to locate conf file"""
         self._create_fake_conf_file_in_tmp()
         
@@ -156,7 +156,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(s,'oracle.jdbc.driver.OracleDriver')
     
-    def testReadFromCLI(self):
+    def test_read_from_CLI(self):
         """testReadFromCLI: do substitutions from command line resources"""
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
@@ -178,7 +178,7 @@ class TestConf(unittest.TestCase):
    
         self.assertEqual(val,'My Cli Value is embedded 2')
     
-    def testReadFromENV(self):
+    def test_read_from_ENV(self):
         """testReadFromENV: do substitutions from ENV resources"""
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
@@ -202,7 +202,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(val+1,2.05) 
     
-    def testPrintContent(self):
+    def test_print_content(self):
         """ test print content """
         
         #set environment
@@ -216,15 +216,49 @@ class TestConf(unittest.TestCase):
         
         result = self.conf.print_content( substitute_values )
         
-        print("Result = \n%s\n " % (result) )
+        self.assertNotEqual(result, '')
         
-    def testListAsValue(self):
-        """ List as Value """
+    def test_value_as_List(self):
+        """ Value as List """
         
-        the_list = self.conf.get('GroupTestValueStruct','list')
+        the_list = self.conf.getlist('GroupTestValueStruct','list')
         
-        print("l = %s" % (the_list))
-        result = []
+        self.assertEqual(the_list,['a', 1, 3])
+    
+    def test_value_as_dict(self):
+        """Dict as Value """
         
+        the_dict = self.conf.get_dict('GroupTestValueStruct','dict')
+        
+        self.assertEqual(the_dict, {'a': 2, 'b': 3})
+    
+    def test_complex_dict(self):
+        """ complex dict """
+        the_dict = self.conf.get_dict('GroupTestValueStruct','complex_dict')
+        
+        self.assertEqual(the_dict, {'a': 2, 'c': {'a': 1, 'c': [1, 2, 3], 'b': [1, 2, 3, 4, 5, 6, 7]}, 'b': 3})
+    
+    def test_dict_error(self):
+        """ error with a dict """
+        
+        try:
+            self.conf.get_dict('GroupTestValueStruct','dict_error')
+        except Exception, err:
+            self.assertEquals(err.message, "Expression \"{1:2,'v b': a\" cannot be converted as a dict.")
+            return
+        
+        self.fail('Should never reach that point')
+            
+    def test_list_error(self):
+        """ error with a list """
+        
+        try:
+            the_list = self.conf.get_list('GroupTestValueStruct','list_error')
+            print('the_list = %s\n' %(the_list))
+        except Exception, err:
+            self.assertEquals(err.message, "Expression \"{1:2,'v b': a\" cannot be converted as a dict.")
+            return
+         
+        self.fail('Should never reach that point')
 if __name__ == '__main__':
     tests()
