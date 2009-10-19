@@ -26,7 +26,10 @@ import os
 import re
 
 import resource
+from utils.struct_parser import Compiler, CompilerError
+
 from ctbto.common.exceptions import CTBTOError
+
 
 # exception classes
 class Error(Exception):
@@ -170,26 +173,27 @@ class Conf(object):
         
 
    
-    def _load_config(self, aFile=None):
+    def _load_config(self, a_file = None):
+        """ _load the configuration file """
         try:  
             # get it from a Resource if not files are passed
-            if aFile is None:
-                aFile = self._conf_resource.getValue() 
+            if a_file is None:
+                a_file = self._conf_resource.getValue() 
              
-            if aFile is None:
-                raise CTBTOError("Conf. Error, need a configuration file path\n")
+            if a_file is None:
+                raise CTBTOError("Conf. Error, need a configuration file path")
             
-            fp = open(aFile, 'r') 
+            f_desc = open(a_file, 'r') 
                 
-            self._read(fp, aFile)
+            self._read(f_desc, a_file)
             
             # memorize conf file path
-            self._configuration_file_path = aFile
+            self._configuration_file_path = a_file
             
-        except Exception, e:
-            print "Can't read the config file %s" % (aFile)
+        except Exception, exce:
+            print "Can't read the config file %s" % (a_file)
             print "Current executing from dir = %s\n" % (os.getcwd())
-            raise e
+            raise exce
             
     
     def get_conf_file_path(self):
@@ -291,14 +295,14 @@ class Conf(object):
                exception NoSectionError if the section cannot be found
         """
         try:
-            d2 = self._sections[section]
+            all_sec = self._sections[section]
             # make a copy
-            d = d2.copy()
+            a_copy = all_sec.copy()
             # remove __name__ from d
-            if "__name__" in d:
-                del d["__name__"]
+            if "__name__" in a_copy:
+                del a_copy["__name__"]
                 
-            return d.items()
+            return a_copy.items()
         
         except KeyError:
             raise NoSectionError(section)
@@ -443,11 +447,38 @@ class Conf(object):
             raise ValueError, 'Not a boolean: %s' % v
         return self._boolean_states[v.lower()]
     
-    def getlist(self, section, option, default=None, fail_if_missing=False):
+    def get_list(self, section, option, default=None, fail_if_missing=False):
         """ get a list of string """
-        v = self.get(section, option, default, fail_if_missing)
-        l = v.split(',')
-        return l
+        
+        val = self.get(section, option, default, fail_if_missing)
+        
+        # parse it and return an error if invalid
+        try:
+            compiler = Compiler()
+            return compiler.compile_list(val)
+        except CompilerError, err: 
+            raise Error(err.message)
+    
+    def getlist(self, section, option, default=None, fail_if_missing=False):
+        """ Deprecated, use get_list instead"""
+        return self.get_list(section, option, default, fail_if_missing)
+
+    def getdict(self, section, option, default=None, fail_if_missing=False):
+        """ Deprecated, use get_dict instead"""
+        return self.get_dict(section, option, default, fail_if_missing)
+        
+    
+    def get_dict(self, section, option, default=None, fail_if_missing=False):
+        """ get a dict """
+        
+        val = self.get(section, option, default, fail_if_missing)
+        
+        # parse it and return an error if invalid
+        try:
+            compiler = Compiler()
+            return compiler.compile_dict(val)
+        except CompilerError, err: 
+            raise Error(err.message)
         
         
     def optionxform(self, optionstr):
