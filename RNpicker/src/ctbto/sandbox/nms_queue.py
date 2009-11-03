@@ -7,6 +7,7 @@ Created on Nov 2, 2009
 from time import time as _time
 from collections import deque
 import heapq
+import uuid
 
 class Empty(Exception):
     "Exception raised by Queue.get(block=0)/get_nowait()."
@@ -64,7 +65,7 @@ class Queue:
             if unfinished <= 0:
                 if unfinished < 0:
                     raise ValueError('task_done() called too many times')
-                self.all_tasks_done.notify_all()
+                self.all_tasks_done.notifyAll()
             self.unfinished_tasks = unfinished
         finally:
             self.all_tasks_done.release()
@@ -209,12 +210,27 @@ class Queue:
     # Get an item from the queue
     def _get(self):
         return self.queue.popleft()
+    
 
+class NMSQueueItem():
+    """ Item internal to the Queue """
+    
+    def __init__(self, a_priority, a_data):
+        
+        self._priority = a_priority
+        self._data     = a_data
+        self._uuid     = None
+    
+    def set_uuid(self):
+        if not self._uuid:
+            self._uuid = uuid.uuid1()
+    
+    def __str__(self):
+        return "NMSQueueItem: priority = %s, uuid = %s" %(self._priority, self._uuid)
 
 class NMSQueue(Queue):
     """Create a queue object with a given maximum size.
 
-    If maxsize is <= 0, the queue size is infinite.
     """
     # Override these methods to implement other queue organizations
     # (e.g. stack or priority queue).
@@ -229,7 +245,16 @@ class NMSQueue(Queue):
 
     # Put a new item in the queue
     def _put(self, item):
-        self.queue.append(item)
+        
+        t = type(item)
+        
+        if t.__name__=='instance':
+            if item.__class__.__name__== 'NMSQueueItem':
+                item.set_uuid()
+        
+                self.queue.append(item)
+        else:
+           raise Exception("This queue only accepts NMSQueueItem. Found a %s" % (t)) 
 
     # Get an item from the queue
     def _get(self):
@@ -237,5 +262,4 @@ class NMSQueue(Queue):
     
     #Visitor interface
     
-
     
