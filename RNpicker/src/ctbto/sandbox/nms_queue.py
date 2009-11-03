@@ -220,6 +220,7 @@ class NMSQueueItem():
         self._priority = a_priority
         self._data     = a_data
         self._uuid     = None
+        self._status   = "ACTIVE"
     
     def set_uuid(self):
         if not self._uuid:
@@ -227,6 +228,22 @@ class NMSQueueItem():
     
     def __str__(self):
         return "NMSQueueItem: priority = %s, uuid = %s" %(self._priority, self._uuid)
+    
+    @property
+    def uuid(self):
+        return self._uuid
+    
+    @property
+    def priority(self):
+        return self._priority
+    
+    @property
+    def data(self):
+        return self._data
+    
+    @property
+    def status(self):
+        return self._status
 
 class NMSQueue(Queue):
     """Create a queue object with a given maximum size.

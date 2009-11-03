@@ -13,6 +13,7 @@ import datetime
 import pprint
 
 from nms_queue import NMSQueue, NMSQueueItem
+from sql_queue import SQLQueue
 
 from threading import Thread
 
@@ -80,7 +81,7 @@ class NMSQueueTest(TestCase):
         
         pass
             
-    def test_simple_test(self):
+    def ztest_simple_test(self):
         """ test NMSQueue """
         
         queue = NMSQueue()
@@ -104,6 +105,42 @@ class NMSQueueTest(TestCase):
         stop_workers()
         
         print("No more elements in the queue\n")
+    
+    def test_sql_queue(self):
+        """ test for the internal sqlqueue """
+        
+        sql_queue = SQLQueue()
+        
+        #item1 = NMSQueueItem(5,"data %s" % (4))
+        #item1.set_uuid()
+        
+        #item2 = NMSQueueItem(6,"data %s" % (4))
+        #item2.set_uuid()
+        
+        #sql_queue.put( item1 )
+        #sql_queue.put( item2 )
+        
+        #new_item = sql_queue.get_all()
+        
+        #print("New Item = %s" % (new_item) )
+        
+        #print("Queue created")
+        
+        size = sql_queue.size()
+        
+        #insertion
+        for i in range(10):
+            item = NMSQueueItem(5,"data %s" % (i))
+            item.set_uuid()
+            sql_queue.put(item)
+            
+        while size != 0:
+            item = sql_queue.pop()
+            print("size = %d, item = %s\n" % (size, item))
+            size = sql_queue.size()
+        
+        print("size = %s" % size )
+        
         
         
         
