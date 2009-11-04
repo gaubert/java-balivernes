@@ -5,8 +5,9 @@ Created on Nov 2, 2009
 '''
 
 from time import time as _time
+from sql_queue import SQLQueue
+from tokyo_queue import TokyoCabinetQueue
 from collections import deque
-import heapq
 import uuid
 
 class Empty(Exception):
@@ -43,7 +44,8 @@ class Queue:
         # Notify all_tasks_done whenever the number of unfinished tasks
         # drops to zero; thread waiting to join() is notified to resume
         self.all_tasks_done = threading.Condition(self.mutex)
-        self.unfinished_tasks = 0
+        
+        self.unfinished_tasks = self.qsize()
 
     def task_done(self):
         """Indicate that a formerly enqueued task is complete.
@@ -211,23 +213,44 @@ class Queue:
     def _get(self):
         return self.queue.popleft()
     
+class NMSQueueItemSet():
+    """ Set of Items retireved from the Queue """
+    
+    def __init__(self, a_db_cusror):
+        """ constructor """
+        
+        self._db_cusror = a_db_cusror
+        
+    def __iter__(self):
+        """ support iterable interface """
+        return self
+        
+    def next(self):
+        
+        row = self._db_cusror.fetchone()
+         
+        if row:
+            return NMSQueueItem(row[1], None, row[0], row[2], row[3])
+        else:
+            raise StopIteration()
 
 class NMSQueueItem():
     """ Item internal to the Queue """
     
-    def __init__(self, a_priority, a_data):
+    def __init__(self, a_priority, a_data, a_uuid = None, a_status = None, a_insertion_date = None):
         
-        self._priority = a_priority
-        self._data     = a_data
-        self._uuid     = None
-        self._status   = "ACTIVE"
+        self._priority       = a_priority
+        self._data           = a_data
+        self._uuid           = a_uuid
+        self._status         = "ACTIVE" if not a_status else a_status
+        self._insertion_date = a_insertion_date
     
     def set_uuid(self):
         if not self._uuid:
             self._uuid = uuid.uuid1()
     
     def __str__(self):
-        return "NMSQueueItem: priority = %s, uuid = %s" %(self._priority, self._uuid)
+        return "NMSQueueItem: priority = %s, uuid = %s, status = %s, insertion_date = %s" %(self._priority, self._uuid, self._status, self._insertion_date)
     
     @property
     def uuid(self):
@@ -244,6 +267,9 @@ class NMSQueueItem():
     @property
     def status(self):
         return self._status
+    
+    def insertion_date(self):
+        return self._insertion_date
 
 class NMSQueue(Queue):
     """Create a queue object with a given maximum size.
@@ -255,10 +281,10 @@ class NMSQueue(Queue):
 
     # Initialize the queue representation
     def _init(self, maxsize):
-        self.queue = deque()
+        self.queue = TokyoCabinetQueue()
 
     def _qsize(self, len=len):
-        return len(self.queue)
+        return self.queue.size()
 
     # Put a new item in the queue
     def _put(self, item):
@@ -269,13 +295,35 @@ class NMSQueue(Queue):
             if item.__class__.__name__== 'NMSQueueItem':
                 item.set_uuid()
         
-                self.queue.append(item)
+                self.queue.put(item)
         else:
            raise Exception("This queue only accepts NMSQueueItem. Found a %s" % (t)) 
 
     # Get an item from the queue
     def _get(self):
-        return self.queue.popleft()
+        row = self.queue.pop()
+        return NMSQueueItem(row[1], None, row[0], row[2], row[3])
+    
+    #operating, visitor interface
+    def get_item(self,uuid):
+        """ Return an item that has the following id """
+        row = self.queue.get_from_uuid(uuid)
+        return NMSQueueItem(row[1], None, row[0], row[2], row[3])
+    
+    def delete_item(self,uuid):
+        """ delete an item from the queue """
+        self.queue.delete_from_uuid(uuid)
+    
+    def get_items_with_priority(self, a_beg_priority, a_end_priority, a_beg_offset, a_end_offset):
+        """ Return items with priority """
+        
+        db_cursor = self.queue.get_from_priority_range(a_beg_priority, a_end_priority, a_beg_offset, a_end_offset)
+        return NMSQueueItemSet(db_cursor)
+    
+    def change_item_status(self,a_uuid, a_status):
+        """ Change item status """
+        self.queue.change_status(a_uuid,a_status)   
+        
     
     #Visitor interface
     
