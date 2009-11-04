@@ -12,12 +12,14 @@ import os
 import datetime
 import pprint
 
-from nms_queue import NMSQueue, NMSQueueItem
-from sql_queue import SQLQueue
+from nms_queue   import NMSQueue, NMSQueueItem
+from sql_queue   import SQLQueue
+from tokyo_queue import TokyoCabinetQueue
 
-from threading import Thread
+from threading   import Thread
 
-workers = []
+workers   = []
+producers = []
 
 class Worker(Thread):
    
@@ -52,9 +54,46 @@ class Worker(Thread):
         
         self.status = value
         
+class Producer(Thread):
+   
+    def __init__ (self, name, queue, nb_messages):
+      Thread.__init__(self)
+      
+      self.name    = name
+      self.queue   = queue
+      self.status  = "stopped"
+      self.nb_messages = nb_messages
+   
+    def run(self):
+    
+        print("[Producer %s] Start running " %(self.name))
+        self.status = "running"
+    
+        i = 0    
+        while self.nb_messages != 0:
+            if self.status == "running":
+                item = NMSQueueItem(i,"data %s" % (i))
+                print("[Producer %s] produce %s" % (self.name, item))
+                self.queue.put(item)
+                self.nb_messages -= 1
+                i += 1
+            else:
+                print("[Producer %s] Status is not running exit. Job maybe unfinished" % (self.name) )
+                return
+                
+            
+        print("[Producer %s] job finished. Bye" % (self.name) )
+    
+    def change_status(self, value):
+        
+        print("[Producer %s] Set status to %s" %(self.name, value))
+        
+        self.status = value
+        
+        
       
 def start_workers(nb_of_threads, queue):
-    
+    """ start consumers """
     for i in range(nb_of_threads):
         w = Worker("%s" % (i), queue)
         
@@ -65,6 +104,20 @@ def start_workers(nb_of_threads, queue):
         w.start()
     
     print("End of Start Workers")
+    
+def start_producers(nb_producers, nb_messages, queue):
+    """ start producer """
+    
+    for i in range(nb_producers):
+        p = Producer("%s" % (i), queue, nb_messages)
+        
+        p.setDaemon(True)
+        
+        producers.append(p)
+        
+        p.start()
+    
+    print("End of Start Producers")
 
 def stop_workers():
     
@@ -81,58 +134,113 @@ class NMSQueueTest(TestCase):
         
         pass
             
-    def ztest_simple_test(self):
-        """ test NMSQueue """
+    def ztest_consprod(self):
+        """ test consumer, producer """
         
         queue = NMSQueue()
         
-        items = []
-        # create items
-        for i in range(50):
-            items.append( NMSQueueItem(i,"data %s" % (i)) )
-    
-        #add items in queue
-        for item in items:
-            queue.put(item)
-          
-        start_workers(3,queue)  
+        start_producers(1,8,queue)
+                  
+        #start_workers(10,queue)  
         
         #wait for queue to be empty
-        queue.join()
+        #queue.join()
         
         print("After join \n")
         
         stop_workers()
         
         print("No more elements in the queue\n")
+        
+    def ztest_get_range_of_nms_queue_items(self):
+        """ get range of nms queue items """
+        queue = NMSQueue()
+        
+        result_set = queue.get_items_with_priority(1,1,0,1)
+        
+        for item in result_set:
+            print("\nItem = %s\n" % (item) )
     
-    def test_sql_queue(self):
+    def ztest_change_status(self):
+        """ change status """
+        queue = NMSQueue()
+        
+        result_set = queue.get_items_with_priority(1,1,0,1)
+        
+        the_item = None
+        
+        for item in result_set:
+            print("\nItem = %s\n" % (item) )
+            the_item = item
+        
+        queue.change_item_status(the_item.uuid, "BURIED")
+        
+        result_set = queue.get_items_with_priority(1,1,0,10)
+        
+        for item in result_set:
+            print("\nItem = %s\n" % (item) )
+        
+    
+    def ztest_get_item(self):
+        """ get an item using its uuid """
+        
+        queue = NMSQueue()
+        
+        result_set = queue.get_items_with_priority(1,1,0,1)
+        
+        for item in result_set:
+            print("\nItem = %s\n" % (item) )
+            newitem = queue.get_item(item.uuid)
+            print("\nRetrieve the same from queue Item = %s\n" % (newitem) )
+    
+    def ztest_delete_item(self):
+        """ delete item """
+        
+        queue = NMSQueue()
+        
+        result_set = queue.get_items_with_priority(1,1,0,1)
+        the_item = None
+        for item in result_set:
+            print("\nItem = %s\n" % (item) )
+            the_item = item
+            print("\nItem with uuid %s deleted" % (item.uuid) )
+        
+        queue.delete_item(the_item.uuid)
+    
+    def ztest_sql_queue(self):
         """ test for the internal sqlqueue """
         
         sql_queue = SQLQueue()
-        
-        #item1 = NMSQueueItem(5,"data %s" % (4))
-        #item1.set_uuid()
-        
-        #item2 = NMSQueueItem(6,"data %s" % (4))
-        #item2.set_uuid()
-        
-        #sql_queue.put( item1 )
-        #sql_queue.put( item2 )
-        
-        #new_item = sql_queue.get_all()
-        
-        #print("New Item = %s" % (new_item) )
-        
-        #print("Queue created")
-        
-        size = sql_queue.size()
-        
+               
         #insertion
         for i in range(10):
             item = NMSQueueItem(5,"data %s" % (i))
             item.set_uuid()
             sql_queue.put(item)
+        
+        size = sql_queue.size()
+            
+        while size != 0:
+            item = sql_queue.pop()
+            print("size = %d, item = %s\n" % (size, item))
+            size = sql_queue.size()
+        
+        print("size = %s" % size )
+        
+    def test_tokyo_queue(self):
+        """ test for the internal tokyo cabinet queue """
+        
+        sql_queue = TokyoCabinetQueue()
+        
+        print("Queue size = %d\n" %(sql_queue.size()) )
+               
+        #insertion
+        for i in range(0):
+            item = NMSQueueItem(5,"data %s" % (i))
+            item.set_uuid()
+            sql_queue.put(item)
+        
+        size = sql_queue.size()
             
         while size != 0:
             item = sql_queue.pop()
