@@ -235,7 +235,27 @@ class NMSQueueItemSet():
             raise StopIteration()
 
 class NMSQueueItem():
-    """ Item internal to the Queue """
+    """ Item internal to the Queue 
+        0 is the highest, 9 the lowest 
+    """
+    
+    UUID       = "uuid"
+    PRIORITY   = "priority"
+    STATUS     = "status"
+    TIME       = "insertion_time"
+    PRIO_TIME  = "prio_time"
+    DATA       = "data"
+    
+    @classmethod
+    def create_from_dict(cls, a_dict):
+        
+        klass = cls
+        
+        return NMSQueueItem(a_dict.get(klass.PRIORITY, None), \
+                            a_dict.get(klass.DATA, None), \
+                            a_dict.get(klass.UUID, None), \
+                            a_dict.get(klass.STATUS, None), \
+                            a_dict.get(klass.TIME, None))
     
     def __init__(self, a_priority, a_data, a_uuid = None, a_status = None, a_insertion_date = None):
         
@@ -245,12 +265,23 @@ class NMSQueueItem():
         self._status         = "ACTIVE" if not a_status else a_status
         self._insertion_date = a_insertion_date
     
+    def dictify(self):
+        
+        klass = self.__class__
+        
+        return { klass.UUID  : self._uuid, \
+                 klass.PRIORITY : self._priority,\
+                 klass.STATUS : self._status, \
+                 klass.TIME : self._insertion_date, \
+                 klass.DATA : self._data }
+    
     def set_uuid(self):
         if not self._uuid:
             self._uuid = uuid.uuid1()
     
     def __str__(self):
-        return "NMSQueueItem: priority = %s, uuid = %s, status = %s, insertion_date = %s" %(self._priority, self._uuid, self._status, self._insertion_date)
+        return "NMSQueueItem: priority = %s, uuid = %s, status = %s, insertion_date = %s"\
+                % (self._priority, self._uuid, self._status, self._insertion_date)
     
     @property
     def uuid(self):
@@ -281,9 +312,11 @@ class NMSQueue(Queue):
 
     # Initialize the queue representation
     def _init(self, maxsize):
+        """ internal constructor """
         self.queue = TokyoCabinetQueue()
 
     def _qsize(self, len=len):
+        """ return queue size """
         return self.queue.size()
 
     # Put a new item in the queue
@@ -295,20 +328,20 @@ class NMSQueue(Queue):
             if item.__class__.__name__== 'NMSQueueItem':
                 item.set_uuid()
         
-                self.queue.put(item)
+                self.queue.put( item.dictify() )
         else:
-           raise Exception("This queue only accepts NMSQueueItem. Found a %s" % (t)) 
+            raise Exception("This queue only accepts NMSQueueItem. Found a %s" % (t)) 
 
     # Get an item from the queue
     def _get(self):
-        row = self.queue.pop()
-        return NMSQueueItem(row[1], None, row[0], row[2], row[3])
+        the_dict = self.queue.pop()
+        return NMSQueueItem.create_from_dict(the_dict)
     
     #operating, visitor interface
-    def get_item(self,uuid):
+    def get_item(self, uuid):
         """ Return an item that has the following id """
-        row = self.queue.get_from_uuid(uuid)
-        return NMSQueueItem(row[1], None, row[0], row[2], row[3])
+        the_dict = self.queue.get_from_uuid(uuid)
+        return NMSQueueItem.create_from_dict(the_dict)
     
     def delete_item(self,uuid):
         """ delete an item from the queue """
@@ -324,7 +357,5 @@ class NMSQueue(Queue):
         """ Change item status """
         self.queue.change_status(a_uuid,a_status)   
         
-    
-    #Visitor interface
     
     
