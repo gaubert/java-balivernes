@@ -314,6 +314,7 @@ class NMSQueue(Queue):
     def _init(self, maxsize):
         """ internal constructor """
         self.queue = TokyoCabinetQueue()
+        #self.queue = SQLQueue()
 
     def _qsize(self, len=len):
         """ return queue size """
@@ -341,7 +342,7 @@ class NMSQueue(Queue):
     def get_item(self, uuid):
         """ Return an item that has the following id """
         the_dict = self.queue.get_from_uuid(uuid)
-        return NMSQueueItem.create_from_dict(the_dict)
+        return NMSQueueItem.create_from_dict(the_dict) if the_dict else None
     
     def delete_item(self,uuid):
         """ delete an item from the queue """
