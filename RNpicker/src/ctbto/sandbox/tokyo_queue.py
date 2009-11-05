@@ -67,7 +67,7 @@ class TokyoCabinetQueue(object):
         q = self._db.query()
         
         # table.TDBQCSTRBW 
-        q.setorder( self.__class__.PRIO_TIME, table.TDBQCSTRBW) 
+        q.setorder( self.__class__.PRIO_TIME, table.TDBQCSTRBW ) 
         
         #first param is max, second is skip
         q.setlimit(1, 0)   
@@ -83,3 +83,53 @@ class TokyoCabinetQueue(object):
     def size(self):
         """ return the size of th queue """
         return len(self._db)
+    
+    def get_from_uuid(self, a_uuid):
+        """ return the row with given uuid """
+        
+        klass = self.__class__
+        
+        q = self._db.query()
+        
+        q.addcond(klass.UUID, table.TDBQCSTREQ, str(a_uuid) )
+        
+        res = q.search()
+        
+        return self._db[res[0]] if len(res) > 0 else None
+
+    def change_status(self, a_uuid, a_status):
+        """ change the status of an item """
+        
+        klass = self.__class__
+        
+        # look for the uuid
+        the_dict = self.get_from_uuid(a_uuid)
+        
+        if the_dict:
+            the_dict[klass.STATUS] = a_status
+            self._db[str(a_uuid)]  = the_dict
+            
+            return True
+        else:
+            return False
+    
+    def change_priority(self, a_uuid, a_priority):
+        """ change priority of an item """
+        
+        klass = self.__class__
+        
+        # look for the priority
+        the_dict = self.get_from_uuid(a_uuid)
+        
+        if the_dict:
+            the_dict[klass.PRIORITY] = a_priority
+            self._db[str(a_uuid)]  = the_dict
+            return True
+        else:
+            return False
+        
+    
+    def delete_from_uuid(self, a_uuid):
+        """ delete from a uuid """
+        
+        self._db.out(str(a_uuid))

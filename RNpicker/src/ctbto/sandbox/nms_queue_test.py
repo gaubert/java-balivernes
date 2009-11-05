@@ -142,14 +142,14 @@ class NMSQueueTest(TestCase):
         
         pass
             
-    def ztest_consprod(self):
+    def test_consprod(self):
         """ test consumer, producer """
         
         queue = NMSQueue()
         
         start_producers(1,10,queue)
          
-        time.sleep(5)    
+        time.sleep(1)    
                   
         start_workers(1,queue)  
         
@@ -161,6 +161,47 @@ class NMSQueueTest(TestCase):
         stop_workers()
         
         print("No more elements in the queue\n")
+    
+    def ztest_get_from_uuid(self):
+        """ test get from uuid """
+        
+        queue = NMSQueue()
+        
+        item = NMSQueueItem(5,"data %s" % (1))
+        
+        item.set_uuid()
+        
+        print("item = %s\n" %(item))
+        
+        queue.put(item)
+        
+        newitem = queue.get_item(item.uuid)
+        
+        print("new item = %s\n" % (newitem) )
+        
+    def ztest_delete_from_uuid(self):
+        """ test get from uuid """
+        
+        queue = NMSQueue()
+        
+        item = NMSQueueItem(5,"data %s" % (1))
+        
+        item.set_uuid()
+        
+        print("item = %s\n" %(item))
+        
+        queue.put(item)
+        
+        newitem = queue.get_item(item.uuid)
+        
+        print("new item = %s\n" % (newitem) )
+        
+        queue.delete_item(item.uuid)
+        
+        newitem = queue.get_item(item.uuid)
+        
+        print("new item = %s\n" % (newitem) )
+    
         
     def ztest_get_range_of_nms_queue_items(self):
         """ get range of nms queue items """
@@ -226,18 +267,19 @@ class NMSQueueTest(TestCase):
         for i in range(10):
             item = NMSQueueItem(5,"data %s" % (i))
             item.set_uuid()
-            sql_queue.put(item)
+            sql_queue.put(item.dictify())
         
         size = sql_queue.size()
             
         while size != 0:
-            item = sql_queue.pop()
+            the_dict = sql_queue.pop()
+            item = NMSQueueItem.create_from_dict(the_dict)
             print("size = %d, item = %s\n" % (size, item))
             size = sql_queue.size()
         
         print("size = %s" % size )
         
-    def test_tokyo_queue(self):
+    def ztest_tokyo_queue(self):
         """ test for the internal tokyo cabinet queue """
         
         sql_queue = TokyoCabinetQueue()
