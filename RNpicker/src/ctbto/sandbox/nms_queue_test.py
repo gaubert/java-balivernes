@@ -10,7 +10,9 @@ from unittest import TestCase,TestLoader,TextTestRunner
 import pickle
 import os
 import datetime
+import time
 import pprint
+
 
 from nms_queue   import NMSQueue, NMSQueueItem
 from sql_queue   import SQLQueue
@@ -24,11 +26,11 @@ producers = []
 class Worker(Thread):
    
     def __init__ (self, name, queue):
-      Thread.__init__(self)
-      self.name    = name
-      self.queue   = queue
-      self.status  = "stopped"
-      self.timeout = 3
+        Thread.__init__(self)
+        self.name    = name
+        self.queue   = queue
+        self.status  = "stopped"
+        self.timeout = 3
    
     def run(self):
     
@@ -72,7 +74,13 @@ class Producer(Thread):
         i = 0    
         while self.nb_messages != 0:
             if self.status == "running":
-                item = NMSQueueItem(i,"data %s" % (i))
+                
+                if i % 2 == 0:
+                    cpt = 1
+                else:
+                    cpt = 2
+                
+                item = NMSQueueItem(cpt,"data %s" % (i))
                 print("[Producer %s] produce %s" % (self.name, item))
                 self.queue.put(item)
                 self.nb_messages -= 1
@@ -139,12 +147,14 @@ class NMSQueueTest(TestCase):
         
         queue = NMSQueue()
         
-        start_producers(1,8,queue)
+        start_producers(1,10,queue)
+         
+        time.sleep(5)    
                   
-        #start_workers(10,queue)  
+        start_workers(1,queue)  
         
         #wait for queue to be empty
-        #queue.join()
+        queue.join()
         
         print("After join \n")
         
@@ -233,17 +243,23 @@ class NMSQueueTest(TestCase):
         sql_queue = TokyoCabinetQueue()
         
         print("Queue size = %d\n" %(sql_queue.size()) )
-               
+                     
         #insertion
-        for i in range(0):
-            item = NMSQueueItem(5,"data %s" % (i))
+        for i in range(10):
+            if i % 2 == 0:
+                p = 0
+            else:
+                p = 1
+            item = NMSQueueItem(p,"data %s" % (i))
             item.set_uuid()
-            sql_queue.put(item)
+            sql_queue.put(item.dictify())
+            #time.sleep(0.5)
         
         size = sql_queue.size()
             
         while size != 0:
-            item = sql_queue.pop()
+            the_dict = sql_queue.pop()
+            item = NMSQueueItem.create_from_dict(the_dict)
             print("size = %d, item = %s\n" % (size, item))
             size = sql_queue.size()
         
