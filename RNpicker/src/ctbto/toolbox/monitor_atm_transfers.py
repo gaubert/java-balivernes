@@ -6,16 +6,30 @@ Script for automatically monitoring the ATM file transfers with ECAccess
 @author: guillaume.aubert@ctbto.org
 '''
 
-import subprocess
 
+import subprocess
+import os
+
+import datetime
 import smtplib
 import mimetypes
 import base64
-from email.mime.audio       import MIMEAudio
-from email.mime.image       import MIMEImage
-from email.mime.multipart   import MIMEMultipart
-from email.mime.application import MIMEApplication
 from email.mime.text        import MIMEText
+
+# GLOBAL VARIABLES: SETTINGS
+# To be set
+
+HOST      = 'malta14.office.ctbto.org'
+PORT      = 25
+LOGIN     = 'aubert'
+PASSWORD  = 'ZXJuZXN0MjU='
+SENDER    = 'guillaume.aubert@office.ctbto.org'
+
+# multiples can be entered with comma separated values
+ATM_MON_RECEIVERS = 'guillaume.aubert@office.ctbto.org,guillaume.aubert@gmail.com'
+    
+ECACCESS_HOME = '/home/aubert/ecaccess-v3.3.0'
+
 
 class ATMFileTransferChecker(object):
     """ Class used to send emails containing attached data """
@@ -36,7 +50,9 @@ class ATMFileTransferChecker(object):
            args:
                a_stdoutline: the line to parse
         """
-        command = "/home/aubert/ecaccess-v3.3.0/client/tools/ectls %s"
+        command = "%s/client/tools/ectls" % (os.environ['ECACCESS_HOME'])
+        command += " %s"
+        
         if len(a_stdoutline) > 0:
             vals = a_stdoutline.split()
             
@@ -59,59 +75,57 @@ class ATMFileTransferChecker(object):
                 
                 if returncode != 0:
                     lines = ''.join(proc.stdout.readlines())
-                    raise  Exception("Error when execution ectls %s to get more information on this job: %s" %(transfer_id, lines))
+                    raise  Exception("Problem when execution ectls %s to get more information on this job: %s" %(transfer_id, lines))
                 else:
                     lines = ''.join(proc.stdout.readlines())
                     return "==== Transfer %s Info ====\n%s\n" % (transfer_id, lines)
         
-    
     def check_transfers_status(self):
         """ 
             Use subprocess to call the ecaccess ectls command and check if there are any job in STOP mode
         """
+        command = "%s/client/tools/ectls 2>&1" % (os.environ['ECACCESS_HOME'])
         
-        command = "/home/aubert/ecaccess-v3.3.0/client/tools/ectls"
+        print("INFO: Calling command [%s]\n" % (command) )
         
+        proc = subprocess.Popen(command,
+                                shell=True,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                               )
         
-        try:
-            
-            proc = subprocess.Popen(command,
-                            shell=True,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            )
-            
-            proc.wait()
-            
-            returncode = proc.returncode
-            
-            if returncode != 0:
-                lines = ''.join(proc.stdout.readlines())
-                raise  Exception("Error when calling %s:\n %s" %( command, lines))
-            else:
-                orig_lines = ""
-                lines = "Some ATM ECMWF Transfers failed. Please check below for the error(s).\n\n"
-                has_error = False
-                for line in proc.stdout:
-                    has_error = True
-                    # keep original lines for debugging
-                    orig_lines += line
-                    
-                    message = self.look_for_transfer_problems(line)
-                    
-                    lines += message
+        proc.wait()
+        
+        returncode = proc.returncode
+        
+        if returncode != 0:
+            lines = ''.join(proc.stdout.readlines())
+            raise  Exception("Problem when calling %s:\n %s" %( command, lines))
+        else:
+            orig_lines = ""
+            lines = "Some ATM ECMWF Transfers failed. Please check below for the error(s).\n\n"
+            has_error = False
+            for line in proc.stdout:
+                has_error = True
+                # keep original lines for debugging
+                orig_lines += line
                 
-                if has_error:
-                    print(lines)
-                    # send it my email
-                    self._emailer.send_text_message('guillaume.aubert@ctbto.org', 'ATM ECMWF Transfers errors', lines)
-                    print("email sent\n")
-                else:
-                    print("No transfer errors\n")
+                message = self.look_for_transfer_problems(line)
+                
+                lines += message
             
-        except Exception, exc:
-            print(exc)
+            if has_error:
+                print(lines)
+                
+                # send it my email
+                receivers = os.environ['ATM_MON_RECEIVERS']
+                d_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                self._emailer.send_text_message(receivers, '%s = ATM ECMWF Transfers errors' %(d_now), lines)
+                
+                print("INFO: Sent error notification email sent to %s\n" %(receivers) )
+            else:
+                print("INFO: No transfer errors\n")
 
 def encrypt(a_string):
     """ weak encryption for hiding password from being understandable by humans """
@@ -131,7 +145,10 @@ class DataEmailer(object):
         self._server_host = a_server_host
         
         # set to SMTP default if no ports are given
-        self._server_port = a_server_port if (a_server_port != None) else 25
+        if a_server_port:
+            self._server_port = a_server_port 
+        else:
+            25
         
         self._login       = a_login
         self._password    = a_password
@@ -206,21 +223,46 @@ class DataEmailer(object):
         
         # Send the message via our own SMTP server, but don't include the
         # envelope header.
-        self._smtp_server.sendmail(self._sender, [a_receivers], msg.as_string())
+        self._smtp_server.sendmail(self._sender, receivers, msg.as_string())
+
+def check_env():
+    """ check the necessary env variables """
+    
+    ecaccess_home = os.environ['ECACCESS_HOME']
+    
+    if not ecaccess_home:
+        raise Exception("Please set ECACCESS_HOME env variable")
+    elif not os.path.exists('%s/client/tools/ectls' % (ecaccess_home)):
+        raise Exception("The Env variable ECACCESS_HOME=[%s] doesn't seem to point to a valid ECACCESS client distribution. Please check" % (ecaccess_home))
 
 
 if __name__ == '__main__':
     
-    host     = 'malta14.office.ctbto.org'
-    port     = 25
-    login    = 'aubert'
-    password = 'ZXJuZXN0MjU='
-    sender   = 'guillaume.aubert@ctbto.org'
+    # put DEFAULT if no env variables
+    if not os.environ.get('ATM_MON_RECEIVERS', None):
+        print("INFO: ATM_MON_RECEIVERS variable set to default value %s.\n" %(ATM_MON_RECEIVERS) )
+        os.environ['ATM_MON_RECEIVERS'] = ATM_MON_RECEIVERS
     
-    emailer = DataEmailer(host, port, sender, login, password)
+    if not os.environ.get('ECACCESS_HOME', None):
+        print("INFO: ECACCESS_HOME ENV variable set to default value %s.\n" %(ECACCESS_HOME) )
+        os.environ['ECACCESS_HOME'] = ECACCESS_HOME
     
-    emailer.connect()
-    
-    checker = ATMFileTransferChecker(emailer)
-    
-    checker.check_transfers_status()
+    try:
+        # preconditions checking
+        check_env()
+        
+        emailer = DataEmailer(HOST, PORT, SENDER, LOGIN, PASSWORD)
+        
+        emailer.connect()
+        
+        checker = ATMFileTransferChecker(emailer)
+        
+        checker.check_transfers_status()
+        
+        print('INFO: Successfully ran script.\n')
+        
+        exit(0)
+    except Exception, excep:
+        print('ERROR: %s' %(excep))
+        print('Exit in error.\n')
+        exit(1)
