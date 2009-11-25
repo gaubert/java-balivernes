@@ -124,8 +124,14 @@ class ATMFileTransferChecker(object):
                 self._emailer.send_text_message(receivers, '%s = ATM ECMWF Transfers errors' %(d_now), lines)
                 
                 print("INFO: Sent error notification email sent to %s\n" %(receivers) )
+                
+                raise Exception("ATM ECMWF Transfers have problems. Please investigate")
+            
             else:
                 print("INFO: No transfer errors\n")
+            
+        #everything is ok
+        return 0
 
 def encrypt(a_string):
     """ weak encryption for hiding password from being understandable by humans """
@@ -261,7 +267,6 @@ if __name__ == '__main__':
         
         print('INFO: Successfully ran script.\n')
         
-        exit(0)
     except Exception, excep:
         print('ERROR: %s' %(excep))
         print('Exit in error.\n')
