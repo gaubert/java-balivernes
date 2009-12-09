@@ -10,6 +10,11 @@ Script for automatically monitoring the ATM file transfers with ECAccess
 import subprocess
 import os
 
+import traceback
+import sys
+from pprint import pprint
+
+
 import datetime
 import smtplib
 import mimetypes
@@ -269,5 +274,7 @@ if __name__ == '__main__':
         
     except Exception, excep:
         print('ERROR: %s' %(excep))
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        pprint(traceback.format_exception(exc_type, exc_value, exc_tb))
         print('Exit in error.\n')
         exit(1)
