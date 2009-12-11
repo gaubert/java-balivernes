@@ -9,21 +9,10 @@ import itertools
 import gc
 import fnmatch
 
-class CLIError(Exception):
-    """ Base class exception """
-    pass
+import error_commons
 
-class ConfAccessError(CLIError):
-    """The only exception where a logger as not yet been set as it depends on the conf"""
 
-    def __init__(self,a_error_msg):
-        super(ConfAccessError,self).__init__()
-        self._error_message = a_error_msg
-    
-    def get_message_error(self):
-        return self._error_message
-
-class FindError(CLIError):
+class FindError(error_commons.CLIError):
     """ find error """
 
     def __init__(self, a_error_msg):
@@ -98,7 +87,7 @@ def ffind(path, shellglobs=None, namefs=None, relative=True):
 
     fileList = [] # result list
     try:
-        for dir, subdirs, files in os.walk(path):
+        for dir, _, files in os.walk(path):
             if shellglobs:
                 matched = []
                 for pattern in shellglobs:
@@ -110,5 +99,6 @@ def ffind(path, shellglobs=None, namefs=None, relative=True):
         if not relative: fileList = map(os.path.abspath, fileList)
         if namefs: 
             for ff in namefs: fileList = filter(ff, fileList)
-    except Exception, e: raise FindError(str(e))
+    except Exception, exc: 
+        raise FindError(str(exc))
     return(fileList)

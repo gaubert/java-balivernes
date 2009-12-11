@@ -14,7 +14,7 @@ from org.ctbto.conf import Conf
 
 import utils
 
-import const
+import trajectory_const
 import error_commons
 import g2s_commons
 import cli_parsing_commons
@@ -22,6 +22,7 @@ import cli_parsing_commons
 NAME        = "run_g2s_and_create_netcdf"
 VERSION     = "1.0"
 DATE_FORMAT = "%Y-%m-%d"
+
 
 def usage():
     """ usage function """
@@ -31,6 +32,7 @@ Usage: run_g2s_and_create_netcdf [options]
   Mandatory Options:
   --start          (-s)   starting date YYYY-MM-DDTHH
   --end            (-e)   ending date YYYY-MM-DD-HH
+  --trajectory     (-t)   trajectory file
   --bin_dir        (-b)   destination dir where the .bin files will be written
   --netcdf_dir     (-n)   destination dir where the netcdf files will be written
 
@@ -47,6 +49,7 @@ Usage: run_g2s_and_create_netcdf [options]
   """
        
     print(usage_string)
+    
 
 def parse_arguments(a_args): #pylint: disable-msg=R0912
     """
@@ -180,32 +183,29 @@ def load_configuration(a_args):
 
 
 def _get_station_info():
-    
+    """ get station coordinates """
+
+
+    names  = []
     lats   = []
     lons   = []
-    names  = []
     
-    for station in const.INFRA_STATION_COODINATES:
-        (lat,lon) = const.INFRA_STATION_COODINATES[station]
+    for station in trajectory_const.REB_TRAJECTORY:
+        (lat, lon) = trajectory_const.REB_TRAJECTORY[station]
         
         lats.append(lat)
         lons.append(lon)
         names.append(station)
     
-    return (names,lats,lons)
-
+    return (names, lats, lons)
 
 
 def do_run(path, args, lats, lons, sta_names):
-    
+    """ do run """
     print("===================================================================\n")
            
     print("Generation for %s \n" %(path) )
-    
-    f107  = ""
-    f107a = ""
-    ap    = ""
-            
+        
     (f107, f107a, ap) = g2s_commons.get_noaa_indices(path)
     
     bin_file_path = g2s_commons.run_g2s(args['bin_dir'], path, f107, f107a, ap)
@@ -233,7 +233,7 @@ if __name__ == "__main__":
         
         print("Ecmwf data paths %s\n" %(ecmwf_data_paths))
         
-        (sta_names,lats,lons) = _get_station_info()
+        (sta_names, lats, lons) = _get_station_info()
     
         for path in ecmwf_data_paths:
             time_spent = utils.ftimer(do_run, [path, args, lats, lons, sta_names], {})
