@@ -14,6 +14,8 @@ scriptdestdir=$destdir/scripts
 echo "copy all python files within $srcdir to $host:$destdir"
 
 scp $srcdir/*.py aubert@$host:$destdir
+scp $srcdir/commons/*.py aubert@$host:$destdir/commons
+scp $srcdir/*.traj aubert@$host:$destdir
 scp $confdir/*.config aubert@$host:$confdestdir
 scp $scriptdir/* aubert@$host:$scriptdestdir
 

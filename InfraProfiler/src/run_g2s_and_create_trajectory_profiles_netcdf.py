@@ -14,10 +14,10 @@ from org.ctbto.conf import Conf
 
 import utils
 
-import trajectory_const
 import error_commons
 import g2s_commons
 import cli_parsing_commons
+import commons.struct_parser
 
 NAME        = "run_g2s_and_create_netcdf"
 VERSION     = "1.0"
@@ -32,9 +32,10 @@ Usage: run_g2s_and_create_netcdf [options]
   Mandatory Options:
   --start          (-s)   starting date YYYY-MM-DDTHH
   --end            (-e)   ending date YYYY-MM-DD-HH
-  --trajectory     (-t)   trajectory file
+  --coord_file     (-f)   coordinates file
   --bin_dir        (-b)   destination dir where the .bin files will be written
   --netcdf_dir     (-n)   destination dir where the netcdf files will be written
+  --conf_dir       (-c)   directory where the config file can be found
 
   Help Options:
    --help     Show this usage information.
@@ -74,7 +75,7 @@ def parse_arguments(a_args): #pylint: disable-msg=R0912
    
     try:
         reassoc_args = cli_parsing_commons.reassociate_arguments(a_args)
-        (opts, _) = getopt.gnu_getopt(reassoc_args, "hs:e:b:n:v", ["help", "start=", "end=", "bin_dir=", "netcdf_dir="])
+        (opts, _) = getopt.gnu_getopt(reassoc_args, "hs:e:b:n:f:v", ["help", "start=", "end=", "bin_dir=", "netcdf_dir=","coord_file="])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -106,7 +107,18 @@ def parse_arguments(a_args): #pylint: disable-msg=R0912
             result['bin_dir'] = a
         elif o in ("-n", "--netcdf_dir"):
             # try to make the dir if necessary
-            result['netcdf_dir'] = a    
+            result['netcdf_dir'] = a   
+        elif o in ("-f", "--coord_file"):
+            # try to make the dir if necessary
+            try:
+                if not os.path.isfile(a):
+                    raise cli_parsing_commons.ParsingError("%s -f or --coord_file is not a file"%(a))
+            except:
+                raise cli_parsing_commons.ParsingError("Invalid coordinate file %s"%(a))
+            
+            # parse coord file
+            result['coord_file'] = _get_coordinates(a)
+            
         elif o in ("-c", "--conf_dir"):
             try:
                 #check that it is a dir
@@ -182,16 +194,26 @@ def load_configuration(a_args):
 
 
 
-def _get_station_info():
-    """ get station coordinates """
+def _get_coordinates(a_file_path):
+    """ get coordinates """
 
 
     names  = []
     lats   = []
     lons   = []
     
-    for station in trajectory_const.REB_TRAJECTORY:
-        (lat, lon) = trajectory_const.REB_TRAJECTORY[station]
+    print("Parsing coordinates file  %s \n" %(a_file_path) )
+    
+    the_file = open(a_file_path)
+    
+    the_string = the_file.read()
+        
+    compiler = commons.struct_parser.Compiler()
+         
+    the_dict = compiler.compile_dict(the_string)
+    
+    for station in the_dict:
+        (lat, lon) = the_dict[station]
         
         lats.append(lat)
         lons.append(lon)
@@ -233,7 +255,7 @@ if __name__ == "__main__":
         
         print("Ecmwf data paths %s\n" %(ecmwf_data_paths))
         
-        (sta_names, lats, lons) = _get_station_info()
+        (sta_names, lats, lons) = args['coord_file']
     
         for path in ecmwf_data_paths:
             time_spent = utils.ftimer(do_run, [path, args, lats, lons, sta_names], {})
