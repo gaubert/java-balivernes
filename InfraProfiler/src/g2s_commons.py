@@ -86,6 +86,9 @@ def get_ecmwf_data(a_start, a_end):
         Raises:
            exception
     """
+    
+    print("Read ECMWF from prod or archive \n")
+    
     result = []
     
     filenames = build_list_of_filenames(a_start, a_end)
@@ -141,6 +144,8 @@ def get_noaa_indices(a_ecmwf_file_name):
           a_ecmwf_file_name : ecmwf file name starting with EN
     """
     
+    print("Get NOAA indices \n")
+    
     # create a datetime from the ECMWF filename and convert it in NOAA form '%Y%m%d'
     noaa_date = get_datetime_from_ecmwf_file_name(a_ecmwf_file_name).strftime('%Y%m%d')
     
@@ -154,7 +159,7 @@ def get_noaa_indices(a_ecmwf_file_name):
     
     command = '%s/%s' % (the_dir, exe)
     
-    print('will run [%s]\n' % (command) )
+    print('Run command [%s]\n' % (command) )
     
     # call the command
     pipe = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=True)
