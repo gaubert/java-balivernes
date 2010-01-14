@@ -605,16 +605,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <td>Station ID: {{station_code}}</td>
-      </td>
       <td>Detector ID: {{detector_code}}</td>
     </tr>
     <tr>
-      <td>Authenticated: No </td>
-      </td>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2"></td>
+      <td colspan="2" >Authenticated: No </td>
     </tr>
     <tr>
       <td colspan="2">Station Location: {{station_location}}</td>
@@ -629,24 +623,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       </td>
     </tr>
     <tr>
-      <td colspan="2"></td>
-    </tr>
-    <tr>
       <td colspan="2">Detector Description: {{detector_description}}</td>
     </tr>
-    <tr>
-      <td colspan="2"></td>
-    </tr>
-  </tbody>
-</table>
-<!-- div containing the map -->
- <div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
-         <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
-         <div onclick="show()" class="hide-button">click to hide</div>
-</div>
-<table class="std3">
-  <tbody>
-    <tr>
+	<tr>
       <td>Sample ID: {{sample_id}}</td>
       <td>Sample Geometry: {{sample_geometry}}</td>
     </tr>
@@ -676,6 +655,11 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
   </tbody>
 </table>
+<!-- div containing the map -->
+ <div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
+         <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
+         <div onclick="show()" class="hide-button">click to hide</div>
+</div>
 
 <p>Collection Start Comments:</p>
 

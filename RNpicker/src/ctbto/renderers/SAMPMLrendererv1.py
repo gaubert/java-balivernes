@@ -336,6 +336,7 @@ class SpalaxRenderer(BaseRenderer):
                 dummy_template = re.sub("\${ACTIVITY}", str(result['ACTIVITY']), dummy_template)
                 dummy_template = re.sub("\${ACTIVITY_ERROR}", str(result['ACTIVITY_ERR']), dummy_template)
                 dummy_template = re.sub("\${ACTIVITY_ERROR_PERC}", str(result.get('ACTIVITY_ERR_PERC', 'N/A')), dummy_template)
+                dummy_template = re.sub("\${U_ACTIVITY}", str(result.get('UNDECAYED_ACT', UNDEFINED)), dummy_template)
                 dummy_template = re.sub("\${LC_ACTIVITY}", str(result['LC_ACTIVITY']), dummy_template)
                 dummy_template = re.sub("\${LD_ACTIVITY}", str(result['LD_ACTIVITY']), dummy_template)
             
@@ -384,19 +385,19 @@ class SpalaxRenderer(BaseRenderer):
                
                 row     = re.sub("\${ROW}",str(result.get(u'NUCLIDE','Error')) , cell_template)
                 
-                one_row = re.sub("\${COL}"  ,'XE_131M', row)
+                one_row = re.sub("\${COL}"  ,'XE-131M', row)
                 one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_131M','Error')) , one_row)
                 cells  += one_row
                 
-                one_row = re.sub("\${COL}"  ,'XE_133M', row)
+                one_row = re.sub("\${COL}"  ,'XE-133M', row)
                 one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_133M','Error')) , one_row)
                 cells  += one_row
                 
-                one_row = re.sub("\${COL}"  ,'XE_133', row)
+                one_row = re.sub("\${COL}"  ,'XE-133', row)
                 one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_133','Error')) , one_row)
                 cells  += one_row
                 
-                one_row = re.sub("\${COL}"  ,'XE_135', row)
+                one_row = re.sub("\${COL}"  ,'XE-135', row)
                 one_row = re.sub("\${VALUE}",str(result.get(u'COV_XE_135','Error')) , one_row)
                 cells  += one_row
                 
