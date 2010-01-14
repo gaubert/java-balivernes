@@ -684,17 +684,33 @@ class SPALAXXML2HTMLRenderer(object):
                 # in any cases fill Activity results dict
                 one_dict = {}
                 one_dict['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                temp_val               = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                temp_val                      = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                temp_val               = nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                temp_val                      = nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity_abs_err']  = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                temp_val               = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                temp_val                      = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity_rel_err']  = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                one_dict['lc']                = utils.round_as_string(nuclide.find('{%s}LCActivity'\
-                                                                            %(XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
-                one_dict['ld']                = utils.round_as_string(nuclide.find('{%s}LDActivity'\
-                                                                            % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                temp_val                      = nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                one_dict['lc']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val                      = nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                one_dict['ld']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                
                 a_nuclides.append(one_dict)
+                
+                # in any cases fill Activity results dict
+                d = {}
+                d['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                temp_val               = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['activity']          = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val               = nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['activity_abs_err']  = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val               = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['activity_rel_err']  = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val               = nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['lc']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                temp_val               = nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
+                d['ld']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                a_nuclides.append(d)
            
             self._context['non_quantified_nuclides'] = nq_nuclides
             self._context['quantified_nuclides']     = q_nuclides 
@@ -707,8 +723,10 @@ class SPALAXXML2HTMLRenderer(object):
             #first peak fit method
             cov_matrix = "//*[local-name() = 'XeCovarianceMatrixes']/*[local-name() = 'XeCovarianceMatrix' and contains(@method,$method)]"
             res = root.xpath(cov_matrix, method = "Peak Fit Method")
-            matrix_result = {}
-            matrix_col = {'XE_131M':0, 'XE_133M':1, 'XE_133':2, 'XE_135':3}
+            
+            matrix_result = {'XE-133M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-131M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-135': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-133': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}}
+            
+            matrix_col = {'XE-131M':0, 'XE-133M':1, 'XE-133':2, 'XE-135':3}
             if len(res) > 0:
                 matrix_elem = res[0]
                 for cell in matrix_elem:
@@ -728,8 +746,8 @@ class SPALAXXML2HTMLRenderer(object):
             #second Decay Analysis Method
             cov_matrix = "//*[local-name() = 'XeCovarianceMatrixes']/*[local-name() = 'XeCovarianceMatrix' and contains(@method,$method)]"
             res = root.xpath(cov_matrix, method = "Decay Analysis Method")
-            matrix_result = {}
-            matrix_col = {'XE_131M':0, 'XE_133M':1, 'XE_133':2, 'XE_135':3}
+            {'XE-133M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-131M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-135': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-133': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}}
+            matrix_col = {'XE-131M':0, 'XE-133M':1, 'XE-133':2, 'XE-135':3}
             if len(res) > 0:
                 matrix_elem = res[0]
                 for cell in matrix_elem:

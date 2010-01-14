@@ -192,9 +192,9 @@ class NobleGasDecayCorrector(object):
         XE133_half_life_string  = NobleGasDecayCorrector.c_default_half_life.get('XE-133', None)
         XE133M_half_life_string = NobleGasDecayCorrector.c_default_half_life.get('XE-133M', None)
         
-        print("fi XE133\n")
+       
         fi_XE133  = self._calculate_fi(XE133_half_life_string)
-        print("fi XE133M\n")
+        
         fi_XE133M = self._calculate_fi(XE133M_half_life_string)
         
         lambda3_coeff   = Decimal(2).ln() / convert_half_life_in_sec(XE133_half_life_string)
