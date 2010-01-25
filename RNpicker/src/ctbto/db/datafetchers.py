@@ -237,25 +237,25 @@ class DBDataFetcher(object):
             return float(aHalfLife)
           
         except Exception, ex:
-            raise CTBTOError(-1,"Error when parsing halflife value %s for sample_id %s. Exception %s"%(aHalfLife,self._sampleID,ex))
+            raise CTBTOError(-1,"Error when parsing halflife value %s for sample_id %s. Exception %s" % (aHalfLife, self._sampleID, ex))
             
     
-    def _transformResults(self,aDataDict):
+    def _transformResults(self, a_data_dict):
         """ transformer that modify the retrieve content from the database in order to be exploited directly by the renderers
             - change datetime format to isoformat
             - change None Value to N/A (non available)
         """
         
         # transform date information
-        for (key,value) in aDataDict.items():
+        for (key, value) in a_data_dict.items():
             if str(value.__class__) == "<type 'datetime.datetime'>" :
-                aDataDict[key]= value.isoformat() 
+                a_data_dict[key] = value.isoformat() 
             if value == None:
-                aDataDict[key] = UNDEFINED
+                a_data_dict[key] = UNDEFINED
               
-        return aDataDict
+        return a_data_dict
     
-    def _addKeyPrefix(self,aDict,aPrefix):
+    def _addKeyPrefix(self, aDict, aPrefix):
         """add a prefix in the key.
         
             Args:
@@ -268,15 +268,15 @@ class DBDataFetcher(object):
             Raises:
                exception
         """
-        transformedDict = {}
+        transformed_dict = {}
         
         # transform date information
-        for (key,value) in aDict.items():
-            transformedDict["%s_%s"%(aPrefix,key)] = value
+        for (key, value) in aDict.items():
+            transformed_dict["%s_%s" % (aPrefix, key)] = value
               
-        return transformedDict
+        return transformed_dict
     
-    def _getCalibrationCheckSum(self,aCoeffs):
+    def _getCalibrationCheckSum(self,a_coeffs):
         """return the checksum of the calibration coeffs. This is done to create a unique id for the different calibration types.
         
             Args:
@@ -289,9 +289,9 @@ class DBDataFetcher(object):
                exception
         """
         
-        coeffsStr = ''.join(map(str,aCoeffs)) #IGNORE:W0141
+        coeffs_str = ''.join(map(str, a_coeffs)) #IGNORE:W0141
         
-        return ctbto.common.utils.checksum(coeffsStr)
+        return ctbto.common.utils.checksum(coeffs_str)
         
           
               
@@ -309,10 +309,11 @@ class DBDataFetcher(object):
         # only one row in result set
         rows = result.fetchall()
        
-        nbResults = len(rows)
+        nb_results = len(rows)
        
-        if nbResults != 1:
-            raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+        if nb_results != 1:
+            raise CTBTOError(-1, "Expecting to have one result for sample_id %s but got %d either None or more than one. %s" \
+                             % (self._sampleID, nb_results, rows))
          
         self._dataBag[u'REFERENCE_ID'] = rows[0]['SAMPLE_REF_ID']
        
@@ -2246,7 +2247,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 DBDataFetcher.c_log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
                 # extract id from dataname
-                [pre,sid] = dataname.split('_') #IGNORE:W0612
+                [_,sid] = dataname.split('_') #IGNORE:W0612
           
                 self._fetchCategoryResults(sid,dataname)
         
@@ -2402,68 +2403,72 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         rows = result.fetchall()   
         
         # get the volume of mesured xenon to compute activities from concentration
-        # it is in m3 and in the AUXILIARY_INFO
-        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(dataname),{})
+        # it is in cm3 and in the AUXILIARY_INFO
+        aux = self._dataBag.get('%s_AUXILIARY_INFO' % (dataname), {})
+        
         # we need a vol in l
-        corr_volume = aux.get('XE_VOLUME',0)/(1000)
+        corr_volume = aux.get('XE_VOLUME', 0) / 0.087
        
         # add results in a list which will become a list of dicts
-        res = []
+        res  = []
         data = {}
         
         # create undecay correctorand need dates for that
-        s_dummy = '%s_DATA_G_COLLECT_START' % (dataname)
         coll_start = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_G_DATA_COLLECT_START' % (dataname), {}))
         coll_stop  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_G_DATA_COLLECT_STOP' % (dataname), {}))
         acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_G_DATA_ACQ_START' % (dataname), {}))
         acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_G_DATA_ACQ_STOP' % (dataname), {}))
         
-        nbCorrector = NobleGasDecayCorrector(coll_start, coll_stop, acq_start, acq_stop)
-        xe133_data  = None
-        xe133_act  = None
-        xe133M_act = None
+        nb_corrector = NobleGasDecayCorrector(coll_start, coll_stop, acq_start, acq_stop)
+        xe133_data   = None
+        xe133_act    = None
+        xe133M_act   = None
         
         for row in rows:
             data.update(row.items())  
             
             # translate NID_FLAG to something humanely understandable
-            nidflag = data.get(u'NID_FLAG',None)
+            nidflag = data.get(u'NID_FLAG', None)
             # check if there is NID key
             if nidflag is not None:
-                val = DBDataFetcher.c_nid_translation.get(nidflag,nidflag)
+                val = DBDataFetcher.c_nid_translation.get(nidflag, nidflag)
                 data[u'NID_FLAG']     = val
                 data[u'NID_FLAG_NUM'] = nidflag
             
             # translate METHOD_ID to something humanely understandable
-            method_id = data.get(u'METHOD_ID',UNDEFINED)
+            method_id = data.get(u'METHOD_ID', UNDEFINED)
             # check if there is NID key
             if nidflag is not None:
-                val = SpalaxNobleGasDataFetcher.c_method_translation.get(method_id,method_id)
+                val = SpalaxNobleGasDataFetcher.c_method_translation.get(method_id, method_id)
                 data[u'METHOD']    = val
                 data[u'METHOD_ID'] = nidflag
                 
             # translate NUCLIDE_ID into a string
             # use nuclide lib for translation
             # beware the list index start at 0 and the nuclide_id start at 1
-            nuclide_id = data.get(u'NUCLIDE_ID',None)
+            nuclide_id = data.get(u'NUCLIDE_ID', None)
             nuclide_id = nuclide_id - 1
             nuclide_lib = self._dataBag[u'XE_NUCL_LIB']
-            if nuclide_id is not None:
+            if nuclide_id:
                 nucl = nuclide_lib[nuclide_id] if (nuclide_id < len(nuclide_lib)) and (nuclide_id >=0) else UNDEFINED
                 data[u'NUCLIDE'] =  nucl[u'NAME']
         
             # add concentration error in percent
-            if data.get(u'CONC',0) != 0:
-                data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR',0)*100)/data.get(u'CONC')
+            if data.get(u'CONC', 0) != 0:
+                
+                # values in db are in uBq/m3, we want to have everything mBq/m3 (* 0.001)
+                data[u'CONC']          = data.get(u'CONC', 0) * 0.001
+                
+                data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR', 0) * 100) / data.get(u'CONC')
                 
             # calculate volumes and concentration (need vol for that)
             # get activity. If no volume or no activity results are 0
             # if volume = 0 (I think that 1 m3 means nothing)
             if corr_volume >= 0:
-                data[u'ACTIVITY']     = data.get(u'CONC',0)*corr_volume if data.get(u'CONC',0) != 0 else UNDEFINED
-                data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR',0)*corr_volume
-                data[u'LC_ACTIVITY']  = data.get(u'LC',0)*corr_volume
-                data[u'LD_ACTIVITY']  = data.get(u'LD',0)*corr_volume
+                data[u'ACTIVITY']     = data.get(u'CONC', 0) * corr_volume if data.get(u'CONC', 0) != 0 else UNDEFINED
+                data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR', 0) * corr_volume
+                data[u'LC_ACTIVITY']  = data.get(u'LC', 0) * corr_volume
+                data[u'LD_ACTIVITY']  = data.get(u'LD', 0) * corr_volume
                  
             else:
                 data[u'ACTIVITY']     = UNDEFINED
@@ -2473,20 +2478,20 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
           
             # to avoid div by 0 check that quotient is not nul
             if data[u'ACTIVITY'] != UNDEFINED:
-                data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR',0)*100)/data.get(u'ACTIVITY')
+                data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR', 0) * 100)/ data.get(u'ACTIVITY')
                 
                 # add undecay corrected activity concentration if not XE133
                 # if XE133 memorize both XE133 and XE133M
-                if data['NUCLIDE'] != nbCorrector.XE133:
-                    data[u'UNDECAYED_ACT'] = float(nbCorrector.undecay_correct(data['NUCLIDE'], data.get(u'ACTIVITY')))
+                if data['NUCLIDE'] != nb_corrector.XE133:
+                    data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(data['NUCLIDE'], data.get(u'ACTIVITY')))
                     
-                    if data['NUCLIDE'] == nbCorrector.XE133M:
+                    if data['NUCLIDE'] == nb_corrector.XE133M:
                         xe133M_act = data.get(u'ACTIVITY')
                     else:
                         # XE133
                         xe133_act  = data.get(u'ACTIVITY')
             
-            if data['NUCLIDE'] != nbCorrector.XE133:
+            if data['NUCLIDE'] != nb_corrector.XE133:
                 res.append(data)
             else:
                 xe133_data = data
@@ -2495,36 +2500,38 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         
         # calculate undecay corrected values for XE133 if relevant
         if xe133_act and xe133_act != 0:
-            xe133_data[u'UNDECAYED_ACT'] = float(nbCorrector.undecay_correct(nbCorrector.XE133, xe133_act, xe133M_act))
+            xe133_data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(nb_corrector.XE133, xe133_act, xe133M_act))
             res.append(xe133_data)
         
         # add in dataBag
-        self._dataBag[u'%s_XE_RESULTS'%(dataname)] = res
+        self._dataBag[u'%s_XE_RESULTS' % (dataname)] = res
             
         result.close() 
     
     
-    def _fetchCalibrationCoeffs(self,prefix):
+    def _fetchCalibrationCoeffs(self, prefix):
         
         # get the sampleID 
         # extract id from dataname
         
-        [pre,sid] = prefix.split('_') #IGNORE:W0612
+        [_, sid] = prefix.split('_') #IGNORE:W0612
     
         if sid is None:
-            raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
+            raise CTBTOError(-1, "Error when fetching Calibration Info. No sampleID found in dataBag for %s" \
+                             % (prefix) )
         
         calIDs_list = []
         
         # get energy calibration info
-        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_ENERGY_CAL%(sid))
+        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_ENERGY_CAL % (sid))
         
         rows = result.fetchall()
         
         nbResults = len(rows)
        
         if nbResults != 1:
-            raise CTBTOError(-1,"Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
+            raise CTBTOError(-1, "Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s" \
+                             % (self._sampleID,nbResults,rows))
         
         # create a list of dicts
         data = {}
@@ -2569,7 +2576,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             self._dataBag[cal_id] = data
         
         # add in dataBag
-        self._dataBag[u'%s_G_RESOLUTION_CAL'%(prefix)] = cal_id
+        self._dataBag[u'%s_G_RESOLUTION_CAL' % (prefix)] = cal_id
         
         # add in list of calibration info for this particular sample
         calIDs_list.append(cal_id)
