@@ -590,77 +590,60 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <p style="text-align:center;">Sample Arrival Date: {{arrival_date}}</p>
 
 <h2>Sample Information</h2>
-
-<table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <td>Station ID: {{station_code}}</td>
-      </td>
-      <td>Detector ID: {{detector_code}}</td>
-    </tr>
-    <tr>
-      <td>Authenticated: No </td>
-      </td>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2"></td>
-    </tr>
-    <tr>
-      <td colspan="2">Station Location: {{station_location}}</td>
-    </tr>
-    <tr>
-      <td colspan="2">Coordinates: <a class="coord" href="{{station_gmaps}}">[lat={{station_lat}},lon={{station_lon}},h={{station_height}}]</a> <span class="preview" onclick="show()"> (prev/hide) </span> 
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2"></td>
-    </tr>
-    <tr>
-      <td colspan="2">Detector Description: {{detector_description}}</td>
-    </tr>
-    <tr>
-      <td colspan="2"></td>
-    </tr>
-  </tbody>
-</table>
 <!-- div containing the map -->
- <div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
+<!-- div containing the map -->
+<div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
          <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
          <div onclick="show()" class="hide-button">click to hide</div>
 </div>
 <table class="std1">
   <tbody>
-     <tr>
+    <tr>
       <td>Sample ID: {{sample_id}}</td>
+      <td>Station ID: {{station_code}}</td>
+    </tr>
+    <tr>
+      <td>Detector ID: {{detector_code}}</td>
+      <td>Detector Description: {{detector_description}}</td>
+    </tr>
+    <tr>
+      <td>Station Location: {{station_location}}</td><td colspan="2">Coordinates:
+	    {% if station_lat %}
+	       <a class="coord" href="{{station_gmaps}}">[Lat={{station_lat}},Lon={{station_lon}}
+		   {%- if station_height -%},h={{station_height}}{%- endif -%}]
+		   </a> <span class="preview" onclick="show()"> (prev/hide) </span>
+		{% else %}
+		   N/A
+		{% endif %} 
+	  </td>
+	</tr>
+    <tr>
       <td>Sample Geometry: {{sample_geometry}}</td>
+      <td >Sample Type: {{sample_type}}</td>
     </tr>
     <tr>
       <td>Total Processed Air Quantity : {{processed_air_volume}} {{processed_air_volume_unit}}</td>
-	  <td >Sample Type: {{sample_type}}</td>
+      <td>Authenticated: No </td>
     </tr>
-	<tr>
-		<td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
-		<td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
-	</tr>
+    <tr>
+      <td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
+      <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
+    </tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
-      <td>Sampling Time: {{sampling_time}}</td>
+      <td>Sampling Time:  {{sampling_time}}  </td>
     </tr>
     <tr>
       <td>Collection Stop: {{collection_stop}}</td>
-      <td>Decay Time: {{decay_time}}</td>
+      <td>Decay Time:  {{decay_time}}</td>
     </tr>
     <tr>
       <td>Acquisition Start: {{acquisition_start}}</td>
-      <td>Acquisition Time: {{acquisition_time}}</td>
+      <td>Acquisition Time:  {{acquisition_time}}</td>
     </tr>
     <tr>
       <td>Acquisition Stop: {{acquisition_stop}}</td>
-	  <td colspan="1"></td>
+      <td colspan="1"></td>
     </tr>
   </tbody>
 </table>
@@ -726,7 +709,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h2>Sample Activity Results:</h2>
 <p></p>
-<p class="italobold">Decay corrected activities:</p>
+<p class="italobold">Activities:</p>
 
 <table class="std2">
   <caption></caption>
@@ -737,6 +720,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">Activity (mBq)</th>
+	  <th class="centre">Undecay corrected Activity (mBq)</th>
       <th class="centre">Abs Activity Error (mBq)</th>
       <th class="centre">Critical Limit (mBq)</th>
       <th class="centre">Detection Limit (mBq)</th>
@@ -745,6 +729,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <td class="centre">{{ a_item.name }}</td>
       <td class="centre">{{ a_item.activity }}</td>
+	  <td>{{ a_item.undecay_corr_activity }}</td>
       <td class="centre" title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
       <td class="centre">{{ a_item.lc }}</td>
       <td class="centre">{{ a_item.ld }}</td>
@@ -753,28 +738,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 <p></p>
-<p></p>
-<p class="italobold">Non decay corrected activities:</p>
-<table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th>Nuclide</th>
-      <th>Nondecay Corrected Activity (mBq)</th>
-      <th>Abs Activity Error (mBq)</th>
-    </tr>
-   {% for a_item in activities_nuclides %}
-    <tr>
-      <td>{{ a_item.name }}</td>
-      <td>{{ a_item.undecay_corr_activity }}</td>
-      <td title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
-    </tr>
-   {% endfor %}
-  </tbody>
-</table>
 
 <div class="rule"></div>
 
