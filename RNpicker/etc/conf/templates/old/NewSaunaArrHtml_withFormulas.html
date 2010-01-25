@@ -2,16 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-  <title>NewSpalaxArrHtml</title>
+  <title>SaunaArrHtml</title>
 </head>
 
 <body>
-<script type="text/javascript">
-function show(){
-var oIfr = document.getElementById('mapiframe');
-oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
-}
-</script>
 <script type="text/javascript">
 function show(){
 var oIfr = document.getElementById('mapiframe');
@@ -585,7 +579,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   }
    
 </style>
-
 <h3 style="text-align:center;">IDC Generated Report</h3>
 
 <h1 style="text-align:center;">Automated Radionuclide Report</h1>
@@ -598,61 +591,76 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h2>Sample Information</h2>
 
-
+<table class="std1">
+  <caption></caption>
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <td>Station ID: {{station_code}}</td>
+      </td>
+      <td>Detector ID: {{detector_code}}</td>
+    </tr>
+    <tr>
+      <td>Authenticated: No </td>
+      </td>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td colspan="2">Station Location: {{station_location}}</td>
+    </tr>
+    <tr>
+      <td colspan="2">Coordinates: <a class="coord" href="{{station_gmaps}}">[lat={{station_lat}},lon={{station_lon}},h={{station_height}}]</a> <span class="preview" onclick="show()"> (prev/hide) </span> 
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td colspan="2">Detector Description: {{detector_description}}</td>
+    </tr>
+    <tr>
+      <td colspan="2"></td>
+    </tr>
+  </tbody>
+</table>
 <!-- div containing the map -->
-<div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
+ <div id="mapiframe" style="position:absolute; top:200px; left:420px; background-color:transparent; z-index:99;display:none;">
          <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
          <div onclick="show()" class="hide-button">click to hide</div>
 </div>
 <table class="std1">
   <tbody>
-    <tr>
+     <tr>
       <td>Sample ID: {{sample_id}}</td>
-      <td>Station ID: {{station_code}}</td>
-    </tr>
-    <tr>
-      <td>Detector ID: {{detector_code}}</td>
-      <td>Detector Description: {{detector_description}}</td>
-    </tr>
-    <tr>
-      <td>Station Location: {{station_location}}</td>
-      <td colspan="2">Coordinates:
-	    {% if station_lat %}
-	       <a class="coord" href="{{station_gmaps}}">[Lat={{station_lat}},Lon={{station_lon}}
-		   {%- if station_height -%},h={{station_height}}{%- endif -%}]
-		   </a> <span class="preview" onclick="show()"> (prev/hide) </span>
-		{% else %}
-		   N/A
-		{% endif %} 
-	  </td>
-    </tr>
-    <tr>
       <td>Sample Geometry: {{sample_geometry}}</td>
-      <td >Sample Type: {{sample_type}}</td>
     </tr>
     <tr>
       <td>Total Processed Air Quantity : {{processed_air_volume}} {{processed_air_volume_unit}}</td>
-      <td>Authenticated: No </td>
+	  <td >Sample Type: {{sample_type}}</td>
     </tr>
-    <tr>
-      <td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
-      <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
-    </tr>
+	<tr>
+		<td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
+		<td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
+	</tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
-      <td>Sampling Time:  {{sampling_time}}  </td>
+      <td>Sampling Time: {{sampling_time}}</td>
     </tr>
     <tr>
       <td>Collection Stop: {{collection_stop}}</td>
-      <td>Decay Time:  {{decay_time}}</td>
+      <td>Decay Time: {{decay_time}}</td>
     </tr>
     <tr>
       <td>Acquisition Start: {{acquisition_start}}</td>
-      <td>Acquisition Time:  {{acquisition_time}}</td>
+      <td>Acquisition Time: {{acquisition_time}}</td>
     </tr>
     <tr>
       <td>Acquisition Stop: {{acquisition_stop}}</td>
-      <td colspan="1"></td>
+	  <td colspan="1"></td>
     </tr>
   </tbody>
 </table>
@@ -665,40 +673,33 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h2>Activity Concentration Summary</h2>
 
-{% if 'peak' in quantified_nuclides %}
-
-<h4>Nuclide Quantified (Peak Fit Method):</h4>
-
+<h4>Nuclide Quantified:</h4>
 {% if quantified_nuclides|length == 0 %}
- N/A
+    N/A
 {% else %}
 <table class="std1">
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-	  <th class="centre">MDI (mBq/m3)</th>
+      <th class="centre">Half-Life</th>
       <th class="centre">Conc(mBq/m3)</th>
       <th class="centre">Abs Error</th>
     </tr>
-	{% for a_key in matrix_row_order %}
-      {% if a_key in quantified_nuclides.peak %}
-	    <tr>
-	      <td class="centre">{{ quantified_nuclides.peak[a_key].name }}</td>
-		  <td class="centre">{{ quantified_nuclides.peak[a_key].mdi }}</td>
-	      <td class="centre">{{ quantified_nuclides.peak[a_key].conc }}</td>
-	      <td class="centre" title="Rel Error: {{ quantified_nuclides.peak[a_key].conc_rel_err }}%">{{ quantified_nuclides.peak[a_key].conc_abs_err }}</td>
-		  
-	    </tr>
-	  {% endif %}
+    {% for q_item in quantified_nuclides %}
+    <tr>
+      <td class="centre">{{ q_item.name }}</td>
+      <td class="centre">{{ q_item.half_life }}</td>
+      <td class="centre">{{ q_item.conc }}</td>
+      <td class="centre" title="Rel Error: {{ q_item.conc_rel_err }}%">{{ q_item.conc_abs_err }}</td>
+    </tr>
     {% endfor %}
   </tbody>
 </table>
 {% endif %}
 
-
-<h4>MDCs for nuclides not quantified (Peak Fit Method):</h4>
+<h4>MDCs for nuclides not quantified:</h4>
 {% if non_quantified_nuclides|length == 0 %}
- N/A
+    N/A
 {% else %}
 <table class="std1">
   <caption></caption>
@@ -709,96 +710,29 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">MDC (mBq/m3)</th>
-	  <th class="centre">Conc(mBq/m3)</th>
-	  <th class="centre">Abs Error</th>
+      <!--<th class="centre">NID-Flag</th>-->
     </tr>
-   {% for a_key in matrix_row_order %}
-      {% if a_key in non_quantified_nuclides.peak %}
-	    <tr>
-	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].name }}</td>
-	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].mdc }}</td>
-		  <td class="centre">{{ non_quantified_nuclides.peak[a_key].conc }}</td>
-		  <td class="centre" title="Rel Error: {{ non_quantified_nuclides.peak[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.peak[a_key].conc_abs_err }}</td>
-	    </tr>
-	  {% endif %}
+   {% for nq_item in non_quantified_nuclides %}
+    <tr>
+      <td class="centre">{{ nq_item.name }}</td>
+      <td class="centre">{{ nq_item.mdc }}</td>
+    </tr>
    {% endfor %}
   </tbody>
 </table>
- {% endif %}
 {% endif %}
-
-{% if 'decay' in quantified_nuclides %}
-
-<h4>Nuclide Quantified (Decay Analysis Method):</h4>
-
-{% if quantified_nuclides|length == 0 %}
- N/A
-{% else %}
-<table class="std1">
-  <tbody>
-    <tr>
-      <th class="centre">Nuclide</th>
-	  <th class="centre">MDI (mBq/m3)</th>
-      <th class="centre">Conc(mBq/m3)</th>
-      <th class="centre">Abs Error</th>
-	  
-    </tr>
-	{% for a_key in matrix_row_order %}
-      {% if a_key in quantified_nuclides.decay %}
-	    <tr>
-	      <td class="centre">{{ quantified_nuclides.decay[a_key].name }}</td>
-		  <td class="centre">{{ quantified_nuclides.decay[a_key].mdi }}</td>
-	      <td class="centre">{{ quantified_nuclides.decay[a_key].conc }}</td>
-	      <td class="centre" title="Rel Error: {{ quantified_nuclides.decay[a_key].conc_rel_err }}%">{{ quantified_nuclides.decay[a_key].conc_abs_err }}</td>
-	    </tr>
-	  {% endif %}
-    {% endfor %}
-  </tbody>
-</table>
-{% endif %}
-
-
-<h4>MDCs for nuclides not quantified (Decay Analysis Method):</h4>
-{% if non_quantified_nuclides|length == 0 %}
- N/A
-{% else %}
-<table class="std1">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="centre">Nuclide</th>
-      <th class="centre">MDC (mBq/m3)</th>
-	  <th class="centre">Conc(mBq/m3)</th>
-	  <th class="centre">Abs Error</th>
-    </tr>
-   {% for a_key in matrix_row_order %}
-      {% if a_key in non_quantified_nuclides.decay %}
-	    <tr>
-	      <td class="centre">{{ non_quantified_nuclides.decay[a_key].name }}</td>
-	      <td class="centre">{{ non_quantified_nuclides.decay[a_key].mdc }}</td>
-		  <td class="centre">{{ non_quantified_nuclides.decay[a_key].conc }}</td>
-		  <td class="centre" title="Rel Error: {{ non_quantified_nuclides.decay[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.decay[a_key].conc_abs_err }}</td>
-	    </tr>
-	  {% endif %}
-   {% endfor %}
-  </tbody>
-</table>
- {% endif %}
-{% endif %}
-
 <p></p>
-
-<div class="page-break"></div> 
+<div class="rule"></div>
 
 <h2>Sample Activity Results:</h2>
-
-{% if 'peak' in activities_nuclides %}
-<h4> Peak Fit Method: </h4>
+<p></p>
+<p class="italobold">Decay corrected sample activities:</p>
 
 <table class="std2">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
@@ -807,186 +741,278 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <th class="centre">Critical Limit (mBq)</th>
       <th class="centre">Detection Limit (mBq)</th>
     </tr>
-   {% for a_key in matrix_row_order %}
-     {% if a_key in activities_nuclides.peak %}
-      <tr>
-		  <td class="centre">{{ activities_nuclides.peak[a_key].name }}</td>
-		  <td class="centre">{{ activities_nuclides.peak[a_key].activity }}</td>
-		  <td class="centre" title="Rel Error: {{ activities_nuclides.peak[a_key].activity_rel_err }}">{{ activities_nuclides.peak[a_key].activity_abs_err }}</td>
-		  <td class="centre">{{ activities_nuclides.peak[a_key].lc }}</td>
-		  <td class="centre">{{ activities_nuclides.peak[a_key].ld }}</td>
-      </tr>
-	 {% endif %}
+   {% for a_item in activities_nuclides %}
+    <tr>
+      <td class="centre">{{ a_item.name }}</td>
+      <td class="centre">{{ a_item.activity }}</td>
+      <td class="centre" title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
+      <td class="centre">{{ a_item.lc }}</td>
+      <td class="centre">{{ a_item.ld }}</td>
+    </tr>
    {% endfor %}
   </tbody>
 </table>
-{% endif %}
+<p></p>
 
-{% if 'decay' in activities_nuclides %}
-<h4> Decay Analysis Method: </h4>
+<p class="italobold">Non decay corrected values:</p>
+<p>The following non-decay correction method is used</p>
+<table >
+  <tbody>
+	<tr>
+	  <td class="smallitalo">i = Region of interest (ROI) number.</td>
+	</tr>
+	<tr>
+	   <td>
+	  	 <table class="inline_frac" cellpadding="0" cellspacing="0" >
+           <tr>
+            <td rowspan="2">
+              f<sub>i</sub> &nbsp; = &nbsp;
+            </td>
+            <td class="eq_centered" nowrap="nowrap">
+             &lambda;<sub>i</sub><sup>2</sup>
+            </td>
+           </tr>
+		   <tr>
+             <td class="upper_line" nowrap="nowrap">
+               (<i>1</i>&minus;<i>e</i><sup>&minus;&lambda;<sub>i</sub>t<sub>count</sub></sup>)<i>e</i><sup>&minus;&lambda;<sub>i</sub>t<sub>prep</sub></sup>(<i>1</i>&minus;<i>e</i><sup>&minus;&lambda;<sub>i</sub>t<sub>real</sub></sup>)
+            </td>
+          </tr>
+         </table>
+	    </td>
+		<td class="smallitalo" cellpadding="0" cellspacing="0" > with </td>
+		<td>
+		   <table class="inline_frac" cellpadding="0" cellspacing="0" >
+             <tr>
+               <td rowspan="2">
+                 &lambda;<sub>i</sub> &nbsp; = &nbsp;
+               </td>
+               <td class="eq_centered" nowrap="nowrap">
+                 <i>ln(2)</i> 
+               </td>
+             </tr>
+			 <tr>
+               <td class="upper_line" nowrap="nowrap">
+                  <span><i>T</i></span><sub>1/2</sub>
+               </td>
+             </tr>
+            </table>
+		</td>
+	</tr>
+	<tr>
+	  <td>
+		<table class="inline_frac" cellpadding="0" cellspacing="0" >
+         <tr>
+           <td rowspan="2">
+            <i>AC</i><sub>i,uncorr</sub> &nbsp; = &nbsp;
+           </td>
+           <td nowrap="nowrap">
+            <i>AC</i><sub>i</sub> &frasl; <i>f</i><sub>i</sub>
+           </td>
+         </tr>
+        </table>
+      </td>
+      <td class="smallitalo" colspan="2">For i = 2 (Xe135) , 5 (Xe131m), 6 (Xe133m)</td>
+    </tr>
+    <tr>
+	  <td>
+	   <table class="inline_frac" cellpadding="0" cellspacing="0">
+           <tr>
+              <td rowspan="2">
+                <i>AC</i><sub>3,uncorr</sub> 
+              </td>
+              <td rowspan="2">
+                &nbsp; = &nbsp; 
+              </td>
+			  <td nowrap="nowrap">
+                <i>1</i>
+              </td>
+			  <td rowspan="2">
+                &nbsp;<i>AC</i><sub>3</sub>&nbsp; + &nbsp;
+              </td>
+              <td class="eq_centered" nowrap="nowrap">
+                <i>&lambda;</i><sub>3</sub>
+              </td>
+              <td rowspan="2">
+                &nbsp; <span class="bigg">(</span>
+              </td>
+              <td nowrap="nowrap">
+                <i>1</i>
+              </td>
+              <td rowspan="2">
+                &nbsp; &minus; &nbsp;
+              </td>
+              </td>
+			  <td nowrap="nowrap">
+                 <i>1</i>
+              </td>
+              <td rowspan="2">
+               <span class="bigg">)</span>&nbsp;<i>AC</i><sub>6</sub>
+              </td>
+			  <td rowspan="2">&nbsp;&nbsp; 
+              </td>
+            </tr>
+			<tr>
+              <td class="upper_line" nowrap="nowrap">
+                 <i>f</i><sub>3</sub>
+             </td>
+			 <td class="upper_line" nowrap="nowrap">
+                 <i>&lambda;</i><sub>6</sub>&minus;<i>&lambda;</i><sub>3</sub>
+             </td>
+             <td class="upper_line" nowrap="nowrap">
+                 <i>f</i><sub>3</sub>
+             </td>
+             <td class="upper_line" nowrap="nowrap">
+                 <i>f</i><sub>6</sub>
+             </td>
+            </tr>
+         </table>
+		</td>
+		<td class="smallitalo">For i = 3 (Xe133)</td>
+	</tr>
+    <tr>
+	 
+	  </tr>
+  </tbody>
+</table>
 
-<table class="std2">
+<p></p>
+
+<table class="std4">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
   <tbody>
     <tr>
-      <th class="centre">Nuclide</th>
-      <th class="centre">Activity (mBq)</th>
-      <th class="centre">Abs Activity Error (mBq)</th>
-      <th class="centre">Critical Limit (mBq)</th>
-      <th class="centre">Detection Limit (mBq)</th>
+      <th>Nuclide</th>
+      <th>Nondecay Corrected Activity (mBq)</th>
+      <th>Abs Activity Error (mBq)</th>
     </tr>
-   {% for a_key in matrix_row_order %}
-     {% if a_key in  activities_nuclides.decay %}
-      <tr>
-		  <td class="centre">{{ activities_nuclides.decay[a_key].name }}</td>
-		  <td class="centre">{{ activities_nuclides.decay[a_key].activity }}</td>
-		  <td class="centre" title="Rel Error: {{ activities_nuclides.decay[a_key].activity_rel_err }}">{{ activities_nuclides.decay[a_key].activity_abs_err }}</td>
-		  <td class="centre">{{ activities_nuclides.decay[a_key].lc }}</td>
-		  <td class="centre">{{ activities_nuclides.decay[a_key].ld }}</td>
-      </tr>
-	 {% endif %}
+   {% for a_item in activities_nuclides %}
+    <tr>
+      <td>{{ a_item.name }}</td>
+      <td>{{ a_item.undecay_corr_activity }}</td>
+      <td title="Rel Error: {{ a_item.activity_rel_err }}%">{{ a_item.activity_abs_err }}</td>
+    </tr>
    {% endfor %}
   </tbody>
 </table>
-{% endif %}
- 
-<p></p>
-
-{% if peak_fit_matrix or decay_analysis_matrix %}
-<h2>Processing Specific Parameters and Results:</h2>
-
-{% if peak_fit_matrix %}
-<h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
-
-<table class="std2">
-  <caption/>
-  <col />
-  <col />
-  <tbody>
-    <tr>
-      <th class="th"></th>
-      <th class="th">XE-131M</th>
-      <th class="th">XE-133M</th>
-      <th class="th">XE-133</th>
-      <th class="th">XE-135</th>
-    </tr>
-	{% for a_key in matrix_row_order %}
-	<tr>
-        <td class="lbold">{{ a_key }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][0] }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][1] }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][2] }}</td>
-        <td class="td">{{ peak_fit_matrix[a_key][3] }}</td>
-    </tr>
-	{% endfor %}
-  </tbody>
-</table>
-{% endif %}
-<p></p>
-
-{% if decay_analysis_matrix %}
-<h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
-
-<table class="std2">
-    <tr>
-      <th ></th>
-      <th class="th">XE-131M</th>
-      <th class="th">XE-133M</th>
-      <th class="th">XE-133</th>
-      <th class="th">XE-135</th>
-    </tr>
-	{% for a_key in matrix_row_order %}
-	<tr>
-        <td class="lbold">{{ a_key }}</td>
-        <td class="td">{{ decay_analysis_matrix[a_key][0] }}</td>
-        <td class="td">{{ decay_analysis_matrix[a_key][1] }}</td>
-        <td class="td">{{ decay_analysis_matrix[a_key][2] }}</td>
-        <td class="td">{{ decay_analysis_matrix[a_key][3] }}</td>
-    </tr>
-	{% endfor %}
-</table>
-{% endif %}
-<p></p>
 
 <div class="rule"></div>
 
+<h2>Processing Specific Parameters and Results:</h2>
+
+<h3>Method 1 (Net Count Calculation)</h3>
+
+<h4> ROI Net Count Results </h4>
+
+<table class="std2">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th >ROI</th>
+      <th class="centre">Nuclide</th>
+      <th class="centre">NetCounts</th>
+      <th class="centre">Abs NetError</th>
+      <th class="centre">LC</th>
+      <th class="centre">Efficiency</th>
+      <th class="centre">Abs Efficiency Error</th>
+    </tr>
+   {% for r_item in roi_results %}
+    <tr>
+      <td class="centre">{{ r_item.roi_number }}</td>
+      <td class="centre">{{ r_item.name }}</td>
+      <td class="centre">{{ r_item.net_counts }}</td>
+      <td class="centre">{{ r_item.net_counts_err }}</td>
+      <td class="centre">{{ r_item.lc }}</td>
+      <td class="centre">{{ r_item.efficiency }}</td>
+      <td class="centre" title="Rel Error: {{ r_item.efficiency_rel_error }}%">{{ r_item.efficiency_abs_error }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+
+<h4> ROI Boundaries </h4>
+
+<table class="std2">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th class="centre">ROI</th>
+      <th class="centre">GammaLow (keV)</th>
+      <th class="centre">GammaHigh (keV)</th>
+      <th class="centre">BetaLow (keV)</th>
+      <th class="centre">BetaHigh (keV)</th>
+    </tr>
+   {% for rb_item in roi_boundaries %}
+    <tr>
+      <td class="centre">{{ rb_item.roi_number }}</td>
+      <td class="centre">{{ rb_item.gammalow }}</td>
+      <td class="centre">{{ rb_item.gammahigh }}</td>
+      <td class="centre">{{ rb_item.betalow }}</td>
+      <td class="centre">{{ rb_item.betahigh }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
 <p></p>
-{% endif %}
+
+<div class="rule"></div> 
+
+
+<h2> Timeliness and Data Quality Flags </h2>
+
+<table class="std1">
+  <caption></caption>
+  <col />
+  <col />
+  <col />
+  <tbody>
+    <tr>
+      <th class="centre">Name</th>
+      <th class="centre">Pass/Fail</th>
+      <th class="centre">Value</th>
+      <th class="centre">Test</th>
+    </tr>
+   {% for flag in flags %}
+    <tr>
+      <td class="centre">{{ flag.name}}</td>
+      <td class="centre">{{ flag.result }}</td>
+      <td class="centre">{{ flag.value }}</td>
+      <td class="centre">{{ flag.test }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+</table>
+<p></p>
+
+<div class="page-break"></div>
 
 <h2> Calibration Equations </h2>
 
 {% for calibration in calibrations %}
-
-   {% if calibration.desc == 'Energy' %}
-	    <table class="calib">
-		     <tbody>
-			     <tr>
-			     	<th class='italobold'>{{ calibration.desc }} : E(C)= t0 + t1 C + t2 C<sup>2</sup> + t3 C<sup>3</sup></th>
-			     </tr>
-		        {% for c in calibration.coeffs %}
-			      <tr>
-			        <td><i>{{ c.name }} : {{ c.val }}</i></td>
-			      </tr>
-		        {% endfor %}
-		     </tbody>
-	    </table>
-   {% endif %}
-   
-    {% if calibration.desc == 'Resolution' %}
-	    <table>
-	    	<tr>
-                <td class='italobold' nowrap="nowrap">
-                  {{ calibration.desc }} : R(C)= <span style="font-size: 150%;">&radic;</span>
-                </td>
-	            <td style="border-top:solid 1px black; font-weight: bold; font-style: italic; " nowrap="nowrap">
-            	  &nbsp;(t0 + t1 E + t2 E<sup>2</sup>)
-                </td>
-            </tr>
-        </table>
-	    <table class="calib">
-		        {% for c in calibration.coeffs %}
-			      <tr>
-			        <td><i>{{ c.name }} : {{ c.val }}</i></td>
-			      </tr>
-		        {% endfor %}
-	    </table>
-   {% endif %}
-   
-{% endfor %}
-
-  {% if eff_calibration %}
-    
-   <table class="calib" cellpadding="0" cellspacing="0" >
-	 <tr>
-	  <td class='italobold' nowrap="nowrap">Efficiency: E(L) = e<sup>(t0 + t1 L + t2 L<sup>2</sup> + t3 L<sup>3</sup> + t4 L<sup>4</sup> + t5 L<sup>5</sup>)</sup></td>
-	 </tr>
-	 {% for c in eff_calibration[1].coeffs %}
-	 <tr>
-	   <td><i>{{ c.name }} : {{ c.val }}</i></td>
-	 </tr>
-	 {% endfor %}
-	 <tr>
-		 <td>
-		   <table class="inline_frac" cellpadding="0" cellspacing="0">
-				 <tr>
-		           <td style="font-weight: bold;" rowspan="2">
-		            with L(E) &nbsp; =  &nbsp;
-		           </td>
-		           <td class="eq_centered" style="font-weight: bold;">
-		             ln(t0)
-		           </td>
-			     <tr>
-		           <td class="upper_line" style="font-weight: bold; text-align: center;" nowrap="nowrap">
-		             <span>E</span>
-		           </td>
-		         </tr>
-				 <tr>
-		           <td><i>t0 : {{ eff_calibration[0].coeffs[0].val }}</i></td>
-		         </tr>
-		   </table>
-		 </td>
-	 </tr>
+	<table class="calib">
+    <tbody>
+     <tr>
+     	{% if calibration.model == 'Polynomial' %}
+		<th class='italobold'>{{ calibration.desc }} : E(C)= t0 + t1 C + t2 C<sup>2</sup></th>
+       </tr>
+	   {% for c in calibration.coeffs %}
+       <tr>
+        <td><i>{{ c.name }} : {{ c.val }}</i></td>
+       </tr>
+	   {% endfor %}
+	   {% endif %}
+     </tbody>
     </table>
-  {% endif %}
+	
+{% endfor %}
 
 </body>
 </html>
