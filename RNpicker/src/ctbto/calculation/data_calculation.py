@@ -331,6 +331,33 @@ class TestDataModule(unittest.TestCase):
                XE_133_conc, X_133_uncorr, \
                XE_133M_conc, X_133M_uncorr, \
                XE_135_conc, X_135_uncorr) )
+        
+    def testCalculateSpalax(self):
+        """ Caclulate for a Spalax value """
+        
+        coll_start = time_utils.getDateTimeFromISO8601('2009-01-20T12:00:02')
+        coll_stop  = time_utils.getDateTimeFromISO8601('2009-01-21T12:00:01')
+        
+        acq_start = time_utils.getDateTimeFromISO8601('2009-01-21T13:22:15')
+        acq_stop  = time_utils.getDateTimeFromISO8601('2009-01-22T11:55:03')
+        
+        #activity concentrations
+        XE_131M_conc = 75.71108
+        XE_133_conc  = 4744.533
+        XE_133M_conc = 28.00187
+        XE_135_conc  = 350.2933
+                        
+        nbCorrector = NobleGasDecayCorrector(coll_start, coll_stop,acq_start, acq_stop)
+        
+        nbCorrector.undecay_correct(NobleGasDecayCorrector.XE131M, XE_131M_conc)
+        
+        (X_131M_uncorr , X_133_uncorr, X_133M_uncorr, X_135_uncorr) = nbCorrector.undecay_correct_all(XE_131M_conc, XE_133_conc, XE_133M_conc, XE_135_conc)
+        
+        print("\n Spalax Test: 131M  (corr, uncorr) = (%f, %f) \n, 133  (corr, uncorr) = (%f, %f) \n, 133M  (corr, uncorr) = (%f, %f) \n, 135  (corr, uncorr) = (%f, %f) \n" % \
+              (XE_131M_conc, X_131M_uncorr, \
+               XE_133_conc, X_133_uncorr, \
+               XE_133M_conc, X_133M_uncorr, \
+               XE_135_conc, X_135_uncorr) )
 
 if __name__ == '__main__':
     tests()     
