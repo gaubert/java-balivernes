@@ -647,42 +647,76 @@ class SPALAXXML2HTMLRenderer(object):
             analysis_elem = res[0]
             # get all ided nuclides
             res = analysis_elem.find("{%s}IdedNuclides"%(XML2HTMLRenderer.c_namespaces['sml']))
-            q_nuclides  = []
-            nq_nuclides = []
-            a_nuclides  = []
+            q_nuclides  = {}
+            nq_nuclides = {}
+            a_nuclides  = {}
             # iterate over the children of ided nuclides => the nuclides
             for nuclide in res:
-              
+                
+                method = nuclide.get('method')
+                
+                if method == 'Peak Fit Method':
+                    method = 'peak'
+                elif method == 'Decay Analysis Method':
+                    method = 'decay'
+                    
+                if method not in q_nuclides:
+                    q_nuclides[method]  = {}
+                    nq_nuclides[method] = {}
+                
                 # check that nid_flag is 1 to go in quantified_nuclides otherwise goes into non_quantified_nuclides
                 nid_flag = nuclide.find('{%s}NuclideIdentificationIndicator' % (XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
-                if nid_flag == '1':
+                if nid_flag >= '1':
                     one_dict = {}
                     # get Name, 
-                    one_dict['name']      = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
-                    hlife = nuclide.find('{%s}HalfLife' % (XML2HTMLRenderer.c_namespaces['sml']))
-                    one_dict['half_life'] = hlife.text if hlife != None else UNDEFINED
-                    one_dict['conc']      = utils.round_as_string(nuclide.find('{%s}Concentration'\
+                    one_dict['name']          = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    
+                    one_dict['conc']          = utils.round_as_string(nuclide.find('{%s}Concentration'\
                                                                         % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
                     one_dict['conc_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError' \
-                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
                     one_dict['conc_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeConcentrationError' \
-                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
-              
-                    q_nuclides.append(one_dict)
+                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
+                    one_dict['mdi']           = utils.round_as_string(nuclide.find('{%s}MDI'\
+                                                                        % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                    
+                    q_nuclides[method][one_dict['name']] = one_dict
                 else:
                     one_dict = {}
                     # get Name, 
                     one_dict['name']      = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
                     mdc = nuclide.find('{%s}MDC' % (XML2HTMLRenderer.c_namespaces['sml'])).text
                     if mdc != "N/A":
-                        one_dict['mdc']       = utils.round_as_string(mdc, RDIGITS)
+                        one_dict['mdc']           = utils.round_as_string(mdc, RDIGITS)
+                        one_dict['conc']          = utils.round_as_string(nuclide.find('{%s}Concentration'\
+                                                                        % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                        one_dict['conc_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError' \
+                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
+                        one_dict['conc_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeConcentrationError' \
+                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
                     else:
-                        one_dict['mdc']       = UNDEFINED
+                        one_dict['mdc']          = UNDEFINED
+                        one_dict['conc']         = UNDEFINED
+                        one_dict['conc_abs_err'] = UNDEFINED
+                        one_dict['conc_rel_err'] = UNDEFINED
+                        
+                        
                
-                    nq_nuclides.append(one_dict)
+                    nq_nuclides[method][one_dict['name']] = one_dict
                 
                 # in any cases fill Activity results dict
                 one_dict = {}
+                
+                method = nuclide.get('method')
+                
+                if method == 'Peak Fit Method':
+                    method = 'peak'
+                elif method == 'Decay Analysis Method':
+                    method = 'decay'
+                
+                if method not in a_nuclides:
+                    a_nuclides[method] = {}
+                
                 one_dict['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 temp_val                      = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
@@ -695,22 +729,7 @@ class SPALAXXML2HTMLRenderer(object):
                 temp_val                      = nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['ld']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 
-                a_nuclides.append(one_dict)
-                
-                # in any cases fill Activity results dict
-                d = {}
-                d['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                temp_val               = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['activity']          = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                temp_val               = nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['activity_abs_err']  = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                temp_val               = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['activity_rel_err']  = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                temp_val               = nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['lc']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                temp_val               = nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                d['ld']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                a_nuclides.append(d)
+                a_nuclides[method][one_dict['name']] = one_dict
            
             self._context['non_quantified_nuclides'] = nq_nuclides
             self._context['quantified_nuclides']     = q_nuclides 
