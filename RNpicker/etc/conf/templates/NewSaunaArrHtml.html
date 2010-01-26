@@ -110,6 +110,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
        empty-cells: show
     }
 	
+	.comment
+	{
+		font-family: Courier;
+		font-style: normal;
+		font-size:90%; 
+	}
+	
 	.italobold
 	{
 		font-weight: bold;
@@ -648,9 +655,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 
-<p>Collection Start Comments:</p>
-
-<p>{{collection_comments}}</p>
+<div>Collection Start Comments:</div>
+{%- for comment_line in collection_comments -%}
+<div class="comment">{{comment_line}}</div>
+{% endfor %}
 
 <div class="rule"></div>
 
@@ -739,7 +747,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </table>
 <p></p>
 
-<div class="rule"></div>
+<div class="page-break"></div>
 
 <h2>Processing Specific Parameters and Results:</h2>
 
@@ -833,7 +841,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </table>
 <p></p>
 
-<div class="page-break"></div>
+<div class="rule"></div>
 
 <h2> Calibration Equations </h2>
 

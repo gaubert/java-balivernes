@@ -138,7 +138,7 @@ SQL_GET_AUTOSAINT_DEFAULT_PARAMS = "select NAME,VALUE from RMSAUTO.GARDS_SAINT_D
  
 """ ************************************ Sauna Part ************************************************ """
 """ get SAUNA Sample files : beta and gamma spectrum plus histogram. parameters station and sampleid """
-SQL_SAUNA_GET_FILES = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
+SQL_SAUNA_GET_FILES = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where (fp.typeid=30 or fp.typeid=29 or fp.typeid=34 or fp.typeid=8) and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 SQL_SAUNA_GET_RAW_FILE = "select prod.dir, prod.DFIle,fp.prodtype,prod.FOFF,prod.DSIZE from idcx.FILEPRODUCT prod,idcx.FPDESCRIPTIoN fp where fp.PRODTYPE='%s' and prod.chan='%s' and prod.typeID= fp.typeID and sta='%s'"
 SQL_SAUNA_GET_HISTOGRAM_INFO = "select G_CHANNELS, B_CHANNELS, G_ENERGY_SPAN, B_ENERGY_SPAN from RMSAUTO.gards_histogram where sample_id=%s"
  
