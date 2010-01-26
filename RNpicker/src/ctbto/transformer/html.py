@@ -3,6 +3,7 @@ from jinja2   import Environment
 from jinja2   import FileSystemLoader
 from lxml     import etree
 from datetime import datetime
+import cStringIO
 
 import logging
 
@@ -109,8 +110,6 @@ class SAUNAXML2HTMLRenderer(object):
         else:
             self._context['arrival_date']    = UNDEFINED
        
-        self._context['collection_comments'] = UNDEFINED
-       
         # for the dates, a prefix is needed
         # for the moment always take SPHD-G but it has to be configurable
         #dateExpr = "//*[local-name() = \"Spectrum\" and ends-with(@id,\"SPHD-G\")]"
@@ -164,14 +163,16 @@ class SAUNAXML2HTMLRenderer(object):
                 self._context['xe_vol']      = utils.round_as_string(res[0].text, 3)
                 self._context['xe_vol_unit'] = res[0].get('unit') 
             
-            #get Corr Xe volume also called sample quantity
-            res = elem.xpath(expr, name = "SampleQuantity")
-            if len(res) == 0or res[0].text == UNDEFINED :
-                self._context['xe_corr_vol']      = UNDEFINED
-                self._context['xe_corr_vol_unit'] = "" 
+            # get collection comments
+            res = elem.xpath(expr, name = "Comments")
+            if len(res) == 0 or res[0].text == UNDEFINED: 
+                self._context['collection_comments'] = UNDEFINED
             else:
-                self._context['xe_corr_vol']      = utils.round_as_string(res[0].text, 3)
-                self._context['xe_corr_vol_unit'] = res[0].get('unit')
+                comments = []
+                ios = cStringIO.StringIO(res[0].text.strip()) 
+                for line in ios:
+                    comments.append(line.strip())
+                self._context['collection_comments'] = comments
            
             # all timing information
             c_start = time_utils.getOracleDateFromISO8601(elem.xpath(expr, name = "CollectionStart")[0].text)
@@ -539,8 +540,6 @@ class SPALAXXML2HTMLRenderer(object):
         else:
             self._context['arrival_date']     = UNDEFINED
        
-        self._context['collection_comments'] = UNDEFINED
-       
         # for the dates, a prefix is needed
         # for the moment always take SPHD-G but it has to be configurable
         #dateExpr = "//*[local-name() = \"Spectrum\" and ends-with(@id,\"SPHD-G\")]"
@@ -570,11 +569,11 @@ class SPALAXXML2HTMLRenderer(object):
             # get quantity
             res = elem.xpath(expr, name = "AirVolume")
             if len(res) == 0:
-                self._context['sample_quantity']      = UNDEFINED
-                self._context['sample_quantity_unit'] = "" 
+                self._context['processed_air_volume']      = UNDEFINED
+                self._context['processed_air_volume_unit'] = "" 
             else:
-                self._context['sample_quantity']      = utils.round_as_string(res[0].text, 3)
-                self._context['sample_quantity_unit'] = res[0].get('unit') 
+                self._context['processed_air_volume']      = utils.round_as_string(res[0].text, 3)
+                self._context['processed_air_volume_unit'] = res[0].get('unit') 
                 
             # get Xe volume
             res = elem.xpath(expr, name = "XeVolume")
@@ -585,6 +584,17 @@ class SPALAXXML2HTMLRenderer(object):
                 self._context['xe_vol']      = utils.round_as_string(res[0].text, 3) if res[0].text != UNDEFINED else UNDEFINED
                 if res[0].text != UNDEFINED:
                     self._context['xe_vol_unit'] = res[0].get('unit') 
+            
+            # get collection comments
+            res = elem.xpath(expr, name = "Comments")
+            if len(res) == 0 or res[0].text == UNDEFINED: 
+                self._context['collection_comments'] = UNDEFINED
+            else:
+                comments = []
+                ios = cStringIO.StringIO(res[0].text.strip()) 
+                for line in ios:
+                    comments.append(line.strip())
+                self._context['collection_comments'] = comments
            
             # all timing information
             c_start = time_utils.getOracleDateFromISO8601(elem.xpath(expr, name = "CollectionStart")[0].text)

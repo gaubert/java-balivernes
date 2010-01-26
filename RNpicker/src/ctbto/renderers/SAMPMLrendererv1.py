@@ -740,9 +740,10 @@ class SpalaxRenderer(BaseRenderer):
             group_spec_template = self._conf.get("SpalaxTemplatingSystem", "spalaxSpectrumGroupTemplate")
             
             # add the general parameters
-            group_spec_template = re.sub("\${SPECTRUM_GROUP_ID}",self._fetcher.get("%s_DATA_NAME" % (ty)), group_spec_template)
+            group_spec_template = re.sub("\${SPECTRUM_GROUP_ID}", self._fetcher.get("%s_DATA_NAME" % (ty)), group_spec_template)
             group_spec_template = re.sub("\${COL_START}", str(self._fetcher.get("%s_G_DATA_COLLECT_START" % (ty))), group_spec_template)
             group_spec_template = re.sub("\${COL_STOP}", str(self._fetcher.get("%s_G_DATA_COLLECT_STOP" % (ty))), group_spec_template)
+            group_spec_template = re.sub("\${COMMENTS}", str(self._fetcher.get("%s_G_DATA_COMMENTS" % (ty), "")), group_spec_template)
             group_spec_template = re.sub("\${ACQ_START}", str(self._fetcher.get("%s_G_DATA_ACQ_START" % (ty))), group_spec_template)
             group_spec_template = re.sub("\${ACQ_STOP}", str(self._fetcher.get("%s_G_DATA_ACQ_STOP" % (ty))), group_spec_template)
             group_spec_template = re.sub("\${SAMPLING_TIME}", str(self._fetcher.get("%s_G_DATA_SAMPLING_TIME" % (ty))), group_spec_template)
@@ -1297,6 +1298,7 @@ class SaunaRenderer(BaseRenderer):
             spectrumTemplate = re.sub("\${SPECTRUM_GROUP_ID}",self._fetcher.get("%s_DATA_NAME" % (ty)), spectrumTemplate)
             spectrumTemplate = re.sub("\${COL_START}", str(self._fetcher.get("%s_DATA_COLLECT_START" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${COL_STOP}", str(self._fetcher.get("%s_DATA_COLLECT_STOP" % (ty))), spectrumTemplate)
+            spectrumTemplate = re.sub("\${COMMENTS}", str(self._fetcher.get("%s_DATA_COMMENTS" % (ty), "")), spectrumTemplate)
             spectrumTemplate = re.sub("\${ACQ_START}", str(self._fetcher.get("%s_DATA_ACQ_START" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${ACQ_STOP}", str(self._fetcher.get("%s_DATA_ACQ_STOP" % (ty))), spectrumTemplate)
             spectrumTemplate = re.sub("\${SAMPLING_TIME}", str(self._fetcher.get("%s_DATA_SAMPLING_TIME" % (ty))), spectrumTemplate)

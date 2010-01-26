@@ -133,6 +133,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		font-style: italic;
 		font-size:70%; 
 	}
+	
+	.comment
+	{
+		font-family: Courier;
+		font-style: normal;
+		font-size:90%; 
+	}
     
     table.calib
     {
@@ -636,7 +643,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
     <tr>
       <td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
-      <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
+	  <td colspan="1"></td>
     </tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
@@ -657,10 +664,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 
-<p>Collection Start Comments:</p>
-
-<p>{{collection_comments}}</p>
-
+<div>Collection Start Comments:</div>
+{%- for comment_line in collection_comments -%}
+<div class="comment">{{comment_line}}</div>
+{% endfor %}
 <div class="rule"></div>
 
 <h2>Activity Concentration Summary</h2>
@@ -844,8 +851,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   </tbody>
 </table>
 {% endif %}
- 
+
 <p></p>
+<div class="rule"></div>
 
 {% if peak_fit_matrix or decay_analysis_matrix %}
 <h2>Processing Specific Parameters and Results:</h2>
