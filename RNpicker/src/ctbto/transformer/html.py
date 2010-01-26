@@ -671,14 +671,17 @@ class SPALAXXML2HTMLRenderer(object):
                     # get Name, 
                     one_dict['name']          = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
                     
-                    one_dict['conc']          = utils.round_as_string(nuclide.find('{%s}Concentration'\
-                                                                        % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
-                    one_dict['conc_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError' \
-                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
-                    one_dict['conc_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeConcentrationError' \
-                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
-                    one_dict['mdi']           = utils.round_as_string(nuclide.find('{%s}MDI'\
-                                                                        % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
+                    temp_val                  = nuclide.find('{%s}Concentration' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['conc']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                    
+                    temp_val                  = nuclide.find('{%s}AbsoluteConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['conc_abs_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
+                    
+                    temp_val                  = nuclide.find('{%s}RelativeConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['conc_rel_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
+                    
+                    temp_val                  = nuclide.find('{%s}MDI' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['mdi']           = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                     
                     q_nuclides[method][one_dict['name']] = one_dict
                 else:
@@ -687,13 +690,17 @@ class SPALAXXML2HTMLRenderer(object):
                     one_dict['name']      = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
                     mdc = nuclide.find('{%s}MDC' % (XML2HTMLRenderer.c_namespaces['sml'])).text
                     if mdc != "N/A":
-                        one_dict['mdc']           = utils.round_as_string(mdc, RDIGITS)
-                        one_dict['conc']          = utils.round_as_string(nuclide.find('{%s}Concentration'\
-                                                                        % (XML2HTMLRenderer.c_namespaces['sml'])).text, RDIGITS)
-                        one_dict['conc_abs_err']  = utils.round_as_string(nuclide.find('{%s}AbsoluteConcentrationError' \
-                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
-                        one_dict['conc_rel_err']  = utils.round_as_string(nuclide.find('{%s}RelativeConcentrationError' \
-                                                               % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
+                        
+                        one_dict['mdc']           = utils.round_as_string(mdc, RDIGITS) if mdc != UNDEFINED else UNDEFINED
+                        
+                        temp_val                  = nuclide.find('{%s}Concentration' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                        one_dict['conc']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                        
+                        temp_val                  = nuclide.find('{%s}AbsoluteConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                        one_dict['conc_abs_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
+                        
+                        temp_val                  = nuclide.find('{%s}RelativeConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                        one_dict['conc_rel_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
                     else:
                         one_dict['mdc']          = UNDEFINED
                         one_dict['conc']         = UNDEFINED
@@ -720,6 +727,10 @@ class SPALAXXML2HTMLRenderer(object):
                 one_dict['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 temp_val                      = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                
+                temp_val                       = nuclide.find('{%s}UndecayCorrectedActivity' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                one_dict['undecay_corr_activity'] = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                
                 temp_val                      = nuclide.find('{%s}AbsoluteActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity_abs_err']  = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 temp_val                      = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
