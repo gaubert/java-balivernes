@@ -617,7 +617,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <td>Station Location: {{station_location}}</td>
       <td colspan="2">Coordinates:
-	    {% if station_lat %}
+	    {% if station_lat is defined %}
 	       <a class="coord" href="{{station_gmaps}}">[Lat={{station_lat}},Lon={{station_lon}}
 		   {%- if station_height -%},h={{station_height}}{%- endif -%}]
 		   </a> <span class="preview" onclick="show()"> (prev/hide) </span>
@@ -669,7 +669,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h4>Nuclide Quantified (Peak Fit Method):</h4>
 
-{% if quantified_nuclides|length == 0 %}
+{% if quantified_nuclides.peak|length == 0 %}
  N/A
 {% else %}
 <table class="std1">
@@ -697,28 +697,24 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 
 <h4>MDCs for nuclides not quantified (Peak Fit Method):</h4>
-{% if non_quantified_nuclides|length == 0 %}
+{% if non_quantified_nuclides.peak|length == 0 %}
  N/A
 {% else %}
 <table class="std1">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">MDC (mBq/m3)</th>
-	  <th class="centre">Conc(mBq/m3)</th>
-	  <th class="centre">Abs Error</th>
+	  <!--<th class="centre">Conc(mBq/m3)</th>
+	  <th class="centre">Abs Error</th>-->
     </tr>
    {% for a_key in matrix_row_order %}
       {% if a_key in non_quantified_nuclides.peak %}
 	    <tr>
 	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].name }}</td>
 	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].mdc }}</td>
-		  <td class="centre">{{ non_quantified_nuclides.peak[a_key].conc }}</td>
-		  <td class="centre" title="Rel Error: {{ non_quantified_nuclides.peak[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.peak[a_key].conc_abs_err }}</td>
+		  <!-- <td class="centre">{{ non_quantified_nuclides.peak[a_key].conc }}</td>-->
+		  <!--<td class="centre" title="Rel Error: {{ non_quantified_nuclides.peak[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.peak[a_key].conc_abs_err }}</td> -->
 	    </tr>
 	  {% endif %}
    {% endfor %}
@@ -731,7 +727,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h4>Nuclide Quantified (Decay Analysis Method):</h4>
 
-{% if quantified_nuclides|length == 0 %}
+{% if quantified_nuclides.decay|length == 0 %}
  N/A
 {% else %}
 <table class="std1">
@@ -759,28 +755,24 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 
 <h4>MDCs for nuclides not quantified (Decay Analysis Method):</h4>
-{% if non_quantified_nuclides|length == 0 %}
+{% if non_quantified_nuclides.decay|length == 0 %}
  N/A
 {% else %}
 <table class="std1">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">MDC (mBq/m3)</th>
-	  <th class="centre">Conc(mBq/m3)</th>
-	  <th class="centre">Abs Error</th>
+	  <!--<th class="centre">Conc(mBq/m3)</th>-->
+	  <!--<th class="centre">Abs Error</th>-->
     </tr>
    {% for a_key in matrix_row_order %}
       {% if a_key in non_quantified_nuclides.decay %}
 	    <tr>
 	      <td class="centre">{{ non_quantified_nuclides.decay[a_key].name }}</td>
 	      <td class="centre">{{ non_quantified_nuclides.decay[a_key].mdc }}</td>
-		  <td class="centre">{{ non_quantified_nuclides.decay[a_key].conc }}</td>
-		  <td class="centre" title="Rel Error: {{ non_quantified_nuclides.decay[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.decay[a_key].conc_abs_err }}</td>
+		  <!--<td class="centre">{{ non_quantified_nuclides.decay[a_key].conc }}</td>-->
+		  <!--<td class="centre" title="Rel Error: {{ non_quantified_nuclides.decay[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.decay[a_key].conc_abs_err }}</td>-->
 	    </tr>
 	  {% endif %}
    {% endfor %}
@@ -795,7 +787,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h2>Sample Activity Results:</h2>
 
-{% if 'peak' in activities_nuclides %}
+{% if activities_nuclides.peak |length > 0 %}
 <h4> Peak Fit Method: </h4>
 
 <table class="std2">
@@ -824,7 +816,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </table>
 {% endif %}
 
-{% if 'decay' in activities_nuclides %}
+{% if activities_nuclides.decay |length > 0 %}
 <h4> Decay Analysis Method: </h4>
 
 <table class="std2">
@@ -858,13 +850,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% if peak_fit_matrix or decay_analysis_matrix %}
 <h2>Processing Specific Parameters and Results:</h2>
 
-{% if peak_fit_matrix %}
 <h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
-
+{% if peak_fit_matrix %}
 <table class="std2">
-  <caption/>
-  <col />
-  <col />
   <tbody>
     <tr>
       <th class="th"></th>
@@ -875,7 +863,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
 	{% for a_key in matrix_row_order %}
 	<tr>
-        <td class="lbold">{{ a_key }}</td>
+        <th class="th">{{ a_key }}</th>
         <td class="td">{{ peak_fit_matrix[a_key][0] }}</td>
         <td class="td">{{ peak_fit_matrix[a_key][1] }}</td>
         <td class="td">{{ peak_fit_matrix[a_key][2] }}</td>
@@ -884,15 +872,15 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	{% endfor %}
   </tbody>
 </table>
+{% else %}
+N/A
 {% endif %}
 <p></p>
 
-{% if decay_analysis_matrix %}
 <h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
-
+{% if decay_analysis_matrix %}
 <table class="std2">
     <tr>
-      <th ></th>
       <th class="th">XE-131M</th>
       <th class="th">XE-133M</th>
       <th class="th">XE-133</th>
@@ -900,7 +888,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
 	{% for a_key in matrix_row_order %}
 	<tr>
-        <td class="lbold">{{ a_key }}</td>
+        <th class="th">{{ a_key }}</th>
         <td class="td">{{ decay_analysis_matrix[a_key][0] }}</td>
         <td class="td">{{ decay_analysis_matrix[a_key][1] }}</td>
         <td class="td">{{ decay_analysis_matrix[a_key][2] }}</td>
@@ -908,6 +896,8 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
 	{% endfor %}
 </table>
+{% else %}
+N/A
 {% endif %}
 <p></p>
 
