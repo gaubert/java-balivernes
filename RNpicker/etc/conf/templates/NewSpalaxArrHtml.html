@@ -803,6 +803,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">Activity (mBq)</th>
+	  <th class="centre">Undecay Corrected Activity (mBq)</th>
       <th class="centre">Abs Activity Error (mBq)</th>
       <th class="centre">Critical Limit (mBq)</th>
       <th class="centre">Detection Limit (mBq)</th>
@@ -812,6 +813,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <tr>
 		  <td class="centre">{{ activities_nuclides.peak[a_key].name }}</td>
 		  <td class="centre">{{ activities_nuclides.peak[a_key].activity }}</td>
+		  <td class="centre">{{ activities_nuclides.peak[a_key].undecay_corr_activity }}</td>
 		  <td class="centre" title="Rel Error: {{ activities_nuclides.peak[a_key].activity_rel_err }}">{{ activities_nuclides.peak[a_key].activity_abs_err }}</td>
 		  <td class="centre">{{ activities_nuclides.peak[a_key].lc }}</td>
 		  <td class="centre">{{ activities_nuclides.peak[a_key].ld }}</td>
@@ -830,6 +832,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">Activity (mBq)</th>
+	  <th class="centre">Undecay Corrected Activity (mBq)</th>
       <th class="centre">Abs Activity Error (mBq)</th>
       <th class="centre">Critical Limit (mBq)</th>
       <th class="centre">Detection Limit (mBq)</th>
@@ -839,6 +842,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <tr>
 		  <td class="centre">{{ activities_nuclides.decay[a_key].name }}</td>
 		  <td class="centre">{{ activities_nuclides.decay[a_key].activity }}</td>
+		  <td class="centre">{{ activities_nuclides.decay[a_key].undecay_corr_activity }}</td>
 		  <td class="centre" title="Rel Error: {{ activities_nuclides.decay[a_key].activity_rel_err }}">{{ activities_nuclides.decay[a_key].activity_abs_err }}</td>
 		  <td class="centre">{{ activities_nuclides.decay[a_key].lc }}</td>
 		  <td class="centre">{{ activities_nuclides.decay[a_key].ld }}</td>
