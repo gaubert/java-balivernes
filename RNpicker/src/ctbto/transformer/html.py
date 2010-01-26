@@ -68,29 +68,17 @@ class SAUNAXML2HTMLRenderer(object):
         res = root.xpath(expr, name = "Coordinates")
         if len(res) > 0:
             dummy_str = res[0].text
-            if dummy_str:
+            if dummy_str != None:
                 (lat, lon, height) = dummy_str.split(' ')
                 self._context['station_lat'] = lat
                 self._context['station_lon'] = lon
                 self._context['station_height'] = height
                 self._context['station_gmaps']     = "http://maps.google.com/maps?q=%s,%s+(%s)&iwloc=A&hl=en&z=3" \
-                                                     % (lat, lon, self._context['station_code'])
+                                                      % (lat, lon, self._context['station_code'])
                 self._context['station_static_gmaps'] = \
-                "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=%s,%s,greens"\
-                % (lat, lon, lat, lon)
-            else:
-                self._context['station_lat']    = UNDEFINED
-                self._context['station_lon']    = UNDEFINED
-                self._context['station_height'] = UNDEFINED
-                self._context['station_gmaps']  = "#"
-        else:
-            self._context['station_lat']    = UNDEFINED
-            self._context['station_lon']    = UNDEFINED
-            self._context['station_height'] = UNDEFINED
-            self._context['station_gmaps']  = "#"
+                "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=%s,%s,greens" \
+                % (lat,lon,lat,lon)
        
-           
-           
         # http://maps.google.com/maps?q=-12.4,+130.7+(This%20is%20my%20station%20here)&iwloc=A&hl=en&z=5
        
         # get Detector Code
@@ -522,20 +510,6 @@ class SPALAXXML2HTMLRenderer(object):
                 self._context['station_static_gmaps'] = \
                 "http://maps.google.com/staticmap?center=%s,%s&zoom=5&size=400x400&markers=%s,%s,greens" \
                 % (lat,lon,lat,lon)
-            else:
-                self._context['station_lat']    = UNDEFINED
-                self._context['station_lon']    = UNDEFINED
-                self._context['station_height'] = UNDEFINED
-                self._context['station_gmaps']  = "#"
-        else:
-            self._context['station_lat']    = UNDEFINED
-            self._context['station_lon']    = UNDEFINED
-            self._context['station_height'] = UNDEFINED
-            self._context['station_gmaps']  = "#"
-       
-           
-           
-        # http://maps.google.com/maps?q=-12.4,+130.7+(This%20is%20my%20station%20here)&iwloc=A&hl=en&z=5
        
         # get Detector Code
         res = root.xpath(expr, name = "DetectorCode")
@@ -647,9 +621,12 @@ class SPALAXXML2HTMLRenderer(object):
             analysis_elem = res[0]
             # get all ided nuclides
             res = analysis_elem.find("{%s}IdedNuclides"%(XML2HTMLRenderer.c_namespaces['sml']))
-            q_nuclides  = {}
-            nq_nuclides = {}
-            a_nuclides  = {}
+            
+            #init structures
+            q_nuclides  = {'peak' : {}, 'decay' : {} }
+            nq_nuclides = {'peak' : {}, 'decay' : {} }
+            a_nuclides  = {'peak' : {}, 'decay' : {} }
+           
             # iterate over the children of ided nuclides => the nuclides
             for nuclide in res:
                 
@@ -659,10 +636,6 @@ class SPALAXXML2HTMLRenderer(object):
                     method = 'peak'
                 elif method == 'Decay Analysis Method':
                     method = 'decay'
-                    
-                if method not in q_nuclides:
-                    q_nuclides[method]  = {}
-                    nq_nuclides[method] = {}
                 
                 # check that nid_flag is 1 to go in quantified_nuclides otherwise goes into non_quantified_nuclides
                 nid_flag = nuclide.find('{%s}NuclideIdentificationIndicator' % (XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
@@ -693,22 +666,20 @@ class SPALAXXML2HTMLRenderer(object):
                         
                         one_dict['mdc']           = utils.round_as_string(mdc, RDIGITS) if mdc != UNDEFINED else UNDEFINED
                         
-                        temp_val                  = nuclide.find('{%s}Concentration' % (XML2HTMLRenderer.c_namespaces['sml'])).text
-                        one_dict['conc']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
-                        
-                        temp_val                  = nuclide.find('{%s}AbsoluteConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
-                        one_dict['conc_abs_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
-                        
-                        temp_val                  = nuclide.find('{%s}RelativeConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
-                        one_dict['conc_rel_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
                     else:
                         one_dict['mdc']          = UNDEFINED
-                        one_dict['conc']         = UNDEFINED
-                        one_dict['conc_abs_err'] = UNDEFINED
-                        one_dict['conc_rel_err'] = UNDEFINED
                         
+                    # add concetration anyway
+                    temp_val                  = nuclide.find('{%s}Concentration' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['conc']          = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                    
+                    temp_val                  = nuclide.find('{%s}AbsoluteConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['conc_abs_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
+                    
+                    temp_val                  = nuclide.find('{%s}RelativeConcentrationError' % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                    one_dict['conc_rel_err']  = utils.round_as_string(temp_val, 3) if temp_val != UNDEFINED else UNDEFINED
+                    
                         
-               
                     nq_nuclides[method][one_dict['name']] = one_dict
                 
                 # in any cases fill Activity results dict
@@ -720,9 +691,6 @@ class SPALAXXML2HTMLRenderer(object):
                     method = 'peak'
                 elif method == 'Decay Analysis Method':
                     method = 'decay'
-                
-                if method not in a_nuclides:
-                    a_nuclides[method] = {}
                 
                 one_dict['name']              = nuclide.find('{%s}Name'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 temp_val                      = nuclide.find('{%s}Activity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -791,6 +759,8 @@ class SPALAXXML2HTMLRenderer(object):
                     col = cell.get('col').upper()
                     #get position 
                     one_dict[matrix_col[col]] = utils.round_as_string(cell.text, RDIGITS)
+            else:
+                matrix_result = {}
                     
             self._context['decay_analysis_matrix'] = matrix_result         
                     

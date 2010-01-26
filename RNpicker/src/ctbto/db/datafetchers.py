@@ -2064,7 +2064,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # fetch auxiliary data
         self._fetchAuxiliarySampleInfo(aSampleID,dataname)
         
-        SpalaxNobleGasDataFetcher.c_log.info("Its name will be %s and its type is %s"%(dataname,ty))
+        SpalaxNobleGasDataFetcher.c_log.debug("Its name will be %s and its type is %s"%(dataname,ty))
          
         (rows,nbResults,foundOnArchive) = self.execute(sqlrequests.SQL_SPALAX_GET_SPECTRUM%(aSampleID,self._dataBag['STATION_CODE']),aTryOnArchive=True,aRaiseExceptionOnError=False)
         
