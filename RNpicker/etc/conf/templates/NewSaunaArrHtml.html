@@ -123,6 +123,12 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		font-style: italic;
 	}
 	
+	.smallunit
+    {
+        font-style: italic;
+        font-size:55%;
+    }
+	
 	.smallitalo
 	{
 		font-style: italic;
@@ -603,19 +609,25 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
          <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
          <div onclick="show()" class="hide-button">click to hide</div>
 </div>
-<table class="std1">
+<table class="std2">
+  <col witdh="50%"/>
+  <col witdh="50%"/>
   <tbody>
     <tr>
       <td>Sample ID: {{sample_id}}</td>
       <td>Station ID: {{station_code}}</td>
     </tr>
     <tr>
-      <td>Detector ID: {{detector_code}}</td>
-      <td>Detector Description: {{detector_description}}</td>
+      <td colspan="2">Detector ID: {{detector_code}}</td> 
     </tr>
+	<tr>
+	  <td colspan="2">Detector Description: <span class="comment">{{detector_description}}</span></td>
+	</tr>
+	
     <tr>
-      <td>Station Location: {{station_location}}</td><td colspan="2">Coordinates:
-	    {% if station_lat %}
+      <td>Station Location: {{station_location}}</td>
+      <td colspan="2">Coordinates:
+	    {% if station_lat is defined %}
 	       <a class="coord" href="{{station_gmaps}}">[Lat={{station_lat}},Lon={{station_lon}}
 		   {%- if station_height -%},h={{station_height}}{%- endif -%}]
 		   </a> <span class="preview" onclick="show()"> (prev/hide) </span>
@@ -623,42 +635,47 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		   N/A
 		{% endif %} 
 	  </td>
-	</tr>
+    </tr>
     <tr>
       <td>Sample Geometry: {{sample_geometry}}</td>
       <td >Sample Type: {{sample_type}}</td>
     </tr>
     <tr>
       <td>Total Processed Air Quantity : {{processed_air_volume}} {{processed_air_volume_unit}}</td>
-      <td>Authenticated: No </td>
-    </tr>
-    <tr>
       <td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
-      <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
     </tr>
+	<tr>
+	  <td>Sample Quantity: {{sample_quantity}} {{sample_quantity_unit}}</td>
+	</tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
-      <td>Sampling Time:  {{sampling_time}}  </td>
+      <td>Collection Stop: {{collection_stop}}</td>
+    </tr>
+	<tr>
+      <td>Acquisition Start: {{acquisition_start}}</td>
+	  <td>Acquisition Stop: {{acquisition_stop}}</td>
     </tr>
     <tr>
-      <td>Collection Stop: {{collection_stop}}</td>
+      <td>Sampling Time:  {{sampling_time}}  </td>
       <td>Decay Time:  {{decay_time}}</td>
     </tr>
+    
     <tr>
-      <td>Acquisition Start: {{acquisition_start}}</td>
       <td>Acquisition Time:  {{acquisition_time}}</td>
-    </tr>
-    <tr>
-      <td>Acquisition Stop: {{acquisition_stop}}</td>
-      <td colspan="1"></td>
+      <td>Authenticated: No </td>
     </tr>
   </tbody>
 </table>
 
+<p></p>
+
 <div>Collection Start Comments:</div>
+<p></p>
 {%- for comment_line in collection_comments -%}
 <div class="comment">{{comment_line}}</div>
 {% endfor %}
+
+<p></p>
 
 <div class="rule"></div>
 
@@ -693,10 +710,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     N/A
 {% else %}
 <table class="std1">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
@@ -720,18 +733,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <p class="italobold">Activities:</p>
 
 <table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
+  <col width="10%">
+  <col width="12%">
+  <col width="26%">
+  <col width="22%">
+  <col width="14%">
+  <col width="15%">
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">Activity (mBq)</th>
-	  <th class="centre">Undecay corrected Activity (mBq)</th>
-      <th class="centre">Abs Activity Error (mBq)</th>
-      <th class="centre">Critical Limit (mBq)</th>
-      <th class="centre">Detection Limit (mBq)</th>
+      <th class="left">Activity <span class="smallunit">(mb)</span></th>
+      <th class="left">Undecay Corr Activity <span class="smallunit">(mb)</span></th>
+      <th class="left">Abs Activity Error <span class="smallunit">(mb)</span></th>
+      <th class="left">LC <span class="smallunit">(mb)</span></th>
+      <th class="left">LD <span class="smallunit">(mb)</span></th>
     </tr>
    {% for a_item in activities_nuclides %}
     <tr>
@@ -756,10 +771,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h4> ROI Net Count Results </h4>
 
 <table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
+  <col width="6%"/>
+  <col width="14%"/>
+  <col width="14%"/>
+  <col width="14%"/>
+  <col width="14%"/>
+  <col width="14%"/>
+  <col width="22%"/>
   <tbody>
     <tr>
       <th >ROI</th>
@@ -768,7 +786,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <th class="centre">Abs NetError</th>
       <th class="centre">LC</th>
       <th class="centre">Efficiency</th>
-      <th class="centre">Abs Efficiency Error</th>
+      <th class="centre">Abs Eff Error</th>
     </tr>
    {% for r_item in roi_results %}
     <tr>
@@ -787,17 +805,18 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h4> ROI Boundaries </h4>
 
 <table class="std2">
-  <caption></caption>
-  <col />
-  <col />
-  <col />
+  <col width="6%"/>
+  <col width="20%"/>
+  <col width="20%"/>
+  <col width="20%"/>
+  <col width="20%"/>
   <tbody>
     <tr>
       <th class="centre">ROI</th>
-      <th class="centre">GammaLow (keV)</th>
-      <th class="centre">GammaHigh (keV)</th>
-      <th class="centre">BetaLow (keV)</th>
-      <th class="centre">BetaHigh (keV)</th>
+      <th class="centre">GammaLow <span class="smallunit">(keV)</span></th>
+      <th class="centre">GammaHigh <span class="smallunit">(keV)</span></th>
+      <th class="centre">BetaLow <span class="smallunit">(keV)</span></th>
+      <th class="centre">BetaHigh <span class="smallunit">(keV)</span></th>
     </tr>
    {% for rb_item in roi_boundaries %}
     <tr>

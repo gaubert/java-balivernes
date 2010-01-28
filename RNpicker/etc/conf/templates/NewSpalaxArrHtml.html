@@ -122,6 +122,12 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		font-style: italic;
 	}
 	
+	.smallunit
+    {
+        font-style: italic;
+        font-size:55%;
+    }
+
 	.smallitalo
 	{
 		font-style: italic;
@@ -611,16 +617,21 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
          <iframe width="300px" height="300px" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="{{station_static_gmaps}}"></iframe> 
          <div onclick="show()" class="hide-button">click to hide</div>
 </div>
-<table class="std1">
+<table class="std2">
+  <col witdh="50%"/>
+  <col witdh="50%"/>
   <tbody>
     <tr>
       <td>Sample ID: {{sample_id}}</td>
       <td>Station ID: {{station_code}}</td>
     </tr>
     <tr>
-      <td>Detector ID: {{detector_code}}</td>
-      <td>Detector Description: {{detector_description}}</td>
+      <td colspan="2">Detector ID: {{detector_code}}</td> 
     </tr>
+	<tr>
+	  <td colspan="2">Detector Description: <span class="comment">{{detector_description}}</span></td>
+	</tr>
+	
     <tr>
       <td>Station Location: {{station_location}}</td>
       <td colspan="2">Coordinates:
@@ -639,35 +650,34 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     </tr>
     <tr>
       <td>Total Processed Air Quantity : {{processed_air_volume}} {{processed_air_volume_unit}}</td>
-      <td>Authenticated: No </td>
-    </tr>
-    <tr>
       <td>Xe Volume : {{xe_vol}} {{xe_vol_unit}}</td>
-	  <td colspan="1"></td>
     </tr>
     <tr>
       <td>Collection Start: {{collection_start}}</td>
-      <td>Sampling Time:  {{sampling_time}}  </td>
+      <td>Collection Stop: {{collection_stop}}</td>
+    </tr>
+	<tr>
+      <td>Acquisition Start: {{acquisition_start}}</td>
+	  <td>Acquisition Stop: {{acquisition_stop}}</td>
     </tr>
     <tr>
-      <td>Collection Stop: {{collection_stop}}</td>
+      <td>Sampling Time:  {{sampling_time}}  </td>
       <td>Decay Time:  {{decay_time}}</td>
     </tr>
+    
     <tr>
-      <td>Acquisition Start: {{acquisition_start}}</td>
       <td>Acquisition Time:  {{acquisition_time}}</td>
-    </tr>
-    <tr>
-      <td>Acquisition Stop: {{acquisition_stop}}</td>
-      <td colspan="1"></td>
+      <td>Authenticated: No </td>
     </tr>
   </tbody>
 </table>
-
+<p></p>
 <div>Collection Start Comments:</div>
+<p></p>
 {%- for comment_line in collection_comments -%}
 <div class="comment">{{comment_line}}</div>
 {% endfor %}
+<p></p>
 <div class="rule"></div>
 
 <h2>Activity Concentration Summary</h2>
@@ -680,12 +690,16 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  N/A
 {% else %}
 <table class="std1">
+  <col width="10%"/>
+  <col width="10%"/>
+  <col width="10%"/>
+  <col width="10%"/>
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-	  <th class="centre">MDI (mBq/m3)</th>
-      <th class="centre">Conc(mBq/m3)</th>
-      <th class="centre">Abs Error</th>
+	  <th class="centre">MDI <span class="smallunit">(mBq/m3)</span></th>
+      <th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>
+      <th class="centre">Abs Error <span class="smallunit">(mBq/m3)</span></th>
     </tr>
 	{% for a_key in matrix_row_order %}
       {% if a_key in quantified_nuclides.peak %}
@@ -708,11 +722,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  N/A
 {% else %}
 <table class="std1">
+  <col width="10%"/>
+  <col width="10%"/>
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">MDC (mBq/m3)</th>
-	  <!--<th class="centre">Conc(mBq/m3)</th>
+      <th class="centre">MDC <span class="smallunit">(mBq/m3)</span></th>
+	  <!--<th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>
 	  <th class="centre">Abs Error</th>-->
     </tr>
    {% for a_key in matrix_row_order %}
@@ -738,12 +754,16 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  N/A
 {% else %}
 <table class="std1">
+  <col width="10%"/>
+  <col width="10%"/>
+  <col width="10%"/>
+  <col width="10%"/>
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-	  <th class="centre">MDI (mBq/m3)</th>
-      <th class="centre">Conc(mBq/m3)</th>
-      <th class="centre">Abs Error</th>
+	  <th class="centre">MDI <span class="smallunit">(mBq/m3)</span></th>
+      <th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>
+      <th class="centre">Abs Error <span class="smallunit">(mBq/m3)</span></th>
 	  
     </tr>
 	{% for a_key in matrix_row_order %}
@@ -766,11 +786,13 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
  N/A
 {% else %}
 <table class="std1">
+  <col width="10%"/>
+  <col width="10%"/>
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">MDC (mBq/m3)</th>
-	  <!--<th class="centre">Conc(mBq/m3)</th>-->
+      <th class="centre">MDC <span class="smallunit">(mBq/m3)</span></th>
+	  <!--<th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>-->
 	  <!--<th class="centre">Abs Error</th>-->
     </tr>
    {% for a_key in matrix_row_order %}
@@ -790,7 +812,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <p></p>
 
-<div class="page-break"></div> 
+<div class="rule"></div> 
 
 <h2>Sample Activity Results:</h2>
 
@@ -798,14 +820,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h4> Peak Fit Method: </h4>
 
 <table class="std2">
+  <col width="10%">
+  <col width="12%">
+  <col width="26%">
+  <col width="22%">
+  <col width="14%">
+  <col width="15%">
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">Activity (mBq)</th>
-	  <th class="centre">Undecay Corrected Activity (mBq)</th>
-      <th class="centre">Abs Activity Error (mBq)</th>
-      <th class="centre">Critical Limit (mBq)</th>
-      <th class="centre">Detection Limit (mBq)</th>
+      <th class="left">Activity <span class="smallunit">(mb)</span></th>
+      <th class="left">Undecay Corr Activity <span class="smallunit">(mb)</span></th>
+      <th class="left">Abs Activity Error <span class="smallunit">(mb)</span></th>
+      <th class="left">LC <span class="smallunit">(mb)</span></th>
+      <th class="left">LD <span class="smallunit">(mb)</span></th>
     </tr>
    {% for a_key in matrix_row_order %}
      {% if a_key in activities_nuclides.peak %}
@@ -827,14 +855,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 <h4> Decay Analysis Method: </h4>
 
 <table class="std2">
+  <col width="10%">
+  <col width="12%">
+  <col width="26%">
+  <col width="22%">
+  <col width="14%">
+  <col width="15%">
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="centre">Activity (mBq)</th>
-	  <th class="centre">Undecay Corrected Activity (mBq)</th>
-      <th class="centre">Abs Activity Error (mBq)</th>
-      <th class="centre">Critical Limit (mBq)</th>
-      <th class="centre">Detection Limit (mBq)</th>
+      <th class="left">Activity <span class="smallunit">(mb)</span></th>
+      <th class="left">Undecay Corr Activity <span class="smallunit">(mb)</span></th>
+      <th class="left">Abs Activity Error <span class="smallunit">(mb)</span></th>
+      <th class="left">LC <span class="smallunit">(mb)</span></th>
+      <th class="left">LD <span class="smallunit">(mb)</span></th>
     </tr>
    {% for a_key in matrix_row_order %}
      {% if a_key in  activities_nuclides.decay %}
@@ -853,14 +887,19 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 
 <p></p>
-<div class="rule"></div>
+<div class="page-break"></div>
 
 {% if peak_fit_matrix or decay_analysis_matrix %}
 <h2>Processing Specific Parameters and Results:</h2>
 
-<h4>Peak Fit Method: Covariance Matrix (mBq^2)</h4>
+<h4>Peak Fit Method: Covariance Matrix <span class="smallunit">(mBq^2)</span></h4>
 {% if peak_fit_matrix %}
 <table class="std2">
+  <col width="20%">
+  <col width="20%">
+  <col width="20%">
+  <col width="20%">
+  <col width="20%">
   <tbody>
     <tr>
       <th class="th"></th>
@@ -885,10 +924,16 @@ N/A
 {% endif %}
 <p></p>
 
-<h4>Decay Analysis Method: Covariance Matrix (mBq^2)</h4>
+<h4>Decay Analysis Method: Covariance Matrix <span class="smallunit">(mBq^2)</span></h4>
 {% if decay_analysis_matrix %}
 <table class="std2">
+    <col width="20%">
+    <col width="20%">
+    <col width="20%">
+    <col width="20%">
+    <col width="20%">
     <tr>
+      <th class="th"></th>
       <th class="th">XE-131M</th>
       <th class="th">XE-133M</th>
       <th class="th">XE-133</th>
