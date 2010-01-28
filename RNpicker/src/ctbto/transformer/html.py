@@ -27,7 +27,7 @@ class SAUNAXML2HTMLRenderer(object):
     """ Base Class used to transform SAUNA XML in HTML """
     
     def __init__(self, a_template_dir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', \
-                       a_template_name='NewSaunaArrHtml.html'):
+                       a_template_name='SaunaArrHtml-v1.0.html'):
         
         self._env         = Environment(loader=FileSystemLoader(a_template_dir))
         
@@ -458,7 +458,7 @@ class SPALAXXML2HTMLRenderer(object):
     """ Base Class used to transform the SPALAX XML in SAUNA """
     
     def __init__(self, a_template_dir='/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/conf/templates', \
-                       a_template_name='NewSpalaxArrHtml.html'):
+                       a_template_name='SpalaxArrHtml-v1.0.html'):
         
         self._env         = Environment(loader=FileSystemLoader(a_template_dir))
         
