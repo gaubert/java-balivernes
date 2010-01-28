@@ -2510,8 +2510,8 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             if corr_volume >= 0:
                 data[u'ACTIVITY']     = data.get(u'CONC', 0) * corr_volume if data.get(u'CONC', 0) != 0 else UNDEFINED
                 data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR', 0) * corr_volume
-                data[u'LC_ACTIVITY']  = data.get(u'LC', 0) * corr_volume
-                data[u'LD_ACTIVITY']  = data.get(u'LD', 0) * corr_volume
+                data[u'LC_ACTIVITY']  = data.get(u'LC', 0) * corr_volume * 0.001
+                data[u'LD_ACTIVITY']  = data.get(u'LD', 0) * corr_volume * 0.001
                  
             else:
                 data[u'ACTIVITY']     = UNDEFINED
