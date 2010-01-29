@@ -13,6 +13,7 @@ import logging
 
 import ctbto.common.scanf_util
 import ctbto.common.time_utils as time_utils
+from ctbto.common.logging_utils import LoggerFactory
 
 from decimal import Decimal
 import math
@@ -25,10 +26,6 @@ class NobleGasDecayCorrector(object):
     XE133M = 'XE-133M'
     XE135  = 'XE-135'
     XE133  = 'XE-133'
-    
-    # Class members
-    c_log = logging.getLogger("NobleGasDecayCorrector")
-    c_log.setLevel(logging.INFO)
     
     c_default_half_life = {
             'XE-131M' : '11.900 D',
@@ -73,6 +70,8 @@ class NobleGasDecayCorrector(object):
         self._t_prep     = -1
         
         self.set_time_information(a_coll_start, a_coll_stop, a_acq_start, a_acq_stop, a_real)
+        
+        self._log    = LoggerFactory.get_logger(self)
         
         
     def set_time_information(self,a_coll_start,a_coll_stop,a_acq_start,a_acq_stop,a_real = None):

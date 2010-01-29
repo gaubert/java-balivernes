@@ -1,7 +1,7 @@
 import re
 import logging
 
-
+from ctbto.common.logging_utils import LoggerFactory
 from ctbto.common import CTBTOError
 from org.ctbto.conf import Conf
 
@@ -13,10 +13,6 @@ class RequestParser(object):
     ANALYSIS = 'analysis'
     GAS      = 'GAS'
     PAR      = 'PAR'
-    
-    # Class members
-    c_log = logging.getLogger("query.RequestParser")
-    c_log.setLevel(logging.DEBUG)
     
     # spectrum types
     c_spectrum_particulate_types   = set(['NONE','CURR','QC','PREL','BK'])
@@ -44,6 +40,8 @@ class RequestParser(object):
         """ constructor """
         # get reference to the conf object
         self._conf              = Conf.get_instance()
+        
+        self._log    = LoggerFactory.get_logger(self)
         
         
     def parse(self,aRequest,aTechnType):
@@ -113,7 +111,7 @@ class RequestParser(object):
         m = RequestParser.c_analysis_rex.match(aRequest)
     
         if m is None:
-            RequestParser.c_log.warning("Warning, Cannot find the analysis=val1/val2 in param string %s\nUse default analysis=CURR"%(aRequest))
+            self._log.warning("Warning, Cannot find the analysis=val1/val2 in param string %s\nUse default analysis=CURR"%(aRequest))
             result.add('CURR')
             return result
         
@@ -122,21 +120,21 @@ class RequestParser(object):
         vals = values.split('/')
       
         if len(vals) == 0:
-          raise CTBTOError(-1,"Cannot find values for the analysis params in parameters string %s"%(aRequest))
+            raise CTBTOError(-1,"Cannot find values for the analysis params in parameters string %s"%(aRequest))
         
         for val in vals:
-          dummy = val.strip().upper()
+            dummy = val.strip().upper()
           
-          if dummy == 'ALL':
-             #ALL superseeds everything and add all the different types
-             result.update(aAnalysisTypesDefault)
-             # leave loop
-             break
-                
-          if dummy not in aAnalysisTypes:
-              raise CTBTOError(-1,"Unknown analysis type %s. The analysis type can only be one of the following %s"%(dummy,aAnalysisTypes))
-          
-          result.add(dummy)
+            if dummy == 'ALL':
+                #ALL superseeds everything and add all the different types
+                result.update(aAnalysisTypesDefault)
+                # leave loop
+                break
+                  
+            if dummy not in aAnalysisTypes:
+                raise CTBTOError(-1,"Unknown analysis type %s. The analysis type can only be one of the following %s"%(dummy,aAnalysisTypes))
+            
+            result.add(dummy)
           
         return result  
     
@@ -170,7 +168,7 @@ class RequestParser(object):
     
     
         if m is None:
-            RequestParser.c_log.warning("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aRequest))
+            self._log.warning("Warning, Cannot find the spectrum=val1/val2 in param string %s\nUse default spectrum=ALL"%(aRequest))
             result.update(aSpectrumTypes)
             return result
         

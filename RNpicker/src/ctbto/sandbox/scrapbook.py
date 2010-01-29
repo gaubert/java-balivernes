@@ -12,6 +12,7 @@ import getopt
 
 import tokenize
 import StringIO
+import logging.config
 
 
 
@@ -632,16 +633,15 @@ def dirwalk(dir):
         else:
             yield fullpath
 
+def loggers():
+    
+    logging.config.fileConfig("/home/aubert/workspace/RNpicker/etc/conf/logging_rnpicker.config")
+    toto_log = logging.getLogger("toto")
+    print("hello")
+    toto_log.info("My Message")
 
 
 if __name__ == '__main__':
     
-   import zipfile
-   zip_name = "/tmp/test.zip"
-   z = zipfile.ZipFile(zip_name,"w")
-            
-   for f_name in ctbto.common.utils.dirwalk('/tmp/t-zip'):
-     z.write(f_name, arcname=os.path.basename(f_name))
-     
-   z.close()
+   loggers()
    

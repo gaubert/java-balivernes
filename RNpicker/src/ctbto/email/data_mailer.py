@@ -16,15 +16,13 @@ from email.mime.multipart   import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text        import MIMEText
 
+
+from ctbto.common.logging_utils import LoggerFactory
 import ctbto.common.utils  
  
 
 class DataEmailer(object):
     """ Class used to send emails containing attached data """
-    
-    # Class members
-    c_log = logging.getLogger("DataEmailer")
-    c_log.setLevel(logging.INFO)
 
     def __init__(self,a_server_host,a_server_port=25,a_login=None,a_password=None,a_debugging_level=0):
         
@@ -40,6 +38,8 @@ class DataEmailer(object):
         self._debug_level = a_debugging_level
         
         self._smtp_server = None
+        
+        self._log    = LoggerFactory.get_logger(self)
           
     
     def connect(self,a_login=None,a_password=None,a_server_host=None,a_server_port=None):
@@ -166,7 +166,7 @@ class DataEmailer(object):
         # send to all receivers
         for receiver in receivers:
             outer['To'] = receiver 
-            DataEmailer.c_log.info('send message to %s with the following attachments %s.'%(receiver,a_list_of_attached_files))
+            self._log.info('send message to %s with the following attachments %s.'%(receiver,a_list_of_attached_files))
             self._smtp_server.sendmail(a_sender, [receiver], outer.as_string())
         
         return

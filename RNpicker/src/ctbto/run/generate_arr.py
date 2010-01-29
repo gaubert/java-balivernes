@@ -12,12 +12,14 @@ import getopt, sys
 import datetime
 import os
 import logging.handlers
+import logging.config
 import StringIO
 import traceback
 
 import ctbto.common.time_utils
 import ctbto.common.utils
 import ctbto.common.xml_utils
+from ctbto.common.logging_utils import LoggerFactory
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector, DBDataFetcher
 from ctbto.renderers   import BaseRenderer
@@ -354,21 +356,15 @@ class LoggingSetupError(CLIError):
 class Runner(object):
     """ Class for fetching and producing the ARR """
     
-    # Class members
-    c_log = logging.getLogger("Runner")
-    c_log.setLevel(logging.INFO)
-
     def __init__(self, a_args):
         
         super(Runner, self).__init__()
           
         # create an empty shell Conf object
-        self._conf     = self._load_configuration(a_args)
+        self._conf     = Conf.get_instance()
         
-        self._log_path = None
+        self._log = LoggerFactory.get_logger("Runner")
         
-        self._set_logging_configuration()
-    
         # setup the prod database and connect to it
         self._ngDatabase        = self._conf.get("NobleGazDatabaseAccess", "hostname")
         self._ngUser            = self._conf.get("NobleGazDatabaseAccess", "user")
@@ -387,11 +383,45 @@ class Runner(object):
         # create DB connector
         self._ngArchConn = DatabaseConnector(self._ParticulateArchiveDatabaseAccess, self._archiveUser, \
                                              self._archivePassword, self._archiveActivateTimer)
-        
         #connect to the DBs
         self._ngMainConn.connect()
         self._ngArchConn.connect()
+    
+    @classmethod
+    def load_configuration(cls, a_args):
+        """
+            try to load the configuration from the config file.
+            priority rules: if --conf_dir is set, try to read a dir/rnpicker.config. Otherwise look for RNPICKER_CONF_DIR env var
         
+            Args:
+               None 
+               
+            Returns:
+               return a conf object
+        
+            Raises:
+               exception
+        """
+        #read from command_line
+        dir = a_args.get('conf_dir', None)
+        
+        #try to read from env
+        if dir == None:
+            dir = os.environ.get('RNPICKER_CONF_DIR', None)
+        else:
+            #always force the ENV Variable
+            os.environ['RNPICKER_CONF_DIR'] = dir
+        
+        if dir is None:
+            raise ConfAccessError('The conf dir needs to be set from the command line or using the env variable RNPICKER_CONF_DIR')
+        
+        if os.path.isdir(dir):
+            os.environ[Conf.ENVNAME] = '%s/%s'%(dir,'rnpicker.config')
+            
+            return Conf.get_instance()
+        else:
+            raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
+    
     def _set_logging_configuration(self):
         """
             setup the logging info.
@@ -409,46 +439,6 @@ class Runner(object):
             Raises:
                exception
         """
-        try:
-            
-            if len(logging.root.handlers) == 0:
-            
-                # if file exists check that the user can write in there otherwise create a new log file with the pid:
-                self._log_path = self._conf.get('Logging', 'file_name', '/tmp/rnpicker.log')
-                
-                if os.path.exists(self._log_path) and not os.access(self._log_path, os.R_OK | os.W_OK):
-                    n_log_path = '%s.%d' % (self._log_path, os.getpid())
-                    print("WARNING - *************************************************************")
-                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead' \
-                          % (self._log_path, n_log_path))
-                    print("WARNING - *************************************************************")
-                    self._log_path = n_log_path
-                
-                mode        =   self._conf.get('Logging', 'mode', 'a')
-                max_bytes    =   self._conf.getint('Logging', 'max_file_size', 5 *1024 * 1024)
-                backup_count =   self._conf.getint('Logging', 'backup_count', 10)
-                
-                # create logger that logs in rolling file
-                file_handler = logging.handlers.RotatingFileHandler(self._log_path, mode = mode , \
-                                                                    maxBytes = max_bytes  , \
-                                                                    backupCount = backup_count)
-                file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-                file_handler.setFormatter(file_formatter)
-            
-                # create logger that logs in console
-                console = logging.StreamHandler()
-                console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-                console_filter    = logging.Filter(self._conf.get('Logging', 'consoleFilter', 'Runner'))
-                console.setFormatter(console_formatter)
-                console.addFilter(console_filter)
-        
-                logging.root.addHandler(file_handler)
-                logging.root.addHandler(console)
-                
-        except Exception, _: #IGNORE:W0612
-            # Fatal error when setuping the logger
-            print("Fatal Error when setuping the logging system. Exception Traceback: %s."%(get_exception_traceback()))
-            raise LoggingSetupError('Cannot setup the loggers properly. See Exception Traceback printed in stdout')
     
     @classmethod
     def log_in_file(self, aMessage):
@@ -457,40 +447,6 @@ class Runner(object):
         log = logging.getLogger("ROOT")
         log.setLevel(logging.INFO)
         log.info(aMessage)
-        
-    def _load_configuration(self,a_args):
-        """
-            try to load the configuration from the config file.
-            priority rules: if --conf_dir is set, try to read a dir/rnpicker.config. Otherwise look for RNPICKER_CONF_DIR env var
-        
-            Args:
-               None 
-               
-            Returns:
-               return a conf object
-        
-            Raises:
-               exception
-        """
-        #read from command_line
-        dir = a_args.get('conf_dir',None)
-        
-        #try to read from env
-        if dir == None:
-            dir = os.environ.get('RNPICKER_CONF_DIR',None)
-        else:
-            #always force the ENV Variable
-            os.environ['RNPICKER_CONF_DIR'] = dir
-        
-        if dir is None:
-            raise ConfAccessError('The conf dir needs to be set from the command line or using the env variable RNPICKER_CONF_DIR')
-        
-        if os.path.isdir(dir):
-            os.environ[Conf.ENVNAME] = '%s/%s'%(dir,'rnpicker.config')
-            
-            return Conf.get_instance()
-        else:
-            raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
         
     def _get_list_of_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
         
@@ -505,7 +461,8 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        Runner.c_log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
+        self._log.info("Generate products for %d sampleIDs"%(len(sampleIDs)))
+        
         self.log_in_file("list of sampleIDs to fetch: %s"%(sampleIDs))
         
         return sampleIDs
@@ -546,7 +503,7 @@ class Runner(object):
                 sta_codes.append(row[0])
                 sta_ids.append(row[1])
             
-            Runner.c_log.info("Found %d %s stations."%(len(sta_codes),type))
+            self._log.info("Found %d %s stations."%(len(sta_codes),type))
             self.log_in_file("Found the following %s stations: %s."%(type,sta_codes))
         
         return sta_ids
@@ -575,7 +532,7 @@ class Runner(object):
         
         path = self._conf.get('Caching','dir',None)
         
-        Runner.c_log.info("Clean the cached data under %s"%(path))
+        self._log.info("Clean the cached data under %s"%(path))
         
         if path is not None:
             ctbto.common.utils.delete_all_under(path)
@@ -584,7 +541,7 @@ class Runner(object):
         """ clean the cached spectrum """
         path = self._conf.get('RemoteAccess','localdir',None)
         
-        Runner.c_log.info("Clean the cached spectra under %s"%(path))
+        self._log.info("Clean the cached spectra under %s"%(path))
         
         if path is not None:
             ctbto.common.utils.delete_all_under(path)
@@ -594,14 +551,10 @@ class Runner(object):
         if a_args == None or a_args == {}:
             raise Exception('No commands passed. See usage message.')
         
-        Runner.c_log.info("*************************************************************")
-        Runner.c_log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
+        self._log.info("*************************************************************")
+        self._log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
         
-        # _log_path can be null if the logger has been installed by another object
-        if self._log_path != None:
-            Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
-        
-        Runner.c_log.info("*************************************************************\n")
+        self._log.info("*************************************************************\n")
         
         cache_cleaned         = False
         local_spectra_cleaned = False
@@ -624,7 +577,7 @@ class Runner(object):
         request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # check if we have some sids or we get it from some dates
-        Runner.c_log.info("*************************************************************")
+        self._log.info("*************************************************************")
         
         if 'sids' in a_args:
             sids    = a_args['sids']
@@ -645,8 +598,8 @@ class Runner(object):
                 # no actions performed error
                 raise Exception('need either a sid or some dates or a station name')
         
-        Runner.c_log.info("Start the product generation")
-        Runner.c_log.info("*************************************************************\n")
+        self._log.info("Start the product generation")
+        self._log.info("*************************************************************\n")
         
         to_ignore = self._conf.getlist('IgnoreSamples','noblegazSamples')
         always_recreate_files = a_args['always_recreate_files']
@@ -654,14 +607,14 @@ class Runner(object):
         for sid in sids:
             
             if str(sid) in to_ignore:
-                Runner.c_log.info("*************************************************************")
-                Runner.c_log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
-                Runner.c_log.info("*************************************************************\n")
+                self._log.info("*************************************************************")
+                self._log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
+                self._log.info("*************************************************************\n")
                 #skip this iteration
                 continue
     
-            Runner.c_log.info("*************************************************************")
-            Runner.c_log.info("Fetch data and build SAMPML data file for %s"%(sid))
+            self._log.info("*************************************************************")
+            self._log.info("Fetch data and build SAMPML data file for %s"%(sid))
             
             # if the right flag is set and the file already exists do not recreate it
             if always_recreate_files or not os.path.exists("%s/ARR/ARR-%s.html"%(dir,sid)):
@@ -682,7 +635,7 @@ class Runner(object):
            
                 path = "%s/samples/sampml-full-%s-%s.xml"%(dir,station_code,sid)
    
-                Runner.c_log.info("Save SAMPML data in %s"%(path))
+                self._log.info("Save SAMPML data in %s"%(path))
             
                 # pretty print and save in file
                 ctbto.common.xml_utils.pretty_print_xml(StringIO.StringIO(xmlStr),path)
@@ -691,9 +644,9 @@ class Runner(object):
                 self._create_arr(fetcher, dir, path, sid, station_code)
             
             else:
-                Runner.c_log.info("products are already existing in %s for %s"%(dir,sid)) 
+                self._log.info("products are already existing in %s for %s"%(dir,sid)) 
             
-            Runner.c_log.info("*************************************************************\n")
+            self._log.info("*************************************************************\n")
 
     def _create_arr(self,a_fetcher,a_dir,a_path,a_sid, a_station_code):
         """ create the ARR if possible.
@@ -709,7 +662,7 @@ class Runner(object):
             # generate arr only for SPHD (FULL and PREL) normally
             if measurement_type == 'SPHD':
                 if a_fetcher.get('SAMPLE_TYPE') == 'SAUNA':
-                    Runner.c_log.info("Create ARR from SAUNA SAMPML data file for %s" % (a_sid))
+                    self._log.info("Create ARR from SAUNA SAMPML data file for %s" % (a_sid))
                
                     ren = SAUNAXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
         
@@ -717,12 +670,12 @@ class Runner(object):
                     
                     path = "%s/ARR/ARR-%s-%s.html" % (a_dir, a_station_code, a_sid)
                     
-                    Runner.c_log.info("save file in %s"%(path))
+                    self._log.info("save file in %s"%(path))
                     
                     ctbto.common.utils.printInFile(result, path)
                     
                 elif a_fetcher.get('SAMPLE_TYPE') == 'SPALAX':
-                    Runner.c_log.info("Create ARR from SPALAX SAMPML data file for %s" % (a_sid))
+                    self._log.info("Create ARR from SPALAX SAMPML data file for %s" % (a_sid))
                    
                     ren = SPALAXXML2HTMLRenderer(self._conf.get('Transformer','templateDir'))
             
@@ -730,13 +683,13 @@ class Runner(object):
                     
                     path = "%s/ARR/ARR-%s-%s.html" % (a_dir, a_station_code, a_sid)
                     
-                    Runner.c_log.info("save file in %s" % (path))
+                    self._log.info("save file in %s" % (path))
                             
                     ctbto.common.utils.printInFile(result, path)
             else:
-                Runner.c_log.info("Cannot create a ARR for a sample with a type %s" % (measurement_type))
+                self._log.info("Cannot create a ARR for a sample with a type %s" % (measurement_type))
         else:
-            Runner.c_log.error("Sample %s hasn't got any CURRENT_CURR in its fetcher"% (a_sid))
+            self._log.error("Sample %s hasn't got any CURRENT_CURR in its fetcher"% (a_sid))
         
 
 def run_automatic_tests():
@@ -750,7 +703,11 @@ def run_with_args(a_args,exit_on_success=False):
     
     try:
         parsed_args = a_args
+        
+        load_configuration(parsed_args)
+        
         runner = Runner(parsed_args)
+        
         runner.execute(parsed_args) 
     except ParsingError, e:
         # Not Runner set print
@@ -770,11 +727,12 @@ def run_with_args(a_args,exit_on_success=False):
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            self._log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
             if parsed_args.get('verbose',1) == 3:
-                a_logger = Runner.c_log.error
+                a_logger = LoggerFactory.get_logger("Runner").error
             else:
                 a_logger = Runner.log_in_file
+           
            
             a_logger("Traceback: %s."%(get_exception_traceback()))
         except: 
@@ -797,6 +755,10 @@ def run():
         # the Runner is bypassed
         if parsed_args['automatic_tests']:
             run_automatic_tests()
+            
+        Runner.load_configuration(parsed_args)
+        
+        conf_file = Conf.get_instance().get('log', 'conf_file', '/home/aubert/workspace/RNpicker/etc/conf/logging_rnpicker.config')
          
         runner = Runner(parsed_args)
         runner.execute(parsed_args) 
@@ -818,9 +780,9 @@ def run():
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
             if parsed_args.get('verbose',1) == 3:
-                a_logger = Runner.c_log.error
+                a_logger = LoggerFactory.get_logger("Runner").error
             else:
                 a_logger = Runner.log_in_file
            

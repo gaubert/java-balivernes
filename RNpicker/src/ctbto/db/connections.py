@@ -1,17 +1,15 @@
-import logging
+
 import sqlalchemy
+import logging
 
 
 from ctbto.common.utils import ftimer
 from ctbto.common import CTBTOError
+from ctbto.common.logging_utils import LoggerFactory
 
 
 class DatabaseConnector:
     """ Class used to access the IDC database """
-    
-    # Class members
-    c_log = logging.getLogger("connections.DatabaseConnector")
-    c_log.setLevel(logging.DEBUG)
     
     def __init__(self,aDatabase,aUser,aPassword,aTimeReqs=False):
         
@@ -28,6 +26,8 @@ class DatabaseConnector:
         
         self._engine = None
         self._conn   = None
+        
+        self._log    = LoggerFactory.get_logger(self)
         
     
     def _createUrl(self):
@@ -67,7 +67,7 @@ class DatabaseConnector:
         
         self._connected = True
         
-        DatabaseConnector.c_log.info("Connected to the database %s"%(self._database))
+        self._log.info("Connected to the database %s"%(self._database))
     
     def disconnect(self):
         
@@ -116,7 +116,7 @@ class DatabaseConnector:
             result = []
             func = self._conn.execute
             t= ftimer(func,[sql],{},result,number=1)
-            DatabaseConnector.c_log.info("\nTime: %s secs \nDatabase: %s\nRequest: %s\n"%(t,self._database,aSql))
+            self._log.debug("\nTime: %s secs \nDatabase: %s\nRequest: %s\n"%(t,self._database,aSql))
             return result[0]
         else:
             result = self._conn.execute(sql)
