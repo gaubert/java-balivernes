@@ -11,6 +11,7 @@ import ctbto.common.utils
 from ctbto.common.utils import ftimer
 from ctbto.common import CTBTOError
 from org.ctbto.conf import Conf
+from ctbto.common.logging_utils import LoggerFactory
 
 def _complain_ifclosed(closed):
     if closed:
@@ -19,10 +20,6 @@ def _complain_ifclosed(closed):
 class BaseRemoteDataSource(object):
     """ Base class for All Remote Sources
     """
-    
-    # Class members
-    c_log = logging.getLogger("rndata.BaseRemoteDataSource")
-    c_log.setLevel(logging.DEBUG)
     
     def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize):
         
@@ -57,6 +54,8 @@ class BaseRemoteDataSource(object):
         
         # Size to read 
         self._remoteSize        = aRemoteSize
+        
+        self._log    = LoggerFactory.get_logger(self) 
         
     def getLocalFilename(self):
         """ localFilename Accessor """
@@ -219,10 +218,6 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         and delegate all methods to the open file
     """
     
-    # Class members
-    c_log = logging.getLogger("rndata.RemoteFileSystemDataSource")
-    c_log.setLevel(logging.DEBUG)
-    
     def __init__(self, aDataPath, aID, aOffset, aSize, aRemoteHostname=None, aRemoteScript=None,aRemoteUser=None):
         
         super(RemoteFSDataSource,self).__init__(aDataPath,aID,aOffset,aSize)
@@ -234,8 +229,9 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         self._remoteUser        = self._conf.get("RemoteAccess","prodAccessUser",self._getCurrentUser()) if aRemoteUser == None else aRemoteUser
         
         self._getRemoteFile()
+        
+        self._log    = LoggerFactory.get_logger(self) 
     
-   
     def _getRemoteFile(self):
         """ fetch the file and store it in a temporary location """
         
@@ -251,12 +247,12 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         
         # if file there and caching activated open fd and quit
         if os.path.exists(destinationPath) and self._cachingActivated:
-            RemoteFSDataSource.c_log.info("Fetch %s from the cache %s"%(self._remotePath,destinationPath))
+            self._log.info("Fetch %s from the cache %s"%(self._remotePath,destinationPath))
             self._fd = open(destinationPath,"r")
             return
         # check to see if the file is not available locally
         elif os.path.exists(self._remotePath) and self._cachingActivated:
-            RemoteFSDataSource.c_log.info("Fetch %s"%(self._remotePath))
+            self._log.info("Fetch %s"%(self._remotePath))
             self._fd = self._get_file_locally_available_in_cache(self._remotePath,self._remoteOffset,self._remoteSize,destinationPath)
         else:
             # try to get it remotely 
@@ -270,11 +266,11 @@ class RemoteFSDataSource(BaseRemoteDataSource):
        
                 func = subprocess.call
             
-                RemoteFSDataSource.c_log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
+                self._log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
             
                 t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
        
-                RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+                self._log.debug("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
        
                 if res[0] != 0:
                     if tries >= 3:
@@ -302,11 +298,6 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
             Raises:
                exception
     """
-    
-     # Class members
-    c_log = logging.getLogger("rndata.RemoteArchiveDataSource")
-    c_log.setLevel(logging.DEBUG)
-    
     def __init__(self, aDataPath,aID,aRemoteOffset,aRemoteSize,aRemoteHostname=None,aRemoteScript=None,aRemoteUser=None,aLocalDir=None,a_DoNotUseCache=False,a_LocalFilename=None):
         
         # my variables
@@ -329,6 +320,8 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
     
         self._getRemoteFile()
         
+        self._log    = LoggerFactory.get_logger(self) 
+        
     def _getExtension(self,aRemotePath):
         """ Find out if this is msg or an extracted spectrum to specify the extension """
         
@@ -338,7 +331,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         elif aRemotePath.find("SPECTHIST") != -1:
             return "archs"
         else:
-            RemoteArchiveDataSource.c_log.warning("Warning cannot find the archived file type for %s. Guess it is a message\n"%(aRemotePath))
+            self._log.warning("Warning cannot find the archived file type for %s. Guess it is a message\n"%(aRemotePath))
             return "archmsg"
         
     def _getRemoteFile(self):
@@ -354,11 +347,11 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         # if file there and caching activated open fd and quit
         if os.path.exists(destinationPath) and self._cachingActivated:
-            RemoteFSDataSource.c_log.info("Fetch %s from the cache %s"%(self._remotePath,destinationPath))
+            self._log.info("Fetch %s from the cache %s"%(self._remotePath,destinationPath))
             self._fd = open(destinationPath,"r")
         # check to see if the file is not available locally
         elif os.path.exists(self._remotePath) and self._cachingActivated:
-            RemoteFSDataSource.c_log.info("Fetch %s, offset %s, size %s"%(self._remotePath,self._remoteOffset,self._remoteSize))
+            self._log.info("Fetch %s, offset %s, size %s"%(self._remotePath,self._remoteOffset,self._remoteSize))
             self._fd = self._get_file_locally_available_in_cache(self._remotePath,self._remoteOffset,self._remoteSize,destinationPath)
         else:
             # try to get it remotely 
@@ -370,11 +363,11 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
        
                 func = subprocess.call
             
-                RemoteFSDataSource.c_log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
+                self._log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
             
                 t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
        
-                RemoteFSDataSource.c_log.info("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+                self._log.debug("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
        
                 if res[0] != 0:
                     if tries >= 3:
