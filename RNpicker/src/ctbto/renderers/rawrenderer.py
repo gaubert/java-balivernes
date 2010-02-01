@@ -7,16 +7,12 @@ from xml.etree.ElementTree import ElementTree, Element, SubElement, dump # Pytho
 # internal libraries
 from  ctbto.common.exceptions import CTBTOError
 from  ctbto.db.connections    import DatabaseConnector
-import ctbto.common.utils as utils
+from ctbto.common.logging_utils import LoggerFactory
 
 """ Module used to dump the database table content in an xml relational context """
 
 class DBRawRenderer:
     """ Class used to get table content and renderer it in a crude xml format """
-    
-    # Class members
-    c_log = logging.getLogger("rawrenderer.DBRawRenderer")
-    c_log.setLevel(logging.DEBUG)
     
     c_pattern = re.compile(r'\.')
     
@@ -24,6 +20,7 @@ class DBRawRenderer:
         
         self._dbConnector = aDbConnector
         self._callbackObj = None
+        self._log         = LoggerFactory.get_logger(self)
         
     def __repr__(self):
         return "<DBRawRenderer instance>"
@@ -118,14 +115,14 @@ class DBRawRenderer:
     def _render_static_table(self,aTableName):
         """ Retrieve the full content of these tables which are read from the configuration file"""
         
-        DBRawRenderer.c_log.info("Generate XML for static table %s"%aTableName)
+        self._log.info("Generate XML for static table %s"%aTableName)
         
         filename = self._generateTableFilename(aTableName) 
         
         # preconditions
         if self._dbConnector is None: raise CTBTOError(-1,"Need a database connector")
    
-        DBRawRenderer.c_log.info("start rendering for static table %s"%(aTableName))
+        self._log.info("start rendering for static table %s"%(aTableName))
         
         # get table metadata
         metadata = self._dbConnector.getTableMetadata(aTableName)

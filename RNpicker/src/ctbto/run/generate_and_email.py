@@ -10,14 +10,13 @@ import tarfile
 import zipfile
 import pickle
 import datetime
-import logging
 import logging.handlers
 import StringIO
 import traceback
 import shutil
 
-import ctbto.common.xml_utils
 import ctbto.common.time_utils
+from ctbto.common.logging_utils import LoggerFactory
 import ctbto.common.utils
 from org.ctbto.conf    import Conf
 from ctbto.db          import DatabaseConnector
@@ -290,10 +289,6 @@ class LoggingSetupError(CLIError):
 class Runner(object):
     """ Class for fetching and producing the ARR """
     
-    # Class members
-    c_log = logging.getLogger("Runner")
-    c_log.setLevel(logging.INFO)
-
     def __init__(self,a_args):
         
         super(Runner,self).__init__()
@@ -301,9 +296,7 @@ class Runner(object):
         # create an empty shell Conf object
         self._conf     = self._load_configuration(a_args)
         
-        self._log_path = None
-        
-        self._set_logging_configuration()
+        self._log = LoggerFactory.get_logger("Runner")
     
         # setup the prod database and connect to it
         self._ngDatabase        = self._conf.get("NobleGazDatabaseAccess","hostname")
@@ -326,71 +319,12 @@ class Runner(object):
         #connect to the DBs
         self._ngMainConn.connect()
         self._ngArchConn.connect()
-        
-    def _set_logging_configuration(self):
-        """
-            setup the logging info.
-            Set the root logger and the handlers. 
-            Read the information from the configuration file.
-            Two handlers are created: one logging in a file file_handler. This one logs everything by default
-            and another one logging a minimal set of info in the console. 
-        
-            Args:
-               None 
-               
-            Returns:
-               return a conf object
-        
-            Raises:
-               exception
-        """
-        try:
-            
-            if len(logging.root.handlers) == 0:
-            
-                # if file exists check that the user can write in there otherwise create a new log file with the pid:
-                self._log_path = self._conf.get('Logging', 'file_name', '/tmp/generate_arr_and_email.log')
-                
-                if os.path.exists(self._log_path) and not os.access(self._log_path, os.R_OK | os.W_OK):
-                    n_log_path = '%s.%d' % (self._log_path, os.getpid())
-                    print("WARNING - *************************************************************")
-                    print('WARNING - Cannot write into specified logging file %s. Write Logs into %s instead' \
-                          % (self._log_path, n_log_path))
-                    print("WARNING - *************************************************************")
-                    self._log_path = n_log_path
-                
-                mode        =   self._conf.get('Logging', 'mode', 'a')
-                max_bytes    =   self._conf.getint('Logging', 'max_file_size', 5 *1024 * 1024)
-                backup_count =   self._conf.getint('Logging', 'backup_count', 10)
-                
-                # create logger that logs in rolling file
-                file_handler = logging.handlers.RotatingFileHandler(self._log_path, mode = mode , \
-                                                                    maxBytes = max_bytes  , \
-                                                                    backupCount = backup_count)
-                file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-                file_handler.setFormatter(file_formatter)
-            
-                # create logger that logs in console
-                console = logging.StreamHandler()
-                console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-                console_filter    = logging.Filter(self._conf.get('Logging', 'consoleFilter', 'Runner'))
-                console.setFormatter(console_formatter)
-                console.addFilter(console_filter)
-        
-                logging.root.addHandler(file_handler)
-                logging.root.addHandler(console)
-                
-        except Exception, _: #IGNORE:W0612
-            # Fatal error when setuping the logger
-            print("Fatal Error when setuping the logging system. Exception Traceback: %s."%(get_exception_traceback()))
-            raise LoggingSetupError('Cannot setup the loggers properly. See Exception Traceback printed in stdout')
     
     @classmethod
     def log_in_file(self,aMessage):
         """ to log in the file as the ROOT logger """
         
-        log = logging.getLogger("ROOT")
-        log.setLevel(logging.INFO)
+        log = LoggerFactory.get_logger("ROOT")
         log.info(aMessage)
         
     def _load_configuration(self,a_args):
@@ -451,7 +385,7 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        Runner.c_log.info("There are %d products (samples) for the %s."%(len(sampleIDs),beginDate.split(' ')[0]))
+        self._log.info("There are %d products (samples) for the %s."%(len(sampleIDs),beginDate.split(' ')[0]))
         self.log_in_file("List of sampleIDs to fetch: %s"%(sampleIDs))
         
         sampleIDs.sort()
@@ -477,7 +411,7 @@ class Runner(object):
                 sta_codes.append(row[0])
                 sta_ids.append(row[1])
             
-            Runner.c_log.info("Found %d %s stations."%(len(sta_codes),type))
+            self._log.info("Found %d %s stations."%(len(sta_codes),type))
             self.log_in_file("Found the following %s stations: %s."%(type,sta_codes))
         
         return sta_ids
@@ -528,7 +462,7 @@ class Runner(object):
                 temp_datetime = temp_datetime + datetime.timedelta(days=1)
                 cpt += 1
         else:
-            Runner.c_log.info("Error nb_days should >=0")
+            self._log.info("Error nb_days should >=0")
             
         return list_of_days
     
@@ -580,12 +514,12 @@ class Runner(object):
                 if len(new_samples_set) > 0:
                     l = list(new_samples_set)
                     l.sort()   
-                    Runner.c_log.info("%d new products to be retrieved for %s."%(len(l),day))
+                    self._log.info("%d new products to be retrieved for %s."%(len(l),day))
                     result[day] = l
             else:
                 l.sort()
                 if len(l) > 0:
-                    Runner.c_log.info("Will fetch the %d new products for %s."%(len(l),day))
+                    self._log.info("Will fetch the %d new products for %s."%(len(l),day))
                 result[day] = l
                 
         # print all values
@@ -654,7 +588,7 @@ class Runner(object):
         """ 
             remove all samples that are older than the limit given in the config file 
         """
-        Runner.c_log.info("Remove information from the group database %s/%s.emaildb if expired"%(a_dir,a_id))
+        self._log.info("Remove information from the group database %s/%s.emaildb if expired"%(a_dir,a_id))
         
         limit = self._conf.getint('AutomaticEmailingInformation','expirationDate',20)
             
@@ -692,7 +626,7 @@ class Runner(object):
         
             diff = now_datetime - d
             if diff.days >= limit:
-                Runner.c_log.info("Remove %s day information from the group database as now sending have been done for the last %s days."%(key,limit))
+                self._log.info("Remove %s day information from the group database as now sending have been done for the last %s days."%(key,limit))
                 del a_db_dict[key]
             
     def _get_id_database(self,a_dir,a_id):
@@ -735,14 +669,14 @@ class Runner(object):
              
         except Exception, e: #IGNORE:W0703,W0702
             # hide error in logs because it is a minor error
-            Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(a_origin_dir,e))
+            self._log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(a_origin_dir,e))
         finally:
             try:
                 # try to delete a_origin_dir even if there was an error
                 ctbto.common.utils.delete_all_under(a_origin_dir)
             except Exception, e: #IGNORE:W0703,W0702
                 # hide error in logs because it is a minor error
-                Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
+                self._log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(a_origin_dir,e))
            
     def _move_sent_tarfile_to_files_db(self,a_tarfile,a_destination_dir,dir_to_delete):
         """
@@ -753,7 +687,7 @@ class Runner(object):
                 shutil.move(a_tarfile,a_destination_dir)
         except Exception, e: #IGNORE:W0703,W0702
             # hide error in logs because it is a minor error
-            Runner.c_log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(dir_to_delete,a_destination_dir,e))
+            self._log.debug("Error when trying to move retrieved files from %s into %s.Raised Exception %s"%(dir_to_delete,a_destination_dir,e))
         finally:
             # clean the dirs
             try:
@@ -761,13 +695,13 @@ class Runner(object):
                 ctbto.common.utils.delete_all_under(dir_to_delete,delete_top_dir=True)
             except Exception, e: #IGNORE:W0703,W0702
                 # hide error in logs because it is a minor error
-                Runner.c_log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(dir_to_delete,e))
+                self._log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(dir_to_delete,e))
             
 
     def _clean_group_db(self,a_dir,a_id):
         """ clean group db """
         
-        Runner.c_log.info("Clean file %s"%("%s/%s.emaildb"%(a_dir,a_id)))
+        self._log.info("Clean file %s"%("%s/%s.emaildb"%(a_dir,a_id)))
         
         path = "%s/%s.emaildb"%(a_dir,a_id)
         
@@ -781,29 +715,29 @@ class Runner(object):
         
         arch_name = None
         
-        Runner.c_log.info("*************************************************************")
+        self._log.info("*************************************************************")
         
         if arch_type == 'zip':
-            Runner.c_log.info("Create a zip archive file")       
+            self._log.info("Create a zip archive file")       
             arch_name = "%s.zip"%(a_archive_filename)
             z = zipfile.ZipFile(arch_name,"w",zipfile.ZIP_DEFLATED)
             for f_name in ctbto.common.utils.dirwalk(a_dir_data):
                 z.write(f_name, arcname=os.path.basename(f_name))
             z.close()
         elif arch_type == 'tar' or arch_type == 'tar.gz':
-            Runner.c_log.info("Create a tar.gz archive file")
+            self._log.info("Create a tar.gz archive file")
             arch_name = "%s.tar.gz"%(a_archive_filename)
             t = tarfile.open(name = arch_name, mode = 'w:gz')
             t.add(a_dir_data,arcname=os.path.basename(a_dir_data))
             t.close()
         else:
-            Runner.c_log.info("Unknown archive type %s. Create a tar.gz archive file."%(arch_type))
+            self._log.info("Unknown archive type %s. Create a tar.gz archive file."%(arch_type))
             arch_name = "%s.tar.gz"%(a_archive_filename)
             t = tarfile.open(name = arch_name, mode = 'w:gz')
             t.add(a_dir_data,arcname=os.path.basename(a_dir_data))
             t.close()
             
-        Runner.c_log.info("*************************************************************\n")
+        self._log.info("*************************************************************\n")
             
         return arch_name
         
@@ -814,9 +748,9 @@ class Runner(object):
         # keep only the date part
         printable_day = day.split('T')[0]
         
-        Runner.c_log.info("*************************************************************\n")
+        self._log.info("*************************************************************\n")
         
-        Runner.c_log.info("[%s] Get following new samples: %s."%(printable_day,list_to_fetch))
+        self._log.info("[%s] Get following new samples: %s."%(printable_day,list_to_fetch))
         
         # Call the data fetcher with the right arguments
         args = {}                      
@@ -829,9 +763,9 @@ class Runner(object):
         args['clean_local_spectra']     = False
         args['sids']                    = list_to_fetch
             
-        Runner.c_log.info("*************************************************************")
-        Runner.c_log.info("Call product generator")
-        Runner.c_log.info("*************************************************************")
+        self._log.info("*************************************************************")
+        self._log.info("Call product generator")
+        self._log.info("*************************************************************")
         
         arr_generator.run_with_args(args)
         
@@ -863,9 +797,9 @@ class Runner(object):
             if emails is None:
                 raise Exception('group %s is None in [AutomaticEmailingGroups]'%(group))
                 
-            Runner.c_log.info("*************************************************************")
-            Runner.c_log.info("Send Email to users %s in group %s"%(emails,group))
-            Runner.c_log.info("*************************************************************")
+            self._log.info("*************************************************************")
+            self._log.info("Send Email to users %s in group %s"%(emails,group))
+            self._log.info("*************************************************************")
                 
             emailer.send_email_attached_files(sender,emails,[archfile_name], '[%s:%s]. %d samples retrieved for %s'%(group,timestamp_id,len(list_to_fetch),printable_day),text_message)
         
@@ -891,15 +825,13 @@ class Runner(object):
         if a_args == None or a_args == {}:
             raise Exception('No commands passed. See usage message.')
         
-        Runner.c_log.info("*************************************************************")
-        Runner.c_log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
+        self._log.info("*************************************************************")
+        self._log.info("Configuration infos read from %s"%(self._conf.get_conf_file_path()))
         
-        Runner.c_log.info("For more information check the detailed logs under %s"%(self._log_path))
-        
-        Runner.c_log.info("*************************************************************\n")
+        self._log.info("*************************************************************\n")
         
         # check if we have some sids or we get it from some dates
-        Runner.c_log.info("*************************************************************")
+        self._log.info("*************************************************************")
         
         if not 'id' in a_args:
             # no actions performed error
@@ -915,7 +847,7 @@ class Runner(object):
             # check if we can write in case the dir already exists    
             dir           = a_args['dir']
             # kind of historic of what has been sent
-            dir_files_db  = "%s/data"%(dir)
+            dir_files_db  = "%s/data" % (dir)
         
             # the dir for the group db. If there is no dir defined in config then take dir as the root dir
             dir_group_db  = "%s/db"%(self._conf.get("AutomaticEmailingInformation","groupDBPath",dir))
@@ -956,7 +888,7 @@ class Runner(object):
                 self._save_in_id_database(id,dir_group_db,db_dict,list_to_fetch[key],key,sending_timestamp)
                      
         else:
-            Runner.c_log.info("No new products to send for group %s"%(id))
+            self._log.info("No new products to send for group %s"%(id))
 
 def run():
     parsed_args = {}
@@ -984,9 +916,9 @@ def run():
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            Runner.c_log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
             if parsed_args.get('verbose',1) == 3:
-                a_logger = Runner.c_log.error
+                a_logger = LoggerFactory.get_logger("Runner")
             else:
                 a_logger = Runner.log_in_file
            

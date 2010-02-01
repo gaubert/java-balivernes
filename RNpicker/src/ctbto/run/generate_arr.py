@@ -11,8 +11,6 @@
 import getopt, sys
 import datetime
 import os
-import logging.handlers
-import logging.config
 import StringIO
 import traceback
 
@@ -416,36 +414,17 @@ class Runner(object):
             raise ConfAccessError('The conf dir needs to be set from the command line or using the env variable RNPICKER_CONF_DIR')
         
         if os.path.isdir(dir):
-            os.environ[Conf.ENVNAME] = '%s/%s'%(dir,'rnpicker.config')
+            os.environ[Conf.ENVNAME] = '%s/%s' % (dir, 'rnpicker.config')
             
             return Conf.get_instance()
         else:
             raise ConfAccessError('The conf dir %s set with the env variable RNPICKER_CONF_DIR is not a dir'%(dir))
     
-    def _set_logging_configuration(self):
-        """
-            setup the logging info.
-            Set the root logger and the handlers. 
-            Read the information from the configuration file.
-            Two handlers are created: one logging in a file file_handler. This one logs everything by default
-            and another one logging a minimal set of info in the console. 
-        
-            Args:
-               None 
-               
-            Returns:
-               return a conf object
-        
-            Raises:
-               exception
-        """
-    
     @classmethod
-    def log_in_file(self, aMessage):
+    def log_in_file(self,aMessage):
         """ to log in the file as the ROOT logger """
         
-        log = logging.getLogger("ROOT")
-        log.setLevel(logging.INFO)
+        log = LoggerFactory.get_logger("ROOT")
         log.info(aMessage)
         
     def _get_list_of_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):

@@ -2,7 +2,6 @@ r""" Return object for access the Radionuclide data locally or remotely
 
 """
 
-import logging
 import os
 import pwd
 import subprocess
@@ -262,19 +261,24 @@ class RemoteFSDataSource(BaseRemoteDataSource):
         
             while tries < 4:
        
-                #print("Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
-       
                 func = subprocess.call
             
-                self._log.info("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\""%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser))
+                self._log.info("Trying to fetch remote file (using scp) %s on host %s" % (self._remotePath, self._remoteHostname) )
             
-                t = ftimer(func,[[self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser]],{},res,number=1)
+                self._log.debug("Trying to fetch remote file (using ssh) with\"%s %s %s %s %s %s %s\"" \
+                                % (self._remoteScript, self._remoteHostname, self._remotePath,\
+                                    str(self._remoteOffset), str(self._remoteSize), destinationPath, self._remoteUser) )
+            
+                the_timer = ftimer(func, [[self._remoteScript, self._remoteHostname, self._remotePath, \
+                                  str(self._remoteOffset), str(self._remoteSize), destinationPath, self._remoteUser]], {}, res, number=1)
        
-                self._log.debug("\nTime: %s secs \n Fetch file: %s on host: %s\n"%(t,self._remotePath,self._remoteHostname))
+                self._log.debug("\nTime: %s secs \n Fetch file: %s on host: %s" % (the_timer, self._remotePath, self._remoteHostname))
        
                 if res[0] != 0:
                     if tries >= 3:
-                        raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n"%(self._remoteScript,self._remoteHostname,self._remotePath,str(self._remoteOffset),str(self._remoteSize),destinationPath,self._remoteUser,res[0]))
+                        raise CTBTOError(-1,"Error when executing remotely script :\"%s %s %s %s %s %s %s\". First Error code = %d\n" % \
+                                         (self._remoteScript, self._remoteHostname, self._remotePath,\
+                                           str(self._remoteOffset), str(self._remoteSize), destinationPath, self._remoteUser, res[0]))
                     else:
                         tries += 1
                 else:

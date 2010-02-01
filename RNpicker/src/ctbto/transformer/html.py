@@ -5,10 +5,9 @@ from lxml     import etree
 from datetime import datetime
 import cStringIO
 
-import logging
-
 import ctbto.common.utils as utils
 import ctbto.common.time_utils as time_utils
+from ctbto.common.logging_utils import LoggerFactory
 
 UNDEFINED = "N/A"
 RDIGITS   = 5 
@@ -17,9 +16,6 @@ HDIGITS   = 2
 
 class XML2HTMLRenderer(object):
     """ Base Class used to transform XML in HTML """
-    
-    # Class members
-    c_log = logging.getLogger("html.XML2HTMLRenderer")
     
     c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.7'}
 
@@ -35,12 +31,15 @@ class SAUNAXML2HTMLRenderer(object):
         
         self._context     = {}
         
+        self._log         = LoggerFactory.get_logger(self)
+        
     def render(self, a_xml_path):
         """ render the file using a template engine """  
+        
+        self._log.info( "Create html ARR from %s" % (a_xml_path) )
+        
         self._fill_values(a_xml_path)
-       
-        XML2HTMLRenderer.c_log.debug("context = %s\n" % (self._context))
-         
+                
         return self._template.render(self._context)    
       
     def _fill_values(self, a_xml_path):
@@ -337,7 +336,7 @@ class SAUNAXML2HTMLRenderer(object):
                    
                     roi_boundaries.append(one_dict)
                 else:
-                    XML2HTMLRenderer.c_log.error("No ROI info for %s" % (self._context['sample_id'])) 
+                    self._log.error("No ROI info for %s" % (self._context['sample_id'])) 
                   
             self._context['roi_results']    = roi_results
             self._context['roi_boundaries'] = roi_boundaries
@@ -371,7 +370,7 @@ class SAUNAXML2HTMLRenderer(object):
                
                     one_dict['name']  = 'Response Time'
                 else:
-                    XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
+                    self._log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
                     one_dict['name']  = timeflag.tag
                
                 one_dict['result'] = timeflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -398,7 +397,7 @@ class SAUNAXML2HTMLRenderer(object):
                 if dqflag.tag.find('XeVolume') != -1:
                     one_dict['name']  = 'Stable Xenon Volume'
                 else:
-                    XML2HTMLRenderer.c_log.error("Unknown DataQuality Flag: %s"%(dqflag.tag))   
+                    self._log.error("Unknown DataQuality Flag: %s"%(dqflag.tag))   
                     one_dict['name']  = dqflag.tag
                
                 one_dict['result'] = dqflag.find('{%s}Pass' % (XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -465,12 +464,14 @@ class SPALAXXML2HTMLRenderer(object):
         self._template    = self._env.get_template(a_template_name)
         
         self._context     = {}
+        
+        self._log         = LoggerFactory.get_logger(self)
     
     def render(self, a_xml_path):
         """ render """  
         self._fill_values(a_xml_path)
        
-        XML2HTMLRenderer.c_log.debug("context = %s\n"%(self._context))
+        self._log.debug("context = %s\n"%(self._context))
          
         return self._template.render(self._context)    
       
@@ -714,9 +715,9 @@ class SPALAXXML2HTMLRenderer(object):
                 temp_val                      = nuclide.find('{%s}RelativeActivityError'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 one_dict['activity_rel_err']  = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 temp_val                      = nuclide.find('{%s}LCActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                one_dict['lc']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                one_dict['lc']                = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 temp_val                      = nuclide.find('{%s}LDActivity'%(XML2HTMLRenderer.c_namespaces['sml'])).text
-                one_dict['ld']                = utils.round_as_string(temp_val,RDIGITS) if temp_val != UNDEFINED else UNDEFINED
+                one_dict['ld']                = utils.round_as_string(temp_val, RDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 
                 a_nuclides[method][one_dict['name']] = one_dict
            
@@ -732,7 +733,11 @@ class SPALAXXML2HTMLRenderer(object):
             cov_matrix = "//*[local-name() = 'XeCovarianceMatrixes']/*[local-name() = 'XeCovarianceMatrix' and contains(@method,$method)]"
             res = root.xpath(cov_matrix, method = "Peak Fit Method")
             
-            matrix_result = {'XE-133M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-131M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-135': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-133': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}}
+            matrix_result = {'XE-133M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, \
+                             'XE-131M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, \
+                             'XE-135': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, \
+                             'XE-133': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}\
+                            }
             
             matrix_col = {'XE-131M':0, 'XE-133M':1, 'XE-133':2, 'XE-135':3}
             if len(res) > 0:
@@ -753,8 +758,9 @@ class SPALAXXML2HTMLRenderer(object):
    
             #second Decay Analysis Method
             cov_matrix = "//*[local-name() = 'XeCovarianceMatrixes']/*[local-name() = 'XeCovarianceMatrix' and contains(@method,$method)]"
+            
             res = root.xpath(cov_matrix, method = "Decay Analysis Method")
-            {'XE-133M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-131M': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-135': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}, 'XE-133': {0: UNDEFINED, 1: UNDEFINED, 2: UNDEFINED, 3: UNDEFINED}}
+            
             matrix_col = {'XE-131M':0, 'XE-133M':1, 'XE-133':2, 'XE-135':3}
             if len(res) > 0:
                 matrix_elem = res[0]
@@ -804,7 +810,7 @@ class SPALAXXML2HTMLRenderer(object):
                
                     one_dict['name']  = 'Response Time'
                 else:
-                    XML2HTMLRenderer.c_log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
+                    self._log.error("Unknown Timeliness Flag: %s"%(timeflag.tag))   
                     one_dict['name']  = timeflag.tag
                
                 one_dict['result'] = timeflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -831,7 +837,7 @@ class SPALAXXML2HTMLRenderer(object):
                 if dqflag.tag.find('XeVolume') != -1:
                     one_dict['name']  = 'Stable Xenon Volume'
                 else:
-                    XML2HTMLRenderer.c_log.error("Unknown DataQuality Flag: %s"%(dqflag.tag))   
+                    self._log.error("Unknown DataQuality Flag: %s"%(dqflag.tag))   
                     one_dict['name']  = dqflag.tag
                
                 one_dict['result'] = dqflag.find('{%s}Pass' % (XML2HTMLRenderer.c_namespaces['sml'])).text
