@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import pickle
@@ -1168,7 +1167,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         # should have 4 files
         if nbResults != 4:
-            self._log.warning("WARNING: found %d data file for %s when exactly 3 should be found\n"%(nbResults,aSampleID))
+            self._log.warning("WARNING: found %d data file for %s when exactly 4 should be found\n" % (nbResults, aSampleID))
             
         data = {}
         

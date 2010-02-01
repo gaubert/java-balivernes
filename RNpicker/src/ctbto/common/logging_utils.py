@@ -17,7 +17,8 @@ class LoggerFactory:
     
     def __init__(self):
         """ default cons  """
-        pass
+        
+        self._additional_handlers = []
     
     @classmethod
     def _get_logger(cls, logger_name):
@@ -33,14 +34,8 @@ class LoggerFactory:
                     print 'debug ' + str(debug) + ',initializing logging, using ' + conf_file
                 logging.config.fileConfig(conf_file)
                 
-                #create console handler
-                console = logging.StreamHandler()
-                console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-                console_filter    = logging.Filter(Conf.get_instance().get('Logging', 'consoleFilter', 'Runner'))
-                console.setFormatter(console_formatter)
-                console.addFilter(console_filter)
-        
-                logging.root.addHandler(console)
+                #add console handler: specific for RNPicker Apps
+                cls._add_console_handler()
                 
                 
             except Exception, ex: #pylint: disable-msg=W0703
@@ -54,6 +49,19 @@ class LoggerFactory:
         return logging.getLogger(logger_name)
     
     @classmethod
+    def _add_console_handler(cls):
+        """ add the specific console handler for RNPicker programs """
+        
+        #create console handler
+        console = logging.StreamHandler()
+        console_formatter = logging.Formatter("%(levelname)s - %(message)s")
+        console_filter    = logging.Filter(Conf.get_instance().get('Logging', 'consoleFilter', 'Runner'))
+        console.setFormatter(console_formatter)
+        console.addFilter(console_filter)
+
+        logging.root.addHandler(console)
+    
+    @classmethod
     def get_logger(cls, logged_object):
         """Return a logger with a logger name based on logger_object class name"""
         if not isinstance(logged_object, str):
@@ -61,6 +69,7 @@ class LoggerFactory:
         else:
             logger_name = str(logged_object)
         return LoggerFactory._get_logger(logger_name)
+    
     
     @classmethod
     def __check_conf_file_exist__(cls, conf_file_name):

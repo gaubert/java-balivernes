@@ -1,20 +1,16 @@
-import logging
+
 import re
 
-import ctbto.common.utils
-
+import ctbto.common.time_utils
 from ctbto.common   import CTBTOError
 
 from org.ctbto.conf import Conf
 from ctbto.query    import RequestParser
 from ctbto.db       import UNDEFINED
+from ctbto.common.logging_utils import LoggerFactory
 
 class BaseRenderer(object):
     """ Base Class used to transform the fetcher content into XML """
-    
-    # Class members
-    c_log = logging.getLogger("SAMPMLrendererv1.BaseRenderer")
-    c_log.setLevel(logging.INFO)
     
     def getRenderer(cls,aDataFetcher):
         """ Factory method returning the right Renderer \
@@ -22,18 +18,18 @@ class BaseRenderer(object):
            """
        
         # check preconditions
-        if aDataFetcher is None: raise CTBTOError(-1,"passed argument aDataFetcher is null")
+        if aDataFetcher is None: raise CTBTOError(-1, "passed argument aDataFetcher is null")
        
         # use the sample type to create the right renderer for the moment
-        type = aDataFetcher.get('SAMPLE_TYPE')
+        the_type = aDataFetcher.get('SAMPLE_TYPE')
        
-        cls.c_log.debug("Type = %s"%(type))
+        LoggerFactory.get_logger('BaseRenderer').debug("Type = %s" % (the_type))
        
-        cls.c_log.debug("Klass = %s"%(RENDERER_TYPE.get(type,None)))
+        LoggerFactory.get_logger('BaseRenderer').debug("Klass = %s" % (RENDERER_TYPE.get(the_type, None)))
         
-        klass = RENDERER_TYPE.get(type,None)
+        klass = RENDERER_TYPE.get(the_type, None)
         if klass is None: 
-            raise CTBTOError(-1,"There is no renderer for the following type"%(type))
+            raise CTBTOError(-1, "There is no renderer for the following type" % (the_type))
 
         inst = klass(aDataFetcher)
     
@@ -69,6 +65,8 @@ class BaseRenderer(object):
                                  }
                                   
         self._createTemplate()
+        
+        self._log    = LoggerFactory.get_logger(self)
         
     def _createTemplate(self):
         """ Read XML template from a file and store it in a String 
@@ -155,11 +153,6 @@ class BaseRenderer(object):
         return self._populatedTemplate
         
 class SpalaxRenderer(BaseRenderer):
-    
-    # Class members
-    c_log = logging.getLogger("SAMPMLrendererv1.SpalaxRenderer")
-    c_log.setLevel(logging.INFO)
-    
       
     def __init__(self, aDataFetcher):
         
@@ -174,6 +167,8 @@ class SpalaxRenderer(BaseRenderer):
         self._substitutionDict.update(dummy_dict)
         
         self._xe_lib = set()
+        
+        self._log    = LoggerFactory.get_logger(self)
         
     def _sortSpectrumsSet(self, aSpectrums):
         
@@ -309,7 +304,7 @@ class SpalaxRenderer(BaseRenderer):
         """
         result_str = ""
         
-         # first get the template
+        # first get the template
         nuclide_template          = self._conf.get("SpalaxTemplatingSystem", "spalaxNuclideTemplate")
         
         xeresults = self._fetcher.get("%s_XE_RESULTS"%(id),None)
@@ -366,7 +361,7 @@ class SpalaxRenderer(BaseRenderer):
         
         result_str = ""
         
-         # first get the template
+        # first get the template
         cell_template          = self._conf.get("SpalaxTemplatingSystem", "spalaxCovMatrixCellTemplate")
         method_matrix_template = self._conf.get("SpalaxTemplatingSystem", "spalaxMethodMatrixTemplate")
         
@@ -472,8 +467,6 @@ class SpalaxRenderer(BaseRenderer):
         
         dataQFlags.sort()
         
-        xml = ''
-        
         # get the template for a unique flag
         one_flag = self._conf.get("SpalaxTemplatingSystem", "spalaxQCFlagTemplate")
         
@@ -564,7 +557,7 @@ class SpalaxRenderer(BaseRenderer):
                 #add Calibration references
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (sindict_id))
                 if l is None :
-                    SpalaxRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                    self._log.warning("No calibration information for sample %s" % (ty))
                     l = []
                 else:
                     # add calibration info
@@ -619,7 +612,7 @@ class SpalaxRenderer(BaseRenderer):
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
         else:
-            GenieParticulateRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
+            self._log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         template = self._conf.get("SpalaxTemplatingSystem", "spalaxResolutionCalTemplate")
         
@@ -642,7 +635,7 @@ class SpalaxRenderer(BaseRenderer):
                 # add the id in the set of existing infos
                 calibInfos.add(re_id)
         else:
-            GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
+            self._log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
         
         template = self._conf.get("SpalaxTemplatingSystem", "spalaxEfficencyCalTemplate")
         
@@ -771,7 +764,7 @@ class SpalaxRenderer(BaseRenderer):
             # add the calibration info
             l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))
             if l is None:
-                SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                self._log.warning("No calibration information for sample %s" % (ty))
                 l = []
             
             group_spec_template = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), group_spec_template) #IGNORE:W0141
@@ -814,11 +807,7 @@ class SpalaxRenderer(BaseRenderer):
       
 class SaunaRenderer(BaseRenderer):
     
-    # Class members
-    c_log = logging.getLogger("SAMPMLrendererv1.SaunaRenderer")
-    c_log.setLevel(logging.INFO)
-    
-      
+ 
     def __init__(self, aDataFetcher):
         
         super(SaunaRenderer, self).__init__(aDataFetcher)
@@ -832,6 +821,8 @@ class SaunaRenderer(BaseRenderer):
         self._substitutionDict.update(dummy_dict)
         
         self._xe_lib = set()
+        
+        self._log    = LoggerFactory.get_logger(self)
     
     def _createTemplate(self):
         """ Read the template from a file. Old method now everything is read from the conf """
@@ -918,7 +909,7 @@ class SaunaRenderer(BaseRenderer):
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
         else:
-            SaunaRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
+            self._log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         # get energy calibration 
         en_id = self._fetcher.get("%s_G_ENERGY_CAL" % (prefix), None)
@@ -941,7 +932,7 @@ class SaunaRenderer(BaseRenderer):
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
         else:
-            SaunaRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
+            self._log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         return xml
         
@@ -954,7 +945,7 @@ class SaunaRenderer(BaseRenderer):
         xml_nuclides = ""
         dummy_template = ""
         
-        SaunaRenderer.c_log.debug("id = %s\n" % ("%s_IDED_NUCLIDES" % (id)))
+        self._log.debug("id = %s\n" % ("%s_IDED_NUCLIDES" % (id)))
         
         # get categories
         ided_nuclides = self._fetcher.get("%s_IDED_NUCLIDES" % (id), [])
@@ -1220,7 +1211,7 @@ class SaunaRenderer(BaseRenderer):
                 #add Calibration references
                 l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (sindict_id))
                 if l is None :
-                    SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                    self._log.warning("No calibration information for sample %s" % (ty))
                     l = []
                 else:
                     # add calibration info
@@ -1332,7 +1323,7 @@ class SaunaRenderer(BaseRenderer):
             # add the calibration info
             l = self._fetcher.get("%s_G_DATA_ALL_CALS" % (ty))
             if l is None:
-                SaunaRenderer.c_log.warning("No calibration information for sample %s" % (ty))
+                self._log.warning("No calibration information for sample %s" % (ty))
                 l = []
             
             spectrumTemplate = re.sub("\${CAL_INFOS}", ' '.join(map(str, l)), spectrumTemplate) #IGNORE:W0141
@@ -1404,10 +1395,6 @@ class SaunaRenderer(BaseRenderer):
         
 class GenieParticulateRenderer(BaseRenderer):
     
-    # Class members
-    c_log = logging.getLogger("SAMPMLrendererv1.GenieParticulateRenderer")
-    c_log.setLevel(logging.INFO)
-    
       
     def __init__(self, aDataFetcher):
         
@@ -1420,6 +1407,8 @@ class GenieParticulateRenderer(BaseRenderer):
                       }
         # add specific particulate keys
         self._substitutionDict.update(dummy_dict)
+        
+        self._log    = LoggerFactory.get_logger(self)
     
     def _createTemplate(self):
         """ Read the template from a file. Old method now everything is read from the conf """
@@ -1579,7 +1568,7 @@ class GenieParticulateRenderer(BaseRenderer):
         xml_nuclides = ""
         dummy_template = ""
        
-        GenieParticulateRenderer.c_log.debug("id = %s\n" % ("%s_IDED_NUCLIDES" % (id)))
+        self._log.debug("id = %s\n" % ("%s_IDED_NUCLIDES" % (id)))
         
         # get categories
         ided_nuclides = self._fetcher.get("%s_IDED_NUCLIDES" % (id), [])
@@ -1630,7 +1619,7 @@ class GenieParticulateRenderer(BaseRenderer):
         
         # check if we need nuclidelines otherwise quit
         if self._conf.getboolean("Options", "addNuclideLines") is False:
-            SaunaRenderer.c_log.info("Configuration says no nuclide lines")
+            self._log.info("Configuration says no nuclide lines")
             return ""
         
         # get the global template
@@ -1723,7 +1712,7 @@ class GenieParticulateRenderer(BaseRenderer):
           None.
         """
         
-         # first add Quantified Nuclides
+        # first add Quantified Nuclides
         template = self._conf.get("ParticulateTemplatingSystem", "processingParametersTemplate")
         
         xml_parameters = ""
@@ -1952,7 +1941,7 @@ class GenieParticulateRenderer(BaseRenderer):
                 # add the id in the set of existing infos
                 calibInfos.add(en_id)
         else:
-            GenieParticulateRenderer.c_log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
+            self._log.warning("Could not find any energy calibration info for sample %s\n" % (prefix))
         
         template = self._conf.get("ParticulateTemplatingSystem", "particulateResolutionCalTemplate")
         
@@ -1974,7 +1963,7 @@ class GenieParticulateRenderer(BaseRenderer):
                 # add the id in the set of existing infos
                 calibInfos.add(re_id)
         else:
-            GenieParticulateRenderer.c_log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
+            self._log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
         
         template = self._conf.get("ParticulateTemplatingSystem", "particulateEfficencyCalTemplate")
         
@@ -2065,5 +2054,3 @@ class GenieParticulateRenderer(BaseRenderer):
        
 """ Dictionary used to map Sample type with the right renderer """ #IGNORE:W0105
 RENDERER_TYPE = {'SAUNA':SaunaRenderer, 'ARIX-4':SaunaRenderer, 'SPALAX':SpalaxRenderer, 'PARTICULATE':GenieParticulateRenderer,None:None}
-              
-       
