@@ -6,8 +6,6 @@ Created on Feb 1, 2010
 
 import re
 
-from ctbto.common.exceptions import CTBTOError
-
 class Error(Exception):
     """Base class for ConfigParser exceptions."""
 

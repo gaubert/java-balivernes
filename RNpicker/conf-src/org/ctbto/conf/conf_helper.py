@@ -510,11 +510,14 @@ class Conf(object):
         if not os.path.exists(a_path):
             raise IncludeError("the config %s file to include %s does not exits" % (a_format, a_path), a_origin)
         
-        print('group_name %s' % (a_group_name) )
-        
         mod_prefix = "org.ctbto.conf.module."
-        src_dir    = "/home/aubert/workspace/RNpicker/conf-src"
         
+        # get the module dir from the current module path
+        # then split the path from org to get only the dir where the src are defined
+        current_mod_path = os.path.dirname(__file__)
+        src_dir    = current_mod_path.split('org')[0]
+        
+        # need to get the module dir from the conf
         
         the_module = module_loader.load("%s%s_loader" %(mod_prefix,a_format), src_dir)
         
