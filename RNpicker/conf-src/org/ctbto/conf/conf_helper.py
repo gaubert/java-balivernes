@@ -28,6 +28,8 @@ import re
 import resource
 from utils.struct_parser import Compiler, CompilerError
 
+import utils.module_loader as module_loader
+
 from ctbto.common.exceptions import CTBTOError
 
 
@@ -500,7 +502,26 @@ class Conf(object):
                                               # by any # space/tab
         r'(?P<value>.*)$'                     # everything up to eol
         )
-
+    
+    def _read_with_module(self, a_group_name, a_format, a_path, a_origin):
+        """ read external include file that is defined in another format """
+        
+         # check if file exits
+        if not os.path.exists(a_path):
+            raise IncludeError("the config %s file to include %s does not exits" % (a_format, a_path), a_origin)
+        
+        print('group_name %s' % (a_group_name) )
+        
+        mod_prefix = "org.ctbto.conf.module."
+        src_dir    = "/home/aubert/workspace/RNpicker/conf-src"
+        
+        
+        the_module = module_loader.load("%s%s_loader" %(mod_prefix,a_format), src_dir)
+        
+        cursect    = the_module.read(a_path)
+        
+        self._sections[a_group_name] = cursect
+        
     def _read_include(self, lineno, line, origin, depth):
         
         # Error if depth is MAX_INCLUDE_DEPTH 
@@ -510,18 +531,46 @@ class Conf(object):
         # remove %include from the path and we should have a path
         i = line.find('%include')
         
-        path = line[i + 8:].strip() 
+        #check if there is a < for including config files from a different format
+        #position after include
+        i = i + 8
         
-        # replace variables if there are any
-        path = self._replace_vars(path, line, lineno)
-        
-        # check if file exits
-        if not os.path.exists(path):
-            raise IncludeError("the config file to include %s does not exits" % (path), origin)
+        # include file with a specific reading module
+        if line[i] == '<':
+            dummy = line[i+1:].strip()
+            f_i = dummy.find('>')
+            if f_i == -1:
+                raise IncludeError("Error. > is missing in the include line no %s: %s. It should be %include<mode:group_name> path" % (line, lineno), origin )
+            else:
+                group_name = None
+                format     = dummy[:f_i].strip()
+                
+                the_list = format.split(':')
+                if len(the_list) != 2 :
+                    raise IncludeError("Error. The mode and the group_name are not in the include line no %s: %s. It should be %include<mode:group_name> path" % (line, lineno), origin )
+                else:
+                    format, group_name = the_list
+                    
+                path = dummy[f_i+1:].strip()
+                
+                # replace variables if there are any
+                path = self._replace_vars(path, line, lineno)
+                
+                self._read_with_module(group_name, format, path, origin)
         else:
-            fp = open(path, 'r')
-            # add include file and populate the section hash
-            self._read(fp, path, depth + 1)
+            # normal include   
+            path = line[i:].strip() 
+            
+            # replace variables if there are any
+            path = self._replace_vars(path, line, lineno)
+            
+            # check if file exits
+            if not os.path.exists(path):
+                raise IncludeError("the config file to include %s does not exits" % (path), origin)
+            else:
+                fp = open(path, 'r')
+                # add include file and populate the section hash
+                self._read(fp, path, depth + 1)
 
     def _read(self, fp, fpname, depth=0):
         """Parse a sectioned setup file.

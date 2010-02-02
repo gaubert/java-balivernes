@@ -82,7 +82,7 @@ class TestConf(unittest.TestCase):
     def test_get_defaults(self):
         """testGetDefaults: test defaults values """
         
-         # get all defaults
+        # get all defaults
         astring = self.conf.get("GroupTest","astring","astring")
         
         self.assertEqual(astring,"astring")
@@ -92,7 +92,7 @@ class TestConf(unittest.TestCase):
         
         self.assertEqual(aint,2)
         
-         # get float
+        # get float
         afloat = self.conf.getfloat("GroupTest","afloat",10.541)
         
         self.assertEqual(afloat,10.541)
@@ -256,7 +256,7 @@ class TestConf(unittest.TestCase):
             the_list = self.conf.get_list('GroupTestValueStruct','list_error')
             print('the_list = %s\n' %(the_list))
         except Exception, err:
-            self.assertEquals(err.message, "Expression \"{1:2,'v b': a\" cannot be converted as a dict.")
+            self.assertEquals(err.message, 'Unsupported token (type: @, value : OP) (line=1,col=3).')
             return
          
         self.fail('Should never reach that point')
