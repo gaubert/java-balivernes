@@ -273,5 +273,21 @@ class TestConf(unittest.TestCase):
         user1 = self.conf.get('GroupPARFileTest','rnuser')
         self.assertEquals(user1,'rmsauto')
     
+    def test_includes_in_par(self):
+        """ test get values from an include in a par file """
+        
+        #get from RNPAR group
+        user = self.conf.get('RNPAR','another_user')
+        
+        self.assertEquals(user,'the_root_password')
+        
+        # test overloading
+        overloading = self.conf.get('RNPAR','overloading')
+        
+        self.assertEquals(overloading,'overloaded')
+        
+       
+        
+    
 if __name__ == '__main__':
     tests()
