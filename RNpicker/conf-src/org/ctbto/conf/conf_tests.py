@@ -260,5 +260,18 @@ class TestConf(unittest.TestCase):
             return
          
         self.fail('Should never reach that point')
+    
+    def test_read_simple_values_from_par(self):
+        """ test_read_simple_values_from_par: read simple values from a par file """
+        
+        #get from RNPAR group
+        user = self.conf.get('RNPAR','rms_user')
+        
+        self.assertEquals(user,'rmsauto')
+        
+        #get from another group that references this one
+        user1 = self.conf.get('GroupPARFileTest','rnuser')
+        self.assertEquals(user1,'rmsauto')
+    
 if __name__ == '__main__':
     tests()
