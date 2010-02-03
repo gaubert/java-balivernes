@@ -285,9 +285,18 @@ class TestConf(unittest.TestCase):
         overloading = self.conf.get('RNPAR','overloading')
         
         self.assertEquals(overloading,'overloaded')
-        
-       
-        
     
+    def test_variables_in_par(self):
+        """ test that the variables are working in a par file """
+        
+        #reference a variable from another file
+        value = self.conf.getint('RNPAR','value')
+        
+        self.assertEquals(value,42)
+        
+        val2 = self.conf.get('RNPAR','val2')
+        
+        self.assertEquals(val2,'/root/my_path/val/root1')
+        
 if __name__ == '__main__':
     tests()
