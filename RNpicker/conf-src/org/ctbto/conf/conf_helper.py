@@ -26,84 +26,15 @@ import os
 import re
 
 import resource
+from org.ctbto.conf.exceptions import Error, NoOptionError, NoSectionError, \
+                                      SubstitutionError, IncludeError, ParsingError, \
+                                      MissingSectionHeaderError
+                                      
 from utils.struct_parser import Compiler, CompilerError
 
 import utils.module_loader as module_loader
+ 
 
-from ctbto.common.exceptions import CTBTOError
-
-
-# exception classes
-class Error(Exception):
-    """Base class for ConfigParser exceptions."""
-
-    def __init__(self, msg=''):
-        self.message = msg
-        Exception.__init__(self, msg)
-
-    def __repr__(self):
-        return self.message
-
-    __str__ = __repr__
-    
-class NoOptionError(Error):
-    """A requested option was not found."""
-
-    def __init__(self, option, section):
-        Error.__init__(self, "No option %r in section: %r" % 
-                       (option, section))
-        self.option = option
-        self.section = section
-
-class NoSectionError(Error):
-    """Raised when no section matches a requested option."""
-
-    def __init__(self, section):
-        Error.__init__(self, 'No section: %r' % (section,))
-        self.section = section
-
-class SubstitutionError(Error):
-    """Base class for substitution-related exceptions."""
-
-    def __init__(self, lineno, location, msg):
-        Error.__init__(self, 'SubstitutionError on line %d: %s. %s' % (lineno, location, msg) if lineno != - 1 else 'SubstitutionError in %s. %s' % (lineno, location, msg))
-        
-class IncludeError(Error):
-    """ Raised when an include command is incorrect """
-    
-    def __init__(self, msg, origin):
-        Error.__init__(self, msg)
-        self.origin = origin
-        self.errors = []
-
-
-class ParsingError(Error):
-    """Raised when a configuration file does not follow legal syntax."""
-    def __init__(self, filename):
-        Error.__init__(self, 'File contains parsing errors: %s' % filename)
-        self.filename = filename
-        self.errors = []
-
-    def append(self, lineno, line):
-        """ add error message """
-        self.errors.append((lineno, line))
-        self.message += '\n\t[line %2d]: %s' % (lineno, line)
-        
-    def get_error(self):
-        """ return the error """
-        return self
-        
-class MissingSectionHeaderError(ParsingError):
-    """Raised when a key-value pair is found before any section header."""
-
-    def __init__(self, filename, lineno, line):
-        ParsingError.__init__(
-            self,
-            'File contains no section headers.\nfile: %s, line: %d\n%r' % 
-            (filename, lineno, line))
-        self.filename = filename
-        self.lineno = lineno
-        self.line = line
 
 class Conf(object):
     """ Configuration Object with a several features:
@@ -183,7 +114,7 @@ class Conf(object):
                 a_file = self._conf_resource.getValue() 
              
             if a_file is None:
-                raise CTBTOError("Conf. Error, need a configuration file path")
+                raise Error("Conf. Error, need a configuration file path")
             
             f_desc = open(a_file, 'r') 
                 
@@ -218,7 +149,7 @@ class Conf(object):
                exception NoOptionError if fail_if_missing is True
         """
         if fail_if_missing:
-            raise CTBTOError(2, "No option %s in section %s" %(option, section))
+            raise Error(2, "No option %s in section %s" %(option, section))
         else:
             if default is not None:
                 return str(default)
@@ -555,6 +486,8 @@ class Conf(object):
                     raise IncludeError("Error. The mode and the group_name are not in the include line no %s: %s. It should be %include<mode:group_name> path" % (line, lineno), origin )
                 else:
                     format, group_name = the_list
+                    #strip the group name
+                    group_name = group_name.strip()
                     
                 path = dummy[f_i+1:].strip()
                 
