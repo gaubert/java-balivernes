@@ -6,6 +6,7 @@ Created on Feb 1, 2010
 
 import re
 import os
+import org.ctbto.conf.resource as resource
 
 class Error(Exception):
     """Base class for ConfigParser exceptions."""
@@ -18,6 +19,13 @@ class Error(Exception):
         return self.message
 
     __str__ = __repr__
+    
+class SubstitutionError(Error):
+    """Base class for substitution-related exceptions."""
+
+    def __init__(self, lineno, location, msg):
+        Error.__init__(self, 'SubstitutionError on line %d: %s. %s' % (lineno, location, msg) if lineno != - 1 else 'SubstitutionError in %s. %s' % (lineno, location))
+        
 
 class ParsingError(Error):
     """Raised when a configuration file does not follow legal syntax."""
@@ -35,7 +43,16 @@ class ParsingError(Error):
         """ return the error """
         return self
     
-OPTCRE = re.compile(
+class ParReader(object):
+    """ 
+    
+        Object reading a par file 
+        
+    
+    
+    """
+    
+    _OPTCRE = re.compile(
         r'(?P<option>[^:=\s][^:=]*)'          # very permissive!
         r'\s*(?P<vi>[:=])\s*'                 # any number of space/tab,
                                               # followed by separator
@@ -43,23 +60,90 @@ OPTCRE = re.compile(
                                               # by any # space/tab
         r'(?P<value>.*)$'                     # everything up to eol
         )
-
-#higher than in a normal conf system because par is messy
-MAX_INCLUDE_DEPTH = 20
-
-def _read_include(a_original_file, lineno, include_file, depth):
-    """ read an included par file """
-    # Error if depth is MAX_INCLUDE_DEPTH 
-    if depth >= MAX_INCLUDE_DEPTH:
-        raise ParsingError("Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes." % (MAX_INCLUDE_DEPTH))
     
-    if not os.path.exists(include_file):
-        raise ParsingError("Include PAR file %s declared lineno %d of %s doesn't exist." % (include_file, lineno, a_original_file))
+    #higher than in a normal conf system because par is messy
+    MAX_INCLUDE_DEPTH = 20
+    
+    # very permissive regex
+    _VARIABLERE = re.compile(r"\$\((?P<envvar>\w*)\)")
+    
+    def __init__(self):
+        """ constructor """
+        
+        # list of sections
+        self._section = {}
+        
+        self._file_path = None
+    
+    def _read_include(self, a_original_file, lineno, include_file, depth):
+        """ read an included par file """
+        # Error if depth is MAX_INCLUDE_DEPTH 
+        if depth >= ParReader.MAX_INCLUDE_DEPTH:
+            raise ParsingError("Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes." % (MAX_INCLUDE_DEPTH))
+        
+        if not os.path.exists(include_file):
+            raise ParsingError("Include PAR file %s declared lineno %d of %s doesn't exist." % (include_file, lineno, a_original_file))
+    
+        # add include file and populate the section hash
+        return self.read(include_file, depth + 1)
 
-    # add include file and populate the section hash
-    return read(include_file, depth + 1)
+    def _replace_vars(self, a_str, location, lineno= - 1):
+        """ replace variables """
+    
+        toparse = a_str
+    
+        index = toparse.find("$(")
+    
+        # if found opening %( look for end bracket)
+        if index >= 0:
+            # look for closing brackets while counting openings one
+            closing_brack_index = self._get_closing_bracket_index(index, a_str, location, lineno)
+        
+            #print "closing bracket %d"%(closing_brack_index)
+            var = toparse[index:closing_brack_index + 1]
+            
+            #result of the lookup below
+            lookup_result = None
+            
+            m = ParReader._VARIABLERE.match(var)
+        
+            if m == None:
+                raise SubstitutionError(lineno, location, "Cannot find the proper syntax structure for a variable ( $(VAR) ) but found an opening bracket (. Malformated expression %s" % (var))
+            else:
+            
+                # recursive calls
+                #var = _replace_vars(m.group('envvar'), location, - 1)
+                var = m.group('envvar')
+                    
+                #lookup process
+                
+                #first look in command line
+                r = resource.Resource(CliArgument=var, EnvVariable=None)
+                
+                lookup_result = r.getValue(False)
+                
+                # second, look in Shell ENV
+                r = resource.Resource(CliArgument=None, EnvVariable=var)
+                
+                dummy = r.getValue()
+                if dummy:
+                    lookup_result = dummy
+            
+                # third look in conf file
+                dummy = self._section.get(var.lower(), None)
+                if dummy:
+                    lookup_result = dummy
+                
+            #replace the found var with the substitution
+            toparse = toparse.replace('$(%s)' % (var), lookup_result)
+            
+            #replace the 
+            return self._replace_vars(toparse, location, - 1)    
+        else:   
+            return toparse 
 
-def _get_closing_bracket_index(self, index, s, location, lineno):
+
+    def _get_closing_bracket_index(self, index, s, location, lineno):
         """ private method used by _replace_vars to count the closing brackets.
             
             Args:
@@ -88,7 +172,7 @@ def _get_closing_bracket_index(self, index, s, location, lineno):
                     opening_brack -= 1
      
             elif _ch == '(':
-                if tolook[i - 1] == '%':
+                if tolook[i - 1] == '$':
                     opening_brack += 1
         
             # inc index
@@ -96,126 +180,73 @@ def _get_closing_bracket_index(self, index, s, location, lineno):
             i += 1
     
         raise SubstitutionError(lineno, location, "Missing a closing bracket in %s" % (tolook))
-
-# very permissive regex
-_SUBSGROUPRE = re.compile(r"%\((?P<group>\w*)\[(?P<option>(.*))\]\)")
     
-def _replace_vars(self, a_str, location, lineno= - 1):
-    """ private replacing all variables. A variable will be in the from of %(group[option]).
-        Multiple variables are supported, ex /foo/%(group1[opt1])/%(group2[opt2])/bar
-        Nested variables are also supported, ex /foo/%(group[%(group1[opt1]].
-        Note that the group part cannot be substituted, only the option can. This is because of the Regular Expression _SUBSGROUPRE that accepts only words as values.
+    def read(self, a_path, a_depth = 0):
+        ''' read a par file '''
         
-        Args:
-           index. The index from where to look for a closing bracket
-           s. The string to parse
-           
-        Returns: the final string with the replacements
-    
-        Raises:
-           exception NoSectionError if the section cannot be found
-    """
-
-    toparse = a_str
-
-    index = toparse.find("%(")
-
-    # if found opening %( look for end bracket)
-    if index >= 0:
-        # look for closing brackets while counting openings one
-        closing_brack_index = self._get_closing_bracket_index(index, a_str, location, lineno)
-    
-        #print "closing bracket %d"%(closing_brack_index)
-        var = toparse[index:closing_brack_index + 1]
+        lineno = 0
+        err    = None
+       
+        the_fp = open(a_path) 
         
-        m = self._SUBSGROUPRE.match(var)
-    
-        if m == None:
-            raise SubstitutionError(lineno, location, "Cannot match a group[option] in %s but found an opening bracket (. Malformated expression " % (var))
-        else:
+        self._file_path = a_path
         
-            # recursive calls
-            g = self._replace_vars(m.group('group'), location, - 1)
-            o = self._replace_vars(m.group('option'), location, - 1)
-        
-            try:
-                # if it is in ENVGROUP then check ENV variables with a Resource object
-                # if it is in CLIGROUP then check CLI argument with a Resource object
-                # otherwise check in standard groups
-                if g == Conf._ENVGROUP:
-                    r = resource.Resource(CliArgument=None, EnvVariable=o)
-                    dummy = r.getValue()
-                elif g == Conf._CLIGROUP:
-                    r = resource.Resource(CliArgument=o, EnvVariable=None)
-                    dummy = r.getValue()
-                else:
-                    dummy = self._sections[g][self.optionxform(o)]
-            except KeyError, _: #IGNORE:W0612
-                raise SubstitutionError(lineno, location, "Property %s[%s] doesn't exist in this configuration file \n" % (g, o))
-        
-        toparse = toparse.replace(var, dummy)
-        
-        return self._replace_vars(toparse, location, - 1)    
-    else:   
-        return toparse 
-
-
-
-def read(a_path, a_depth = 0):
-    ''' read a par file '''
-    
-    lineno = 0
-    err    = None
-    the_section = {} 
-    
-    the_fp = open(a_path) 
-    
-    while True:
-        line = the_fp.readline()
-        if not line:
-            break
-        lineno = lineno + 1
-        
-        # to be changed include in this form %include
-        if line.startswith('%include'):
-            #self._read_include(lineno, line, fpname, depth)
-            continue
-        # comment or blank line?
-        if line.strip() == '' or line[0] in '#;':
-            continue
-        else:
-            the_match = OPTCRE.match(line)
-            if the_match:
-                optname, vi, optval = the_match.group('option', 'vi', 'value')
-                if vi in ('=', ':') and ';' in optval:
-                    # ';' is a comment delimiter only if it follows
-                    # a spacing character
-                    pos = optval.find(';')
-                    if pos != - 1 and optval[pos - 1].isspace():
-                        optval = optval[:pos]
-                optval = optval.strip()
-                # allow empty values
-                if optval == '""':
-                    optval = ''
-                
-                optname = optname.rstrip().lower()
-                
-                # if optname = par then it is an include
-                if optname == 'par':
-                    to_merge_dict = _read_include(a_path, lineno, optval, a_depth)
-                    the_section.update(to_merge_dict)
-                    
-                the_section[optname] = optval
+        while True:
+            line = the_fp.readline()
+            if not line:
+                break
+            lineno = lineno + 1
+            
+            # to be changed include in this form %include
+            if line.startswith('%include'):
+                #self._read_include(lineno, line, fpname, depth)
+                continue
+            # comment or blank line?
+            if line.strip() == '' or line[0] in '#;':
+                continue
             else:
-                # a non-fatal parsing error occurred.  set up the
-                # exception but keep going. the exception will be
-                # raised at the end of the file and will contain a
-                # list of all bogus lines
-                if not err:
-                    err = ParsingError(a_path)
-                err.append(lineno, repr(line))
+                the_match = ParReader._OPTCRE.match(line)
+                if the_match:
+                    optname, vi, optval = the_match.group('option', 'vi', 'value')
+                    if vi in ('=', ':') and ';' in optval:
+                        # ';' is a comment delimiter only if it follows
+                        # a spacing character
+                        pos = optval.find(';')
+                        if pos != - 1 and optval[pos - 1].isspace():
+                            optval = optval[:pos]
+                    optval = optval.strip()
+                    # allow empty values
+                    if optval == '""':
+                        optval = ''
+                    
+                    optname = optname.rstrip().lower()
+                    
+                    # replace variables if necessary
+                    optval = self._replace_vars(optval, line, lineno)
+                    
+                    # if optname = par then it is an include
+                    if optname == 'par':
+                        self._read_include(a_path, lineno, optval, a_depth)
+                        
+                    self._section[optname] = optval
+                else:
+                    # a non-fatal parsing error occurred.  set up the
+                    # exception but keep going. the exception will be
+                    # raised at the end of the file and will contain a
+                    # list of all bogus lines
+                    if not err:
+                        err = ParsingError(a_path)
+                    err.append(lineno, repr(line))
+        
+        the_fp.close()   
+                         
+        return self._section
+        
+
+def read(a_path):
+    """ generic function that each conf module needs to have """
     
-    the_fp.close()   
-                     
-    return the_section
+    par_reader = ParReader()
+    
+    return par_reader.read(a_path)
     

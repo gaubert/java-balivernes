@@ -391,9 +391,11 @@ class Conf(object):
             closing_brack_index = self._get_closing_bracket_index(index, a_str, location, lineno)
         
             #print "closing bracket %d"%(closing_brack_index)
-            var = toparse[index:closing_brack_index + 1]
+            var   = toparse[index:closing_brack_index + 1]
             
-            m = self._SUBSGROUPRE.match(var)
+            dummy = None
+            
+            m     = self._SUBSGROUPRE.match(var)
         
             if m == None:
                 raise SubstitutionError(lineno, location, "Cannot match a group[option] in %s but found an opening bracket (. Malformated expression " % (var))
