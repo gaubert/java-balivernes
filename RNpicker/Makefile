@@ -29,7 +29,7 @@ CONFVERSION=0.8
 CONFDISTNAME=conf-$(CONFVERSION)
 
 
-all: rn-src-dist
+all: rn-src-dist conf-src-dist
 
 init:
 	mkdir -p $(RNDIST)

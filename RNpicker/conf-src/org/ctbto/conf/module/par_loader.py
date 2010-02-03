@@ -8,7 +8,7 @@ import re
 import os
 import org.ctbto.conf.resource as resource
 
-class Error(Exception):
+class ParError(Exception):
     """Base class for ConfigParser exceptions."""
 
     def __init__(self, msg=''):
@@ -20,14 +20,14 @@ class Error(Exception):
 
     __str__ = __repr__
     
-class SubstitutionError(Error):
+class SubstitutionError(ParError):
     """Base class for substitution-related exceptions."""
 
     def __init__(self, lineno, location, msg):
         Error.__init__(self, 'SubstitutionError on line %d: %s. %s' % (lineno, location, msg) if lineno != - 1 else 'SubstitutionError in %s. %s' % (lineno, location))
         
 
-class ParsingError(Error):
+class ParsingError(ParError):
     """Raised when a configuration file does not follow legal syntax."""
     def __init__(self, filename):
         Error.__init__(self, 'File contains parsing errors: %s' % filename)

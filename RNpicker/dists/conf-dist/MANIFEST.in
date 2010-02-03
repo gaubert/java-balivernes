@@ -3,3 +3,4 @@ include README.txt
 include LICENSE
 include org/ctbto/conf/tests/test.config
 recursive-include org/ctbto/conf/tests *.config
+recursive-include org/ctbto/conf/tests *.par

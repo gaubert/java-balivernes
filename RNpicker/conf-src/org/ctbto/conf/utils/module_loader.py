@@ -12,8 +12,7 @@ import imp
 
 #import traceback
 import sys
-
-from ctbto.common.exceptions import CTBTOError
+from org.ctbto.conf.exceptions import Error
 
 def load(a_module_name, a_src_dir):
     ''' load a module 
@@ -34,7 +33,7 @@ def load(a_module_name, a_src_dir):
             except: pass
     except Exception, x:
         #traceback.print_exc(file = sys.stderr)
-        raise CTBTOError(2,"Problem to load module %s. Error: %s" % (a_module_name, x) )
+        raise Error("Problem to load module %s. Error: %s" % (a_module_name, x) )
 
 def _find_module(a_name_list, a_current_module=None):
     ''' Recursive find module func as it isn't done by the module imp '''
