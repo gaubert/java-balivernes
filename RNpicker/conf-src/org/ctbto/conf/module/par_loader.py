@@ -45,11 +45,12 @@ class ParsingError(Error):
     
 class ParReader(object):
     """ 
-    
-        Object reading a par file 
-        
-    
-    
+        Class reading a par file (ctbto conf files).
+        Not all functionalities of the par files are supported.
+        Supported functionalities
+        - param = values
+        - includes: par=/tmp/t.par
+        - variables: t=$(var)/rest
     """
     
     _OPTCRE = re.compile(
@@ -125,7 +126,7 @@ class ParReader(object):
                 # second, look in Shell ENV
                 r = resource.Resource(CliArgument=None, EnvVariable=var)
                 
-                dummy = r.getValue()
+                dummy = r.getValue(False)
                 if dummy:
                     lookup_result = dummy
             
