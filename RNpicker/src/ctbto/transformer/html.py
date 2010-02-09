@@ -562,7 +562,7 @@ class SPALAXXML2HTMLRenderer(object):
            
             # get geometry
             res = elem.xpath(expr, name = "Geometry")
-            if len(res) == 0:
+            if len(res) == 0 or res[0].text == UNDEFINED:
                 self._context['sample_geometry'] = UNDEFINED
             else:
                 self._context['sample_geometry'] = res[0].text
@@ -574,15 +574,15 @@ class SPALAXXML2HTMLRenderer(object):
                 self._context['processed_air_volume_unit'] = "" 
             else:
                 self._context['processed_air_volume']      = utils.round_as_string(res[0].text, 3)
-                self._context['processed_air_volume_unit'] = res[0].get('unit') 
+                self._context['processed_air_volume_unit'] = res[0].get('unit') if res[0].get('unit') != UNDEFINED else UNDEFINED
                 
             # get Xe volume
             res = elem.xpath(expr, name = "XeVolume")
-            if len(res) == 0:
+            if len(res) == 0 or res[0].text == UNDEFINED:
                 self._context['xe_vol']      = UNDEFINED
                 self._context['xe_vol_unit'] = "" 
             else:
-                self._context['xe_vol']      = utils.round_as_string(res[0].text, 3) if res[0].text != UNDEFINED else UNDEFINED
+                self._context['xe_vol']      = utils.round_as_string(res[0].text, 3)
                 if res[0].text != UNDEFINED:
                     self._context['xe_vol_unit'] = res[0].get('unit') 
             
