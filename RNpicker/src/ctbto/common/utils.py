@@ -2,6 +2,7 @@ import os
 import time
 import itertools
 import gc
+import base64
 
 class curry:
     """ Class used to implement the currification (functional programming technic) :
@@ -57,7 +58,6 @@ def round_as_string(aFloat,aNbDigits):
     assert aNbDigits > 0
     
     # create string in two steps. There is surely a better way to do it in one step
-    formatting_str = '%sf' % (aNbDigits)
     formatting_str = '%.' + '%sf'%(aNbDigits)
     
     return formatting_str%(float(aFloat))
@@ -196,7 +196,16 @@ def dirwalk(dir):
                 yield x
         else:
             yield fullpath
-      
+
+
+def obfuscate_string(a_str):
+    """ use base64 to obfuscate a string """
+    return base64.b64encode(a_str)
+
+def deobfuscate_string(a_str):
+    """ deobfuscate a string """
+    return base64.b64decode(a_str)
+ 
 
 
 #####################################
