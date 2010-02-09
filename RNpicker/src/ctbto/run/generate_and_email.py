@@ -374,7 +374,7 @@ class Runner(object):
         # try to make the dir if necessary
         ctbto.common.utils.makedirs('%s'%(dir))   
     
-    def _get_list_of_sampleIDs(self,stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
+    def _get_list_of_sampleIDs(self, last_time_sent, stations='',beginDate='2008-07-01',endDate='2008-07-31',spectralQualif='FULL',nbOfElem='10000000'):
         
         l = ','.join(map(str,stations)) #IGNORE:W0141
         
@@ -387,7 +387,7 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        self._log.info("There are %d products (samples) for the %s."%(len(sampleIDs),beginDate.split(' ')[0]))
+        self._log.info("There are %d products (samples) for %s. Last time products for this day were sent : %s" % (len(sampleIDs), beginDate.split(' ')[0], last_time_sent))
         self.log_in_file("List of sampleIDs to fetch: %s"%(sampleIDs))
         
         sampleIDs.sort()
@@ -493,6 +493,11 @@ class Runner(object):
         # if yes add the new samples to the list of samples to fetch
         for day in a_list_of_days:
             
+            if day in a_db_dict:
+                last_time_sent = a_db_dict[day][LAST_TIME_SENT]
+            else:
+                last_time_sent = "never"
+            
             begin_date = ctbto.common.time_utils.getDateTimeFromISO8601(day)
             end_date   = begin_date + datetime.timedelta(days=1)
             
@@ -501,7 +506,7 @@ class Runner(object):
             d2 = ctbto.common.time_utils.getOracleDateFromDateTime(end_date)
             
             # get list of samples for the chosen day
-            l        = self._get_list_of_sampleIDs(stations,d1,d2)
+            l        = self._get_list_of_sampleIDs(last_time_sent, stations, d1, d2)
             
             if not force_resend:
                 l_set    = set(l)
@@ -628,7 +633,7 @@ class Runner(object):
         
             diff = now_datetime - d
             if diff.days >= limit:
-                self._log.info("Remove %s day information from the group database as now sending have been done for the last %s days."%(key,limit))
+                self._log.info("Remove %s day information from the group database as no sending have been done for the last %s days."%(key,limit))
                 del a_db_dict[key]
             
     def _get_id_database(self,a_dir,a_id):
