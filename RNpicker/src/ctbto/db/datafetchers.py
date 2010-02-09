@@ -1447,7 +1447,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 
         
         # calculate undecay corrected values for XE133 if relevant
-        if xe133_act and xe133_act != 0:
+        if xe133_act and xe133M_act and xe133M_act != 0:
             xe133_data[u'UNDECAYED_ACT'] = float(nbCorrector.undecay_correct(nbCorrector.XE133, xe133_act, xe133M_act))
             res.append(xe133_data)
 
@@ -2536,7 +2536,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             data = {}
         
         # calculate undecay corrected values for XE133 if relevant
-        if xe133_act and xe133_act != 0:
+        if xe133_act and xe133M_act and xe133M_act != 0:
             xe133_data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(nb_corrector.XE133, xe133_act, xe133M_act))
             res.append(xe133_data)
         
