@@ -15,6 +15,7 @@ import StringIO
 import traceback
 import shutil
 
+
 import ctbto.common.time_utils
 from ctbto.common.logging_utils import LoggerFactory
 import ctbto.common.utils
@@ -50,6 +51,7 @@ Usage: generate_and_email [options]
   Advanced Options:
   --from            (-f)  Retrieve and send all samples from this date.
                           In that case the oldest date in the group db is ignored.
+                          The date is in the YYYY-MM-DD form (ex: 2008-08-22).
   
   --force           (-r)  All the samples for all the dates are resent
   
@@ -783,8 +785,13 @@ class Runner(object):
         
         # send email
         emailer = DataEmailer(self._conf.get('AutomaticEmailingInformation','host'),self._conf.get('AutomaticEmailingInformation','port'))
-                
-        emailer.connect(self._conf.get('AutomaticEmailingInformation','user'),self._conf.get('AutomaticEmailingInformation','password'))
+        
+        if self._conf.get('AutomaticEmailingInformation','obfuscatePassword', True):
+            password = ctbto.common.utils.deobfuscate_string(self._conf.get('AutomaticEmailingInformation','password'))
+        else:
+            password = self._conf.get('AutomaticEmailingInformation','password')
+            
+        emailer.connect(self._conf.get('AutomaticEmailingInformation','user'),password)
             
         sender  = self._conf.get('AutomaticEmailingInformation','sender',None)
             

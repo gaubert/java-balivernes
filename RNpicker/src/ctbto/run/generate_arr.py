@@ -683,7 +683,7 @@ def run_with_args(a_args,exit_on_success=False):
     try:
         parsed_args = a_args
         
-        load_configuration(parsed_args)
+        Runner.load_configuration(parsed_args)
         
         runner = Runner(parsed_args)
         
@@ -706,7 +706,7 @@ def run_with_args(a_args,exit_on_success=False):
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            self._log.error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
             if parsed_args.get('verbose',1) == 3:
                 a_logger = LoggerFactory.get_logger("Runner").error
             else:

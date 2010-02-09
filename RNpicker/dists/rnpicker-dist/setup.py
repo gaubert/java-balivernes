@@ -23,10 +23,10 @@ setup(name='RNPicker',
       url='http://www.ctbto.org',
       license='Apache 2.0',
       scripts=['scripts/generate_arr','scripts/generate_products_and_email'],
-      packages=['ctbto','ctbto.common','ctbto.db','ctbto.email','ctbto.query','ctbto.renderers','ctbto.run','ctbto.tests','ctbto.transformer'],
+      packages=['ctbto','ctbto.common','ctbto.calculation','ctbto.db','ctbto.email','ctbto.query','ctbto.renderers','ctbto.run','ctbto.tests','ctbto.transformer'],
       package_dir={'ctbto.tests': 'ctbto/tests'},
       package_data={'ctbto.tests': ['conf_tests/rnpicker.config','conf_tests/pretty-print.xslt','conf_tests/scripts/*.sh','conf_tests/samples/*.master','conf_tests/templates/*.html']},
       # copy extra files from first val in tuple to second. Everything is always done from --root that is sys.prefix by default
-      data_files=[('conf',['conf/rnpicker.config','conf/logging_rnpicker.config','conf/pretty-print.xslt']),('conf/scripts',['conf/scripts/remote_extraction_from_archive.sh']),('conf/templates',['conf/templates/SaunaArrHtml.html','conf/templates/SpalaxArrHtml.html'])],
+      data_files=[('conf',['conf/rnpicker.config','conf/xml_templates.config','conf/logging_rnpicker.config','conf/pretty-print.xslt']),('conf/scripts',['conf/scripts/remote_extraction_from_archive.sh']),('conf/templates',['conf/templates/SaunaArrHtml-v1.0.html','conf/templates/SpalaxArrHtml-v1.0.html'])],
       #install_requires=['conf>=0.8.0','SQLAlchemy>=0.4.7','cx-Oracle>=4.3','lxml>=2.0']
       )
