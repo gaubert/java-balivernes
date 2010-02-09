@@ -57,6 +57,7 @@ Usage: generate_and_email [options]
   
   --clean_group_db  (-o)  Delete the group database file that keeps track of what has been sent the
                           group defined by --group or -g option.
+                          if a number of days is passed, delete all days entires that are older than x days.
 
 
   Help Options:
@@ -65,7 +66,11 @@ Usage: generate_and_email [options]
   Examples:
   >./generate_and_email --group test --dir ./test-data 
   
-  Get all SAUNA and SPALAX data and send them to the users in the group test starting from today (by default)
+  Get all SAUNA and SPALAX data and send them to the users in the group test starting from today (by default).
+  
+  >./generate_and_email --group test --clean_group_db 20
+  
+  Delete all days (or entries) in the database that are older than 20 days. 
   
   """
        
@@ -183,7 +188,7 @@ def parse_arguments(a_args):
     
     try:
         reassoc_args = reassociate_arguments(a_args)
-        (opts,_) = getopt.gnu_getopt(reassoc_args, "horg:d:c:f:v3", ["help","from=","force","clean_group_db","group=","dir=","conf_dir=","version","vvv"])
+        (opts,_) = getopt.gnu_getopt(reassoc_args, "hro:g:d:c:f:v3", ["help","from=","force","clean_group_db=","group=","dir=","conf_dir=","version","vvv"])
     except Exception, err: #IGNORE:W0703
         # print help information and exit:
         print str(err) # will print something like "option -a not recognized"
@@ -216,7 +221,12 @@ def parse_arguments(a_args):
         elif o in ("-r","--force"):
             result['force_send'] = True
         elif o in ("-o","--clean_group_db"):
-            result['clean_group_db'] = True  
+            result['clean_group_db'] = True
+            if a :
+                try:
+                    result['clean_group_db_older_than'] = int(a)
+                except Exception, e:
+                    raise ParsingError('--clean_group_db only accepts integer values')
         elif o in ("-c", "--conf_dir"):
             try:
                 #check that it is a dir
@@ -387,7 +397,7 @@ class Runner(object):
         for row in rows:
             sampleIDs.append(row[0])
        
-        self._log.info("There are %d products (samples) for %s. Last time products for this day were sent : %s" % (len(sampleIDs), beginDate.split(' ')[0], last_time_sent))
+        self._log.info("There are %d products (samples) for %s. Last time products for this day were sent : %s." % (len(sampleIDs), beginDate.split(' ')[0], last_time_sent))
         self.log_in_file("List of sampleIDs to fetch: %s"%(sampleIDs))
         
         sampleIDs.sort()
@@ -605,20 +615,6 @@ class Runner(object):
         
         now_datetime  = datetime.datetime.today()
         
-        '''
-        for key in keys:
-            a_db_dict[key][LAST_TIME_SENT] = '2009-03-25T173546'
-            
-            filename = "%s/%s.emaildb"%(a_dir,a_id)
-        
-            f = open(filename,'w')
-        
-            pickle.dump(a_db_dict,f) 
-            
-            f.close()
-        '''
-            
-        
         for key in keys:
             # get a datetime so nothing to do
             timestamp = a_db_dict[key].get(LAST_TIME_SENT,None)
@@ -705,15 +701,46 @@ class Runner(object):
                 self._log.debug("Error when trying to delete the directory %s.Raised Exception %s"%(dir_to_delete,e))
             
 
-    def _clean_group_db(self,a_dir,a_id):
+    def _clean_group_db(self,a_dir,a_id, older_than):
         """ clean group db """
         
         self._log.info("Clean file %s"%("%s/%s.emaildb"%(a_dir,a_id)))
         
-        path = "%s/%s.emaildb"%(a_dir,a_id)
+        if older_than:
+            # clean all days older than x days
+            db_dict = self._get_id_database(a_dir, a_id)
+            
+            keys = db_dict.keys()
         
-        if os.path.exists(path):
-            os.remove(path)
+            keys.sort()
+        
+            now_datetime  = datetime.datetime.today()
+        
+            for key in keys:
+                
+                d = datetime.datetime.strptime(key, '%Y-%m-%dT%H:%M:%S')
+                
+                diff = now_datetime - d
+                if diff.days >= older_than:
+                    self._log.info("Remove %s day information from the group database as it is older than %d."%(key,older_than))
+                    del db_dict[key]    
+            
+            # save in dict file
+            filename = "%s/%s.emaildb"%(a_dir,a_id)
+        
+            f = open(filename,'w')
+        
+            pickle.dump(db_dict,f) 
+        
+            f.close()
+            
+        else:
+            path = "%s/%s.emaildb"%(a_dir,a_id)
+            
+            if os.path.exists(path):
+                os.remove(path)
+        
+        self._log.info("End of cleaning.")
             
     def _create_archive(self,a_archive_filename,a_dir_data):
         """ create the archive that will be sent to the users """
@@ -875,7 +902,7 @@ class Runner(object):
             self._create_temp_directories(dir_group_db)
             
             if a_args['clean_group_db']:
-                self._clean_group_db(dir_group_db,id) 
+                self._clean_group_db(dir_group_db, id, a_args['clean_group_db_older_than']) 
             
             db_dict = self._get_id_database(dir_group_db,id)
             
