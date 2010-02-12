@@ -17,7 +17,7 @@ from pprint import pprint
 
 import datetime
 import smtplib
-import mimetypes
+import re
 import base64
 from email.mime.text        import MIMEText
 
@@ -35,6 +35,13 @@ ATM_MON_RECEIVERS = 'guillaume.aubert@office.ctbto.org,guillaume.aubert@gmail.co
     
 ECACCESS_HOME = '/home/aubert/ecaccess-v3.3.0'
 
+GATEWAY_NAME = 'no name'
+
+class CommunicationException(Exception):
+    """Base class for All exceptions"""
+
+    def __init__(self,aMsg):
+        super(CommunicationException,self).__init__(aMsg)
 
 class ATMFileTransferChecker(object):
     """ Class used to send emails containing attached data """
@@ -80,10 +87,16 @@ class ATMFileTransferChecker(object):
                 
                 if returncode != 0:
                     lines = ''.join(proc.stdout.readlines())
-                    raise  Exception("Problem when execution ectls %s to get more information on this job: %s" %(transfer_id, lines))
+                    raise  CommunicationException("Problem when execution ectls %s to get more information on this job: %s" %(transfer_id, lines))
                 else:
                     lines = ''.join(proc.stdout.readlines())
-                    return "==== Transfer %s Info ====\n%s\n" % (transfer_id, lines)
+                    
+                    # check if this is the timeout issue and in that case ignore it
+                    processor = re.compile('Gateway \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} timed out')
+    
+                    #this is a real error
+                    if not processor.search(lines):
+                        return "==== Transfer %s Info ====\n%s\n" % (transfer_id, lines)
         
     def check_transfers_status(self):
         """ 
@@ -106,27 +119,29 @@ class ATMFileTransferChecker(object):
         
         if returncode != 0:
             lines = ''.join(proc.stdout.readlines())
-            raise  Exception("Problem when calling %s:\n %s" %( command, lines))
+            raise  CommunicationException("Problem when calling %s:\n %s" %( command, lines))
         else:
             orig_lines = ""
             lines = "Some ATM ECMWF Transfers failed. Please check below for the error(s).\n\n"
             has_error = False
             for line in proc.stdout:
-                has_error = True
                 # keep original lines for debugging
                 orig_lines += line
                 
                 message = self.look_for_transfer_problems(line)
                 
-                lines += message
+                if message:
+                    has_error = True
+                    lines += message
             
             if has_error:
                 print(lines)
                 
                 # send it my email
-                receivers = os.environ['ATM_MON_RECEIVERS']
+                receivers    = os.environ['ATM_MON_RECEIVERS']
+                gateway_name = os.environ['GATEWAY_NAME']
                 d_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                self._emailer.send_text_message(receivers, '%s = ATM ECMWF Transfers errors' %(d_now), lines)
+                self._emailer.send_text_message(receivers, '[%s] %s ATM ECMWF Transfers errors' %(d_now, gateway_name), lines)
                 
                 print("INFO: Sent error notification email sent to %s\n" %(receivers) )
                 
@@ -251,12 +266,16 @@ if __name__ == '__main__':
     
     # put DEFAULT if no env variables
     if not os.environ.get('ATM_MON_RECEIVERS', None):
-        print("INFO: ATM_MON_RECEIVERS variable set to default value %s.\n" %(ATM_MON_RECEIVERS) )
+        print("INFO: ATM_MON_RECEIVERS variable set to default value %s.\n" % (ATM_MON_RECEIVERS) )
         os.environ['ATM_MON_RECEIVERS'] = ATM_MON_RECEIVERS
     
     if not os.environ.get('ECACCESS_HOME', None):
-        print("INFO: ECACCESS_HOME ENV variable set to default value %s.\n" %(ECACCESS_HOME) )
+        print("INFO: ECACCESS_HOME ENV variable set to default value %s.\n" % (ECACCESS_HOME) )
         os.environ['ECACCESS_HOME'] = ECACCESS_HOME
+    
+    if not os.environ.get('GATEWAY_NAME', None):
+        print("INFO: GATEWAY_NAME ENV variable set to default value %s.\n" % (GATEWAY_NAME) )
+        os.environ['GATEWAY_NAME'] = GATEWAY_NAME
     
     try:
         # preconditions checking
@@ -268,9 +287,32 @@ if __name__ == '__main__':
         
         checker = ATMFileTransferChecker(emailer)
         
-        checker.check_transfers_status()
+        tried = 0
+        success = False
         
-        print('INFO: Successfully ran script.\n')
+        while tried < 3:
+           
+            tried += 1
+            
+            try:
+                checker.check_transfers_status()
+                success = True 
+            except CommunicationException, commEx:
+                print('Communication error: %s\n' %(commEx))
+                exc_type, exc_value, exc_tb = sys.exc_info()
+                print("*** Exception traceback:\n")
+                pprint(traceback.format_exception(exc_type, exc_value, exc_tb))
+                print("\n***\n")
+                
+                if tried < 3:
+                    print('Has tried %d time(s), Try again\n' % (tried) )
+        
+            if success:
+                print('INFO: Successfully ran script.\n')
+                exit(0)
+        
+        #if there on error
+        exit(1)
         
     except Exception, excep:
         print('ERROR: %s' %(excep))
