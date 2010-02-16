@@ -2493,8 +2493,8 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             # add concentration error in percent
             if data.get(u'CONC', 0) != 0:
                 
-                # values in db are in uBq/m3, we want to have everything mBq/m3 (* 0.001)
-                data[u'CONC']          = data.get(u'CONC', 0) * 0.001
+                # values in db are in mBq/m3
+                data[u'CONC']          = data.get(u'CONC', 0) 
                 
                 data[u'CONC_ERR_PERC'] = (data.get(u'CONC_ERR', 0) * 100) / data.get(u'CONC')
                 
@@ -2504,8 +2504,8 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             if corr_volume >= 0:
                 data[u'ACTIVITY']     = data.get(u'CONC', 0) * corr_volume if data.get(u'CONC', 0) != 0 else UNDEFINED
                 data[u'ACTIVITY_ERR'] = data.get(u'CONC_ERR', 0) * corr_volume
-                data[u'LC_ACTIVITY']  = data.get(u'LC', 0) * corr_volume * 0.001
-                data[u'LD_ACTIVITY']  = data.get(u'LD', 0) * corr_volume * 0.001
+                data[u'LC_ACTIVITY']  = data.get(u'LC', 0) * corr_volume 
+                data[u'LD_ACTIVITY']  = data.get(u'LD', 0) * corr_volume 
                  
             else:
                 data[u'ACTIVITY']     = UNDEFINED

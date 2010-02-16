@@ -681,7 +681,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 <h2>Activity Concentration Summary</h2>
 
-<h4>Nuclide Quantified:</h4>
+<h4>Nuclides detected:</h4>
 {% if quantified_nuclides|length == 0 %}
     N/A
 {% else %}
@@ -705,7 +705,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 </table>
 {% endif %}
 
-<h4>MDCs for nuclides not quantified:</h4>
+<h4>MDCs for non-detected nuclides:</h4>
 {% if non_quantified_nuclides|length == 0 %}
     N/A
 {% else %}
@@ -742,11 +742,11 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="left">Activity <span class="smallunit">(mb)</span></th>
-      <th class="left">Undecay Corr Activity <span class="smallunit">(mb)</span></th>
-      <th class="left">Abs Activity Error <span class="smallunit">(mb)</span></th>
-      <th class="left">LC <span class="smallunit">(mb)</span></th>
-      <th class="left">LD <span class="smallunit">(mb)</span></th>
+      <th class="left">Activity <span class="smallunit">(mBq)</span></th>
+      <th class="left">Undecay Corr Activity <span class="smallunit">(mBq)</span></th>
+      <th class="left">Abs Activity Error <span class="smallunit">(mBq)</span></th>
+      <th class="left">LC <span class="smallunit">(mBq)</span></th>
+      <th class="left">LD <span class="smallunit">(mBq)</span></th>
     </tr>
    {% for a_item in activities_nuclides %}
     <tr>
