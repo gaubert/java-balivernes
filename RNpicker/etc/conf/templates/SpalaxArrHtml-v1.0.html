@@ -684,7 +684,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 {% if 'peak' in quantified_nuclides %}
 
-<h4>Nuclide Quantified (Peak Fit Method):</h4>
+<h4>Nuclides detected (Peak Fit Method):</h4>
 
 {% if quantified_nuclides.peak|length == 0 %}
  N/A
@@ -717,7 +717,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 
 
-<h4>MDCs for nuclides not quantified (Peak Fit Method):</h4>
+<h4>MDCs for non-detected nuclides (Peak Fit Method):</h4>
 {% if non_quantified_nuclides.peak|length == 0 %}
  N/A
 {% else %}
@@ -748,7 +748,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 {% if 'decay' in quantified_nuclides %}
 
-<h4>Nuclide Quantified (Decay Analysis Method):</h4>
+<h4>Nuclides detected (Decay Analysis Method):</h4>
 
 {% if quantified_nuclides.decay|length == 0 %}
  N/A
@@ -781,7 +781,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 
 
-<h4>MDCs for nuclides not quantified (Decay Analysis Method):</h4>
+<h4>MDCs for non-detected nuclides (Decay Analysis Method):</h4>
 {% if non_quantified_nuclides.decay|length == 0 %}
  N/A
 {% else %}
@@ -829,11 +829,11 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="left">Activity <span class="smallunit">(mb)</span></th>
-      <th class="left">Undecay Corr Activity <span class="smallunit">(mb)</span></th>
-      <th class="left">Abs Activity Error <span class="smallunit">(mb)</span></th>
-      <th class="left">LC <span class="smallunit">(mb)</span></th>
-      <th class="left">LD <span class="smallunit">(mb)</span></th>
+      <th class="left">Activity <span class="smallunit">(mBq)</span></th>
+      <th class="left">Undecay Corr Activity <span class="smallunit">(mBq)</span></th>
+      <th class="left">Abs Activity Error <span class="smallunit">(mBq)</span></th>
+      <th class="left">LC <span class="smallunit">(mBq)</span></th>
+      <th class="left">LD <span class="smallunit">(mBq)</span></th>
     </tr>
    {% for a_key in matrix_row_order %}
      {% if a_key in activities_nuclides.peak %}
@@ -864,11 +864,11 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-      <th class="left">Activity <span class="smallunit">(mb)</span></th>
-      <th class="left">Undecay Corr Activity <span class="smallunit">(mb)</span></th>
-      <th class="left">Abs Activity Error <span class="smallunit">(mb)</span></th>
-      <th class="left">LC <span class="smallunit">(mb)</span></th>
-      <th class="left">LD <span class="smallunit">(mb)</span></th>
+      <th class="left">Activity <span class="smallunit">(mBq)</span></th>
+      <th class="left">Undecay Corr Activity <span class="smallunit">(mBq)</span></th>
+      <th class="left">Abs Activity Error <span class="smallunit">(mBq)</span></th>
+      <th class="left">LC <span class="smallunit">(mBq)</span></th>
+      <th class="left">LD <span class="smallunit">(mBq)</span></th>
     </tr>
    {% for a_key in matrix_row_order %}
      {% if a_key in  activities_nuclides.decay %}

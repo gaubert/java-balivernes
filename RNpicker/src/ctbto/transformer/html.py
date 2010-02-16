@@ -14,10 +14,22 @@ RDIGITS   = 5
 BGDIGITS  = 2
 HDIGITS   = 2
 
+
+NUCLIDE_ORDER = ["NO-NAME", "XE-131M", "XE-133M", "XE-133", "XE-135" ]
+
+def nuclide_compare(x, y):
+    
+    x_i = NUCLIDE_ORDER.index(x.get('name','NO-NAME'))
+    
+    y_i = NUCLIDE_ORDER.index(y.get('name','NO-NAME'))
+    
+    return x_i - y_i
+
 class XML2HTMLRenderer(object):
     """ Base Class used to transform XML in HTML """
     
     c_namespaces = {'sml':'http://www.ctbto.org/SAMPML/0.7'}
+    
 
 class SAUNAXML2HTMLRenderer(object):
     """ Base Class used to transform SAUNA XML in HTML """
@@ -40,7 +52,16 @@ class SAUNAXML2HTMLRenderer(object):
         
         self._fill_values(a_xml_path)
                 
-        return self._template.render(self._context)    
+        return self._template.render(self._context)   
+    
+    def sort_nuclides(self, a_list):
+        """
+           sort the nuclides names according the following order (Xe131M, Xe133M, Xe133, Xe135) 
+        """
+
+        for the_dict in a_list:
+            
+            name = the_dict['name']
       
     def _fill_values(self, a_xml_path):
         """ fill the values """
@@ -265,11 +286,13 @@ class SAUNAXML2HTMLRenderer(object):
                 a_nuclides.append(dummy)
                 
                 
-                
-           
+            #sort and add nuclides
+            nq_nuclides.sort(nuclide_compare)
             self._context['non_quantified_nuclides'] = nq_nuclides
-            self._context['quantified_nuclides']     = q_nuclides 
-            self._context['activities_nuclides']     = a_nuclides 
+            q_nuclides.sort(nuclide_compare)
+            self._context['quantified_nuclides']     = q_nuclides
+            a_nuclides.sort(nuclide_compare)
+            self._context['activities_nuclides']     = a_nuclides
         
             # Add ROI results
             # get ROIInfo
