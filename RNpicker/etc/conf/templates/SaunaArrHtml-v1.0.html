@@ -869,7 +869,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
     <tbody>
      <tr>
      	{% if calibration.model == 'Polynomial' %}
-		<th class='italobold'>{{ calibration.desc }} : E(C)= t0 + t1 C + t2 C<sup>2</sup></th>
+		<th class='italobold'>{{ calibration.desc }} : C(E)= t0 + t1 E + t2 E<sup>2</sup></th>
        </tr>
 	   {% for c in calibration.coeffs %}
        <tr>
