@@ -914,7 +914,7 @@ class SPALAXXML2HTMLRenderer(object):
                                 one_dict['form']  = 'N/A'
                     
                             calibrations.append(one_dict)
-                        #Efficiency case
+                        #Efficiency case for the moment
                         else:
                             equations  = calibration.findall("{%s}Equation" % (XML2HTMLRenderer.c_namespaces['sml']))
                             

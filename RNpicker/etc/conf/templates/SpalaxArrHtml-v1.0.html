@@ -1000,40 +1000,5 @@ N/A
    
 {% endfor %}
 
-  {% if eff_calibration %}
-    
-   <table class="calib" cellpadding="0" cellspacing="0" >
-	 <tr>
-	  <td class='italobold' nowrap="nowrap">Efficiency: E(L) = e<sup>(t0 + t1 L + t2 L<sup>2</sup> + t3 L<sup>3</sup> + t4 L<sup>4</sup> + t5 L<sup>5</sup>)</sup></td>
-	 </tr>
-	 {% for c in eff_calibration[1].coeffs %}
-	 <tr>
-	   <td><i>{{ c.name }} : {{ c.val }}</i></td>
-	 </tr>
-	 {% endfor %}
-	 <tr>
-		 <td>
-		   <table class="inline_frac" cellpadding="0" cellspacing="0">
-				 <tr>
-		           <td style="font-weight: bold;" rowspan="2">
-		            with L(E) &nbsp; =  &nbsp;
-		           </td>
-		           <td class="eq_centered" style="font-weight: bold;">
-		             ln(t0)
-		           </td>
-			     <tr>
-		           <td class="upper_line" style="font-weight: bold; text-align: center;" nowrap="nowrap">
-		             <span>E</span>
-		           </td>
-		         </tr>
-				 <tr>
-		           <td><i>t0 : {{ eff_calibration[0].coeffs[0].val }}</i></td>
-		         </tr>
-		   </table>
-		 </td>
-	 </tr>
-    </table>
-  {% endif %}
-
 </body>
 </html>
