@@ -2457,9 +2457,9 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag.get('%s_G_DATA_ACQ_STOP' % (dataname), {}))
         
         nb_corrector = NobleGasDecayCorrector(coll_start, coll_stop, acq_start, acq_stop)
-        xe133_data   = None
-        xe133_act    = None
-        xe133M_act   = None
+        xe133_data   = {}
+        xe133_act    = {}
+        xe133M_act   = {}
         
         for row in rows:
             data.update(row.items())  
@@ -2518,28 +2518,43 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
                 data[u'ACTIVITY_ERR_PERC'] = (data.get(u'ACTIVITY_ERR', 0) * 100)/ data.get(u'ACTIVITY')
                 
                 # add undecay corrected activity concentration if not XE133
-                # if XE133 memorize both XE133 and XE133M
-                if data['NUCLIDE'] != nb_corrector.XE133:
+                # if XE133 memorize both XE133 and XE133M to calculate undecay correction of XE133
+                if data['NUCLIDE'] == nb_corrector.XE133:
+                    xe133_act[data[u'METHOD']]  = data.get(u'ACTIVITY')
+                elif data['NUCLIDE'] == nb_corrector.XE133M:
+                    xe133M_act[data[u'METHOD']] = data.get(u'ACTIVITY')
                     data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(data['NUCLIDE'], data.get(u'ACTIVITY')))
-                    
-                    if data['NUCLIDE'] == nb_corrector.XE133M:
-                        xe133M_act = data.get(u'ACTIVITY')
-                    else:
-                        # XE133
-                        xe133_act  = data.get(u'ACTIVITY')
-            
+                else:
+                    #XE131, XE135
+                    data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(data['NUCLIDE'], data.get(u'ACTIVITY')))
+            else:
+                #put default
+                data[u'ACTIVITY_ERR_PERC'] = UNDEFINED
+                data[u'UNDECAYED_ACT']     = UNDEFINED
+                
             if data['NUCLIDE'] != nb_corrector.XE133:
+                #add in final result
                 res.append(data)
             else:
-                xe133_data = data
+                #keep a pointer to this dict and insert it in res
+                xe133_data[data[u'METHOD']] = data
+                res.append(xe133_data[data[u'METHOD']])
             
             data = {}
         
         # calculate undecay corrected values for XE133 if relevant
-        if xe133_act and xe133M_act and xe133M_act != 0:
-            xe133_data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(nb_corrector.XE133, xe133_act, xe133M_act))
-            res.append(xe133_data)
-        
+        for method in xe133_data:
+            undecay_data  = xe133_data.get(method, None)
+            xe133_a       = xe133_act.get(method, None)
+            
+            xe133M_a = xe133M_act.get(method, None)
+            if xe133M_act != 0:
+               undecay_data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(nb_corrector.XE133, xe133_a, xe133M_a))
+            else:
+               undecay_data[u'UNDECAYED_ACT'] = UNDEFINED
+            
+            #res.append(undecay_data)
+            
         # add in dataBag
         self._dataBag[u'%s_XE_RESULTS' % (dataname)] = res
             
