@@ -673,7 +673,8 @@ class SPALAXXML2HTMLRenderer(object):
                 
                 # check that nid_flag is 1 to go in quantified_nuclides otherwise goes into non_quantified_nuclides
                 nid_flag = nuclide.find('{%s}NuclideIdentificationIndicator' % (XML2HTMLRenderer.c_namespaces['sml'])).get("numericVal")
-                if nid_flag >= '1':
+                #nid flag is 1 identified
+                if nid_flag == '1':
                     one_dict = {}
                     # get Name, 
                     one_dict['name']          = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -692,6 +693,7 @@ class SPALAXXML2HTMLRenderer(object):
                     
                     q_nuclides[method][one_dict['name']] = one_dict
                 else:
+                    #if it is 0 or 2 it should go there
                     one_dict = {}
                     # get Name, 
                     one_dict['name']      = nuclide.find('{%s}Name' % (XML2HTMLRenderer.c_namespaces['sml'])).text
