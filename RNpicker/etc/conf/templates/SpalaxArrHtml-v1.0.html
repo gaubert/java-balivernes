@@ -403,21 +403,31 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	
 	h3
 	{
-	  font-size : 16px;
-	  padding: 0;
-	  margin-top: 8px;
-	  margin-bottom: 8px;
-	}
-	
+	 font-size : 16px;
+     padding: 0;
+     margin-top: 8px;
+     margin-bottom: 8px;
+    }
+ 
 	h4
 	{
-	  font-size   : 14px;
-	  font-weight : bold;
-	  font-style  : italic;
-	  padding: 0;
-	  margin-top: 8px;
-	  margin-bottom: 8px;
- 	}
+		font-size : 14px;
+		font-weight : bold;
+		font-style : italic;
+		padding: 0;
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
+	
+	h5
+	{
+		font-size : 12px;
+		font-weight : bold;
+		font-style : italic;
+		padding: 0;
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
 
     hr 
     { 
@@ -525,6 +535,16 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	  margin-bottom: 4pt;
 	  padding: 0;
  	}
+ 	
+ 	h5
+	{
+	    font-size : 6pt;
+		font-weight : bold;
+		font-style : italic;
+		padding: 0;
+		margin-top: 4pt;
+		margin-bottom: 4pt;
+	}
  	
  	p       
  	{ 
@@ -684,7 +704,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 {% if 'peak' in quantified_nuclides %}
 
-<h4>Nuclides detected (Peak Fit Method):</h4>
+<h4> Peak Fit Method: </h4>
+
+<h5>Detected Nuclides</h5>
 
 {% if quantified_nuclides.peak|length == 0 %}
  N/A
@@ -697,7 +719,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-	  <th class="centre">MDI <span class="smallunit">(mBq/m3)</span></th>
       <th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>
       <th class="centre">Abs Error <span class="smallunit">(mBq/m3)</span></th>
     </tr>
@@ -705,7 +726,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       {% if a_key in quantified_nuclides.peak %}
 	    <tr>
 	      <td class="centre">{{ quantified_nuclides.peak[a_key].name }}</td>
-		  <td class="centre">{{ quantified_nuclides.peak[a_key].mdi }}</td>
 	      <td class="centre">{{ quantified_nuclides.peak[a_key].conc }}</td>
 	      <td class="centre" title="Rel Error: {{ quantified_nuclides.peak[a_key].conc_rel_err }}%">{{ quantified_nuclides.peak[a_key].conc_abs_err }}</td>
 		  
@@ -717,25 +737,29 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 
 
-<h4>MDCs for non-detected nuclides (Peak Fit Method):</h4>
+<h5>MDCs for non-detected nuclides </h5>
 {% if non_quantified_nuclides.peak|length == 0 %}
  N/A
 {% else %}
 <table class="std1">
   <col width="10%"/>
   <col width="10%"/>
+  <col width="10%"/>
+  <col width="10%"/>
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">MDC <span class="smallunit">(mBq/m3)</span></th>
-	  <!--<th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>
-	  <th class="centre">Abs Error</th>-->
+      <th class="centre">MDI <span class="smallunit">(counts)</span></th>
+	  <!--<th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>-->
+	  <!--<th class="centre">Abs Error</th>-->
     </tr>
    {% for a_key in matrix_row_order %}
       {% if a_key in non_quantified_nuclides.peak %}
 	    <tr>
 	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].name }}</td>
 	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].mdc }}</td>
+	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].mdi }}</td>
 		  <!-- <td class="centre">{{ non_quantified_nuclides.peak[a_key].conc }}</td>-->
 		  <!--<td class="centre" title="Rel Error: {{ non_quantified_nuclides.peak[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.peak[a_key].conc_abs_err }}</td> -->
 	    </tr>
@@ -748,7 +772,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 
 {% if 'decay' in quantified_nuclides %}
 
-<h4>Nuclides detected (Decay Analysis Method):</h4>
+<h4> Decay Analysis Method: </h4>
+
+<h5>Detected Nuclides:</h5>
 
 {% if quantified_nuclides.decay|length == 0 %}
  N/A
@@ -761,7 +787,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
-	  <th class="centre">MDI <span class="smallunit">(mBq/m3)</span></th>
       <th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>
       <th class="centre">Abs Error <span class="smallunit">(mBq/m3)</span></th>
 	  
@@ -770,7 +795,6 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       {% if a_key in quantified_nuclides.decay %}
 	    <tr>
 	      <td class="centre">{{ quantified_nuclides.decay[a_key].name }}</td>
-		  <td class="centre">{{ quantified_nuclides.decay[a_key].mdi }}</td>
 	      <td class="centre">{{ quantified_nuclides.decay[a_key].conc }}</td>
 	      <td class="centre" title="Rel Error: {{ quantified_nuclides.decay[a_key].conc_rel_err }}%">{{ quantified_nuclides.decay[a_key].conc_abs_err }}</td>
 	    </tr>
@@ -781,17 +805,20 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 
 
-<h4>MDCs for non-detected nuclides (Decay Analysis Method):</h4>
+<h5>MDCs for non-detected nuclides:</h5>
 {% if non_quantified_nuclides.decay|length == 0 %}
  N/A
 {% else %}
 <table class="std1">
   <col width="10%"/>
   <col width="10%"/>
+  <col width="10%"/>
+  <col width="10%"/>
   <tbody>
     <tr>
       <th class="centre">Nuclide</th>
       <th class="centre">MDC <span class="smallunit">(mBq/m3)</span></th>
+      <th class="centre">MDI <span class="smallunit">(counts)</span></th>
 	  <!--<th class="centre">Conc <span class="smallunit">(mBq/m3)</span></th>-->
 	  <!--<th class="centre">Abs Error</th>-->
     </tr>
@@ -800,6 +827,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 	    <tr>
 	      <td class="centre">{{ non_quantified_nuclides.decay[a_key].name }}</td>
 	      <td class="centre">{{ non_quantified_nuclides.decay[a_key].mdc }}</td>
+	      <td class="centre">{{ non_quantified_nuclides.peak[a_key].mdi }}</td>
 		  <!--<td class="centre">{{ non_quantified_nuclides.decay[a_key].conc }}</td>-->
 		  <!--<td class="centre" title="Rel Error: {{ non_quantified_nuclides.decay[a_key].conc_rel_err }}%">{{ non_quantified_nuclides.decay[a_key].conc_abs_err }}</td>-->
 	    </tr>
@@ -832,8 +860,10 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <th class="left">Activity <span class="smallunit">(mBq)</span></th>
       <th class="left">Undecay Corr Activity <span class="smallunit">(mBq)</span></th>
       <th class="left">Abs Activity Error <span class="smallunit">(mBq)</span></th>
-      <th class="left">LC <span class="smallunit">(mBq)</span></th>
-      <th class="left">LD <span class="smallunit">(mBq)</span></th>
+      <th class="left">MDI <span class="smallunit">(counts)</span></th>
+      <!--<th class="left">LC <span class="smallunit">(mBq)</span></th>-->
+      <!--<th class="left">LD <span class="smallunit">(mBq)</span></th>-->
+      
     </tr>
    {% for a_key in matrix_row_order %}
      {% if a_key in activities_nuclides.peak %}
@@ -842,8 +872,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		  <td class="centre">{{ activities_nuclides.peak[a_key].activity }}</td>
 		  <td class="centre">{{ activities_nuclides.peak[a_key].undecay_corr_activity }}</td>
 		  <td class="centre" title="Rel Error: {{ activities_nuclides.peak[a_key].activity_rel_err }}">{{ activities_nuclides.peak[a_key].activity_abs_err }}</td>
-		  <td class="centre">{{ activities_nuclides.peak[a_key].lc }}</td>
-		  <td class="centre">{{ activities_nuclides.peak[a_key].ld }}</td>
+		  <td class="centre">{{ activities_nuclides.peak[a_key].mdi }}</td>
+		  <!--<td class="centre">{{ activities_nuclides.peak[a_key].lc }}</td>-->
+		  <!--<td class="centre">{{ activities_nuclides.peak[a_key].ld }}</td>-->
       </tr>
 	 {% endif %}
    {% endfor %}
@@ -867,8 +898,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
       <th class="left">Activity <span class="smallunit">(mBq)</span></th>
       <th class="left">Undecay Corr Activity <span class="smallunit">(mBq)</span></th>
       <th class="left">Abs Activity Error <span class="smallunit">(mBq)</span></th>
-      <th class="left">LC <span class="smallunit">(mBq)</span></th>
-      <th class="left">LD <span class="smallunit">(mBq)</span></th>
+      <th class="left">MDI <span class="smallunit">(counts)</span></th>
+      <!--<th class="left">LC <span class="smallunit">(mBq)</span></th>-->
+      <!--<th class="left">LD <span class="smallunit">(mBq)</span></th>-->
     </tr>
    {% for a_key in matrix_row_order %}
      {% if a_key in  activities_nuclides.decay %}
@@ -877,8 +909,9 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 		  <td class="centre">{{ activities_nuclides.decay[a_key].activity }}</td>
 		  <td class="centre">{{ activities_nuclides.decay[a_key].undecay_corr_activity }}</td>
 		  <td class="centre" title="Rel Error: {{ activities_nuclides.decay[a_key].activity_rel_err }}">{{ activities_nuclides.decay[a_key].activity_abs_err }}</td>
-		  <td class="centre">{{ activities_nuclides.decay[a_key].lc }}</td>
-		  <td class="centre">{{ activities_nuclides.decay[a_key].ld }}</td>
+		  <td class="centre">{{ activities_nuclides.decay[a_key].mdi }}</td>
+		  <!--<td class="centre">{{ activities_nuclides.decay[a_key].lc }}</td>-->
+		  <!--<td class="centre">{{ activities_nuclides.decay[a_key].ld }}</td>-->
       </tr>
 	 {% endif %}
    {% endfor %}
@@ -887,7 +920,7 @@ oIfr.style.display=(oIfr.style.display=='block')?'none':'block';
 {% endif %}
 
 <p></p>
-<div class="page-break"></div>
+<div class="rule"></div>
 
 {% if peak_fit_matrix or decay_analysis_matrix %}
 <h2>Processing Specific Parameters and Results:</h2>
