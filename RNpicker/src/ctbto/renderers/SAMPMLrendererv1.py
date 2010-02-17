@@ -1134,20 +1134,6 @@ class SaunaRenderer(BaseRenderer):
         dummy_template = re.sub("\${AcquisitionTimeValue}", str(hr), dummy_template)
         dummy_template = re.sub("\${AcquisitionTimeTest}", self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_TEST' % (id), UNDEFINED), dummy_template)
         
-        # Decay flags
-        dummy_template = re.sub("\${DecayTimeFlag}", self._fetcher.get('%s_TIME_FLAGS_DECAY_FLAG' % (id), UNDEFINED), dummy_template)
-        # pretty print in hours
-        v = self._fetcher.get('%s_TIME_FLAGS_DECAY_VAL' % (id), - 1)
-        if v != - 1:
-            hr = ctbto.common.time_utils.getSecondsInHours(v)
-        else:
-            hr = UNDEFINED
-        
-        # uniti is hour
-        dummy_template = re.sub("\${DecayTimeValueUnit}", 'h', dummy_template)
-        dummy_template = re.sub("\${DecayTimeValue}", str(hr), dummy_template)
-        dummy_template = re.sub("\${DecayTimeTest}", self._fetcher.get('%s_TIME_FLAGS_DECAY_TEST' % (id), UNDEFINED), dummy_template)
-        
         # respondTimeFlag
         dummy_template = re.sub("\${RespondTimeFlag}", self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_FLAG' % (id), UNDEFINED), dummy_template)
         # pretty print in hours

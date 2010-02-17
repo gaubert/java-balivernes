@@ -718,7 +718,7 @@ class DBDataFetcher(object):
             Raises:
                exception
         """
-         # check that the file exists
+        # check that the file exists
         path  = "%s/%s"%(aDir,aFilename)
         ext   = ""
         theInput = None
@@ -955,7 +955,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         
         self._log.info("Getting Gas Background Spectrum for %s\n"%(self._sampleID))
         
-         # follow the same method as the one defined in bg_analyse
+        # follow the same method as the one defined in bg_analyse
         # first look for the gas bk id in gards_sample_aux and then try to get the corresponding id.
         # if no sample_id is found look use the mrp method
         (rows, nb_results,_) = self.execute(sqlrequests.SQL_GET_SAUNA_AUX_GASBK_ID % (self._sampleID))
@@ -1066,7 +1066,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         self._log.info("Getting QC Spectrum of %s\n"%(self._sampleID))
         
         # need to get the latest BK sample_id
-        (rows,nbResults,_) = self.execute(sqlrequests.SQL_GET_SAUNA_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
+        (rows,_ ,_) = self.execute(sqlrequests.SQL_GET_SAUNA_QC_SAMPLEID%(self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'],self._sampleID,self._dataBag[u'STATION_ID'],self._dataBag[u'DETECTOR_ID'])) 
         
         nbResults = len(rows)
         
@@ -1335,7 +1335,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
                 self._log.info("Getting Analysis Results for CURRENT_%s\n"%(analysis))
           
                 # extract id from dataname
-                [pre, sid] = dataname.split('_') #IGNORE:W0612
+                [_, sid] = dataname.split('_') #IGNORE:W0612
           
                 #self._fetchCategoryResults(sid,dataname)
         
@@ -1518,29 +1518,11 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         self._dataBag[u'%s_TIME_FLAGS_COLLECTION_VAL'%(aDataname)]   = diff_in_sec
         self._dataBag[u'%s_TIME_FLAGS_COLLECTION_TEST'%(aDataname)] = 'x between 4h and 25h'
         
-        # check decay flag
-        # decay time = ['DATA_ACQ_STOP'] - ['DATA_COLLECT_STOP']
-        # check that acq time with PauseMin = 0.1 H (360) < Acq Start - Coll Stop < CollMax = 24H (86 400 sec)
-        pause_min  = 360
-        pause_max  = 86400
-        
         acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_START"%(aDataname)])
         
         acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_DATA_ACQ_STOP"%(aDataname)])
     
         diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_stop,acq_start)
-          
-        # check pause time or decay time
-        if diff_in_sec > pause_max or diff_in_sec < pause_min:
-            # NOK
-            self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Fail'
-        else:
-            # OK
-            self._dataBag[u'%s_TIME_FLAGS_DECAY_FLAG'%(aDataname)] = 'Pass' 
-        
-        self._dataBag[u'%s_TIME_FLAGS_DECAY_VAL'%(aDataname)]   = diff_in_sec
-        self._dataBag[u'%s_TIME_FLAGS_DECAY_TEST'%(aDataname)]  = 'x between 0.1h and 24h'
-        
        
         # check acquisition flag
         # acqMin = 4 H (14400 s) < Acquisition Time < acqMax 25H (90000 s)
@@ -1785,7 +1767,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # get the sampleID 
         # extract id from dataname
         
-        [pre,sid] = prefix.split('_') #IGNORE:W0612
+        [_ , sid] = prefix.split('_') #IGNORE:W0612
     
         if sid is None:
             raise CTBTOError(-1,"Error when fetching Calibration Info. No sampleID found in dataBag for %s"%(prefix))
