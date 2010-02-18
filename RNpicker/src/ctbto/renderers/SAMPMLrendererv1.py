@@ -421,70 +421,67 @@ class SpalaxRenderer(BaseRenderer):
             Raises:
                exception if issue fetching data (CTBTOError)
         """
-        template = self._conf.get("SpalaxTemplatingSystem", "spalaxDataQualityFlagsTemplate")
+         # Data Quality Flags
+        dummy_template = self._conf.get("SpalaxTemplatingSystem", "spalaxDataQualityFlagsTemplate")    
         
-        # add Data Quality Flags
-        dataQFlags = self._fetcher.get('%s_DATA_QUALITY_FLAGS' % (id), [])
-        
-        # list of all flags found
-        dq_xml = ""
-        
-        if len(dataQFlags) > 0:
-            for flag in dataQFlags:
-                name = flag['DQ_NAME']
-              
-                # check if it has a template if not ignore.
-                dummy_template = self._conf.get("SpalaxTemplatingSystem", "dataQFlags_%s_Template" % (name), None)
-                if dummy_template != None:
-                    dummy_template = re.sub("\${%s_VAL}" % (name), str(flag['DQ_VALUE']), dummy_template)
-                    dummy_template = re.sub("\${%s_PASS}" % (name), "true" if flag['DQ_RESULT'] == 0 else "false", dummy_template)
-                    dummy_template = re.sub("\${%s_THRESOLD}" % (name), str(flag['DQ_THRESHOLD']), dummy_template)
-                 
-                    # add non empty template to data flags
-                    dq_xml += dummy_template
-              
-        return re.sub("\${DQ_FLAGS}", dq_xml, template)
+        # Xenon Vol Flag
+        dummy_template = re.sub("\${XeVolumeFlag}", self._fetcher.get('%s_VOLUME_FLAG' % (id), UNDEFINED), dummy_template)
+        dummy_template = re.sub("\${XeVolumeValueUnit}", 'ml', dummy_template)
+        dummy_template = re.sub("\${XeVolumeValue}", str(self._fetcher.get('%s_VOLUME_VAL' % (id), UNDEFINED)), dummy_template)
+        dummy_template = re.sub("\${XeVolumeTest}", self._fetcher.get('%s_VOLUME_TEST' % (id), UNDEFINED), dummy_template)
+       
+        # add generated xml in final container
+        return dummy_template
     
-    def _getQCFlags(self,id):
-        """ Add the QC flags
+    
+    def _getTimelinessFlags(self, id):
+        """ Add timeliness flags """
         
-            Args:
-               id: Analysis id
+        # add timeliness Flags
+        dummy_template = self._conf.get("SpalaxTemplatingSystem", "spalaxTimelinessFlagsTemplate")
+        
+        # Collection flags or sampling flags
+        dummy_template = re.sub("\${CollectionTimeFlag}", self._fetcher.get('%s_TIME_FLAGS_COLLECTION_FLAG' % (id), UNDEFINED), dummy_template)
+        
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_COLLECTION_VAL' % (id), - 1)
+        if v != - 1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
+        else:
+            hr = UNDEFINED
             
-            Returns: the populated template
-              
-              
-            Raises:
-               exception if issue fetching data (CTBTOError)
-        """
-        template = self._conf.get("SpalaxTemplatingSystem", "spalaxQCFlagsTemplate")
+        dummy_template = re.sub("\${CollectionTimeValueUnit}", 'h', dummy_template)
+        dummy_template = re.sub("\${CollectionTimeValue}", str(hr), dummy_template)
+        dummy_template = re.sub("\${CollectionTimeTest}", self._fetcher.get('%s_TIME_FLAGS_COLLECTION_TEST' % (id), UNDEFINED), dummy_template)
         
-        ignore_list = ['Be7_FWHM','Ba-140_MDA','sohFR500','sohFlowData','sohBlowerOn','sohQuantity']
-      
+        # Acquisition flags or sampling flags
+        dummy_template = re.sub("\${AcquisitionTimeFlag}", self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_FLAG' % (id), UNDEFINED), dummy_template)
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_VAL' % (id), - 1)
+        if v != - 1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
+        else:
+            hr = UNDEFINED
         
-        # add Data Quality Flags
-        dataQFlags = self._fetcher.get('%s_QC_FLAGS' % (id), [])
+        dummy_template = re.sub("\${AcquisitionTimeValueUnit}", 'h', dummy_template)
+        dummy_template = re.sub("\${AcquisitionTimeValue}", str(hr), dummy_template)
+        dummy_template = re.sub("\${AcquisitionTimeTest}", self._fetcher.get('%s_TIME_FLAGS_ACQUISITION_TEST' % (id), UNDEFINED), dummy_template)
         
-        dataQFlags.sort()
+        # respondTimeFlag
+        dummy_template = re.sub("\${RespondTimeFlag}", self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_FLAG' % (id), UNDEFINED), dummy_template)
+        # pretty print in hours
+        v = self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_VAL' % (id), - 1)
+        if v != - 1:
+            hr = ctbto.common.time_utils.getSecondsInHours(v)
+        else:
+            hr = UNDEFINED
+            
+        dummy_template = re.sub("\${RespondTimeValueUnit}", 'h', dummy_template)
+        dummy_template = re.sub("\${RespondTimeValue}", str(hr), dummy_template)
+        dummy_template = re.sub("\${RespondTimeTest}", self._fetcher.get('%s_TIME_FLAGS_RESPOND_TIME_TEST' % (id), UNDEFINED), dummy_template)
         
-        # get the template for a unique flag
-        one_flag = self._conf.get("SpalaxTemplatingSystem", "spalaxQCFlagTemplate")
-        
-        l = []
-        
-        for dFlag in dataQFlags:
-            if dFlag[u'TEST_NAME'] not in ignore_list:
-                xml_f = re.sub("\${NAME}", dFlag[u'TEST_NAME'], one_flag)
-                xml_f = re.sub("\${COMMENT}",dFlag[u'QC_COMMENT'], xml_f)
-                xml_f = re.sub("\${PASS}","true" if dFlag[u'FLAG'] == 'G' else "false", xml_f)
-                l.append(xml_f)
-        
-        # sort the list l alphabetically 
-        l.sort() 
-         
-        xml = ''.join(l)
-        
-        return  re.sub("\${QC_FLAGS}",xml,template)   
+        return dummy_template
+    
     
     def _getFlags(self, id):
         """ create xml part with the flag info
@@ -500,7 +497,7 @@ class SpalaxRenderer(BaseRenderer):
         """
         xml = self._getDataQualityFlags(id)
         
-        xml += self._getQCFlags(id)
+        xml += self._getTimelinessFlags(id)
         
         return xml
     

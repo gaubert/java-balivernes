@@ -1456,14 +1456,14 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
             
         result.close()
     
-    def _fetchFlags(self,sid,aDataname):
+    def _fetchFlags(self, sid, aDataname):
         """ get the different flags """
         
         self._fetchTimelinessFlags(sid,aDataname)
         
         self._fetchdataQualityFlags(sid,aDataname)
         
-    def _fetchdataQualityFlags(self,sid,aDataname):
+    def _fetchdataQualityFlags(self, sid, aDataname):
         """ Check Volume Flags """
         
         # check Xenon Volume
@@ -2335,75 +2335,106 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             Raises:
                exception
         """
-        self._fetchdataQualityFlags(a_sid,a_dataname)
+        self._fetchdataQualityFlags(a_sid, a_dataname)
         
-        self._fetchQCFlags(a_sid, a_dataname)
-    
-    def _fetchQCFlags(self,sid,dataname):
-        """ 
-           Get the QC flags as they have been stored in the DB by autoSaintXe
-           
-            Args:
-               
-            Returns:   = type of the spectrum (SPHD, PREL, QC, BK)
+        #compute timeliness flags
+        self._fetchTimelinessFlags(a_sid, a_dataname)
         
-            Raises:
-               exception
-        """
-         # get MDA nuclides
-        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_QC_FLAGS%(sid))
+    def _fetchdataQualityFlags(self, sid, aDataname):
+        """ Check Volume Flags """
         
-        rows = result.fetchall()
+        # check Xenon Volume
+        volMin = 0.43
         
-        if len(rows):
-            data = {}
+        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(aDataname),None)
         
-            res = []
-        
-            for row in rows:
-                # copy row in a normal dict
-                data.update(row)
+        if aux is not None:
+            vol     = aux[u'XE_VOLUME']
+            vol_err = aux[u'XE_VOLUME_ERR']
             
-                res.append(data)
-                data = {}
+            # check that vol + err > VolMin
+            if (vol + vol_err) < volMin:
+                #NOK
+                self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Fail'
                
-            # add in dataBag
-            # R is for Red and G for Green
-            self._dataBag[u'%s_QC_FLAGS'%(dataname)] = res    
+            else:
+                # OK
+                self._dataBag[u'%s_VOLUME_FLAG'%(aDataname)] = 'Pass'
+            
+            self._dataBag[u'%s_VOLUME_VAL'%(aDataname)]  = vol
+            self._dataBag[u'%s_VOLUME_TEST'%(aDataname)] = 'x superior or equal to 0.43 ml'
         
+    def _fetchTimelinessFlags(self,sid,aDataname):
+        """
+           prepare timeliness checking info
+           Should factorized in a Common Noble Gas Class 
         
-    def _fetchdataQualityFlags(self,sid,dataname):
-        """ 
-           Get the category results
-           
-            Args:
-               
-            Returns:   = type of the spectrum (SPHD, PREL, QC, BK)
-        
-            Raises:
-               exception
         """
         
-         # get MDA nuclides
-        result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_DATA_QUALITY_FLAGS%(sid))
-        
-        rows = result.fetchall()
-        
-        if len(rows):
-            data = {}
-        
-            res = []
-        
-            for row in rows:
-                # copy row in a normal dict
-                data.update(row)
-            
-                res.append(data)
-                data = {}
-               
-            # add in dataBag
-            self._dataBag[u'%s_DATA_QUALITY_FLAGS'%(dataname)] = res
+        # precondition check that there is COLLECT_START 
+        # otherwise quit
+        if (self._dataBag.get("%s_G_DATA_COLLECT_START"%(aDataname),None) is None) or (self._dataBag.get("%s_G_DATA_COLLECT_STOP"%(aDataname),None) is None):
+            self._log.warning("Warnings. Cannot compute the timeliness flags missing information for %s\n"%(sid))
+            return
+       
+        # check collection flag
+        # check that collection time with CollMin = 0.1 H < Collection Stop - Collection Start < CollMax = 25H
+        # min is 4 H = 14400 seconds and max is 25 h = 90 000 seconds
+        coll_min  = 14400
+        coll_max  = 90000
+        collect_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_G_DATA_COLLECT_START"%(aDataname)])
+        collect_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_G_DATA_COLLECT_STOP"%(aDataname)])
     
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start, collect_stop)
+        
+        # check time collection 
+        # if 4 within 24 hours
+        if diff_in_sec < coll_min or diff_in_sec > coll_max:
+            # not ok add the diff
+            self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Fail'
+        else:
+            # ok
+            self._dataBag[u'%s_TIME_FLAGS_COLLECTION_FLAG'%(aDataname)] = 'Pass'
+        
+        self._dataBag[u'%s_TIME_FLAGS_COLLECTION_VAL'%(aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_COLLECTION_TEST'%(aDataname)] = 'x between 4h and 25h'
+        
+        acq_start  = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_G_DATA_ACQ_START"%(aDataname)])
+        
+        acq_stop   = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag["%s_G_DATA_ACQ_STOP"%(aDataname)])
+    
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_stop,acq_start)
+       
+        # check acquisition flag
+        # acqMin = 4 H (14400 s) < Acquisition Time < acqMax 25H (90000 s)
+        acq_min = 14400
+        acq_max = 90000
+        
+        diff_in_sec   = ctbto.common.time_utils.getDifferenceInTime(acq_start,acq_stop)
+        
+        if diff_in_sec > acq_max and diff_in_sec < acq_min:
+            # NOK
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 'Fail'
+        else:
+            # OK
+            self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_FLAG'%(aDataname)] = 'Pass'
+        
+        self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_VAL'%(aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_ACQUISITION_TEST'%(aDataname)]  = 'x between 4h and 25h'
+        
+        # response time 48 h (302400 sec) transmit_dtg - collect_start
+        max_respond_time = 302400
+        transmit_time = ctbto.common.time_utils.getDateTimeFromISO8601(self._dataBag[u'%s_G_DATA_TRANSMIT_DTG'%(aDataname)])
+        diff_in_sec = ctbto.common.time_utils.getDifferenceInTime(collect_start,transmit_time)
+        
+        if diff_in_sec > max_respond_time:
+            self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_FLAG' % (aDataname)] = 'Fail'
+        else:
+            self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_FLAG' % (aDataname)] = 'Pass'
+        
+        self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_VAL' % (aDataname)]   = diff_in_sec
+        self._dataBag[u'%s_TIME_FLAGS_RESPOND_TIME_TEST' % (aDataname)]  = 'no more than 48h'
+        
     def _fetchXeResults(self,sid,dataname):
         """ 
            Get the XE results

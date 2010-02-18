@@ -660,6 +660,8 @@ class SPALAXXML2HTMLRenderer(object):
             q_nuclides  = {'peak' : {}, 'decay' : {} }
             nq_nuclides = {'peak' : {}, 'decay' : {} }
             a_nuclides  = {'peak' : {}, 'decay' : {} }
+            
+            the_mdi         = UNDEFINED
            
             # iterate over the children of ided nuclides => the nuclides
             for nuclide in res:
@@ -709,12 +711,9 @@ class SPALAXXML2HTMLRenderer(object):
                     
                     #get MDI
                     mdi = nuclide.find('{%s}MDI' % (XML2HTMLRenderer.c_namespaces['sml'])).text
-                    if mdi != "N/A":
+                    if the_mdi == UNDEFINED and mdi != "N/A":
                         
-                        one_dict['mdi']           = utils.round_as_string(mdi, RDIGITS) if mdi != UNDEFINED else UNDEFINED
-                        
-                    else:
-                        one_dict['mdi']          = UNDEFINED
+                        the_mdi = mdi
                         
                     # add concetration anyway
                     temp_val                  = nuclide.find('{%s}Concentration' % (XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -762,7 +761,8 @@ class SPALAXXML2HTMLRenderer(object):
            
             self._context['non_quantified_nuclides'] = nq_nuclides
             self._context['quantified_nuclides']     = q_nuclides 
-            self._context['activities_nuclides']     = a_nuclides 
+            self._context['activities_nuclides']     = a_nuclides
+            self._context['mdi']                     = the_mdi 
         
             # Add Cov matrixes here
             # used to respect order of the columns
@@ -824,7 +824,7 @@ class SPALAXXML2HTMLRenderer(object):
            
             # timeliness flags
             res = analysis_elem.find("{%s}Flags/{%s}TimelinessAndAvailabilityFlags" \
-                                     %(XML2HTMLRenderer.c_namespaces['sml'], XML2HTMLRenderer.c_namespaces['sml']))  
+                                     % (XML2HTMLRenderer.c_namespaces['sml'], XML2HTMLRenderer.c_namespaces['sml']))  
             if res == None:
                 res = []
             
