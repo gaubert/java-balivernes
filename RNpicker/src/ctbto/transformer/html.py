@@ -10,6 +10,7 @@ import ctbto.common.time_utils as time_utils
 from ctbto.common.logging_utils import LoggerFactory
 
 UNDEFINED = "N/A"
+SPACECHAR = " "
 RDIGITS   = 5 
 BGDIGITS  = 2
 HDIGITS   = 2
@@ -707,7 +708,8 @@ class SPALAXXML2HTMLRenderer(object):
                         one_dict['mdc']           = utils.round_as_string(mdc, RDIGITS) if mdc != UNDEFINED else UNDEFINED
                         
                     else:
-                        one_dict['mdc']          = UNDEFINED
+                        # do not put UNDEFINED but a space char
+                        one_dict['mdc']          = SPACECHAR
                     
                     #get MDI
                     mdi = nuclide.find('{%s}MDI' % (XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -854,8 +856,8 @@ class SPALAXXML2HTMLRenderer(object):
                
                 one_dict['result'] = timeflag.find('{%s}Pass'%(XML2HTMLRenderer.c_namespaces['sml'])).text
                 try:
-                    one_dict['value']  = utils.round_as_string(timeflag.find('{%s}Value' \
-                                         % (XML2HTMLRenderer.c_namespaces['sml'])).text, HDIGITS)
+                    temp_val = timeflag.find('{%s}Value' % (XML2HTMLRenderer.c_namespaces['sml']))
+                    one_dict['value']  = utils.round_as_string(temp_val , HDIGITS) if temp_val != UNDEFINED else UNDEFINED
                 except Exception, _: #pylint: disable-msg= W0703
                     #cannot convert this number value so put the string as it is
                     one_dict['value']  = timeflag.find('{%s}Value'%(XML2HTMLRenderer.c_namespaces['sml'])).text
@@ -880,7 +882,10 @@ class SPALAXXML2HTMLRenderer(object):
                     one_dict['name']  = dqflag.tag
                
                 one_dict['result'] = dqflag.find('{%s}Pass' % (XML2HTMLRenderer.c_namespaces['sml'])).text
-                one_dict['value']  = utils.round_as_string(dqflag.find('{%s}Value'  % (XML2HTMLRenderer.c_namespaces['sml'])).text, 3)
+                
+                temp_val = dqflag.find('{%s}Value'  % (XML2HTMLRenderer.c_namespaces['sml'])).text
+                one_dict['value']  = utils.round_as_string(temp_val, 3)  if temp_val != UNDEFINED else UNDEFINED
+                
                 one_dict['test']   = dqflag.find('{%s}Test' % (XML2HTMLRenderer.c_namespaces['sml'])).text
             
                 flags.append(one_dict)
