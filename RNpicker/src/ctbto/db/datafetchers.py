@@ -2346,7 +2346,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # check Xenon Volume
         volMin = 0.43
         
-        aux = self._dataBag.get('%s_AUXILIARY_INFO'%(aDataname),None)
+        aux = self._dataBag.get('%s_AUXILIARY_INFO' % (aDataname), None)
         
         if aux is not None:
             vol     = aux[u'XE_VOLUME']
@@ -2558,13 +2558,14 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # calculate undecay corrected values for XE133 if relevant
         for method in xe133_data:
             undecay_data  = xe133_data.get(method, None)
-            xe133_a       = xe133_act.get(method, None)
+            xe133_a       = xe133_act.get(method, -1)
             
-            xe133M_a = xe133M_act.get(method, None)
-            if xe133M_act != 0:
-               undecay_data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(nb_corrector.XE133, xe133_a, xe133M_a))
+            #zero for the test below in order to avoid division by zero
+            xe133M_a = xe133M_act.get(method, 0)
+            if xe133M_a != 0 and xe133_a != -1:
+                undecay_data[u'UNDECAYED_ACT'] = float(nb_corrector.undecay_correct(nb_corrector.XE133, xe133_a, xe133M_a))
             else:
-               undecay_data[u'UNDECAYED_ACT'] = UNDEFINED
+                undecay_data[u'UNDECAYED_ACT'] = UNDEFINED
             
             #res.append(undecay_data)
             
