@@ -3,7 +3,7 @@ import logging
 
 from ctbto.common.logging_utils import LoggerFactory
 from ctbto.common import CTBTOError
-from org.ctbto.conf import Conf
+from org.ctbto.conf.conf_helper import Conf
 
 
 class RequestParser(object):

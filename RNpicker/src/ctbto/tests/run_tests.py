@@ -12,7 +12,7 @@ import ctbto.common.utils as utils
 import ctbto.common.xml_utils
 
 from ctbto.db        import DatabaseConnector,DBDataFetcher
-from org.ctbto.conf  import Conf
+from org.ctbto.conf.conf_helper  import Conf
 
 from ctbto.renderers import GenieParticulateRenderer
 from ctbto.renderers import SaunaRenderer

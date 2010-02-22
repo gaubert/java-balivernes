@@ -1,6 +1,9 @@
 #!/bin/sh
 #set -x
 
+# force a friendly umask
+umask 002
+
 # Runs on Linux
 #################################
 ## RNPicker Distribution home directory
@@ -27,7 +30,7 @@ DEFAULT_ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
 DEFAULT_LIBXML2_DIR=$RNPICKER_HOME/ext/clib/libxml2/lib
 
 #DEFAULT_LIBXSLT_DIR=/usr/lib
-DEFAULT_LIBXSLT_DIR=/home/smd/aubert/new-env/ext/clib/libxslt/lib
+DEFAULT_LIBXSLT_DIR=$RNPICKER_HOME/ext/clib/libxslt/lib
 
 DEFAULT_RNPICKER_CONF_DIR=$RNPICKER_HOME/conf
 
