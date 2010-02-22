@@ -1,3 +1,24 @@
+[22.02.10] Release of RNPicker-v1.3-20100222
+List of changes:
+1) SAMPML features
+
+- Full support for Spalax. This is the first version sending correct Spalax data,
+- add <SampleID> for each sample,
+- Correct Flag response time from 84H to 48 H,
+- <AirQuantity> renamed to <AirVolume>,
+- Add <XeVolume> for each sample,
+- Rename UUID in REFID and add SID,
+- Add <UndecayCorrectedActivity> field,
+- Harmonize units between Spalax and Sauna: everything is in (mBq, mBq/m3).
+
+2) Technical features
+- zip or tar files can be delivered. The zip file contains both SAMPML and ARR HTML files,
+- file names now contain the station name for clarity.
+
+3) HTML ARR
+An HTML ARR summarizing the information is now delivered for both Spalax and Sauna.
+Created following the radionuclide scientists design.
+
 [26.03.09] Release of RNPicker-v1.2-20090326
 List of changes:
 1) SAMPML Format refactoring
