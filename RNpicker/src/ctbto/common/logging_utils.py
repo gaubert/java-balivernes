@@ -27,11 +27,12 @@ class LoggerFactory:
             conf_file = None
             debug = False
             try:
-                conf_file = Conf.get_instance().get('log', 'conf_file', '/home/aubert/workspace/RNpicker/etc/conf/logging_rnpicker.config')
+                conf_file = Conf.get_instance().get('Logging', 'conf_file', None)
                 logging.addLevelName(LoggerFactory.DISABLED, "DISABLED")
-                debug = Conf.get_instance().getboolean('log', 'debug', False)
+                debug = Conf.get_instance().getboolean('Logging', 'debug', False)
                 if debug is True:
                     print 'debug ' + str(debug) + ',initializing logging, using ' + conf_file
+                
                 logging.config.fileConfig(conf_file)
                 
                 #add console handler: specific for RNPicker Apps
