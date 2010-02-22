@@ -7,7 +7,7 @@ function for dynamically loading a module
 
 '''
 
-import md5
+import hashlib
 import imp
 
 #import traceback
@@ -27,7 +27,9 @@ def load(a_module_name, a_src_dir):
         fin = open(pathname, 'rb')
 
         try:
-            return  imp.load_source(md5.new(pathname).hexdigest(), pathname, fin)
+            the_md5 = hashlib.md5()
+            the_md5.update(pathname)
+            return  imp.load_source(the_md5.hexdigest(), pathname, fin)
         finally:
             try: fin.close()
             except: pass
