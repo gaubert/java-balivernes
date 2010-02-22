@@ -19,10 +19,10 @@ import shutil
 import ctbto.common.time_utils
 from ctbto.common.logging_utils import LoggerFactory
 import ctbto.common.utils
-from org.ctbto.conf    import Conf
-from ctbto.db          import DatabaseConnector
+from org.ctbto.conf.conf_helper import Conf
+from ctbto.db                   import DatabaseConnector
 import ctbto.run.generate_arr as arr_generator
-from ctbto.email import DataEmailer
+from ctbto.email                import DataEmailer
 
 NAME        = "generate_and_email"
 VERSION     = "0.6"

@@ -9,7 +9,7 @@ import subprocess
 import ctbto.common.utils
 from ctbto.common.utils import ftimer
 from ctbto.common import CTBTOError
-from org.ctbto.conf import Conf
+from org.ctbto.conf.conf_helper import Conf
 from ctbto.common.logging_utils import LoggerFactory
 
 def _complain_ifclosed(closed):

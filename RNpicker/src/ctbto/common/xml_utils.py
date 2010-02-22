@@ -3,7 +3,7 @@ import os
 from lxml import etree
 
 import ctbto.common.utils
-from org.ctbto.conf import Conf
+from org.ctbto.conf.conf_helper import Conf
 
 
 def pretty_print_xml(aFDescriptor,aOutput):
@@ -67,13 +67,13 @@ class XSDValidator(object):
         
         # asserting input parameters
         if self._xsd_path == None:
-           raise Exception("self._xsd_path is None")
+            raise Exception("self._xsd_path is None")
         else:
             # check if file exits
             if not os.path.exists(self._xsd_path):
                 raise Exception("the file %s does not exits"%(self._xsd_path))
         
-        f = open(self._xsd_path,"r")
+        f = open(self._xsd_path, "r")
         
         # open xsd file
         xml_schema_doc = etree.parse(f)
@@ -91,7 +91,7 @@ class XSDValidator(object):
     
         try:
             self._xml_schema.assertValid(data_xml)
-        except Exception, _:
+        except Exception, exce:
             
             log = self._xml_schema.error_log
         
@@ -99,9 +99,9 @@ class XSDValidator(object):
                 # get iterator to get the first error in file
                 iter    = log.__iter__()
                 err     = iter.next()
-                error   = "line %d, error %s"%(err.line,err.message)
+                error   = "line %d, error %s" % (err.line,err.message)
             else:
-                error   = e.message
+                error   = exce.message
                     
             raise XSDValidationError(error)
         
@@ -113,7 +113,7 @@ def main():
         validator = XSDValidator("/home/aubert/dev/src-reps/java-balivernes/RNpicker/etc/ext/xsd/%s"%(schema_file))
         
         dir = "/tmp/TestNewFormat/samples"
-        dirList=os.listdir(dir)
+        dirList = os.listdir(dir)
         
         for path in dirList:
             _, extension = path.split('.')

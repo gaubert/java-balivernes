@@ -18,7 +18,7 @@ import ctbto.common.time_utils
 import ctbto.common.utils
 import ctbto.common.xml_utils
 from ctbto.common.logging_utils import LoggerFactory
-from org.ctbto.conf    import Conf
+from org.ctbto.conf.conf_helper import Conf
 from ctbto.db          import DatabaseConnector, DBDataFetcher
 from ctbto.renderers   import BaseRenderer
 from ctbto.transformer import SAUNAXML2HTMLRenderer, SPALAXXML2HTMLRenderer

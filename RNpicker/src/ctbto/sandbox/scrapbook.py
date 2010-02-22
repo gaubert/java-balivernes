@@ -17,10 +17,10 @@ import logging.config
 
 
 
-from org.ctbto.conf    import Conf
-from ctbto.db.rndata   import RemoteFSDataSource
-from ctbto.query       import RequestParser
-from ctbto.transformer import XML2HTMLRenderer
+from org.ctbto.conf.conf_helper import Conf
+from ctbto.db.rndata            import RemoteFSDataSource
+from ctbto.query                import RequestParser
+from ctbto.transformer          import XML2HTMLRenderer
 
 #
 str1 = """Dallas Cowboys football practice at Valley Ranch was delayed on Wednesday

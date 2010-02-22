@@ -9,7 +9,7 @@ import unittest
 import sys
 import os
 import org.ctbto.conf
-from org.ctbto.conf import Conf
+from org.ctbto.conf.conf_helper import Conf
 
 
 

@@ -9,7 +9,7 @@ import sqlalchemy
 import ctbto.db.rndata
 import ctbto.common.utils
 import os
-from org.ctbto.conf  import Conf
+from org.ctbto.conf.conf_helper  import Conf
 
 
 SQL_GET_SAMPLE_IDS = "select sample_id from RMSAUTO.GARDS_SAMPLE_DATA where moddate between to_date('%s', 'yyyy/mm/dd') and to_date('%s', 'yyyy/mm/dd')"

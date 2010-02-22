@@ -14,7 +14,7 @@ import sqlrequests
 from ctbto.query       import RequestParser
 from ctbto.common      import CTBTOError
 from ctbto.calculation import NobleGasDecayCorrector 
-from org.ctbto.conf    import Conf
+from org.ctbto.conf.conf_helper  import Conf
 from ctbto.common.logging_utils import LoggerFactory
         
 

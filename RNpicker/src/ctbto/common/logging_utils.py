@@ -7,7 +7,7 @@ Created on Jan 28, 2010
 import logging.config
 import traceback
 import sys
-from org.ctbto.conf import Conf
+from org.ctbto.conf.conf_helper import Conf
 
 class LoggerFactory:
     """ Factory for handling Loggers """
