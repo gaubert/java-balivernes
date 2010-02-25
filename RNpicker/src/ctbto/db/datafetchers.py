@@ -2596,7 +2596,18 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults != 1:
-            raise CTBTOError(-1, "Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s" \
+            
+            # get energy calibration info
+            # look for the line with winner='Y'
+            # this is to support the new implementation of SPALAX
+            result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_ENERGY_CAL_WINNER % (sid))
+            
+            rows = result.fetchall()
+            
+            nbResults = len(rows)
+            
+            if nbResults != 1:
+                raise CTBTOError(-1, "Expecting to have 1 energy calibration row for sample_id %s but got %d either None or more than one. %s" \
                              % (self._sampleID,nbResults,rows))
         
         # create a list of dicts
@@ -2626,8 +2637,20 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         nbResults = len(rows)
        
         if nbResults != 1:
-            raise CTBTOError(-1,"Expecting to have 1 resolution calibration row for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
-        
+            
+            # get energy calibration info
+            # look for the line with winner='Y'
+            # this is to support the new implementation of SPALAX
+            result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_RESOLUTION_CAL_WINNER % (sid))
+            
+            rows = result.fetchall()
+            
+            nbResults = len(rows)
+            
+            if nbResults != 1:
+                raise CTBTOError(-1,"Expecting to have 1 resolution calibration row for sample_id %s but got %d either None or more than one. %s"\
+                                 % (self._sampleID,nbResults,rows))
+            
         # init list of dicts
         data = {}
 

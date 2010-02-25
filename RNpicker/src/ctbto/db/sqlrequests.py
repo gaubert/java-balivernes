@@ -123,8 +123,12 @@ SQL_SPALAX_GET_XE_RESULTS = "select METHOD_ID,NUCLIDE_ID,CONC,CONC_ERR,MDC,MDI,N
 SQL_SPALAX_GET_XE_REF_LINES = "select * from RMSAUTO.GARDS_XE_REFLINE_MASTER order by refpeak_energy"
  
 SQL_SPALAX_GET_ENERGY_CAL = "select * from RMSAUTO.GARDS_ENERGY_CAL where sample_id=%s"
+
+SQL_SPALAX_GET_ENERGY_CAL_WINNER = "select * from RMSAUTO.GARDS_ENERGY_CAL where sample_id=%s and winner='Y'"
  
 SQL_SPALAX_GET_RESOLUTION_CAL = "select * from RMSAUTO.GARDS_RESOLUTION_CAL where sample_id=%s"
+
+SQL_SPALAX_GET_RESOLUTION_CAL_WINNER = "select * from RMSAUTO.GARDS_RESOLUTION_CAL where sample_id=%s and winner='Y'"
  
 SQL_SPALAX_GET_EFFICIENCY_CAL = "select * from RMSAUTO.GARDS_EFFICIENCY_CAL where sample_id=%s"
  
