@@ -148,7 +148,7 @@ SQL_SAUNA_GET_HISTOGRAM_INFO = "select G_CHANNELS, B_CHANNELS, G_ENERGY_SPAN, B_
  
 """ Get information regarding all identified nuclides """
 SQL_SAUNA_GET_IDENTIFIED_NUCLIDES = "select lib.NAME as NAME, lib.HALFLIFE as halflife, lib.type as type, conc.conc as conc, conc.conc_err as conc_err, conc.MDC as MDC, conc.LC as LC, conc.LD as LD, conc.NID_FLAG as NID_FLAG from RMSAUTO.GARDS_BG_ISOTOPE_CONCS conc, RMSMAN.GARDS_XE_NUCL_LIB lib where sample_id=%s and conc.NUCLIDE_ID=lib.NUCLIDE_ID"
- 
+  
 SQL_SAUNA_GET_NUCLIDE_FOR_ROI ="select lib.name, p.roi from gards_bg_proc_params_roi p, GARDS_XE_NUCL_LIB lib where p.sample_id=%s and p.nuclide_id=lib.nuclide_id order by roi"
  
 SQL_SAUNA_GET_ROI_INFO = "select c.roi as ROI,c.GROSS as GROSS, c.GROSS_ERR as GROSS_ERR, c.GAS_BKGND_GROSS as GAS_BKGND_GROSS,\
