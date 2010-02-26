@@ -2601,7 +2601,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
             # look for the line with winner='Y'
             # this is to support the new implementation of SPALAX
             result = self._mainConnector.execute(sqlrequests.SQL_SPALAX_GET_ENERGY_CAL_WINNER % (sid))
-            
+             
             rows = result.fetchall()
             
             nbResults = len(rows)
