@@ -585,7 +585,7 @@ class Runner(object):
     
         for sid in sids:
             
-            if str(sid) in to_ignore:
+            if sid in to_ignore:
                 self._log.info("*************************************************************")
                 self._log.info("Ignore the retrieval of the sample id %s as it is incomplete."%(sid))
                 self._log.info("*************************************************************\n")

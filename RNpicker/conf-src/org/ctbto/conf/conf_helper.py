@@ -383,7 +383,7 @@ class Conf(object):
         return self._boolean_states[v.lower()]
     
     def get_list(self, section, option, default=None, fail_if_missing=False):
-        """ get a list of string """
+        """ get a list of string, int  """
         
         val = self.get(section, option, default, fail_if_missing)
         
