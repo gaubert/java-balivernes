@@ -1,3 +1,7 @@
+[03.03.10] Release of RNPicker-v1.3-20100303
+Fix bug in the ingore sample functionality
+Add fix due to the autosaint changes
+
 [22.02.10] Release of RNPicker-v1.3-20100222
 List of changes:
 1) SAMPML features
