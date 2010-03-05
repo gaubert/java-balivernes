@@ -4,8 +4,9 @@ from distutils.core import setup
 
 # new version 1.2.4 released 310709
 # new version 1.3.0 released 010210
-# add zip support for the sent archive files
-version = '1.3.0'
+# new version 1.3.1 released 050310
+
+version = '1.3.1'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 setup(name='RNPicker',

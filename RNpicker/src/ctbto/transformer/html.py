@@ -186,7 +186,7 @@ class SAUNAXML2HTMLRenderer(object):
             
             # get collection comments
             res = elem.xpath(expr, name = "Comments")
-            if len(res) == 0 or res[0].text == UNDEFINED: 
+            if len(res) == 0 or res[0].text == None or res[0].text == UNDEFINED: 
                 self._context['collection_comments'] = UNDEFINED
             else:
                 comments = []
