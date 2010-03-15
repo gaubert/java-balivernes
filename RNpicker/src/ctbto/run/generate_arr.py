@@ -368,6 +368,9 @@ class Runner(object):
         self._ngUser            = self._conf.get("NobleGazDatabaseAccess", "user")
         self._ngPassword        = self._conf.get("NobleGazDatabaseAccess", "password")
         self._ngActivateTimer   = self._conf.getboolean("NobleGazDatabaseAccess", "activateTimer", True)
+        
+        if self._conf.get("NobleGazDatabaseAccess","obfuscate", False):
+            self._ngPassword = ctbto.common.utils.deobfuscate_string(self._ngPassword)
    
         # create DB connector
         self._ngMainConn = DatabaseConnector(self._ngDatabase, self._ngUser, self._ngPassword, self._ngActivateTimer)
@@ -376,6 +379,10 @@ class Runner(object):
         self._ParticulateArchiveDatabaseAccess       = self._conf.get("ParticulateArchiveDatabaseAccess", "hostname")
         self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess", "user")
         self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess", "password")
+        
+        if self._conf.get("ParticulateArchiveDatabaseAccess","obfuscate", False):
+            self._archivePassword = ctbto.common.utils.deobfuscate_string(self._archivePassword)
+        
         self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess", "activateTimer", True)
         
         # create DB connector
@@ -383,6 +390,7 @@ class Runner(object):
                                              self._archivePassword, self._archiveActivateTimer)
         #connect to the DBs
         self._ngMainConn.connect()
+        
         self._ngArchConn.connect()
     
     @classmethod
