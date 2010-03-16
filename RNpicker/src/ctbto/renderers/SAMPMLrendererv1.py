@@ -634,33 +634,6 @@ class SpalaxRenderer(BaseRenderer):
         else:
             self._log.warning("Warning. Could not find any resolution calibration info for sample %s\n" % (prefix))
         
-        template = self._conf.get("SpalaxTemplatingSystem", "spalaxEfficencyCalTemplate")
-        
-        eff_id = self._fetcher.get("%s_G_EFFICIENCY_CAL" % (prefix), None)
-        
-        
-        
-        if (eff_id is not None):
-            # add calib info if it isn't there already
-            if eff_id not in calibInfos:
-                # get efficiency calibration 
-                eff = self._fetcher.get(eff_id, {})
-        
-                dummy_template = re.sub("\${LN_TERM0}", str(eff.get('COEFF1', UNDEFINED)), template)
-                dummy_template = re.sub("\${TERM0}", str(eff.get('COEFF2', UNDEFINED)), dummy_template)
-                dummy_template = re.sub("\${TERM1}", str(eff.get('COEFF3', UNDEFINED)), dummy_template)
-                dummy_template = re.sub("\${TERM2}", str(eff.get('COEFF4', UNDEFINED)), dummy_template)
-                dummy_template = re.sub("\${TERM3}", str(eff.get('COEFF5', UNDEFINED)), dummy_template)
-                dummy_template = re.sub("\${TERM4}", str(eff.get('COEFF6', UNDEFINED)), dummy_template)
-                dummy_template = re.sub("\${TERM5}", str(eff.get('COEFF7', UNDEFINED)), dummy_template)
-                dummy_template = re.sub("\${EF_ID}", eff_id, dummy_template)
-        
-                # add generated xml in final container
-                xml += dummy_template
-            
-                # add the id in the set of existing infos
-                calibInfos.add(eff_id)
-        
         return xml
     
     def _fillCalibration(self):

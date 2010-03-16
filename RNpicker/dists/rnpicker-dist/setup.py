@@ -5,8 +5,9 @@ from distutils.core import setup
 # new version 1.2.4 released 310709
 # new version 1.3.0 released 010210
 # new version 1.3.1 released 050310
+# new version 1.3.2 released 160310
 
-version = '1.3.1'
+version = '1.3.2'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
 setup(name='RNPicker',
