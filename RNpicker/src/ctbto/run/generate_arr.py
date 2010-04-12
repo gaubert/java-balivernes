@@ -609,6 +609,10 @@ class Runner(object):
                 # fetch noble gaz or particulate
                 fetcher = DBDataFetcher.getDataFetcher(self._ngMainConn,self._ngArchConn,sid)
    
+                # prevent from trying to generate particulate samples
+                if isinstance(fetcher,ctbto.db.datafetchers.ParticulateDataFetcher):
+                    raise Exception("Generation of Particulate XML and ARR files not supported")
+   
                 #modify remoteHost
                 fetcher.setRemoteHost(self._conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
             
@@ -767,7 +771,7 @@ def run():
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            LoggerFactory.get_logger("Runner").error("%s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
             if parsed_args.get('verbose',1) == 3:
                 a_logger = LoggerFactory.get_logger("Runner").error
             else:

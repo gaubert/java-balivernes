@@ -15,8 +15,8 @@ class RequestParser(object):
     PAR      = 'PAR'
     
     # spectrum types
-    c_spectrum_particulate_types   = set(['NONE','CURR','QC','PREL','BK'])
-    c_spectrum_particulate_default = set(['CURR','QC','PREL','BK'])
+    c_spectrum_particulate_types   = set(['NONE','CURR','QC','PREL','DETBK','BK'])
+    c_spectrum_particulate_default = set(['CURR','QC','PREL','DETBK','BK'])
     
     c_analysis_particulate_types   = set(['NONE','CURR','QC','PREL','BK'])
     c_analysis_particulate_default = set(['CURR','QC','PREL','BK'])
