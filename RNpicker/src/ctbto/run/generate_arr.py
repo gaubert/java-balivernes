@@ -75,21 +75,21 @@ Usage: generate_arr [options]
    --help     Show this usage information.
 
   Examples:
-  >./generate_arr --sids 211384,248969 --dir ./results 
+  >./generate_NG_arr --sids 211384,248969 --dir ./results 
   
   Get the SAMPML and ARR files for the sample ids 211384 and 248969 and store them in ./results.
   
-  >./generate_arr --stations USX74,CAL05 --dir ./results 
+  >./generate_NG_arr --stations USX74,CAL05 --dir ./results 
   
   Get the SAMPML and ARR files for the samples belonging to the stations USX75 and CAL05
   from yesterday to today.
   
-  >./generate_arr --from 2009-01-15 --stations CNX22,USX75
+  >./generate_NG_arr --from 2009-01-15 --stations CNX22,USX75
   
   Get the SAMPML and ARR files for the samples belonging to the stations CNX22 and USX75
   and produced from the 15 of Jan 2009 until today.
   
-  >./generate_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
+  >./generate_NG_arr --from 2008-12-02 --end 2009-01-15 --dir ./results --conf_dir ../conf
   
   Get the SAMPML and ARR files for the samples belonging to all the SAUNA stations for the passed
   period. The configuration file rnpicker.config under ../conf will be used to get the configuration

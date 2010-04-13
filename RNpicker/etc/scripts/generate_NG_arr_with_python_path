@@ -26,11 +26,11 @@ PYTHON_BIN=python
 # /usr/lib/oracle/xe/app/oracle/product/10.2.0/server
 DEFAULT_ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
 
-DEFAULT_LIBXML2_DIR=/usr/lib
-#DEFAULT_LIBXML2_DIR=$RNPICKER_HOME/ext/clib/libxml2/lib
+#DEFAULT_LIBXML2_DIR=/usr/lib
+DEFAULT_LIBXML2_DIR=/dvl/software/site/usr/newlibs/lib64
 
-DEFAULT_LIBXSLT_DIR=/usr/lib
-#DEFAULT_LIBXSLT_DIR=$RNPICKER_HOME/ext/clib/libxslt/lib
+#DEFAULT_LIBXSLT_DIR=/usr/lib
+DEFAULT_LIBXSLT_DIR=/dvl/software/site/usr/newlibs/lib64
 
 DEFAULT_RNPICKER_CONF_DIR=$RNPICKER_HOME/conf
 
@@ -107,11 +107,13 @@ fi
 ## Add lib dir 
 STARTERPATH="$RNPICKER_HOME/lib"
 ## Add all eggs in PYTHONPATH
-for n in `find $RNPICKER_HOME/lib/*`; do
+for n in `find $RNPICKER_HOME/lib/*.egg`; do
       STARTERPATH=$STARTERPATH":"$n
 done
 
 export PYTHONPATH=$STARTERPATH:$PYTHONPATH
+
+#export PYTHONPATH=/home/smd/aubert/public/generate_and_email_runtime/lib/python2.6/site-packages/Jinja2-2.1.1-py2.6-linux-x86_64.egg:/home/smd/aubert/public/generate_and_email_runtime/lib/python2.6/site-packages/SQLAlchemy-0.5.0-py2.6.egg:$PYTHONPATH
 
 ###################################
 ## create bootstrap and launch program

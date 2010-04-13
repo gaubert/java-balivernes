@@ -26,8 +26,9 @@ PYTHONBIN=/usr/bin/python
 # new version 1.3.0 released 010210
 # new version 1.3.1 released 050310
 # new version 1.3.2 released 160310
+# new version 1.3.3 released xxxxxx 
 
-RNVERSION=1.3.2
+RNVERSION=1.3.3
 RNDISTNAME=rnpicker-$(RNVERSION)
 
 CONFVERSION=0.8
@@ -66,7 +67,7 @@ rn-ppath-dist: clean init conf-egg-dist
 	cp -R $(BASEDIR)/src/ctbto $(RNDIST)/RNPicker-$(RNVERSION)/lib
 	# copy shell scripts in dist/bin
 	mkdir -p $(RNDIST)/RNPicker-$(RNVERSION)/bin
-	cp -R $(BASEDIR)/etc/scripts/generate_with_python_path_arr $(RNDIST)/RNPicker-$(RNVERSION)/bin/generate_NG_arr
+	cp -R $(BASEDIR)/etc/scripts/generate_NG_arr_with_python_path $(RNDIST)/RNPicker-$(RNVERSION)/bin/generate_NG_arr
 	cp -R $(BASEDIR)/etc/scripts/generate_products_and_email $(RNDIST)/RNPicker-$(RNVERSION)/bin/generate_products_and_email
 	# copy conf files
 	cp -R $(BASEDIR)/etc/conf $(RNDIST)/RNPicker-$(RNVERSION)
