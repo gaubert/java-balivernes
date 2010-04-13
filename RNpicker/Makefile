@@ -7,7 +7,7 @@ BASEDIR=.
 DISTS=$(BASEDIR)/dists
 
 #RNDist info
-RNDIST=$(DISTS)/rnpicker-dist
+RNDIST=$(DISTS)/rnpicker-ppath-dist
 RNBUILD=$(RNDIST)/build
 RNBUILDDIST=$(RNDIST)/build/egg-dist
 
@@ -22,14 +22,21 @@ ETC=$(BASEDIR)/etc
 
 PYTHONBIN=/usr/bin/python
 
-RNVERSION=1.3.0
+# new version 1.2.4 released 310709
+# new version 1.3.0 released 010210
+# new version 1.3.1 released 050310
+# new version 1.3.2 released 160310
+
+RNVERSION=1.3.2
 RNDISTNAME=rnpicker-$(RNVERSION)
 
 CONFVERSION=0.8
 CONFDISTNAME=conf-$(CONFVERSION)
 
 
-all: rn-src-dist conf-src-dist
+#all: rn-src-dist conf-src-dist
+
+all: rn-ppath-dist
 
 init:
 	mkdir -p $(RNDIST)
@@ -51,6 +58,23 @@ rn-src-dist: clean init
 	cd $(RNDIST); $(PYTHONBIN) setup.py sdist -d ../../$(RNBUILD) 
 	echo "distribution stored in $(RNBUILD)"
 
+rn-ppath-dist: clean init conf-egg-dist 
+	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
+	mkdir -p $(RNDIST)/RNPicker-$(RNVERSION)
+	#add rnpicker sources
+	mkdir -p $(RNDIST)/RNPicker-$(RNVERSION)/lib/ctbto
+	cp -R $(BASEDIR)/src/ctbto $(RNDIST)/RNPicker-$(RNVERSION)/lib
+	# copy shell scripts in dist/bin
+	mkdir -p $(RNDIST)/RNPicker-$(RNVERSION)/bin
+	cp -R $(BASEDIR)/etc/scripts/generate_with_python_path_arr $(RNDIST)/RNPicker-$(RNVERSION)/bin/generate_NG_arr
+	cp -R $(BASEDIR)/etc/scripts/generate_products_and_email $(RNDIST)/RNPicker-$(RNVERSION)/bin/generate_products_and_email
+	# copy conf files
+	cp -R $(BASEDIR)/etc/conf $(RNDIST)/RNPicker-$(RNVERSION)
+	#add dependency: conf-egg-dist 
+	cp $(CONFDIST)/build/conf-1.1-py2.5.egg $(RNDIST)/RNPicker-$(RNVERSION)/lib
+	cd $(RNDIST); tar zcvf ./RNPicker-$(RNVERSION).tar.gz ./RNPicker-$(RNVERSION)
+	echo "distribution stored in $(RNDIST)"
+
 conf-src-dist: clean init 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)
@@ -67,7 +91,8 @@ clean: clean-build
 	cd $(CONFDIST); rm -Rf build; rm -Rf conf.egg-info; rm -Rf dist; rm -Rf org
 	
 clean-build:
-	cd $(RNBUILD); rm -Rf egg-dist
+	cd $(RNBUILD); rm -Rf egg-dist; 
+	rm -Rf $(RNDIST)/RNPicker-$(RNVERSION)
 	cd $(CONFBUILD); rm -Rf egg-dist
 
     
