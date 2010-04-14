@@ -130,17 +130,19 @@ class SAUNAXML2HTMLRenderer(object):
             self._context['arrival_date'] = time_utils.getOracleDateFromISO8601(res[0].text)
         else:
             self._context['arrival_date']    = UNDEFINED
-       
-        # for the dates, a prefix is needed
-        # for the moment always take SPHD-G but it has to be configurable
-        #dateExpr = "//*[local-name() = \"Spectrum\" and ends-with(@id,\"SPHD-G\")]"
-        # no ends-with in xpath 1.0 use contains instead substring('','') as it is simpler
-        # and it does the trick
-        date_expr            = "//*[local-name() = $name and contains(@id,$suffix)]"
-        curr_spectrum_id     = None
+            
+        spectrum_expr            = "//*[local-name() = $name and contains(@id,$suffix)]"
+        
+        # get the sample ID to find the spectrum 
+        res = root.xpath('//*[local-name() = $name]/@SID', name = 'SampleInformation')
+        
+        if len(res) != 1:
+            raise Exception('Should only have 1 SID in the XML file and found %d. res=[%s]' %(len(res), res))
+        
+        curr_spectrum_id     = res[0]
  
         # res is Element Spectrum 
-        res = root.xpath(date_expr, suffix = 'SPHD', name   = 'SpectrumGroup')
+        res = root.xpath(spectrum_expr, suffix = curr_spectrum_id, name   = 'SpectrumGroup')
         if len(res) > 0:
             elem = res[0]
             # get attribute id
