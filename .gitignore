@@ -19,6 +19,7 @@ RNpicker/dists/rnpicker-dist/dist*
 RNpicker/dists/rnpicker-dist/MANIFEST
 RNpicker/dists/rnpicker-dist/conf*
 RNpicker/dists/rnpicker-dist/scripts*
+RNpicker/dists/rnpicker-ppath-dist/RNPicker*
 .coverage
 .project
 .externalToolBuilders

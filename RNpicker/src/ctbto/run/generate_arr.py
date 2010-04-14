@@ -561,7 +561,7 @@ class Runner(object):
         
         
         # default request => do not retrieve PREL but all the rest
-        request="spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
+        request = "spectrum=CURR/DETBK/GASBK/QC, analysis=CURR"
         
         # check if we have some sids or we get it from some dates
         self._log.info("*************************************************************")
@@ -569,8 +569,8 @@ class Runner(object):
         if 'sids' in a_args:
             sids    = a_args['sids']
         elif 'from' in a_args or 'end' in a_args or 'stations' in a_args:
-            begin    = a_args.get('from',ctbto.common.time_utils.getOracleDateFromISO8601(ctbto.common.time_utils.getYesterday()))
-            end      = a_args.get('end',ctbto.common.time_utils.getOracleDateFromISO8601(ctbto.common.time_utils.getToday()))
+            begin    = a_args.get('from', ctbto.common.time_utils.getOracleDateFromISO8601(ctbto.common.time_utils.getYesterday()))
+            end      = a_args.get('end', ctbto.common.time_utils.getOracleDateFromISO8601(ctbto.common.time_utils.getToday()))
             stations = a_args.get('stations',None)
             if stations != None:
                 stations = self._get_stations_ids(stations)
@@ -611,7 +611,7 @@ class Runner(object):
    
                 # prevent from trying to generate particulate samples
                 if isinstance(fetcher,ctbto.db.datafetchers.ParticulateDataFetcher):
-                    raise Exception("Generation of Particulate XML and ARR files not supported")
+                    raise Exception("Generation for Particulate ARR files not supported")
    
                 #modify remoteHost
                 fetcher.setRemoteHost(self._conf.get('RemoteAccess','nobleGazRemoteHost','dls007'))
@@ -651,7 +651,7 @@ class Runner(object):
             measurement_type = splitted[0]
             
             # generate arr only for SPHD (FULL and PREL) normally
-            if measurement_type == 'SPHD':
+            if measurement_type in ('SPHD', 'PREL'):
                 if a_fetcher.get('SAMPLE_TYPE') == 'SAUNA':
                     self._log.info("Create ARR from SAUNA SAMPML data file for %s" % (a_sid))
                
@@ -718,7 +718,8 @@ def run_with_args(a_args,exit_on_success=False):
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\n"%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+            LoggerFactory.get_logger("Runner").error("Try `generate_NG_arr --help (or -h)' for more information.\n")
             if parsed_args.get('verbose',1) == 3:
                 a_logger = LoggerFactory.get_logger("Runner").error
             else:
