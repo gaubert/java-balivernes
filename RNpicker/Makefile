@@ -21,6 +21,7 @@ BUILDDIST=$(BUILD)/egg-dist
 ETC=$(BASEDIR)/etc
 
 PYTHONBIN=/usr/bin/python
+PYTHONVERSION=2.5
 
 # new version 1.2.4 released 310709
 # new version 1.3.0 released 010210
@@ -72,7 +73,7 @@ rn-ppath-dist: clean init conf-egg-dist
 	# copy conf files
 	cp -R $(BASEDIR)/etc/conf $(RNDIST)/RNPicker-$(RNVERSION)
 	#add dependency: conf-egg-dist 
-	cp $(CONFDIST)/build/conf-1.1-py2.5.egg $(RNDIST)/RNPicker-$(RNVERSION)/lib
+	cp $(CONFDIST)/build/conf-1.1-py$(PYTHONVERSION).egg $(RNDIST)/RNPicker-$(RNVERSION)/lib
 	cd $(RNDIST); tar zcvf ./RNPicker-$(RNVERSION).tar.gz ./RNPicker-$(RNVERSION)
 	echo "distribution stored in $(RNDIST)"
 
