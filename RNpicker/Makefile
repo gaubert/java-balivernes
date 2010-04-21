@@ -93,7 +93,7 @@ clean: clean-build
 	
 clean-build:
 	cd $(RNBUILD); rm -Rf egg-dist; 
-	rm -Rf $(RNDIST)/RNPicker-$(RNVERSION)
+	rm -Rf $(RNDIST)/RNPicker-*
 	cd $(CONFBUILD); rm -Rf egg-dist
 
     
