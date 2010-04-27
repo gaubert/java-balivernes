@@ -369,7 +369,9 @@ class Runner(object):
         self._ngPassword        = self._conf.get("NobleGazDatabaseAccess", "password")
         self._ngActivateTimer   = self._conf.getboolean("NobleGazDatabaseAccess", "activateTimer", True)
         
-        if self._conf.get("NobleGazDatabaseAccess","obfuscate", False):
+        t_var = self._conf.getboolean("NobleGazDatabaseAccess","obfuscatePassword", False)
+        
+        if self._conf.getboolean("NobleGazDatabaseAccess","obfuscatePassword", False):
             self._ngPassword = ctbto.common.utils.deobfuscate_string(self._ngPassword)
    
         # create DB connector
@@ -380,7 +382,7 @@ class Runner(object):
         self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess", "user")
         self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess", "password")
         
-        if self._conf.get("ParticulateArchiveDatabaseAccess","obfuscate", False):
+        if self._conf.getboolean("ParticulateArchiveDatabaseAccess","obfuscatePassword", False):
             self._archivePassword = ctbto.common.utils.deobfuscate_string(self._archivePassword)
         
         self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess", "activateTimer", True)

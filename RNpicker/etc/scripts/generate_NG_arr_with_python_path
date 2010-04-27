@@ -113,7 +113,7 @@ done
 
 export PYTHONPATH=$STARTERPATH:$PYTHONPATH
 
-export PYTHONPATH=/home/smd/aubert/public/generate_and_email_runtime/lib/python2.6/site-packages/Jinja2-2.1.1-py2.6-linux-x86_64.egg:/home/smd/aubert/public/generate_and_email_runtime/lib/python2.6/site-packages/SQLAlchemy-0.5.0-py2.6.egg:$PYTHONPATH
+#export PYTHONPATH=/home/smd/aubert/public/generate_and_email_runtime/lib/python2.6/site-packages/Jinja2-2.1.1-py2.6-linux-x86_64.egg:/home/smd/aubert/public/generate_and_email_runtime/lib/python2.6/site-packages/SQLAlchemy-0.5.0-py2.6.egg:$PYTHONPATH
 
 ###################################
 ## create bootstrap and launch program
