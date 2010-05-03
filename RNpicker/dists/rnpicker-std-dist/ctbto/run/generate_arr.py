@@ -376,17 +376,17 @@ class Runner(object):
         self._ngMainConn = DatabaseConnector(self._ngDatabase, self._ngUser, self._ngPassword, self._ngActivateTimer)
 
         # setup the archive database and connect to it
-        self._ParticulateArchiveDatabaseAccess       = self._conf.get("ParticulateArchiveDatabaseAccess", "hostname")
-        self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess", "user")
-        self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess", "password")
+        self._ArchiveDatabaseAccess       = self._conf.get("ArchiveDatabaseAccess", "hostname")
+        self._archiveUser           = self._conf.get("ArchiveDatabaseAccess", "user")
+        self._archivePassword       = self._conf.get("ArchiveDatabaseAccess", "password")
         
-        if self._conf.get("ParticulateArchiveDatabaseAccess","obfuscate", False):
+        if self._conf.get("ArchiveDatabaseAccess","obfuscate", False):
             self._archivePassword = ctbto.common.utils.deobfuscate_string(self._archivePassword)
         
-        self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess", "activateTimer", True)
+        self._archiveActivateTimer  = self._conf.getboolean("ArchiveDatabaseAccess", "activateTimer", True)
         
         # create DB connector
-        self._ngArchConn = DatabaseConnector(self._ParticulateArchiveDatabaseAccess, self._archiveUser, \
+        self._ngArchConn = DatabaseConnector(self._ArchiveDatabaseAccess, self._archiveUser, \
                                              self._archivePassword, self._archiveActivateTimer)
         #connect to the DBs
         self._ngMainConn.connect()
