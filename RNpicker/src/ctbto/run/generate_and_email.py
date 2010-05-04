@@ -316,17 +316,23 @@ class Runner(object):
         self._ngPassword        = self._conf.get("NobleGazDatabaseAccess","password")
         self._ngActivateTimer   = self._conf.getboolean("NobleGazDatabaseAccess","activateTimer",True)
    
+        if self._conf.getboolean("NobleGazDatabaseAccess","obfuscatePassword", False):
+            self._ngPassword = ctbto.common.utils.deobfuscate_string(self._ngPassword)
+   
         # create DB connector
         self._ngMainConn = DatabaseConnector(self._ngDatabase,self._ngUser,self._ngPassword,self._ngActivateTimer)
 
         # setup the archive database and connect to it
-        self._ParticulateArchiveDatabaseAccess       = self._conf.get("ParticulateArchiveDatabaseAccess","hostname")
-        self._archiveUser           = self._conf.get("ParticulateArchiveDatabaseAccess","user")
-        self._archivePassword       = self._conf.get("ParticulateArchiveDatabaseAccess","password")
-        self._archiveActivateTimer  = self._conf.getboolean("ParticulateArchiveDatabaseAccess","activateTimer",True)
+        self._archiveDatabaseAccess       = self._conf.get("ArchiveDatabaseAccess","hostname")
+        self._archiveUser           = self._conf.get("ArchiveDatabaseAccess","user")
+        self._archivePassword       = self._conf.get("ArchiveDatabaseAccess","password")
+        self._archiveActivateTimer  = self._conf.getboolean("ArchiveDatabaseAccess","activateTimer",True)
+        
+        if self._conf.getboolean("ArchiveDatabaseAccess","obfuscatePassword", False):
+            self._archivePassword = ctbto.common.utils.deobfuscate_string(self._archivePassword)
         
         # create DB connector
-        self._ngArchConn = DatabaseConnector(self._ParticulateArchiveDatabaseAccess,self._archiveUser,self._archivePassword,self._archiveActivateTimer)
+        self._ngArchConn = DatabaseConnector(self._archiveDatabaseAccess,self._archiveUser,self._archivePassword,self._archiveActivateTimer)
         
         #connect to the DBs
         self._ngMainConn.connect()

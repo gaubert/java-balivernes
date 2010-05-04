@@ -1,15 +1,12 @@
 #!/bin/sh
 #set -x
 
-# force a friendly umask
-umask 002
-
 # Runs on Linux
 #################################
 ## RNPicker Distribution home directory
 #################################
-#RNPICKER_HOME=/home/aubert/RNPickerEnv/new-env
-RNPICKER_HOME=..
+RNPICKER_HOME=/home/aubert/RNPickerEnv/new-env
+#RNPICKER_HOME=..
 
 #################################
 ## if RNPICKER_HOME is relative,
@@ -22,19 +19,18 @@ RNPICKER_HOME="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
 #################################
 ## RNPicker necessary information
 #################################
-PYTHON_BIN=python2.6
+PYTHON_BIN=$RNPICKER_HOME/bin/python
 
 # /usr/lib/oracle/xe/app/oracle/product/10.2.0/server
 DEFAULT_ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server
 
-#DEFAULT_LIBXML2_DIR=/usr/lib
-DEFAULT_LIBXML2_DIR=/dvl/software/site/usr/newlibs/lib64
+DEFAULT_LIBXML2_DIR=/usr/lib
+#DEFAULT_LIBXML2_DIR=$RNPICKER_HOME/ext/clib/libxml2/lib
 
 #DEFAULT_LIBXSLT_DIR=/usr/lib
-DEFAULT_LIBXSLT_DIR=/dvl/software/site/usr/newlibs/lib64
+DEFAULT_LIBXSLT_DIR=$RNPICKER_HOME/ext/clib/libxslt/lib
 
 DEFAULT_RNPICKER_CONF_DIR=$RNPICKER_HOME/conf
-
 
 #################################
 ## You probably do not want to
@@ -102,18 +98,6 @@ else
     # export it to have it accessible for the python interpreter
     export RNPICKER_CONF_DIR
 fi
-
-######################
-## set PYTHON_PATH
-######################
-## Add lib dir 
-STARTERPATH="$RNPICKER_HOME/lib"
-## Add all eggs in PYTHONPATH
-for n in `find $RNPICKER_HOME/lib/*.egg`; do
-      STARTERPATH=$STARTERPATH":"$n
-done
-
-export PYTHONPATH=$STARTERPATH:$PYTHONPATH
 
 ###################################
 ## create bootstrap and launch program

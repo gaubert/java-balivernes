@@ -369,8 +369,6 @@ class Runner(object):
         self._ngPassword        = self._conf.get("NobleGazDatabaseAccess", "password")
         self._ngActivateTimer   = self._conf.getboolean("NobleGazDatabaseAccess", "activateTimer", True)
         
-        t_var = self._conf.getboolean("NobleGazDatabaseAccess","obfuscatePassword", False)
-        
         if self._conf.getboolean("NobleGazDatabaseAccess","obfuscatePassword", False):
             self._ngPassword = ctbto.common.utils.deobfuscate_string(self._ngPassword)
    

@@ -30,7 +30,7 @@ PYTHONVERSION=2.5
 # new version 1.3.3.1 released 270410 
 # new version 1.3.3.2 released 270410 
 
-RNVERSION=1.3.3.2
+RNVERSION=1.3.4
 RNDISTNAME=rnpicker-$(RNVERSION)
 
 CONFVERSION=0.8
