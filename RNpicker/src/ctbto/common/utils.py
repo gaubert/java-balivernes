@@ -222,7 +222,7 @@ def printDict(di, format="%-25s %s"):
 def printInFile(aStr,aPath):
     #check if it is a path or a file
      
-    if str(aPath.__class__) == "<type 'str'>":
+    if type(aPath) in (type('str'),type(u'str')):
         f = open(aPath,"w")
     else:
         f = aPath

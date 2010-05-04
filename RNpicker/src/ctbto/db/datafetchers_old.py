@@ -97,7 +97,7 @@ class DBDataFetcher(object):
         self._remoteHost        = aRemoteHostForAccessingFiles
         
         # get flag indicating if the cache function is activated
-        self._activateCaching   = (True) if self._conf.get("Caching","activateDBDataCaching","false") == "true" else False
+        self._activateCaching   = (True) if self._conf.get("Caching","activateCaching","false") == "true" else False
     
     def execute(self,aRequest,aTryOnArchive=False,aRaiseExceptionOnError=True):
         """execute a sql request on the main connection and on the archive connection if necessary.

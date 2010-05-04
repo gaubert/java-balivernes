@@ -1,0 +1,208 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Configuration Info File 
+#  Information regarding all the parameters in the the conf file
+#  author: guillaume.aubert@ctbto.org
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : Logging
+#  Info : configuration info related to the logging
+#  Mandatory Group: Yes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Logging]
+# path to the logging configuration file
+conf_file=%(ENV[RNPICKER_CONF_DIR])/logging_rnpicker.config
+# RNPicker object that will log in the console and in the other logging means (file, syslog)
+# only Runner is logging in the console
+consoleFilter=Runner
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : ArchiveDatabaseAccess
+#  Info : Connection Configuration to the Archive Database
+#  Mandatory Group: Yes (connection created by default)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[ArchiveDatabaseAccess]
+# to mesure and print request execution time. If activated this will be logged
+activateTimer=false
+# Database TNSNAME as defined in tnsnames.ora
+hostname=moorea.ctbto.org
+# Database user used for the connection
+user=centre
+# To encrypt the password put this option to true
+obfuscatePassword=true
+# Database password
+password=ZGF0YQ==
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : NobleGazDatabaseAccess
+#  Info : Connection Configuration to the NobleGazDatabase (idcdev for the moment)
+#  Mandatory Group: Yes (connection created by default)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[NobleGazDatabaseAccess]
+# to mesure and print request execution time. If activated this will be logged
+activateTimer=false
+# Database TNSNAME as defined in tnsnames.ora
+hostname=idcdev.ctbto.org
+# Database user used for the connection
+user=rmsuser
+# To encrypt the password put this option to true
+obfuscatePassword=true
+password=cm1zdXNlcg==
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : BrokenSamples
+#  Info : list of samples to ignore as information 
+#         regarding them is incomplete either in the DB or in the filesystem
+#  Mandatory Group: No it can be removed from the conf file or commented
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#[IgnoreSamples]
+# missing information on these samples ignore them
+#noblegazSamples=53758,141303,141306,141317,141347,141372,141397,141437,141438,141449,141479,141501,141527,206975,388407
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : Options
+#  Info : misc options for the different RNPicker modules
+#  Mandatory Group: Yes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Options]
+# Remove the index column from the samples. It will then not appear in the SAMPML file
+removeChannelIndex=true
+# Add the nuclide lines in the SAMPML file when needed. 
+# This is only used by the Genie Particulate implementation
+addNuclideLines=true
+# Gzip the spectrum and base64 encode it
+compressSpectrum=false
+# This will activate the ssh adapter that can read data files remotly accessible.
+# This can be used when the machine where RNPicker is running hasn't got access to /ops
+# /archive /dev filesystem
+# if this option is true then the information under [RemoteAccess] will be used
+remoteDataSource=false
+# write in a human readable form the data retrieved from the database
+# the datastructure (a dictionary) is written as a .data file in /tmp
+writeHumanReadableData=false
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : Caching
+#  Info : To activate the Database Caching functionality
+#  Mandatory Group: Yes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Caching]
+# cache Database Information
+activateDBDataCaching=false
+# directory where the information will be persisted
+dir=/tmp/samples/cached-data
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : Transformer
+#  Info : TO Transform XML into something else
+#  Mandatory Group: Yes
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Transformer]
+# this stylesheet is used to pretty-print XML structure before to save it
+xsltPrettyPrinter=%(ENV[RNPICKER_CONF_DIR])/pretty-print.xslt
+# Directory containing the HTML templates used to create the ARR from the XML
+templateDir=%(ENV[RNPICKER_CONF_DIR])/templates
+
+#Add templates for XML Noble Gas Products 
+# xml_templates.config contains the XML templates
+%include %(ENV[RNPICKER_CONF_DIR])/xml_templates.config
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Name : RemoteAccess
+#  Info : Mapping for accessing a remote file system where the RN data is
+#         This part is activated by Options[remoteDataSource]=true 
+#  Mandatory Group: Yes if Options[remoteDataSource] = True else No
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[RemoteAccess]
+# To activate the data caching and retrieve only once the data
+activateDataFileCaching=false
+# Directory where the data will be stored
+localdir=/tmp/samples/local-spectrums
+# 3 hosts need to be configured to access transparently the different products
+# these 3 hosts are using for the ssh connection
+# host for accessing the /archive
+archiveAccessHost=kuredu
+# host for accessing /ops
+prodAccessHost=kuredu
+# host for accessing noblegaz filesystem (/dev for the moment)
+nobleGazRemoteHost=dls014
+# scripts launched to retrieve the data on a remote file system
+prodAccessScript=%(ENV[RNPICKER_CONF_DIR])/scripts/remote_extraction_from_archive.sh
+archiveAccessScript=%(ENV[RNPICKER_CONF_DIR])/scripts/remote_extraction_from_archive.sh
+activateDataFileCaching=false
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# HELP
+# A) include a par file
+# add for example %include<par:RNPAR> /tmp/rn.par
+# this will include a par file /tmp/rn.par and load all its variables
+# in a group [RNPAR]. variable from this par file can now be referenced
+# in the configuration file.
+# For example to access the par property password in your code: conf.get("RNPAR","password")
+# For example to set a property in your conf file to the value of the password property in your par file
+# [MyGroup]
+# my_value=%(RNPAR[password])
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+############## This part is used by generate_arr_and_email application ######################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Name : AutomaticEmailingInformation
+# Info : Information regarding the automatic emailing
+#  Mandatory Group: Yes for generate_and_email.py, No for generate_arr.py
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[AutomaticEmailingInformation]
+# STMP Server contacted to send the email
+host=malta14.office.ctbto.org
+# STMP server port
+port=25
+# Login
+user=aubert
+# To obfuscate password
+obfuscate_password=True
+# Password in clear or obfuscated
+password=ZXJuZXN0MjU=
+# Sender email
+sender=guillaume.aubert@ctbto.org
+# Whre to find the group database.
+# For each emailing group, a little pickled dict is maintained to know which data has already been sent 
+# for which day
+# the command line
+groupDBPath=%(ENV[RNPICKER_CONF_DIR])/../data
+# the expiration date after which the groupDB is cleaned.
+# line containing date older than 20 days are deleted
+expirationDate=20
+# To send a tar file or a zip file to the users
+archiveType=zip
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Name : Products
+# Info : used to filter products that will be sent to the user
+# Mandatory Group: Yes for generate_and_email.py, No for generate_arr.py
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Products]
+# types of stations to send (SAUNA and SPALAX)
+stations_types= SAUNA,SPALAX
+# Requests used to find new products 
+Sauna_Stations_SQL=select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where (type='SAUNA' or type='ARIX-4') and station_code not like '%EU%'
+Spalax_Stations_SQL=select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where (type='SPALAX')
+# Filtering for DPKR2 as in linuxworkstation test env
+# For Sauna and Spalax
+#Sauna_Stations_SQL=select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where (type='SAUNA' or type='ARIX-4') and (station_code like 'RUX58' or station_code like 'CNX22' or station_code like 'JPX38' or station_code like 'CNX20' or station_code like 'SEX63')
+#Spalax_Stations_SQL=select STATION_CODE,STATION_ID from RMSMAN.GARDS_STATIONS where (type='SPALAX') and (station_code like 'DEX33' or station_code like 'CNX20' or station_code like 'CNX22')
+# To send ARRs together with SAMPMLs
+withARR=true
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Name : AutomaticEmailingGroups
+# Info : Details the group of users that will receive the data.
+#        The target group name is specified in the command line
+# Mandatory Group: Yes for generate_and_email.py, No for generate_arr.py
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[AutomaticEmailingGroups]
+test=guillaume.aubert@gmail.com
+#prod=idcxml@findc1.stuk.fi,xml@gub.ca,xavier.blanchard@cea.fr,guillaume.aubert@gmail.com,sampml.ctbto@gmail.com
+
+############## End of part used by generate_arr_and_email application ######################

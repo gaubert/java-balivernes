@@ -24,13 +24,13 @@ class SubstitutionError(ParError):
     """Base class for substitution-related exceptions."""
 
     def __init__(self, lineno, location, msg):
-        Error.__init__(self, 'SubstitutionError on line %d: %s. %s' % (lineno, location, msg) if lineno != - 1 else 'SubstitutionError in %s. %s' % (lineno, location))
+        ParError.__init__(self, 'SubstitutionError on line %d: %s. %s' % (lineno, location, msg) if lineno != - 1 else 'SubstitutionError in %s. %s' % (lineno, location))
         
 
 class ParsingError(ParError):
     """Raised when a configuration file does not follow legal syntax."""
     def __init__(self, filename):
-        Error.__init__(self, 'File contains parsing errors: %s' % filename)
+        ParError.__init__(self, 'File contains parsing errors: %s' % filename)
         self.filename = filename
         self.errors = []
 
@@ -80,7 +80,7 @@ class ParReader(object):
         """ read an included par file """
         # Error if depth is MAX_INCLUDE_DEPTH 
         if depth >= ParReader.MAX_INCLUDE_DEPTH:
-            raise ParsingError("Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes." % (MAX_INCLUDE_DEPTH))
+            raise ParsingError("Cannot do more than %d nested includes. It is probably a mistake as you might have created a loop of includes." % (ParReader.MAX_INCLUDE_DEPTH))
         
         if not os.path.exists(include_file):
             raise ParsingError("Include PAR file %s declared lineno %d of %s doesn't exist." % (include_file, lineno, a_original_file))

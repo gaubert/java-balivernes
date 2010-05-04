@@ -97,7 +97,7 @@ class DBDataFetcher(object):
         self._remoteHost        = aRemoteHostForAccessingFiles
         
         # get flag indicating if the cache function is activated
-        self._activateCaching   = (True) if self._conf.get("Caching","activateCaching","false") == "true" else False
+        self._activateCaching   = (True) if self._conf.get("Caching","activateDBDataCaching","false") == "true" else False
     
     def execute(self,aRequest,aTryOnArchive=False,aRaiseExceptionOnError=True):
         """execute a sql request on the main connection and on the archive connection if necessary.
@@ -190,7 +190,7 @@ class DBDataFetcher(object):
             raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
         # update data bag
-        self._dataBag.update(rows[0].items())
+        self._dataBag.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
        
         result.close()
        
@@ -210,7 +210,7 @@ class DBDataFetcher(object):
             raise CTBTOError(-1,"Expecting to have one result for sample_id %s but got %d either None or more than one. %s"%(self._sampleID,nbResults,rows))
          
         # update data bag
-        self._dataBag.update(rows[0].items())
+        self._dataBag.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
        
         result.close()
        
@@ -368,8 +368,10 @@ class DBDataFetcher(object):
          
         # get retrieved data and transform dates
         data = {}
-        data.update(rows[0])
-       
+        
+        #needs to do that because now SQLAclhemy0.6 returns always lower case column names (even aliases)
+        data.update([ (key.upper(),val) for (key,val) in [ (key.upper(),val) for (key,val) in rows[0].items() ] ])
+        
         # transform dates in data
         self._transformResults(data)
        
@@ -1134,7 +1136,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
          
         # get retrieved data and transform dates
         data = {}
-        data.update(rows[0])
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
            
@@ -1299,7 +1301,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             res.append(data)
             data = {}
         
@@ -1392,7 +1394,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         xe133M_act = None
         
         for row in rows:
-            data.update(row.items())  
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])  
             
             nidflag = data.get(u'NID_FLAG', None)
 
@@ -1579,7 +1581,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-            data.update(row.items())  
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])  
           
             res.append(data)
             data = {}
@@ -1600,7 +1602,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-            data.update(row.items())  
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])  
           
             res.append(data)
             data = {}
@@ -1695,7 +1697,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-            data.update(row.items()) 
+            data.update([ (key.upper(),val) for (key,val) in row.items() ]) 
           
             # add related nuclide
             data[u'Nuclide'] = ROI_2_Nuclides.get(data['ROI'],"NoName")
@@ -1731,7 +1733,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-            data.update(row.items()) 
+            data.update([ (key.upper(),val) for (key,val) in row.items() ]) 
             res.append(data)
             data = {}
 
@@ -1788,7 +1790,7 @@ class SaunaNobleGasDataFetcher(DBDataFetcher):
         # create a list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         
         # Beta Cal Info
@@ -2057,7 +2059,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
          
         # get retrieved data and transform dates
         data = {}
-        data.update(rows[0])
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         self._dataBag["%s_AUXILIARY_INFO"%(aDataname)] = data
     
@@ -2150,7 +2152,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             res.append(data)
             data = {}
         
@@ -2175,7 +2177,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             res.append(data)
             data = {}
         
@@ -2200,7 +2202,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             res.append(data)
             data = {}
         
@@ -2225,7 +2227,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             res.append(data)
             data = {}
         
@@ -2298,7 +2300,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         data = {}
         
         for row in rows:
-            data.update(row.items())  
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])  
           
             res.append(data)
             data = {}
@@ -2475,7 +2477,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         xe133M_act   = {}
         
         for row in rows:
-            data.update(row.items())  
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])  
             
             # translate NID_FLAG to something humanely understandable
             nidflag = data.get(u'NID_FLAG', None)
@@ -2613,7 +2615,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # create a list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
@@ -2654,7 +2656,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # init list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
@@ -2682,7 +2684,7 @@ class SpalaxNobleGasDataFetcher(DBDataFetcher):
         # create a list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
        
@@ -3051,7 +3053,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         if len(rows) > 0:
         
             data = {}
-            data.update(rows[0])
+            data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
     
             self._dataBag[u'%s_CAT_INFOS'%(dataname)] = self._transformResults(data)
           
@@ -3067,7 +3069,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             data = {}
         
             for row in rows:
-                data.update(row)
+                data.update([ (key.upper(),val) for (key,val) in row.items() ])
                 # transform dates if necessary
                 newRow = self._transformResults(data)
                 # add Comment
@@ -3095,7 +3097,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             data = {}
         
             for row in rows:
-                data.update(row)
+                data.update([ (key.upper(),val) for (key,val) in row.items() ])
                 # transform dates if necessary
                 newRow = self._transformResults(data)
             
@@ -3126,7 +3128,7 @@ class ParticulateDataFetcher(DBDataFetcher):
 
             for row in rows:
                 # copy row in a normal dict
-                data.update(row)
+                data.update([ (key.upper(),val) for (key,val) in row.items() ])
                 res.append(data)
                 data = {}
         
@@ -3150,7 +3152,7 @@ class ParticulateDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             res.append(data)
             data = {}
         
@@ -3176,7 +3178,7 @@ class ParticulateDataFetcher(DBDataFetcher):
 
         for row in rows:
             # copy row in a normal dict
-            data.update(row)
+            data.update([ (key.upper(),val) for (key,val) in row.items() ])
             
             nidflag = data.get(u'NID_FLAG',None)
 
@@ -3298,7 +3300,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         
             for row in rows:
                 # copy row in a normal dict
-                data.update(row)
+                data.update([ (key.upper(),val) for (key,val) in row.items() ])
             
                 res.append(data)
                 data = {}
@@ -3397,7 +3399,7 @@ class ParticulateDataFetcher(DBDataFetcher):
             # create a list of dicts
             data = {}
         
-            data.update((rows[0].items()) if len(rows) > 0 else {})
+            data.update(([ (key.upper(),val) for (key,val) in rows[0].items() ]) if len(rows) > 0 else {})
     
             # add in dataBag
             self._dataBag[u'%s_PROCESSING_PARAMETERS'%(dataname)] = data
@@ -3420,7 +3422,7 @@ class ParticulateDataFetcher(DBDataFetcher):
                 # create a list of dicts
                 data = {}
 
-                data.update((rows[0].items()) if len(rows) > 0 else {})
+                data.update(([ (key.upper(),val) for (key,val) in rows[0].items() ]) if len(rows) > 0 else {})
         
                 # add in dataBag
                 self._dataBag[u'%s_UPDATE_PARAMETERS'%(dataname)] = data
@@ -3450,7 +3452,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # create a list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
@@ -3479,7 +3481,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # init list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
         
@@ -3507,7 +3509,7 @@ class ParticulateDataFetcher(DBDataFetcher):
         # create a list of dicts
         data = {}
 
-        data.update(rows[0].items())
+        data.update([ (key.upper(),val) for (key,val) in rows[0].items() ])
         
         checksum = self._getCalibrationCheckSum([data[u'COEFF1'],data[u'COEFF2'],data[u'COEFF3'],data[u'COEFF4'],data[u'COEFF5'],data[u'COEFF6'],data[u'COEFF7'],data[u'COEFF8']])
        

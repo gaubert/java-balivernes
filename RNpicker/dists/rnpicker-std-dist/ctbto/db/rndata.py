@@ -39,7 +39,7 @@ class BaseRemoteDataSource(object):
         
         self._localDir          = self._conf.get("RemoteAccess","localDir")
         
-        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated",False)
+        self._cachingActivated  = self._conf.getboolean("RemoteAccess","activateDataFileCaching",False)
         
         self._localFilename     = self._conf.get("RemoteAccess","localFilename") if self._conf.has_option("RemoteAccess","localFilename") else None
         
@@ -318,7 +318,7 @@ class RemoteArchiveDataSource(BaseRemoteDataSource):
         
         self._localDir          = self._conf.get("RemoteAccess","localDir") if aLocalDir == None else aLocalDir
         
-        self._cachingActivated  = self._conf.getboolean("RemoteAccess","cachingActivated") if (self._conf.has_option("RemoteAccess","cachingActivated") and a_DoNotUseCache == False) else False
+        self._cachingActivated  = self._conf.getboolean("RemoteAccess","activateDataFileCaching") if (self._conf.has_option("RemoteAccess","activateDataFileCaching") and a_DoNotUseCache == False) else False
         
         self._localFilename     = "%s_%s.%s"%(os.path.basename(self._remotePath),self._id,self._getExtension(self._remotePath)) if a_LocalFilename == None else a_LocalFilename
     

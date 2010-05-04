@@ -12,13 +12,15 @@ from org.ctbto.conf.conf_helper import Conf
 class LoggerFactory:
     """ Factory for handling Loggers """
     __INITIALIZED__ = False
-    __DEBUG__ = False
+    __DEBUG__       = False
+    CONSOLE_LOGGER_SET = False
     DISABLED = 1000
     
     def __init__(self):
         """ default cons  """
         
         self._additional_handlers = []
+        
     
     @classmethod
     def _get_logger(cls, logger_name):
@@ -43,9 +45,8 @@ class LoggerFactory:
                 err_msg = str(ex)
                 if conf_file and not cls.__check_conf_file_exist__(conf_file):
                     err_msg = ('file ' + conf_file + ' not found')
-                if debug is True:
-                    print 'logging configuration error, ' + err_msg
-                    print traceback.print_exc(10, sys.stderr)
+                print 'logging configuration error, ' + err_msg
+                print traceback.print_exc(10, sys.stderr)
             cls.__INITIALIZED__ = True
         return logging.getLogger(logger_name)
     
@@ -61,6 +62,7 @@ class LoggerFactory:
         console.addFilter(console_filter)
 
         logging.root.addHandler(console)
+        cls.CONSOLE_LOGGER_SET = True
     
     @classmethod
     def get_logger(cls, logged_object):
@@ -70,7 +72,11 @@ class LoggerFactory:
         else:
             logger_name = str(logged_object)
         return LoggerFactory._get_logger(logger_name)
-    
+
+    @classmethod
+    def is_console_handler_set(cls):
+        """ to set if the console handler has been properly set """
+        return cls.CONSOLE_LOGGER_SET
     
     @classmethod
     def __check_conf_file_exist__(cls, conf_file_name):

@@ -692,6 +692,25 @@ def run_automatic_tests():
     auto_tests.tests()
     sys.exit(0)
 
+def print_general_exception(a_exception, a_parsed_args):
+    """ print general exception. 
+        Complex case depending on the passed options and the fact the console handler might not have been instanciated. 
+    """
+    
+    
+    #check that the console hanlder has been set by the factory
+    if LoggerFactory.is_console_handler_set():
+        LoggerFactory.get_logger("Runner").error("%s. For more information see the log file %s.\nTry `generate_NG_arr --help (or -h)' for more information."%(a_exception,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
+        if a_parsed_args.get('verbose',1) == 3:
+            a_logger = LoggerFactory.get_logger("Runner").error
+        else:
+            a_logger = Runner.log_in_file
+        
+        a_logger("Traceback: %s."%(get_exception_traceback()))
+    else:
+        #cannot get general logger so print
+        print("Fatal Error: Traceback: %s."%(get_exception_traceback()))
+
 def run_with_args(a_args,exit_on_success=False):
     
     try:
@@ -720,15 +739,7 @@ def run_with_args(a_args,exit_on_success=False):
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            LoggerFactory.get_logger("Runner").error("Error: %s. For more information see the log file %s.\n"%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
-            LoggerFactory.get_logger("Runner").error("Try `generate_NG_arr --help (or -h)' for more information.\n")
-            if parsed_args.get('verbose',1) == 3:
-                a_logger = LoggerFactory.get_logger("Runner").error
-            else:
-                a_logger = Runner.log_in_file
-           
-           
-            a_logger("Traceback: %s."%(get_exception_traceback()))
+            print_general_exception(e, parsed_args)
         except: 
             print("Fatal error that could not be logged properly. print Traceback in stdout: %s."%(get_exception_traceback())) #IGNORE:W0702
         finally:
@@ -752,8 +763,6 @@ def run():
             
         Runner.load_configuration(parsed_args)
         
-        conf_file = Conf.get_instance().get('log', 'conf_file', '/home/aubert/workspace/RNpicker/etc/conf/logging_rnpicker.config')
-         
         runner = Runner(parsed_args)
         runner.execute(parsed_args) 
     except ParsingError, e:
@@ -774,13 +783,7 @@ def run():
         sys.exit(2)
     except Exception, e: #IGNORE:W0703,W0702
         try:
-            LoggerFactory.get_logger("Runner").error("%s. For more information see the log file %s.\nTry `generate_arr --help (or -h)' for more information."%(e,Conf.get_instance().get('Logging','fileLogging','/tmp/rnpicker.log')))
-            if parsed_args.get('verbose',1) == 3:
-                a_logger = LoggerFactory.get_logger("Runner").error
-            else:
-                a_logger = Runner.log_in_file
-           
-            a_logger("Traceback: %s."%(get_exception_traceback()))
+            print_general_exception(e, parsed_args)
         except: 
             print("Fatal error that could not be logged properly. print Traceback in stdout: %s."%(get_exception_traceback())) #IGNORE:W0702
         finally:
