@@ -29,7 +29,7 @@ activateTimer=false
 hostname=moorea.ctbto.org
 # Database user used for the connection
 user=centre
-# To encrypt the password put this option to true
+# To encode (base64) the password put this option to true
 obfuscatePassword=true
 # Database password
 password=ZGF0YQ==
@@ -47,7 +47,7 @@ activateTimer=false
 hostname=idcdev.ctbto.org
 # Database user used for the connection
 user=rmsuser
-# To encrypt the password put this option to true
+# To encode (base64 encoding) the password put this option to true
 obfuscatePassword=true
 password=cm1zdXNlcg==
 
@@ -162,7 +162,7 @@ port=25
 user=aubert
 # To obfuscate password
 obfuscate_password=True
-# Password in clear or obfuscated
+# Password in clear or obfuscated (base64 encoding)
 password=ZXJuZXN0MjU=
 # Sender email
 sender=guillaume.aubert@ctbto.org
