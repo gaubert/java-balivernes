@@ -61,7 +61,7 @@ rn-src-dist: clean init
 	cd $(RNDIST); $(PYTHONBIN) setup.py sdist -d ../../$(RNBUILD) 
 	echo "distribution stored in $(RNBUILD)"
 
-rn-ppath-dist: clean init conf-egg-dist 
+rn-ppath-dist: clean init conf-src-egg-dist 
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	mkdir -p $(RNDIST)/RNPicker-$(RNVERSION)
 	#add rnpicker sources
@@ -74,7 +74,11 @@ rn-ppath-dist: clean init conf-egg-dist
 	# copy conf files
 	cp -R $(BASEDIR)/etc/conf $(RNDIST)/RNPicker-$(RNVERSION)
 	#add dependency: conf-egg-dist 
-	cp $(CONFDIST)/build/conf-1.1-py$(PYTHONVERSION).egg $(RNDIST)/RNPicker-$(RNVERSION)/lib
+	#cp $(CONFDIST)/build/conf-1.1-py$(PYTHONVERSION).egg $(RNDIST)/RNPicker-$(RNVERSION)/lib
+	#cd $(RNDIST); tar zcvf ./RNPicker-$(RNVERSION).tar.gz ./RNPicker-$(RNVERSION)
+	#echo "distribution stored in $(RNDIST)"
+	#add dependency: conf-src-egg-dist 
+	cp -R $(CONFBUILDDIST)/org $(RNDIST)/RNPicker-$(RNVERSION)/lib
 	cd $(RNDIST); tar zcvf ./RNPicker-$(RNVERSION).tar.gz ./RNPicker-$(RNVERSION)
 	echo "distribution stored in $(RNDIST)"
 
@@ -83,6 +87,12 @@ conf-src-dist: clean init
 	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)
 	cd $(CONFDIST); $(PYTHONBIN) setup.py sdist -d ../../$(CONFBUILD) 
 	echo "distribution stored in $(CONFBUILD)"
+
+conf-src-egg-dist: init
+	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
+	mkdir -p $(CONFBUILDDIST)
+	cp -R $(BASEDIR)/conf-src/org $(CONFBUILDDIST)
+	echo "distribution stored in $(CONFBUILDDIST)"
 
 conf-egg-dist: init 
 	cp -R $(BASEDIR)/conf-src/org $(CONFDIST)

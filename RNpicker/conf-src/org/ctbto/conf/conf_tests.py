@@ -8,14 +8,14 @@ Created on Sep 16, 2009
 import unittest
 import sys
 import os
-import org.ctbto.conf
+import org.ctbto.conf.conf_tests
 from org.ctbto.conf.conf_helper import Conf
 
 
 
 
 def tests():
-    suite = unittest.TestLoader().loadTestsFromModule(org.ctbto.conf)
+    suite = unittest.TestLoader().loadTestsFromModule(org.ctbto.conf.conf_tests)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 
