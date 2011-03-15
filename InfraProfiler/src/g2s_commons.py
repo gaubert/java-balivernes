@@ -391,13 +391,13 @@ def create_netcdf(a_netcdf_filename, a_lat_points, a_lon_points, a_nb_levels, a_
 
        float u(profile, altitude) ;
          u:long_name = "U velocity" ;
-         celerity:units = "m s**-1" ;
-         celerity:coordinates = "time lon lat altitude" ;
+         u:units = "m s**-1" ;
+         u:coordinates = "time lon lat altitude" ;
 
        float v(profile, altitude) ;
          u:long_name = "V velocity" ;
-         celerity:units = "m s**-1" ;
-         celerity:coordinates = "time lon lat altitude" ;
+         v:units = "m s**-1" ;
+         v:coordinates = "time lon lat altitude" ;
    
        attributes:
           :CF\:featureType = "profile";
